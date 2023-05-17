@@ -1,12 +1,12 @@
 package com.gangoffive.birdtradingplatform.entity;
 
+import com.gangoffive.birdtradingplatform.enums.Gender;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
