@@ -12,11 +12,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 
-@Entity
+@Entity(name = "tblAddress")
 public class Address {
-	@SequenceGenerator(name = "addredd_sequence", sequenceName = "addredd_sequence", allocationSize = 1)
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "addredd_sequence")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "address_id", updatable = false)
 	private Long id;
 	
@@ -51,4 +50,7 @@ public class Address {
 	
 	@OneToOne(mappedBy = "address")
 	private Account account;
+	
+	@OneToOne(mappedBy = "shippingAddress")
+	private Order order;
 }

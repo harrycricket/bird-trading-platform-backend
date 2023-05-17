@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.entity;
 
+
 import java.util.Date;
 import java.util.List;
 
@@ -12,11 +13,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
-@Entity(name = "Shop_Owner_Acc")
+@Entity(name = "tblShop_Owner_Acc")
+//@Entity
 public class ShopOwner {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,12 +50,18 @@ public class ShopOwner {
 	@CreationTimestamp
 	private Date createdDate;
 	
+	// one shop have one account
 	@OneToOne
 	@JoinColumn(name = "account_id"
 				,foreignKey = @ForeignKey(name = "shop_account")
 	)
 	private Account account;
 	
+//	one shop have many staff account
 	@OneToMany(mappedBy = "shopOwnerId")
 	private List<Account> shopStaffAccount;
+	
+	//one shop have many ordes
+	@OneToMany(mappedBy = "shopOwner")
+	private List<Order> orders;
 }
