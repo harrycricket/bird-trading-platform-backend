@@ -2,7 +2,8 @@ package com.gangoffive.birdtradingplatform.entity;
 
 
 
-import java.sql.Date;
+
+import java.util.Date;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -21,7 +22,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@ToString
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity(name = "tblOrder")
 public class Order {
 	

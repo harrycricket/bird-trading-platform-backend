@@ -11,7 +11,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
+@ToString
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity(name = "tblAddress")
 public class Address {
 	@Id
@@ -53,4 +63,6 @@ public class Address {
 	
 	@OneToOne(mappedBy = "shippingAddress")
 	private Order order;
+	
+	
 }

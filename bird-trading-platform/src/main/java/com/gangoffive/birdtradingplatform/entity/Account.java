@@ -23,11 +23,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
-
-
+@ToString
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "tblAccount")
@@ -87,5 +86,59 @@ public class Account {
 	
 	@OneToMany(mappedBy = "account")
 	private List<Order> orders;
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public void setRole(UserRole role) {
+		this.role = role;
+	}
+
+	public void setRefreshToken(String refreshToken) {
+		this.refreshToken = refreshToken;
+	}
+
+	public void setEnable(Boolean enable) {
+		this.enable = enable;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public void setImgUrl(String imgUrl) {
+		this.imgUrl = imgUrl;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
+	}
+
+	public void setShopOwner(ShopOwner shopOwner) {
+		this.shopOwner = shopOwner;
+	}
+
+	public void setShopOwnerId(ShopOwner shopOwnerId) {
+		this.shopOwnerId = shopOwnerId;
+	}
+
+	public void addOrder(Order order) {
+		this.orders.add(order);
+	}
+
+	
 	
 }
