@@ -17,6 +17,10 @@ public class Accessory extends Product {
     protected String origin;
 
     @ManyToOne
+    @JoinColumn(
+            name = "type_id",
+            foreignKey = @ForeignKey(name = "FK_ACCESSORY_TYPE_ACCESSORY")
+    )
     private TypeAccessory typeAccessory;
 
     @ManyToMany(mappedBy = "accessories")

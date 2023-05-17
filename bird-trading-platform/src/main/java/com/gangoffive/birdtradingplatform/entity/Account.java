@@ -45,7 +45,7 @@ public class Account {
 	)
 	private String email;
 	
-	@Enumerated(value  = EnumType.STRING)
+	@Enumerated(value = EnumType.STRING)
 	private UserRole role;
 	
 	@Column(name = "refresh_token")

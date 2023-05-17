@@ -1,24 +1,15 @@
 package com.gangoffive.birdtradingplatform.entity;
 
 
-import java.util.Date;
-import java.util.List;
-
-import org.hibernate.annotations.CreationTimestamp;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.util.Date;
+import java.util.List;
 
 @Getter
 @ToString
@@ -26,6 +17,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Entity(name = "tblShop_Owner_Acc")
 public class ShopOwner {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "shop_id",
@@ -72,45 +64,51 @@ public class ShopOwner {
 	@OneToMany(mappedBy = "shopOwner")
 	private List<Order> orders;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    @OneToMany(mappedBy = "shopOwner")
+    private List<Product> products;
 
-	public void setShopName(String shopName) {
-		this.shopName = shopName;
-	}
 
-	public void setShopPhone(String shopPhone) {
-		this.shopPhone = shopPhone;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setShopName(String shopName) {
+        this.shopName = shopName;
+    }
 
-	public void setImgUrl(String imgUrl) {
-		this.imgUrl = imgUrl;
-	}
+    public void setShopPhone(String shopPhone) {
+        this.shopPhone = shopPhone;
+    }
 
-	public void setActive(Boolean active) {
-		this.active = active;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public void setCreatedDate(Date createdDate) {
-		this.createdDate = createdDate;
-	}
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
+    }
 
-	public void setAccount(Account account) {
-		this.account = account;
-	}
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
-	public void addShopStaffAccount(Account shopStaffAccount) {
-		this.shopStaffAccounts.add(shopStaffAccount) ;
-	}
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
 
-	public void addOrder(Order order) {
-		this.orders.add(order);
-	}
-	
-	
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
+    public void addShopStaffAccount(Account shopStaffAccount) {
+        this.shopStaffAccounts.add(shopStaffAccount);
+    }
+
+    public void addOrder(Order order) {
+        this.orders.add(order);
+    }
+
+    public void addProducts(Product product) {
+        this.products.add(product);
+    }
 }
