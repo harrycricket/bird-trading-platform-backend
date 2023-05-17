@@ -4,6 +4,7 @@ package com.gangoffive.birdtradingplatform.entity;
 
 
 import java.util.Date;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -21,6 +22,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -66,26 +68,78 @@ public class Order {
 	
 	@ManyToOne
 	@JoinColumn(name = "buyer_id"
-			,foreignKey = @ForeignKey(name = "order_buyer")
+			,foreignKey = @ForeignKey(name = "FK_ORDER_BUYER")
 	)
 	private Account account; 
 	
 	@ManyToOne
 	@JoinColumn(name = "shop_id"
-	,foreignKey = @ForeignKey(name = "order_shop")
+	,foreignKey = @ForeignKey(name = "FK_ORDER_SHOP")
 	)
 	private ShopOwner shopOwner;
 	
 	@OneToOne
 	@JoinColumn(name = "shipping_address"
-	,foreignKey = @ForeignKey(name = "order_shipping")
+	,foreignKey = @ForeignKey(name = "FK_ORDER_SHIPPING")
 	)
 	private Address shippingAddress;
 	
 	@OneToOne
 	@JoinColumn(name = "transaction_id"
-	,foreignKey = @ForeignKey(name = "order_transaction")
+	,foreignKey = @ForeignKey(name = "FK_ORDER_TRANSACTION")
 	)
 	private Transaction transaction;
+	
+	@OneToMany(mappedBy = "order")
+	private List<OrderDetail> orderDetails;
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public void setTotalPrice(int totalPrice) {
+		this.totalPrice = totalPrice;
+	}
+
+	public void setDiscount(int discount) {
+		this.discount = discount;
+	}
+
+	public void setStatus(OrderStatus status) {
+		this.status = status;
+	}
+
+	public void setPaymentStatus(PaymentStatus paymentStatus) {
+		this.paymentStatus = paymentStatus;
+	}
+
+	public void setPaymentMethod(PaymentMethod paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public void setDelete(Boolean delete) {
+		this.delete = delete;
+	}
+
+	public void setShopOwner(ShopOwner shopOwner) {
+		this.shopOwner = shopOwner;
+	}
+
+	public void setShippingAddress(Address shippingAddress) {
+		this.shippingAddress = shippingAddress;
+	}
+
+	public void setTransaction(Transaction transaction) {
+		this.transaction = transaction;
+	}
+
+	public void addOrderDetails(OrderDetail orderDetail) {
+		this.orderDetails.add(orderDetail);
+	}
+	
 	
 }

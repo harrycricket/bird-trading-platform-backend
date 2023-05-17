@@ -131,4 +131,7 @@ public abstract class Product {
     public void setShopOwner(ShopOwner shopOwner) {
         this.shopOwner = shopOwner;
     }
+    
+    @OneToOne(mappedBy = "product")
+    private OrderDetail orderDetail;
 }
