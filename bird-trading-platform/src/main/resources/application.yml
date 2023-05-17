@@ -12,4 +12,3 @@ spring:
       hibernate:
         format_sql: true
     database: mysql
-
