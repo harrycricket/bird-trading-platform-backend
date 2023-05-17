@@ -29,19 +29,28 @@ public class Tag {
 
     @ManyToMany
     @JoinTable(
-            name = "tblTag_Bird", joinColumns = @JoinColumn(name = "tag_id"), inverseJoinColumns = @JoinColumn(name = "bird_id")
+            name = "tblTag_Bird",
+            joinColumns = @JoinColumn(name = "tag_id"),
+            inverseJoinColumns = @JoinColumn(name = "bird_id"),
+            foreignKey = @ForeignKey(name = "FK_TAG_BIRD")
     )
     private List<Bird> birds = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
-            name = "tblTag_Accessory", joinColumns = @JoinColumn(name = "tag_id"), inverseJoinColumns = @JoinColumn(name = "accessory_id")
+            name = "tblTag_Accessory",
+            joinColumns = @JoinColumn(name = "tag_id"),
+            inverseJoinColumns = @JoinColumn(name = "accessory_id"),
+            foreignKey = @ForeignKey(name = "FK_TAG_ACCESSORY")
     )
     private List<Accessory> accessories = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
-            name = "tblTag_Food", joinColumns = @JoinColumn(name = "tag_id"), inverseJoinColumns = @JoinColumn(name = "food_id")
+            name = "tblTag_Food",
+            joinColumns = @JoinColumn(name = "tag_id"),
+            inverseJoinColumns = @JoinColumn(name = "food_id"),
+            foreignKey = @ForeignKey(name = "FK_TAG_FOOD")
     )
     private List<Food> foods = new ArrayList<>();
 

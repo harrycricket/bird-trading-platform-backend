@@ -25,6 +25,10 @@ public class Bird extends Product {
     protected String color;
 
     @ManyToOne
+    @JoinColumn(
+            name = "type_id",
+            foreignKey = @ForeignKey(name = "FK_BIRD_TYPE_BIRD")
+    )
     private TypeBird typeBird;
 
     @ManyToMany(mappedBy = "birds")
