@@ -1,4 +1,4 @@
-package com.gangoffive.birdtradingplatform.model;
+package com.gangoffive.birdtradingplatform.entity;
 
 import java.util.Date;
 
@@ -12,5 +12,5 @@ public abstract class Product {
     Integer quantity;
     String imgUrl;
     String videoUrl;
-    
+
 }
