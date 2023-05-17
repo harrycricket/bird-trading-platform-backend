@@ -54,4 +54,7 @@ public abstract class Product {
 
     @Column(name = "video_url")
     protected String videoUrl;
+    
+    @OneToOne(mappedBy = "product")
+    private OrderDetail orderDetail;
 }

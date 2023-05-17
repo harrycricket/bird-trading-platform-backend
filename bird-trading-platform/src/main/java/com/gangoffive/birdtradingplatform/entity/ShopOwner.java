@@ -60,7 +60,7 @@ public class ShopOwner {
 	// one shop have one account
 	@OneToOne
 	@JoinColumn(name = "account_id"
-				,foreignKey = @ForeignKey(name = "shop_account")
+				,foreignKey = @ForeignKey(name = "FK_SHOP_ACCOUNT")
 	)
 	private Account account;
 	

@@ -68,7 +68,7 @@ public class Account {
 	
 	@OneToOne
 	@JoinColumn(name = "address_id"
-				,foreignKey = @ForeignKey(name = "account_address")
+				,foreignKey = @ForeignKey(name = "FK_ACCOUNT_ADDRESS")
 	)
 	private Address address;
 	
@@ -80,12 +80,15 @@ public class Account {
 	//identify account shop staff
 	@ManyToOne
 	@JoinColumn(name = "shop_owner_id"
-	,foreignKey = @ForeignKey(name = "account_shoponwer")
+	,foreignKey = @ForeignKey(name = "FK_ACCOUNT_SHOP_OWNER")
 	)
 	private ShopOwner shopOwnerId;
 	
 	@OneToMany(mappedBy = "account")
 	private List<Order> orders;
+	
+	@OneToMany(mappedBy = "account")
+	private List<Review> reviews;
 
 	public void setId(Long id) {
 		this.id = id;
@@ -137,6 +140,11 @@ public class Account {
 
 	public void addOrder(Order order) {
 		this.orders.add(order);
+	}
+
+
+	public void addReview(Review review) {
+		this.reviews.add(review);
 	}
 
 	
