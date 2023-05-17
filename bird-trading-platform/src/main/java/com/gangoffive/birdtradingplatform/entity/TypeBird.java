@@ -30,4 +30,20 @@ public class TypeBird {
 
     @OneToMany(mappedBy = "typeBird")
     private List<Bird> birds = new ArrayList<>();
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Bird> getBirds() {
+        return birds;
+    }
+
+    public void addBirds(Bird bird) {
+        this.birds.add(bird);
+    }
 }

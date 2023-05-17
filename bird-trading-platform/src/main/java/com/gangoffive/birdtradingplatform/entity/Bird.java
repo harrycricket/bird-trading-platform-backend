@@ -1,8 +1,9 @@
 package com.gangoffive.birdtradingplatform.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,8 +11,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "tblBird")
-@Getter
-@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class Bird extends Product {
     protected Integer age;
 
@@ -28,16 +30,43 @@ public class Bird extends Product {
     @ManyToMany(mappedBy = "birds")
     private List<Tag> tags = new ArrayList<>();
 
-    public Bird() {
+    public Integer getAge() {
+        return age;
     }
 
-    public Bird(Long id, String name, double price, String description, Date createdDate, Date lastUpDated,
-                Integer quantity, String imgUrl, String videoUrl, Integer age, Gender gender, String color) {
-        super(id, name, price, description, createdDate, lastUpDated, quantity, imgUrl, videoUrl);
+    public void setAge(Integer age) {
         this.age = age;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
         this.gender = gender;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
         this.color = color;
     }
 
+    public TypeBird getTypeBird() {
+        return typeBird;
+    }
 
+    public void setTypeBird(TypeBird typeBird) {
+        this.typeBird = typeBird;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void addTags(Tag tag) {
+        this.tags.add(tag);
+    }
 }

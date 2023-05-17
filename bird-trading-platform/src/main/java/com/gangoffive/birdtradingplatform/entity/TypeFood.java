@@ -29,4 +29,20 @@ public class TypeFood {
 
     @OneToMany(mappedBy = "typeFood")
     private List<Food> foods = new ArrayList<>();
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Food> getFoods() {
+        return foods;
+    }
+
+    public void addFoods(Food food) {
+        this.foods.add(food);
+    }
 }

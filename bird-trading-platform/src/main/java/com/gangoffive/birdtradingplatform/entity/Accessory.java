@@ -1,8 +1,7 @@
 package com.gangoffive.birdtradingplatform.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,8 +9,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "tblAccessory")
-@Getter
-@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class Accessory extends Product {
     @Column(nullable = false)
     protected String origin;
@@ -22,14 +22,27 @@ public class Accessory extends Product {
     @ManyToMany(mappedBy = "accessories")
     private List<Tag> tags = new ArrayList<>();
 
-    public Accessory() {
+    public String getOrigin() {
+        return origin;
     }
 
-    public Accessory(Long id, String name, double price, String description, Date createdDate,
-                     Date lastUpDated, Integer quantity, String imgUrl, String videoUrl, String origin) {
-        super(id, name, price, description, createdDate, lastUpDated, quantity, imgUrl, videoUrl);
+    public void setOrigin(String origin) {
         this.origin = origin;
     }
 
+    public TypeAccessory getTypeAccessory() {
+        return typeAccessory;
+    }
 
+    public void setTypeAccessory(TypeAccessory typeAccessory) {
+        this.typeAccessory = typeAccessory;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void addTags(Tag tag) {
+        this.tags.add(tag);
+    }
 }

@@ -1,8 +1,7 @@
 package com.gangoffive.birdtradingplatform.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,8 +9,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "tblFood")
-@Getter
-@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class Food extends Product {
     @Column(nullable = false)
     protected double weight;
@@ -22,13 +22,27 @@ public class Food extends Product {
     @ManyToMany(mappedBy = "foods")
     private List<Tag> tags = new ArrayList<>();
 
-    public Food() {
+    public double getWeight() {
+        return weight;
     }
-    public Food(Long id, String name, double price, String description, Date createdDate,
-                Date lastUpDated, Integer quantity, String imgUrl, String videoUrl, double weight) {
-        super(id, name, price, description, createdDate, lastUpDated, quantity, imgUrl, videoUrl);
+
+    public void setWeight(double weight) {
         this.weight = weight;
     }
 
+    public TypeFood getTypeFood() {
+        return typeFood;
+    }
 
+    public void setTypeFood(TypeFood typeFood) {
+        this.typeFood = typeFood;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void addTags(Tag tag) {
+        this.tags.add(tag);
+    }
 }
