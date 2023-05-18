@@ -35,13 +35,13 @@ public class Promotion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     
-//    @ManyToMany
-//    @JoinTable(
-//        name = "ProductPromotion",
-//        joinColumns = @JoinColumn(name = "promotionId"),
-//        inverseJoinColumns = @JoinColumn(name = "productId")
-//    )
-//    private List<String> courses;
+    @ManyToMany
+    @JoinTable(
+       name = "ProductPromotion",
+        joinColumns = @JoinColumn(name = "promotionId"),
+       inverseJoinColumns = @JoinColumn(name = "productId")
+    )
+    private List<String> courses;
   
     
     @Column
