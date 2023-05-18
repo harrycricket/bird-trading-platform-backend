@@ -57,8 +57,12 @@ public class ShopOwner {
 	private Account account;
 	
 //	one shop have many staff account
-	@OneToMany(mappedBy = "shopOwnerId")
-	private List<Account> shopStaffAccounts;
+//	@OneToMany(mappedBy = "shopOwnerId")
+//	private List<Account> shopStaffAccounts;
+	
+	//one shop may have MANY staff account
+	@OneToMany(mappedBy = "shopOwner")
+	private List<ShopStaff> shopStaffAccount;
 	
 	//one shop have many ordes
 	@OneToMany(mappedBy = "shopOwner")
@@ -100,8 +104,8 @@ public class ShopOwner {
         this.account = account;
     }
 
-    public void addShopStaffAccount(Account shopStaffAccount) {
-        this.shopStaffAccounts.add(shopStaffAccount);
+    public void addShopStaffAccount(ShopStaff shopStaffAccount) {
+        this.shopStaffAccount.add(shopStaffAccount);
     }
 
     public void addOrder(Order order) {
