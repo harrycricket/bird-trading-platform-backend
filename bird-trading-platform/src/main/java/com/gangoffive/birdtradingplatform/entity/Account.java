@@ -78,11 +78,15 @@ public class Account {
 	
 	
 	//identify account shop staff
-	@ManyToOne
-	@JoinColumn(name = "shop_owner_id"
-	,foreignKey = @ForeignKey(name = "FK_ACCOUNT_SHOP_OWNER")
-	)
-	private ShopOwner shopOwnerId;
+//	@ManyToOne
+//	@JoinColumn(name = "shop_owner_id"
+//	,foreignKey = @ForeignKey(name = "FK_ACCOUNT_SHOP_OWNER")
+//	)
+//	private ShopOwner shopOwnerId;
+	
+	//identify account of shop staff	
+	@OneToOne(mappedBy = "account")
+	private ShopStaff shopStaff;
 	
 	@OneToMany(mappedBy = "account")
 	private List<Order> orders;
@@ -134,9 +138,6 @@ public class Account {
 		this.shopOwner = shopOwner;
 	}
 
-	public void setShopOwnerId(ShopOwner shopOwnerId) {
-		this.shopOwnerId = shopOwnerId;
-	}
 
 	public void addOrder(Order order) {
 		this.orders.add(order);

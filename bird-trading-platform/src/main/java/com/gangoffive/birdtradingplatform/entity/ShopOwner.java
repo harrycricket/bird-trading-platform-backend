@@ -23,45 +23,49 @@ public class ShopOwner {
 			nullable = false
 	)
 	private Long id;
-
-    @Column(name = "shop_name"
-            , nullable = false
-    )
-    private String shopName;
-
-    @Column(name = "shope_phone"
-            , nullable = false
-            , unique = true
-    )
-    private String shopPhone;
-
-    @Column(name = "description")
-    private String description;
-
-    @Column(name = "img_url")
-    private String imgUrl;
-
-    @Column(name = "active")
-    private Boolean active;
-
-    @Column(name = " created_date")
-    @CreationTimestamp
-    private Date createdDate;
-
-    // one shop have one account
-    @OneToOne
-    @JoinColumn(name = "account_id"
-            , foreignKey = @ForeignKey(name = "shop_account")
-    )
-    private Account account;
-
-    //	one shop have many staff account
-    @OneToMany(mappedBy = "shopOwnerId")
-    private List<Account> shopStaffAccounts;
-
-    //one shop have many ordes
-    @OneToMany(mappedBy = "shopOwner")
-    private List<Order> orders;
+	
+	@Column(name = "shop_name"
+			,nullable = false
+	)
+	private String shopName;
+	
+	@Column(name = "shope_phone"
+			,nullable = false
+			,unique = true
+	)
+	private String shopPhone;
+	
+	@Column(name = "description")
+	private String description;
+	
+	@Column(name = "img_url")
+	private String imgUrl;
+	
+	@Column(name = "active")
+	private Boolean active;
+	
+	@Column(name = " created_date")
+	@CreationTimestamp
+	private Date createdDate;
+	
+	// one shop have one account
+	@OneToOne
+	@JoinColumn(name = "account_id"
+				,foreignKey = @ForeignKey(name = "FK_SHOP_ACCOUNT")
+	)
+	private Account account;
+	
+//	one shop have many staff account
+//	@OneToMany(mappedBy = "shopOwnerId")
+//	private List<Account> shopStaffAccounts;
+	
+	//one shop may have MANY staff account
+	@OneToMany(mappedBy = "shopOwner")
+	private List<ShopStaff> shopStaffAccount;
+	
+	//one shop have many ordes
+	@OneToMany(mappedBy = "shopOwner")
+	private List<Order> orders;
 
     @OneToMany(mappedBy = "shopOwner")
     private List<Product> products;
@@ -99,8 +103,8 @@ public class ShopOwner {
         this.account = account;
     }
 
-    public void addShopStaffAccount(Account shopStaffAccount) {
-        this.shopStaffAccounts.add(shopStaffAccount);
+    public void addShopStaffAccount(ShopStaff shopStaffAccount) {
+        this.shopStaffAccount.add(shopStaffAccount);
     }
 
     public void addOrder(Order order) {
