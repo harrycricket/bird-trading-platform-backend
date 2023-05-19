@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class TypeFood {
     @Id
+    @Column(name = "type_f_id")
     @SequenceGenerator(
             name = "type_food_id_seq",
             sequenceName = "type_food_id_seq",

@@ -15,6 +15,7 @@ import java.util.Date;
 public abstract class Product {
 
     @Id
+    @Column(name = "product_id")
     @SequenceGenerator(
             name = "product_id_seq",
             sequenceName = "product_id_seq",
