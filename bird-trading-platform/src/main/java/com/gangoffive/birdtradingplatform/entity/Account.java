@@ -64,6 +64,7 @@ public class Account {
 	private String imgUrl;
 	
 	@CreationTimestamp
+	@Column(name = "created_date")
 	private Date createdDate;
 	
 	@OneToOne
@@ -93,6 +94,14 @@ public class Account {
 	
 	@OneToMany(mappedBy = "account")
 	private List<Review> reviews;
+	
+	//one account may have many report
+	@OneToMany(mappedBy = "account")
+	private List<Report> reports;
+	
+	//one account have many verify  token
+	@OneToMany(mappedBy = "account")
+	private  List<VerifyToken> verifyTokens;
 
 	public void setId(Long id) {
 		this.id = id;
@@ -148,6 +157,12 @@ public class Account {
 		this.reviews.add(review);
 	}
 
+	public void addReport(Report report) {
+		this.reports.add(report);
+	}
 	
+	public void addVerifyToken(VerifyToken verifyToken) {
+		this.verifyTokens.add(verifyToken);
+	}
 	
 }

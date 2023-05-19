@@ -92,6 +92,10 @@ public class Order {
 	
 	@OneToMany(mappedBy = "order")
 	private List<OrderDetail> orderDetails;
+	
+	//one order may have many report
+	@OneToMany(mappedBy = "order")
+	private List<Report> reports;
 
 	public void setId(Long id) {
 		this.id = id;
@@ -141,5 +145,8 @@ public class Order {
 		this.orderDetails.add(orderDetail);
 	}
 	
+	public void addReport(Report report) {
+		this.reports.add(report);
+	}
 	
 }

@@ -1,5 +1,7 @@
 package com.gangoffive.birdtradingplatform.entity;
 
+import java.util.Date;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
@@ -8,32 +10,35 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity(name = "tblShop_Staff_Acc")
+@Entity(name = "tblVerify_Token")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ShopStaff {
+public class VerifyToken {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "staff_id")
+	@Column(name = "token_id")
 	private Long id;
 	
-	@OneToOne
-	@JoinColumn(name = "account_id"
-				,foreignKey = @ForeignKey(name = "FK_SHOP_STAFF_ACCOUNT")
-	)
-	private Account account;
+	@Column(name = "token"
+			,nullable = false
+			)
+	private String token;
+	
+	@Column(name = "expired"
+			,nullable = false
+			)
+	private Date expired;
 	
 	@ManyToOne
-	@JoinColumn(name = "shop_id"
-			,foreignKey = @ForeignKey(name = "FK_SHOP_STAFF_SHOP")
-			)
-	private ShopOwner shopOwner;
+	@JoinColumn(name = "account_id"
+			,foreignKey = @ForeignKey(name = "FK_VERIFY_TOKEN_ACCOUNT"))
+	private Account account;
+	
 }
