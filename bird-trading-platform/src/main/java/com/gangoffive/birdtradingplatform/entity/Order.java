@@ -1,8 +1,5 @@
 package com.gangoffive.birdtradingplatform.entity;
 
-
-
-
 import java.util.Date;
 import java.util.List;
 
@@ -21,6 +18,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -97,53 +96,78 @@ public class Order {
 	@OneToMany(mappedBy = "order")
 	private List<Report> reports;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    @ManyToMany
+    @JoinTable(
+            name = "tblOrder_Promotion",
+            joinColumns = @JoinColumn(name = "order_id"),
+            foreignKey = @ForeignKey(name = "FK_ORDER_PROMOTION"),
+            inverseJoinColumns = @JoinColumn(name = "promotion_id")
+    )
+    private List<Promotion> promotions;
 
-	public void setTotalPrice(int totalPrice) {
-		this.totalPrice = totalPrice;
-	}
+    @ManyToMany
+    @JoinTable(
+            name = "tblOrder_Promotion_Shop",
+            joinColumns = @JoinColumn(name = "order_id"),
+            foreignKey = @ForeignKey(name = "FK_ORDER_PROMOTIONSHOP"),
+            inverseJoinColumns = @JoinColumn(name = "promotion_s_id")
+    )
+    private List<PromotionShop> promotionShops;
 
-	public void setDiscount(int discount) {
-		this.discount = discount;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public void setStatus(OrderStatus status) {
-		this.status = status;
-	}
+    public void setTotalPrice(int totalPrice) {
+        this.totalPrice = totalPrice;
+    }
 
-	public void setPaymentStatus(PaymentStatus paymentStatus) {
-		this.paymentStatus = paymentStatus;
-	}
+    public void setDiscount(int discount) {
+        this.discount = discount;
+    }
 
-	public void setPaymentMethod(PaymentMethod paymentMethod) {
-		this.paymentMethod = paymentMethod;
-	}
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
 
-	public void setCreatedDate(Date createdDate) {
-		this.createdDate = createdDate;
-	}
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
 
-	public void setDelete(Boolean delete) {
-		this.delete = delete;
-	}
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
 
-	public void setShopOwner(ShopOwner shopOwner) {
-		this.shopOwner = shopOwner;
-	}
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
 
-	public void setShippingAddress(Address shippingAddress) {
-		this.shippingAddress = shippingAddress;
-	}
+    public void setDelete(Boolean delete) {
+        this.delete = delete;
+    }
 
-	public void setTransaction(Transaction transaction) {
-		this.transaction = transaction;
-	}
+    public void setShopOwner(ShopOwner shopOwner) {
+        this.shopOwner = shopOwner;
+    }
 
-	public void addOrderDetails(OrderDetail orderDetail) {
-		this.orderDetails.add(orderDetail);
-	}
+    public void setShippingAddress(Address shippingAddress) {
+        this.shippingAddress = shippingAddress;
+    }
+
+    public void setTransaction(Transaction transaction) {
+        this.transaction = transaction;
+    }
+
+    public void addOrderDetails(OrderDetail orderDetail) {
+        this.orderDetails.add(orderDetail);
+    }
+
+    public void addPromotionShop(PromotionShop promotionShop) {
+        this.promotionShops.add(promotionShop);
+    }
+    public void addPromotion(Promotion promotion) {
+        this.promotions.add(promotion);
+    }
 	
 	public void addReport(Report report) {
 		this.reports.add(report);

@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class TypeAccessory {
     @Id
+    @Column(name = "type_a_id")
     @SequenceGenerator(
             name = "type_accessory_id_seq",
             sequenceName = "type_accessory_id_seq",

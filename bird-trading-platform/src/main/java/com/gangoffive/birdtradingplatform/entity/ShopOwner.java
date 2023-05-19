@@ -17,7 +17,6 @@ import java.util.List;
 @AllArgsConstructor
 @Entity(name = "tblShop_Owner_Acc")
 public class ShopOwner {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "shop_id",

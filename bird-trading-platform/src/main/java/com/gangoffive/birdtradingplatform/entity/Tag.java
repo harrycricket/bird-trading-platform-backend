@@ -13,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Tag {
     @Id
+    @Column(name = "tag_id")
     @SequenceGenerator(
             name = "tag_id_seq",
             sequenceName = "tag_id_seq",
