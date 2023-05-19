@@ -29,30 +29,32 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table
+@Table(name = "tblPromotion")
 public class Promotion {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "promotion_id")
+    private Long id;
+
     
-    @ManyToMany
-    @JoinTable(
-       name = "ProductPromotion",
-        joinColumns = @JoinColumn(name = "promotionId"),
-       inverseJoinColumns = @JoinColumn(name = "productId")
-    )
-    private List<String> courses;
-  
+    @ManyToMany(mappedBy = "promotions")
+    protected List<Order> orders;
+
     
     @Column
     private String description;
-    
+
     @Column
     private int discountRate;
-    
+
     @Column
     private Date starDate;
-    
+
     @Column
     private Date endDate;
+    
+    public void addOrder(Order order){
+        this.orders.add(order);
+    }
 }

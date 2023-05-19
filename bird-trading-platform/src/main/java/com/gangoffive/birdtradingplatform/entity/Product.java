@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -62,6 +63,10 @@ public abstract class Product {
             foreignKey = @ForeignKey(name = "FK_PRODUCT_SHOP_OWNER")
     )
     protected ShopOwner shopOwner;
+    
+    @ManyToMany(mappedBy = "products")
+    protected List<PromotionShop> promotionShops;
+    
 
     public String getName() {
         return name;
@@ -134,4 +139,13 @@ public abstract class Product {
     public void setShopOwner(ShopOwner shopOwner) {
         this.shopOwner = shopOwner;
     }
+
+    public List<PromotionShop> getPromotionShops() {
+        return promotionShops;
+    }
+
+    public void addPromotionShop(PromotionShop promotionShop) {
+        this.promotionShops.add(promotionShop);
+    }
+
 }

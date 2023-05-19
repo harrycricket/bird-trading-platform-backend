@@ -6,6 +6,7 @@ package com.gangoffive.birdtradingplatform.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,37 +30,50 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table
+@Table(name = "tblPromotion_Shop")
 public class PromotionShop {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int promotionId;
-    
-     @ManyToMany
+    @Column(name = "promotion_s_id")
+    private Long id;
+
+    @ManyToMany
     @JoinTable(
-        name = "OrderPromotion",
-        joinColumns = @JoinColumn(name = "promotionId"),
-        inverseJoinColumns = @JoinColumn(name = "OrderId")
+            name = "tblProduct_Promotion",
+            joinColumns = @JoinColumn(name = "promotion_s_id"),
+            foreignKey = @ForeignKey(name = "FK_PROMOTIONSHOP_PRODUCT"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
     )
-    private List<String> courses;
-    
+    private List<Product> products;
+
+    @ManyToMany(mappedBy = "promotionShops")
+    protected List<Order> orders;
+
     @Column
     private String name;
-    
-    
+
     @Column
     private String description;
-    
-    @Column
-    private int discountRate;
-    
-    @Column
-    private Date starDate;
-    
-    @Column
+
+    @Column(name = "discount_rate")
+    private int rate;
+
+    @Column(name = "start_date")
+    private Date startDate;
+
+    @Column(name = "end_date")
     private Date endDate;
+
+    @Column(name = "product_id")
+    private int product;
+
+    public void addProduct(Product product) {
+        this.products.add(product);
+    }
     
-    @Column
-    private int productId;
+     public void addOrder(Order order) {
+        this.orders.add(order);
+    }
+
 }
