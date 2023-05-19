@@ -24,12 +24,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-
-@ToString
-@Getter
+@Entity(name = "tblAccount")
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "tblAccount")
+@Getter
+@ToString
 public class Account {
 
 	@Id
@@ -103,6 +102,12 @@ public class Account {
 	@OneToMany(mappedBy = "account")
 	private  List<VerifyToken> verifyTokens;
 
+	@OneToMany(mappedBy = "account")
+	private List<Message> messages;
+
+	@OneToMany(mappedBy = "account")
+	private List<Notification> notifications;
+
 	public void setId(Long id) {
 		this.id = id;
 	}
@@ -164,5 +169,12 @@ public class Account {
 	public void addVerifyToken(VerifyToken verifyToken) {
 		this.verifyTokens.add(verifyToken);
 	}
-	
+
+	public void addMessages(Message message) {
+		this.messages.add(message);
+	}
+
+	public void addNotifications(Notification notification) {
+		this.notifications.add(notification);
+	}
 }

@@ -10,12 +10,11 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
 import java.util.List;
-
-@Getter
-@ToString
+@Entity(name = "tblShop_Owner_Acc")
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "tblShop_Owner_Acc")
+@Getter
+@ToString
 public class ShopOwner {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -70,6 +69,9 @@ public class ShopOwner {
     @OneToMany(mappedBy = "shopOwner")
     private List<Product> products;
 
+	@OneToMany(mappedBy = "shopOwner")
+	private List<Message> messages;
+
 
     public void setId(Long id) {
         this.id = id;
@@ -114,4 +116,8 @@ public class ShopOwner {
     public void addProducts(Product product) {
         this.products.add(product);
     }
+
+	public void addMessages(Message message) {
+		this.messages.add(message);
+	}
 }
