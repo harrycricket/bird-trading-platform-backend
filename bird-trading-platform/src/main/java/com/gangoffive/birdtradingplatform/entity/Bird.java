@@ -9,6 +9,8 @@ import lombok.ToString;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gangoffive.birdtradingplatform.enums.Gender;
+
 @Entity
 @Table(name = "tblBird")
 @NoArgsConstructor
@@ -25,6 +27,10 @@ public class Bird extends Product {
     protected String color;
 
     @ManyToOne
+    @JoinColumn(
+            name = "type_id",
+            foreignKey = @ForeignKey(name = "FK_BIRD_TYPE_BIRD")
+    )
     private TypeBird typeBird;
 
     @ManyToMany(mappedBy = "birds")

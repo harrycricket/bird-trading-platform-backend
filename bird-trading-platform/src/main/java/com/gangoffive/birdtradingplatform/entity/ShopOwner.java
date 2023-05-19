@@ -1,30 +1,20 @@
 package com.gangoffive.birdtradingplatform.entity;
 
 
-import java.util.Date;
-import java.util.List;
-
-import org.hibernate.annotations.CreationTimestamp;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
 
-@Getter
-@ToString
+import java.util.Date;
+import java.util.List;
+@Entity(name = "tblShop_Owner_Acc")
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "tblShop_Owner_Acc")
+@Getter
+@ToString
 public class ShopOwner {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,57 +50,74 @@ public class ShopOwner {
 	// one shop have one account
 	@OneToOne
 	@JoinColumn(name = "account_id"
-				,foreignKey = @ForeignKey(name = "shop_account")
+				,foreignKey = @ForeignKey(name = "FK_SHOP_ACCOUNT")
 	)
 	private Account account;
 	
 //	one shop have many staff account
-	@OneToMany(mappedBy = "shopOwnerId")
-	private List<Account> shopStaffAccounts;
+//	@OneToMany(mappedBy = "shopOwnerId")
+//	private List<Account> shopStaffAccounts;
+	
+	//one shop may have MANY staff account
+	@OneToMany(mappedBy = "shopOwner")
+	private List<ShopStaff> shopStaffAccount;
 	
 	//one shop have many ordes
 	@OneToMany(mappedBy = "shopOwner")
 	private List<Order> orders;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    @OneToMany(mappedBy = "shopOwner")
+    private List<Product> products;
 
-	public void setShopName(String shopName) {
-		this.shopName = shopName;
-	}
+	@OneToMany(mappedBy = "shopOwner")
+	private List<Message> messages;
 
-	public void setShopPhone(String shopPhone) {
-		this.shopPhone = shopPhone;
-	}
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public void setImgUrl(String imgUrl) {
-		this.imgUrl = imgUrl;
-	}
+    public void setShopName(String shopName) {
+        this.shopName = shopName;
+    }
 
-	public void setActive(Boolean active) {
-		this.active = active;
-	}
+    public void setShopPhone(String shopPhone) {
+        this.shopPhone = shopPhone;
+    }
 
-	public void setCreatedDate(Date createdDate) {
-		this.createdDate = createdDate;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public void setAccount(Account account) {
-		this.account = account;
-	}
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
+    }
 
-	public void addShopStaffAccount(Account shopStaffAccount) {
-		this.shopStaffAccounts.add(shopStaffAccount) ;
-	}
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
-	public void addOrder(Order order) {
-		this.orders.add(order);
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
+    public void addShopStaffAccount(ShopStaff shopStaffAccount) {
+        this.shopStaffAccount.add(shopStaffAccount);
+    }
+
+    public void addOrder(Order order) {
+        this.orders.add(order);
+    }
+
+    public void addProducts(Product product) {
+        this.products.add(product);
+    }
+
+	public void addMessages(Message message) {
+		this.messages.add(message);
 	}
-	
-	
 }

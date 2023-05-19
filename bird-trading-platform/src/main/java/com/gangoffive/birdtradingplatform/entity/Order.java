@@ -1,9 +1,7 @@
 package com.gangoffive.birdtradingplatform.entity;
 
-
-
-
 import java.util.Date;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -20,7 +18,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -66,26 +67,110 @@ public class Order {
 	
 	@ManyToOne
 	@JoinColumn(name = "buyer_id"
-			,foreignKey = @ForeignKey(name = "order_buyer")
+			,foreignKey = @ForeignKey(name = "FK_ORDER_BUYER")
 	)
 	private Account account; 
 	
 	@ManyToOne
 	@JoinColumn(name = "shop_id"
-	,foreignKey = @ForeignKey(name = "order_shop")
+	,foreignKey = @ForeignKey(name = "FK_ORDER_SHOP")
 	)
 	private ShopOwner shopOwner;
 	
 	@OneToOne
 	@JoinColumn(name = "shipping_address"
-	,foreignKey = @ForeignKey(name = "order_shipping")
+	,foreignKey = @ForeignKey(name = "FK_ORDER_SHIPPING")
 	)
 	private Address shippingAddress;
 	
 	@OneToOne
 	@JoinColumn(name = "transaction_id"
-	,foreignKey = @ForeignKey(name = "order_transaction")
+	,foreignKey = @ForeignKey(name = "FK_ORDER_TRANSACTION")
 	)
 	private Transaction transaction;
+	
+	@OneToMany(mappedBy = "order")
+	private List<OrderDetail> orderDetails;
+	
+	//one order may have many report
+	@OneToMany(mappedBy = "order")
+	private List<Report> reports;
+
+    @ManyToMany
+    @JoinTable(
+            name = "tblOrder_Promotion",
+            joinColumns = @JoinColumn(name = "order_id"),
+            foreignKey = @ForeignKey(name = "FK_ORDER_PROMOTION"),
+            inverseJoinColumns = @JoinColumn(name = "promotion_id")
+    )
+    private List<Promotion> promotions;
+
+    @ManyToMany
+    @JoinTable(
+            name = "tblOrder_Promotion_Shop",
+            joinColumns = @JoinColumn(name = "order_id"),
+            foreignKey = @ForeignKey(name = "FK_ORDER_PROMOTIONSHOP"),
+            inverseJoinColumns = @JoinColumn(name = "promotion_s_id")
+    )
+    private List<PromotionShop> promotionShops;
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setTotalPrice(int totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
+    public void setDiscount(int discount) {
+        this.discount = discount;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public void setDelete(Boolean delete) {
+        this.delete = delete;
+    }
+
+    public void setShopOwner(ShopOwner shopOwner) {
+        this.shopOwner = shopOwner;
+    }
+
+    public void setShippingAddress(Address shippingAddress) {
+        this.shippingAddress = shippingAddress;
+    }
+
+    public void setTransaction(Transaction transaction) {
+        this.transaction = transaction;
+    }
+
+    public void addOrderDetails(OrderDetail orderDetail) {
+        this.orderDetails.add(orderDetail);
+    }
+
+    public void addPromotionShop(PromotionShop promotionShop) {
+        this.promotionShops.add(promotionShop);
+    }
+    public void addPromotion(Promotion promotion) {
+        this.promotions.add(promotion);
+    }
+	
+	public void addReport(Report report) {
+		this.reports.add(report);
+	}
 	
 }

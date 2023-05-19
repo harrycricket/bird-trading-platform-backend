@@ -14,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class TypeBird {
     @Id
+    @Column(name = "type_b_id")
     @SequenceGenerator(
             name = "type_bird_id_seq",
             sequenceName = "type_bird_id_seq",

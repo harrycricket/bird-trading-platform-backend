@@ -17,6 +17,10 @@ public class Food extends Product {
     protected double weight;
 
     @ManyToOne
+    @JoinColumn(
+            name = "type_id",
+            foreignKey = @ForeignKey(name = "FK_FOOD_TYPE_FOOD")
+    )
     private TypeFood typeFood;
 
     @ManyToMany(mappedBy = "foods")

@@ -6,17 +6,17 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
 @ToString
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class Product {
 
     @Id
+    @Column(name = "product_id")
     @SequenceGenerator(
             name = "product_id_seq",
             sequenceName = "product_id_seq",
@@ -54,4 +54,98 @@ public abstract class Product {
 
     @Column(name = "video_url")
     protected String videoUrl;
+    
+    @OneToOne(mappedBy = "product")
+    private OrderDetail orderDetail;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "shop_id",
+            foreignKey = @ForeignKey(name = "FK_PRODUCT_SHOP_OWNER")
+    )
+    protected ShopOwner shopOwner;
+    
+    @ManyToMany(mappedBy = "products")
+    protected List<PromotionShop> promotionShops;
+    
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public Date getLastUpDated() {
+        return lastUpDated;
+    }
+
+    public void setLastUpDated(Date lastUpDated) {
+        this.lastUpDated = lastUpDated;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
+    }
+
+    public String getVideoUrl() {
+        return videoUrl;
+    }
+
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
+    }
+
+    public ShopOwner getShopOwner() {
+        return shopOwner;
+    }
+
+    public void setShopOwner(ShopOwner shopOwner) {
+        this.shopOwner = shopOwner;
+    }
+
+    public List<PromotionShop> getPromotionShops() {
+        return promotionShops;
+    }
+
+    public void addPromotionShop(PromotionShop promotionShop) {
+        this.promotionShops.add(promotionShop);
+    }
 }
