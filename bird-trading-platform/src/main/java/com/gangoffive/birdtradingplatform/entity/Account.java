@@ -1,8 +1,10 @@
 package com.gangoffive.birdtradingplatform.entity;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.gangoffive.birdtradingplatform.enums.UserRole;
@@ -19,12 +21,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 @Entity(name = "tblAccount")
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -43,6 +44,11 @@ public class Account {
 			nullable = false
 	)
 	private String email;
+
+	@Column(name = "password"
+			, nullable = false
+	)
+	private String password;
 	
 	@Enumerated(value = EnumType.STRING)
 	private UserRole role;
@@ -76,14 +82,6 @@ public class Account {
 	@OneToOne(mappedBy = "account")
 	private ShopOwner shopOwner;
 	
-	
-	//identify account shop staff
-//	@ManyToOne
-//	@JoinColumn(name = "shop_owner_id"
-//	,foreignKey = @ForeignKey(name = "FK_ACCOUNT_SHOP_OWNER")
-//	)
-//	private ShopOwner shopOwnerId;
-	
 	//identify account of shop staff	
 	@OneToOne(mappedBy = "account")
 	private ShopStaff shopStaff;
@@ -114,6 +112,10 @@ public class Account {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public void setRole(UserRole role) {
