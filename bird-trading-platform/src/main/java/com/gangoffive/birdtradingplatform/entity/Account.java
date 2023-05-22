@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import com.gangoffive.birdtradingplatform.enums.AuthProvider;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -45,9 +47,7 @@ public class Account {
 	)
 	private String email;
 
-	@Column(name = "password"
-			, nullable = false
-	)
+	@Column(name = "password")
 	private String password;
 	
 	@Enumerated(value = EnumType.STRING)
@@ -71,6 +71,12 @@ public class Account {
 	@CreationTimestamp
 	@Column(name = "created_date")
 	private Date createdDate;
+
+//	@NotNull
+	@Enumerated(EnumType.STRING)
+	private AuthProvider provider;
+
+	private String providerId;
 	
 	@OneToOne
 	@JoinColumn(name = "address_id"
@@ -178,5 +184,21 @@ public class Account {
 
 	public void addNotifications(Notification notification) {
 		this.notifications.add(notification);
+	}
+
+	public AuthProvider getProvider() {
+		return provider;
+	}
+
+	public void setProvider(AuthProvider provider) {
+		this.provider = provider;
+	}
+
+	public String getProviderId() {
+		return providerId;
+	}
+
+	public void setProviderId(String providerId) {
+		this.providerId = providerId;
 	}
 }

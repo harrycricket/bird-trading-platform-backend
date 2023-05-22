@@ -1,5 +1,10 @@
 package com.gangoffive.birdtradingplatform.config;
 
+import com.gangoffive.birdtradingplatform.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.gangoffive.birdtradingplatform.security.oauth2.OAuth2AuthenticationFailureHandler;
+import com.gangoffive.birdtradingplatform.security.oauth2.OAuth2AuthenticationSuccessHandler;
+import com.gangoffive.birdtradingplatform.security.oauth2.RestAuthenticationEntryPoint;
+import com.gangoffive.birdtradingplatform.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,8 +35,30 @@ public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
     private final AppProperties appProperties;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+    private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
+
+    @Bean
+    public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository() {
+        return new HttpCookieOAuth2AuthorizationRequestRepository();
+    }
     private static final String[] WHITE_LIST_URLS = {
             "/api/v1/auth/**",
+            "/",
+            "/auth/**",
+            "/oauth2/**",
+            "/error",
+            "/user/me",
+//            "/favicon.ico",
+//            "/**/*.png",
+//            "/**/*.gif",
+//            "/**/*.svg",
+//            "/**/*.jpg",
+//            "/**/*.html",
+//            "/**/*.css",
+//            "/**/*.js",
             "/v2/api-docs",
             "/v3/api-docs",
             "/v3/api-docs/**",
@@ -63,9 +90,14 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.disable())
+                .formLogin(formLogin -> formLogin.disable())
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(new RestAuthenticationEntryPoint()))
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers(WHITE_LIST_URLS)
                                 .permitAll()
+
                                 .requestMatchers("/api/v1/admin/**").hasAnyRole(ADMIN.name())
                                 .requestMatchers(GET, "/api/v1/admin/**").hasAnyAuthority(ADMIN_READ.name())
                                 .requestMatchers(POST, "/api/v1/admin/**").hasAnyAuthority(ADMIN_CREATE.name())
@@ -92,7 +124,14 @@ public class SecurityConfiguration {
                 )
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .oauth2Login(oauth2 -> oauth2.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.baseUri("/oauth2/authorize").authorizationRequestRepository(cookieAuthorizationRequestRepository()))
+                        .redirectionEndpoint(redirectionEndpoint -> redirectionEndpoint.baseUri("/oauth2/callback/*"))
+                        .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuth2UserService))
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .failureHandler(oAuth2AuthenticationFailureHandler)
+                )
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+        ;
         return http.build();
     }
 }

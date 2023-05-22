@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.config;
 
+import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +27,8 @@ public class ApplicationConfig {
         return new UserDetailsService() {
             @Override
             public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                var account = accountRepository.findByEmail(username);
-                var user = new UserPrincipal(account.get().getId(), account.get().getEmail(), account.get().getPassword(), account.get().getRole());
+                var tmp = accountRepository.findByEmail(username);
+                var user = UserPrincipal.create(tmp.get());
                 return user;
             }
         };

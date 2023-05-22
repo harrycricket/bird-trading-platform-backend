@@ -46,12 +46,10 @@ public class AuthenticationService {
     }
 
     private AuthenticationResponse getAuthenticationResponse(Account account) {
-        var userPrincipal = UserPrincipal.builder()
-                .id(account.getId())
-                .email(account.getEmail())
-                .password(account.getPassword())
-                .role(account.getRole())
-                .build();
+        UserPrincipal userPrincipal = new UserPrincipal();
+        userPrincipal.setId(account.getId());
+        userPrincipal.setEmail(account.getEmail());
+        userPrincipal.setPassword(account.getPassword());
         var jwtToken = jwtService.generateToken(userPrincipal);
         var refreshToken = jwtService.generateRefreshToken(userPrincipal);
         return AuthenticationResponse.builder()
