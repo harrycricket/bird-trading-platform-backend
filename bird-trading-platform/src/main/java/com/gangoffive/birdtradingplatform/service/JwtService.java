@@ -1,10 +1,12 @@
 package com.gangoffive.birdtradingplatform.service;
 
+import com.gangoffive.birdtradingplatform.config.AppProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -16,15 +18,10 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
-    @Value("${application.security.jwt.secret-key}")
-    private String secretKey;
+    private final AppProperties appProperties;
 
-    @Value("${application.security.jwt.expiration}")
-    private Long jwtExpiration;
-
-    @Value("${application.security.jwt.refresh-token.expiration}")
-    private Long refreshExpiration;
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -51,11 +48,11 @@ public class JwtService {
             Map<String, Object> extractClaims,
             UserDetails userDetails
     ) {
-        return generateToken(extractClaims, userDetails, jwtExpiration);
+        return generateToken(extractClaims, userDetails, appProperties.getAuth().getTokenExpiration());
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails, refreshExpiration);
+        return generateToken(new HashMap<>(), userDetails, appProperties.getAuth().getRefreshTokenExpiration());
     }
 
     private String generateToken(
@@ -88,7 +85,7 @@ public class JwtService {
     }
 
     private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        byte[] keyBytes = Decoders.BASE64.decode(appProperties.getAuth().getSecretKey());
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
