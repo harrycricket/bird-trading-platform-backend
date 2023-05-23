@@ -44,6 +44,12 @@ public class Account {
 	)
 	private String email;
 	
+//	@Column(name = "password",
+//			unique = true,
+//			nullable = false
+//	)
+//	private String password;
+	
 	@Enumerated(value = EnumType.STRING)
 	private UserRole role;
 	
