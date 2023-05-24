@@ -16,12 +16,10 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public abstract class ProductDto {
+public class ProductDto {
 	private Long id;
-	
-    protected Date createdDate;
 
-    protected Date lastUpDated;
+    protected String name;
 
     protected Integer quantity;
 

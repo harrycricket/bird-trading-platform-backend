@@ -9,7 +9,8 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface BirdMapper{
 
-    @Mapping(source = "bird.typeBird.name", target = "typeName")
+    @Mapping(target = "id", source = "bird.id")
+    @Mapping(source = "bird.typeBird", target = "typeBird")
     @Mapping(source = "bird.shopOwner.id", target = "shopId")
     BirdDto toDto(Bird bird);
 

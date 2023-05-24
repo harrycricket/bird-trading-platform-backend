@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,7 +31,16 @@ public class TypeBird {
     private String name;
 
     @OneToMany(mappedBy = "typeBird")
+    @JsonIgnore
     private List<Bird> birds = new ArrayList<>();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -46,5 +56,13 @@ public class TypeBird {
 
     public void addBirds(Bird bird) {
         this.birds.add(bird);
+    }
+
+    @Override
+    public String toString() {
+        return "TypeBird{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

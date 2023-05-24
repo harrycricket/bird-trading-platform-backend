@@ -16,24 +16,20 @@ public class BirdDto extends ProductDto{
 
     protected String color;
 
-    private String typeName;
-
-    private Long shopId;
+    private TypeBird typeBird;
 
     @Override
-    public String toString() {
+    public String
+    toString() {
         return "BirdDto{" +
                 "age=" + age +
                 ", gender=" + gender +
                 ", color='" + color + '\'' +
-                ", typeName='" + typeName + '\'' +
-                ", createdDate=" + createdDate +
-                ", lastUpDated=" + lastUpDated +
+                ", typeBird=" + typeBird +
                 ", quantity=" + quantity +
                 ", imgUrl='" + imgUrl + '\'' +
                 ", videoUrl='" + videoUrl + '\'' +
                 ", shopId=" + shopId +
                 '}';
     }
-
 }

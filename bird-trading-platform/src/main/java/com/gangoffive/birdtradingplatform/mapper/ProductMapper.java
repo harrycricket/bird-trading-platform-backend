@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 //@Mapper(componentModel = "spring")
 public interface ProductMapper {
-
+//    @Mapping(source = "product.shopOwner.id" ,target = "shopId")
     ProductDto toDto (Product product);
 
     Product toModel(ProductDto productDto);
