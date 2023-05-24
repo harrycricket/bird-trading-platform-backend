@@ -18,24 +18,13 @@ spring:
       client:
         registration:
           google:
-            clientId: 5014057553-8gm9um6vnli3cle5rgigcdjpdrid14m9.apps.googleusercontent.com
-            clientSecret: tWZKVLxaD_ARWsriiiUFYoIk
             redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
             scope:
               - email
               - profile
 
-#application:
-#  security:
-#    jwt:
-#      secret-key: 645367566B5970337336763979244226452948404D6351665468576D5A713474
-#      expiration: 86400000 # a day
-#      refresh-token:
-#        expiration: 604800000 # 7 days
-
 app:
   auth:
-    secretKey: 645367566B5970337336763979244226452948404D6351665468576D5A713474
     tokenExpiration: 864000000 # a day
     refreshTokenExpiration: 604800000 # 7 days
   cors:
