@@ -2,9 +2,13 @@ package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
+import com.gangoffive.birdtradingplatform.entity.Accessory;
 import com.gangoffive.birdtradingplatform.entity.Bird;
+import com.gangoffive.birdtradingplatform.entity.Food;
 import com.gangoffive.birdtradingplatform.entity.Product;
+import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
+import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
 import com.gangoffive.birdtradingplatform.mapper.ProductMapper;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -25,14 +29,24 @@ public class ProductRepositoryTest {
     private ProductRepository productRepository;
     @Autowired
     private BirdMapper birdMapper;
+    @Autowired
+    private FoodMapper foodMapper;
+    @Autowired
+    private AccessoryMapper accessoryMapper;
     @Test
     @Transactional
     void TestRetrieveData(){
         PageRequest page = PageRequest.of(0,8);
-        List<BirdDto> lists = productRepository.findAll(page).getContent().stream()
-                .filter(product -> product instanceof Bird)
+        List<ProductDto> lists = productRepository.findAll().stream()
+//                .filter(product -> product instanceof Bird)
                 .map(product -> {
-                            return birdMapper.toDto((Bird)product);
+                            if(product instanceof Bird)
+                                return birdMapper.toDto((Bird)product);
+                            else if (product instanceof Food)
+                                return foodMapper.toDto((Food)product);
+                            else if(product instanceof Accessory)
+                                return accessoryMapper.toDto((Accessory) product);
+                    return null;
                 }).
                 collect(Collectors.toList());
 
