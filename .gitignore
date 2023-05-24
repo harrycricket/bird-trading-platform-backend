@@ -17,3 +17,8 @@ buildNumber.properties
 .classpath
 /.metadata/
 RemoteSystemsTempFiles/
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
