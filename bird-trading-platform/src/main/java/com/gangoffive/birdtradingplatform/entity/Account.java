@@ -1,8 +1,12 @@
 package com.gangoffive.birdtradingplatform.entity;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import com.gangoffive.birdtradingplatform.enums.AuthProvider;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.gangoffive.birdtradingplatform.enums.UserRole;
@@ -19,12 +23,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 @Entity(name = "tblAccount")
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -43,6 +46,9 @@ public class Account {
 			nullable = false
 	)
 	private String email;
+
+	@Column(name = "password")
+	private String password;
 	
 //	@Column(name = "password",
 //			unique = true,
@@ -71,6 +77,12 @@ public class Account {
 	@CreationTimestamp
 	@Column(name = "created_date")
 	private Date createdDate;
+
+//	@NotNull
+	@Enumerated(EnumType.STRING)
+	private AuthProvider provider;
+
+	private String providerId;
 	
 	@OneToOne
 	@JoinColumn(name = "address_id"
@@ -81,14 +93,6 @@ public class Account {
 	//one account may have one shop
 	@OneToOne(mappedBy = "account")
 	private ShopOwner shopOwner;
-	
-	
-	//identify account shop staff
-//	@ManyToOne
-//	@JoinColumn(name = "shop_owner_id"
-//	,foreignKey = @ForeignKey(name = "FK_ACCOUNT_SHOP_OWNER")
-//	)
-//	private ShopOwner shopOwnerId;
 	
 	//identify account of shop staff	
 	@OneToOne(mappedBy = "account")
@@ -120,6 +124,10 @@ public class Account {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public void setRole(UserRole role) {
@@ -182,5 +190,21 @@ public class Account {
 
 	public void addNotifications(Notification notification) {
 		this.notifications.add(notification);
+	}
+
+	public AuthProvider getProvider() {
+		return provider;
+	}
+
+	public void setProvider(AuthProvider provider) {
+		this.provider = provider;
+	}
+
+	public String getProviderId() {
+		return providerId;
+	}
+
+	public void setProviderId(String providerId) {
+		this.providerId = providerId;
 	}
 }
