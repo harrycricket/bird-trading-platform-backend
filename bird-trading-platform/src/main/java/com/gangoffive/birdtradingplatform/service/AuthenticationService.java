@@ -46,12 +46,8 @@ public class AuthenticationService {
     }
 
     private AuthenticationResponse getAuthenticationResponse(Account account) {
-        UserPrincipal userPrincipal = new UserPrincipal();
-        userPrincipal.setId(account.getId());
-        userPrincipal.setEmail(account.getEmail());
-        userPrincipal.setPassword(account.getPassword());
-        var jwtToken = jwtService.generateToken(userPrincipal);
-        var refreshToken = jwtService.generateRefreshToken(userPrincipal);
+        var jwtToken = jwtService.generateToken(UserPrincipal.create(account));
+        var refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)

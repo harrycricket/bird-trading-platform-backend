@@ -38,18 +38,6 @@ public class PromotionShop {
     @Column(name = "promotion_s_id")
     private Long id;
 
-    @ManyToMany
-    @JoinTable(
-            name = "tblProduct_Promotion",
-            joinColumns = @JoinColumn(name = "promotion_s_id"),
-            foreignKey = @ForeignKey(name = "FK_PROMOTIONSHOP_PRODUCT"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
-    private List<Product> products;
-
-    @ManyToMany(mappedBy = "promotionShops")
-    protected List<Order> orders;
-
     @Column
     private String name;
 
@@ -65,8 +53,17 @@ public class PromotionShop {
     @Column(name = "end_date")
     private Date endDate;
 
-    @Column(name = "product_id")
-    private int product;
+    @ManyToMany
+    @JoinTable(
+            name = "tblProduct_Promotion",
+            joinColumns = @JoinColumn(name = "promotion_s_id"),
+            foreignKey = @ForeignKey(name = "FK_PROMOTIONSHOP_PRODUCT"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    private List<Product> products;
+
+    @ManyToMany(mappedBy = "promotionShops")
+    protected List<Order> orders;
 
     public void addProduct(Product product) {
         this.products.add(product);

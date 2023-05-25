@@ -6,6 +6,7 @@ import com.gangoffive.birdtradingplatform.security.oauth2.OAuth2AuthenticationSu
 import com.gangoffive.birdtradingplatform.security.oauth2.RestAuthenticationEntryPoint;
 import com.gangoffive.birdtradingplatform.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -31,6 +32,7 @@ import static org.springframework.http.HttpMethod.DELETE;
         prePostEnabled = true
 )
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
