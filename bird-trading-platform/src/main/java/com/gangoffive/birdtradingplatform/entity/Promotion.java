@@ -36,11 +36,6 @@ public class Promotion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "promotion_id")
     private Long id;
-
-    
-    @ManyToMany(mappedBy = "promotions")
-    protected List<Order> orders;
-
     
     @Column
     private String description;
@@ -53,7 +48,10 @@ public class Promotion {
 
     @Column
     private Date endDate;
-    
+
+    @ManyToMany(mappedBy = "promotions")
+    protected List<Order> orders;
+
     public void addOrder(Order order){
         this.orders.add(order);
     }

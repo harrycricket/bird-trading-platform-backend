@@ -1,7 +1,9 @@
 package com.gangoffive.birdtradingplatform.security.oauth2;
 
 import com.gangoffive.birdtradingplatform.config.AppProperties;
+import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.exception.BadRequestException;
+import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.util.CookieUtils;
@@ -27,7 +29,7 @@ import static com.gangoffive.birdtradingplatform.security.oauth2.HttpCookieOAuth
 @Slf4j
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JwtService jwtService;
-
+    private final AccountRepository accountRepository;
     private final AppProperties appProperties;
     private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
@@ -54,15 +56,28 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         }
 
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
-
-        String token = jwtService.generateToken((UserPrincipal)authentication.getPrincipal());
-        log.info("ok {}", targetUrl.toString());
-        log.info("ok111 {}", request.getRequestURL().toString());
-
-        log.info("toke {}", token);
-
+        UserPrincipal userPrincipal = (UserPrincipal)authentication.getPrincipal();
+        String token = jwtService.generateToken(userPrincipal);
+        String refreshToken;
+        log.info("targetUrl {}", targetUrl.toString());
+        log.info("getRequestURL {}", request.getRequestURL().toString());
+        Optional<Account> account = accountRepository.findByEmail(userPrincipal.getEmail());
+        if (account.get().getRefreshToken() != null) {
+            refreshToken = account.get().getRefreshToken();
+            if (jwtService.isTokenExpired(refreshToken)) {
+                refreshToken = jwtService.generateRefreshToken(userPrincipal);
+                account.get().setRefreshToken(refreshToken);
+                accountRepository.save(account.get());
+            }
+        } else {
+            refreshToken = jwtService.generateRefreshToken(userPrincipal);
+            account.get().setRefreshToken(refreshToken);
+            accountRepository.save(account.get());
+        }
+        log.info("account {}", account.get().getEmail());
         return UriComponentsBuilder.fromUriString(targetUrl)
                 .queryParam("token", token)
+                .queryParam("refreshToken", refreshToken)
                 .build().toUriString();
     }
 

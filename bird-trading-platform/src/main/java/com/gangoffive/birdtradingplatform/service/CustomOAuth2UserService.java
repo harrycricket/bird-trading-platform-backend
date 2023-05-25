@@ -2,12 +2,14 @@ package com.gangoffive.birdtradingplatform.service;
 
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.enums.AuthProvider;
+import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.OAuth2AuthenticationProcessingException;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.security.oauth2.user.OAuth2UserInfo;
 import com.gangoffive.birdtradingplatform.security.oauth2.user.OAuth2UserInfoFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -22,6 +24,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final AccountRepository accountRepository;
 
@@ -49,6 +52,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Account user;
         if(userOptional.isPresent()) {
             user = userOptional.get();
+            log.info("AuthProvider {}", oAuth2UserRequest.getClientRegistration().getRegistrationId());
             if(!user.getProvider().equals(AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()))) {
                 throw new OAuth2AuthenticationProcessingException("Looks like you're signed up with " +
                         user.getProvider() + " account. Please use your " + user.getProvider() +
@@ -64,12 +68,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private Account registerNewUser(OAuth2UserRequest oAuth2UserRequest, OAuth2UserInfo oAuth2UserInfo) {
         Account user = new Account();
-
         user.setProvider(AuthProvider.valueOf(oAuth2UserRequest.getClientRegistration().getRegistrationId()));
         user.setProviderId(oAuth2UserInfo.getId());
         user.setLastName(oAuth2UserInfo.getName());
         user.setEmail(oAuth2UserInfo.getEmail());
         user.setImgUrl(oAuth2UserInfo.getImageUrl());
+        user.setRole(UserRole.USER);
+        log.info("oAuth2UserInfo {}", oAuth2UserInfo.getAttributes());
         return accountRepository.save(user);
     }
 

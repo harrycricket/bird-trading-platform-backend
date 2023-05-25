@@ -71,18 +71,10 @@ public class AuthController {
         account.setProvider(AuthProvider.local);
 
         account.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-
         Account result = accountRepository.save(account);
-
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentContextPath().path("/user/me")
-                .buildAndExpand(result.getId()).toUri();
-
-        return ResponseEntity.created(location)
-                .body(new AuthenticationResponse(
-                        jwtService.generateToken(UserPrincipal.create(result)),
-                        jwtService.generateRefreshToken(UserPrincipal.create(result))
-                ));
+        String token = jwtService.generateToken(UserPrincipal.create(result));
+        String refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(result));
+        return ResponseEntity.ok(new AuthenticationResponse(token, refreshToken));
     }
 
 }

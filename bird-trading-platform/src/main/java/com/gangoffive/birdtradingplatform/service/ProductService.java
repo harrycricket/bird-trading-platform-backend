@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductService {
 	private final ProductRepository productRepository;
 	private final ReviewRepository reviewRepository;
-	private  final BirdMapper birdMapper;
+	private final BirdMapper birdMapper;
 	private final FoodMapper foodMapper;
 	private final AccessoryMapper accessoryMapper;
 	
@@ -95,6 +95,11 @@ public class ProductService {
 			}
 		}
 		return 4;
+	}
+
+	public List<ProductDto> retrieveTopProduct(){
+		
+		return null;
 	}
 
 	public double CalculateSaleOff(List<PromotionShop>  listPromotion, double price){

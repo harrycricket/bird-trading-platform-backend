@@ -1,7 +1,9 @@
 package com.gangoffive.birdtradingplatform.security;
 
 import com.gangoffive.birdtradingplatform.entity.Account;
+import com.gangoffive.birdtradingplatform.enums.UserRole;
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class UserPrincipal implements UserDetails, OAuth2User {
     private Long id;
     private String email;
@@ -29,8 +32,13 @@ public class UserPrincipal implements UserDetails, OAuth2User {
     }
 
     public static UserPrincipal create(Account user) {
-        List<GrantedAuthority> authorities = Collections.
-                singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+        UserRole role = user.getRole();
+        log.info("role {}", role);
+        List<SimpleGrantedAuthority> authorities = role.getAuthorities();
+        log.info("role.getAuthorities {}", role.getAuthorities());
+
+//        List<GrantedAuthority> authorities = Collections.
+//                singletonList(new SimpleGrantedAuthority("ROLE_USER"));
 
         return new UserPrincipal(
                 user.getId(),
