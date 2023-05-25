@@ -12,4 +12,29 @@ spring:
     show-sql: true
     properties:
       hibernate:
-       format_sql: true
+        format_sql: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
+            scope:
+              - email
+              - profile
+
+app:
+  auth:
+    tokenExpiration: 864000000 # a day
+    refreshTokenExpiration: 604800000 # 7 days
+  cors:
+    allowedOrigins: http://localhost:3000,http://localhost:8080
+  oauth2:
+    # After successfully authenticating with the OAuth2 Provider,
+    # we'll be generating an auth token for the user and sending the token to the
+    # redirectUri mentioned by the client in the /oauth2/authorize request.
+    # We're not using cookies because they won't work well in mobile clients.
+    authorizedRedirectUris:
+      - http://localhost:3000/oauth2/redirect
+      - myandroidapp://oauth2/redirect
+      - myiosapp://oauth2/redirect

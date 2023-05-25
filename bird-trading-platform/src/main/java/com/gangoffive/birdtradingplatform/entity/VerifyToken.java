@@ -10,12 +10,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity(name = "tblVerify_Token")
+@Data
+@Builder
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,6 +34,8 @@ public class VerifyToken {
 			,nullable = false
 			)
 	private Date expired;
+
+	private boolean revoked;
 	
 	@ManyToOne
 	@JoinColumn(name = "account_id"

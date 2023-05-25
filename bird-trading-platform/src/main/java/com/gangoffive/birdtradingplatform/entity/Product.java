@@ -11,7 +11,6 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class Product {
 
@@ -55,8 +54,8 @@ public abstract class Product {
     @Column(name = "video_url")
     protected String videoUrl;
     
-    @OneToOne(mappedBy = "product")
-    private OrderDetail orderDetail;
+    @OneToMany (mappedBy = "product")
+    private List<OrderDetail> orderDetails;
 
     @ManyToOne
     @JoinColumn(
@@ -67,8 +66,14 @@ public abstract class Product {
     
     @ManyToMany(mappedBy = "products")
     protected List<PromotionShop> promotionShops;
-    
+    public Long getId() {
+        return id;
+    }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
     public String getName() {
         return name;
     }
@@ -148,4 +153,14 @@ public abstract class Product {
     public void addPromotionShop(PromotionShop promotionShop) {
         this.promotionShops.add(promotionShop);
     }
+
+
+    @Override
+	public String toString() {
+		return "Product [id=" + id + ", name=" + name + ", price=" + price + ", description=" + description
+				+ ", createdDate=" + createdDate + ", lastUpDated=" + lastUpDated + ", quantity=" + quantity
+				+ ", imgUrl=" + imgUrl + ", videoUrl=" + videoUrl + "]";
+	}
+    
+    
 }
