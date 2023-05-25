@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/birds")
+@RequestMapping("/api/v1/birds")
 public class BirdController {
     private final BirdService birdService;
 
