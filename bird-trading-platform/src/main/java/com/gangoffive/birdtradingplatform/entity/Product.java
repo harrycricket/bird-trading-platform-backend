@@ -54,7 +54,7 @@ public abstract class Product {
     @Column(name = "video_url")
     protected String videoUrl;
     
-    @OneToMany (mappedBy = "product")
+    @OneToMany(mappedBy = "product")
     private List<OrderDetail> orderDetails;
 
     @ManyToOne
@@ -63,7 +63,6 @@ public abstract class Product {
             foreignKey = @ForeignKey(name = "FK_PRODUCT_SHOP_OWNER")
     )
     protected ShopOwner shopOwner;
-    
     @ManyToMany(mappedBy = "products")
     protected List<PromotionShop> promotionShops;
     public Long getId() {
@@ -142,6 +141,13 @@ public abstract class Product {
         return shopOwner;
     }
 
+    public List<OrderDetail> getOrderDetails() {
+        return orderDetails;
+    }
+
+    public void addOrderDetail(OrderDetail orderDetail) {
+        orderDetails.add(orderDetail);
+    }
     public void setShopOwner(ShopOwner shopOwner) {
         this.shopOwner = shopOwner;
     }

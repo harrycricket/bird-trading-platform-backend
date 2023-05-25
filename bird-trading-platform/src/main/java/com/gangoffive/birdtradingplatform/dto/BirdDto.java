@@ -9,6 +9,7 @@ import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
 public class BirdDto extends ProductDto{
 	protected Integer age;
 
@@ -18,18 +19,5 @@ public class BirdDto extends ProductDto{
 
     private TypeBird typeBird;
 
-    @Override
-    public String
-    toString() {
-        return "BirdDto{" +
-                "age=" + age +
-                ", gender=" + gender +
-                ", color='" + color + '\'' +
-                ", typeBird=" + typeBird +
-                ", quantity=" + quantity +
-                ", imgUrl='" + imgUrl + '\'' +
-                ", videoUrl='" + videoUrl + '\'' +
-                ", shopId=" + shopId +
-                '}';
-    }
+
 }

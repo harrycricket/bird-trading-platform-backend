@@ -10,6 +10,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class FoodDto extends ProductDto{
@@ -18,15 +19,5 @@ public class FoodDto extends ProductDto{
 
     private TypeFood typeFood;
 
-    @Override
-    public String toString() {
-        return "FoodDto{" +
-                "weight=" + weight +
-                ", typeFood=" + typeFood +
-                ", quantity=" + quantity +
-                ", imgUrl='" + imgUrl + '\'' +
-                ", videoUrl='" + videoUrl + '\'' +
-                ", shopId=" + shopId +
-                '}';
-    }
+
 }

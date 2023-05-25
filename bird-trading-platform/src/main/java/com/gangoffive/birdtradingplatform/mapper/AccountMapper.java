@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.mapper;
 
+import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -8,10 +9,8 @@ import com.gangoffive.birdtradingplatform.entity.Account;
 
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
-		
-	Account toEntity(AccountDto accountDto);
-	
-//	@Mapping(source = "account.id",target = "id")
-//	@Mapping(source = "account.email",target = "email")
+	@InheritInverseConfiguration
+	Account toModel(AccountDto accountDto);
+
 	AccountDto toDto(Account account);
 }

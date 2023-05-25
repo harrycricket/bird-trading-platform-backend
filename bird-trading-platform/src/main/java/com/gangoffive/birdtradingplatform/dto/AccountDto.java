@@ -1,43 +1,27 @@
 package com.gangoffive.birdtradingplatform.dto;
 
 import jakarta.persistence.Column;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
-
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class AccountDto {
 	
 	private Long id;
 	
 	private String email;
 
-	public AccountDto(Long id, String email) {
-		super();
-		this.id = id;
-		this.email = email;
-	}
+	private String password;
 
-	public Long getId() {
-		return id;
-	}
+	private String phoneNumber;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+	private String matchingPassword;
 
-	public String getEmail() {
-		return email;
-	}
+	private String firstName;
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+	private String lastName;
 
-	@Override
-	public String toString() {
-		return "AccountDto [id=" + id + ", email=" + email + "]";
-	}
-	
-	
 }
