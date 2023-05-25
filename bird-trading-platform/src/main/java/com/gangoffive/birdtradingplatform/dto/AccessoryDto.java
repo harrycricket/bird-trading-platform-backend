@@ -11,15 +11,5 @@ public class AccessoryDto extends ProductDto{
     private String origin;
     private TypeAccessory typeAccessory;
 
-    @Override
-    public String toString() {
-        return "AccessoryDto{" +
-                "origin='" + origin + '\'' +
-                ", typeAccessory=" + typeAccessory +
-                ", quantity=" + quantity +
-                ", imgUrl='" + imgUrl + '\'' +
-                ", videoUrl='" + videoUrl + '\'' +
-                ", shopId=" + shopId +
-                '}';
-    }
+
 }

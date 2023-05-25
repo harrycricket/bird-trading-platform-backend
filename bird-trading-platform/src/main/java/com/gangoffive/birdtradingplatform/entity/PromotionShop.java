@@ -65,9 +65,6 @@ public class PromotionShop {
     @Column(name = "end_date")
     private Date endDate;
 
-    @Column(name = "product_id")
-    private int product;
-
     public void addProduct(Product product) {
         this.products.add(product);
     }
