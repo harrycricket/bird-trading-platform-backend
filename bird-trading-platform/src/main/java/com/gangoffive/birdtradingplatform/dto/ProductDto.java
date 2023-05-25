@@ -26,6 +26,17 @@ public class ProductDto {
     protected String imgUrl;
 
     protected String videoUrl;
-    
-    protected Long shopId;
+
+    protected double price;
+
+    protected ShopOwnerDto shopOwner;
+
+    protected double discountRate;
+
+    protected int star;
+
+
+
+
+
 }

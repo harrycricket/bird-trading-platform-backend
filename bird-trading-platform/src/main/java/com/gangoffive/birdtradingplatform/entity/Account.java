@@ -73,6 +73,9 @@ public class Account {
 	
 	@Column(name = "img_url")
 	private String imgUrl;
+
+	@Column(name = "phone_number")
+	private String phoneNumber;
 	
 	@CreationTimestamp
 	@Column(name = "created_date")

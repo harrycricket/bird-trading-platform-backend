@@ -1,6 +1,10 @@
 package com.gangoffive.birdtradingplatform.service;
 
+import com.gangoffive.birdtradingplatform.dto.AccountDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
+import com.gangoffive.birdtradingplatform.enums.AuthProvider;
+import com.gangoffive.birdtradingplatform.enums.UserRole;
+import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationRequest;
@@ -12,6 +16,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -19,18 +25,34 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final AccountMapper accountMapper;
+    public String register(AccountDto accountDto) {
+//        var account = Account.builder()
+//                .email(request.getEmail())
+//                .password(passwordEncoder.encode(request.getPassword()))
+//                .firstName(request.getFirstname())
+//                .lastName(request.getLastname())
+//                .address(request.getAddress())
+//                .role(request.getRole())
+//                .build();
+//        var saveAccount = accountRepository.save(account);
+//        return getAuthenticationResponse(saveAccount);
+        if (accountDto.getMatchingPassword().equals(accountDto.getPassword())){
+            Optional<Account> temp = accountRepository.findByEmail(accountDto.getEmail());
+            if(!temp.isPresent()) {
+                Account acc = accountMapper.toModel(accountDto);
+                acc.setPassword(passwordEncoder.encode(accountDto.getPassword()));
+                acc.setRole(UserRole.USER);
+                acc.setEnable(false);
+                acc.setProvider(AuthProvider.local);
+                accountRepository.save(acc);
+                return "Register Successfully!";
+            }else{
+                return "The email has already been used!";
+            }
+        }
+        return "Something went wrong!";
 
-    public AuthenticationResponse register(RegisterRequest request) {
-        var account = Account.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .firstName(request.getFirstname())
-                .lastName(request.getLastname())
-                .address(request.getAddress())
-                .role(request.getRole())
-                .build();
-        var saveAccount = accountRepository.save(account);
-        return getAuthenticationResponse(saveAccount);
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {

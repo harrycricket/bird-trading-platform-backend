@@ -54,8 +54,8 @@ public abstract class Product {
     @Column(name = "video_url")
     protected String videoUrl;
     
-    @OneToOne(mappedBy = "product")
-    private OrderDetail orderDetail;
+    @OneToMany(mappedBy = "product")
+    private List<OrderDetail> orderDetails;
 
     @ManyToOne
     @JoinColumn(
@@ -142,6 +142,13 @@ public abstract class Product {
         return shopOwner;
     }
 
+    public List<OrderDetail> getOrderDetails() {
+        return orderDetails;
+    }
+
+    public void addOrderDetail(OrderDetail orderDetail) {
+        orderDetails.add(orderDetail);
+    }
     public void setShopOwner(ShopOwner shopOwner) {
         this.shopOwner = shopOwner;
     }

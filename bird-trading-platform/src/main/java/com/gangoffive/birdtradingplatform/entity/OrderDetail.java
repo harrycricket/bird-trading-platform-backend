@@ -36,7 +36,7 @@ public class OrderDetail {
 	)
 	private int quantity;
 	
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "product_id"
 				,foreignKey = @ForeignKey(name = "FK_ORDER_DETAIL_PRODUCT")
 				,nullable = false

@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.mapper;
 
+import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -12,5 +13,7 @@ public interface AccountMapper {
 	
 //	@Mapping(source = "account.id",target = "id")
 //	@Mapping(source = "account.email",target = "email")
+	@InheritInverseConfiguration
+	Account toModel(AccountDto accountDto);
 	AccountDto toDto(Account account);
 }

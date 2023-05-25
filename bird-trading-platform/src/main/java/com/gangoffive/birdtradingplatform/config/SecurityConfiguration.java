@@ -57,6 +57,10 @@ public class SecurityConfiguration {
             "/api/v1/birds/**",
             "/api/v1/accessories",
             "/api/v1/accessories/**",
+            "/api/v1/users/register",
+            "/api/v1/users/authenticate",
+            "/api/v1/products",
+            "/api/v1/products/**",
 //            "/favicon.ico",
 //            "/**/*.png",
 //            "/**/*.gif",
@@ -74,7 +78,7 @@ public class SecurityConfiguration {
             "/configuration/security",
             "/swagger-ui/**",
             "/webjars/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
     };
     private final long MAX_AGE_SECS = 3600;
 
