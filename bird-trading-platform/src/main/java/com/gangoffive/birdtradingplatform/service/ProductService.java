@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductService {
 	private final ProductRepository productRepository;
-	private  final BirdMapper birdMapper;
+	private final BirdMapper birdMapper;
 	private final FoodMapper foodMapper;
 	private final AccessoryMapper accessoryMapper;
 	
