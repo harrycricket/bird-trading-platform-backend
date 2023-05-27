@@ -18,7 +18,7 @@ public class FoodService {
     private final FoodRepository foodRepository;
     private final FoodMapper foodMapper;
 
-    public List<FoodDto> retriceveAllFood() {
+    public List<FoodDto> retrieveAllFood() {
         List<FoodDto> lists = foodRepository.findAll().stream()
                 .map(food -> {
                     if (food instanceof Food) {
