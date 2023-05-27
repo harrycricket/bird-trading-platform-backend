@@ -2,8 +2,12 @@ package com.gangoffive.birdtradingplatform;
 
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.entity.Address;
+import com.gangoffive.birdtradingplatform.entity.Food;
+import com.gangoffive.birdtradingplatform.entity.Product;
+import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.security.oauth2.RegisterRequest;
 import com.gangoffive.birdtradingplatform.service.AuthenticationService;
+import com.gangoffive.birdtradingplatform.service.impl.ProductSummaryServiceImpl;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,6 +22,7 @@ public class BirdTradingPlatformApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(BirdTradingPlatformApplication.class, args);
+
 	}
 //	@Bean
 //	public CommandLineRunner commandLineRunner(

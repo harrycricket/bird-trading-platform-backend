@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.repository.BirdRepository;
+import com.gangoffive.birdtradingplatform.service.impl.ProductServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 public class BirdService {
     private final BirdRepository birdRepository;
     private final BirdMapper birdMapper;
-    private final ProductService productService;
+    private final ProductServiceImpl productServiceImpl;
     public List<BirdDto> retrieveAllBird() {
         List<BirdDto> birds = birdRepository
                 .findAll()
