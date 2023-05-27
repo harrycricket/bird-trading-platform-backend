@@ -33,7 +33,7 @@ public class ProductDto {
 
     protected double discountRate;
 
-    protected int star;
+    protected double star;
 
 
 

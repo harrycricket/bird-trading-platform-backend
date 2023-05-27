@@ -1,7 +1,6 @@
 package com.gangoffive.birdtradingplatform.service;
 
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
-
 import java.util.List;
 
 public interface BirdService {

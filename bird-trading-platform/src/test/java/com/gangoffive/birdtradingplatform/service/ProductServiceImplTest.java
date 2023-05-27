@@ -12,26 +12,26 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
 @Slf4j
-public class ProductServiceTest {
+public class ProductServiceImplTest {
     @Autowired
     private ProductRepository productRepository;
     @Autowired
-    private ProductService productService;
+    private ProductServiceImpl productServiceImpl;
     @Autowired
     private ReviewRepository reviewRepository;
     @Test
     @Transactional
     public void TestCalculation() {
         var product =  productRepository.findById(1l).get();
-        log.info("product {}",product.getId() );
+//        log.info("product {}",product.getId() );
         List<OrderDetail> orders = product.getOrderDetails();
-//        orders.forEach(orderD -> {log.info("order id  {} ", orderD.getId());});
-//        List<Long> listId = orders.stream().map(orderDetail -> orderDetail.getId()).collect(Collectors.toList());
-//        List<Review> rvList = reviewRepository.findAllByOrderDetailIdIn(listId).get();
-//        rvList.forEach(review -> {log.info("review {} {}", review.getRating(),review.getOrderDetail().getId());});
-        log.info("calculation rating {}",productService.CalculationRating(orders)) ;
+        double result= productServiceImpl.CalculationRating(orders);
+//        log.info("calculation rating {}",result) ;
+        assertEquals(3.3, result);
     }
 
     @Test

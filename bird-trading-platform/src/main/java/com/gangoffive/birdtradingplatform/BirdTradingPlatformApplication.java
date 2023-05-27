@@ -8,7 +8,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @SpringBootApplication
 @EnableConfigurationProperties(AppProperties.class)
 public class BirdTradingPlatformApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(BirdTradingPlatformApplication.class, args);
     }
@@ -24,13 +23,6 @@ public class BirdTradingPlatformApplication {
 //                    .email("admin@mail.com")
 //                    .password("password")
 //                    .role(ADMIN)
-////					.address(new Address("123", "123", "123", "123", "123"))
-//                    .build();
-//            System.out.println("Admin token: " + service.register(admin).getAccessToken());
-//        };
-//    }
-
-
 }
 
 	

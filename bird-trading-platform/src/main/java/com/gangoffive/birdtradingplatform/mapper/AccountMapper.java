@@ -9,8 +9,6 @@ import com.gangoffive.birdtradingplatform.entity.Account;
 
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
-	Account toEntity(AccountDto accountDto);
-	
 //	@Mapping(source = "account.id",target = "id")
 //	@Mapping(source = "account.email",target = "email")
 	@InheritInverseConfiguration
