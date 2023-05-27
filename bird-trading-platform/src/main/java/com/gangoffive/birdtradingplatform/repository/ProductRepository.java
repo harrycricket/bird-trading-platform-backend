@@ -7,8 +7,11 @@ import org.springframework.stereotype.Repository;
 
 import com.gangoffive.birdtradingplatform.entity.Product;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 @Primary
 public interface ProductRepository extends JpaRepository<Product, Long>{
-	
+	Optional<List<Product>> findByNameLike(String name);
 }
