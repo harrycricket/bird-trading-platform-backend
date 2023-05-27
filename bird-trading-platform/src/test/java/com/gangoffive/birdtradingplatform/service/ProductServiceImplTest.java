@@ -1,7 +1,6 @@
 package com.gangoffive.birdtradingplatform.service;
 
 import com.gangoffive.birdtradingplatform.entity.OrderDetail;
-import static org.junit.jupiter.api.Assertions.*;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
 import com.gangoffive.birdtradingplatform.service.impl.ProductServiceImpl;
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 
 @SpringBootTest
@@ -29,7 +29,7 @@ public class ProductServiceImplTest {
 //        log.info("product {}",product.getId() );
         List<OrderDetail> orders = product.getOrderDetails();
         double result= productServiceImpl.CalculationRating(orders);
-//        log.info("calculation rating {}",result) ;
+//        log.info("calculation rating {}",result) ;s
         assertEquals(3.3,result);
     }
 

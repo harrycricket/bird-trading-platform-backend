@@ -25,6 +25,6 @@ public class AccessoryController {
 
     @GetMapping("/search")
     public List<AccessoryDto> findBirdByName(@RequestParam String name) {
-        return accessoryService.findAccessoryByName("%" + name + "%");
+        return accessoryService.findAccessoryByName(name);
     }
 }

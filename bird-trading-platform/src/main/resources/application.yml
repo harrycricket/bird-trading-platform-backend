@@ -9,7 +9,7 @@ spring:
     generate-ddl: true
     hibernate:
       ddl-auto: update
-    #show-sql: true
+    #    show-sql: true
     properties:
       hibernate:
         format_sql: true
@@ -22,7 +22,10 @@ spring:
             scope:
               - email
               - profile
-
+  servlet:
+    multipart:
+      max-file-size: 10000MB
+      max-request-size: 10000MB
 app:
   auth:
     tokenExpiration: 86400000 # a day
@@ -38,3 +41,8 @@ app:
       - http://localhost:3000/oauth2/redirect
       - myandroidapp://oauth2/redirect
       - myiosapp://oauth2/redirect
+  aws:
+    accessKey:
+      AKIAS4RJWBS4ZSGZV2HU
+    secretKey:
+      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

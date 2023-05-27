@@ -63,7 +63,6 @@ public abstract class Product {
             foreignKey = @ForeignKey(name = "FK_PRODUCT_SHOP_OWNER")
     )
     protected ShopOwner shopOwner;
-    
     @ManyToMany(mappedBy = "products")
     protected List<PromotionShop> promotionShops;
 

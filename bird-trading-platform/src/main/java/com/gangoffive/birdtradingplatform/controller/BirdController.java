@@ -3,7 +3,6 @@ package com.gangoffive.birdtradingplatform.controller;
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.service.BirdService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +25,7 @@ public class BirdController {
 
     @GetMapping("/search")
     public List<BirdDto> findBirdByName(@RequestParam String name) {
-        return birdService.findBirdByName("%" + name + "%");
+        return birdService.findBirdByName(name);
     }
 
 }

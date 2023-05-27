@@ -20,8 +20,6 @@ public class AccountDto {
 
 	private String matchingPassword;
 
-	private String firstName;
-
-	private String lastName;
+	private String fullName;
 
 }

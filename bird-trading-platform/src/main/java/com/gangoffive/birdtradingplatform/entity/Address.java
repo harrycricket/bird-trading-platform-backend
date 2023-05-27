@@ -24,25 +24,25 @@ public class Address {
 	@Column(name = "address_id", updatable = false)
 	private Long id;
 	
-	@Column(name = "line"
+	@Column(name = "street"
 			,nullable = false
 	)
-	private String line;
+	private String street;
 	
+	@Column(name = "ward"
+			,nullable = false
+	)
+	private String ward;
+
 	@Column(name = "district"
 			,nullable = false
 	)
 	private String district;
-
+	
 	@Column(name = "city"
 			,nullable = false
 	)
 	private String city;
-	
-	@Column(name = "country"
-			,nullable = false
-	)
-	private String country;
 	
 	@Column(name = "phone"
 			,nullable = false

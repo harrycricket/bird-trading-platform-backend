@@ -10,8 +10,12 @@ public class AppProperties {
     private final Auth auth = new Auth();
 
     private final OAuth2 oauth2 = new OAuth2();
+
     private final Cors cors = new Cors();
-    public static class Auth {
+
+    private final Aws aws = new Aws();
+
+    public static final class Auth {
         private String secretKey;
         private Long tokenExpiration;
         private Long refreshTokenExpiration;
@@ -47,6 +51,7 @@ public class AppProperties {
         public List<String> getAuthorizedRedirectUris() {
             return authorizedRedirectUris;
         }
+
         public OAuth2 authorizedRedirectUris(List<String> authorizedRedirectUris) {
             this.authorizedRedirectUris = authorizedRedirectUris;
             return this;
@@ -65,6 +70,27 @@ public class AppProperties {
         }
     }
 
+    public static final class Aws {
+        private String accessKey;
+        private String secretKey;
+
+        public String getAccessKey() {
+            return accessKey;
+        }
+
+        public void setAccessKey(String accessKey) {
+            this.accessKey = accessKey;
+        }
+
+        public String getSecretKey() {
+            return secretKey;
+        }
+
+        public void setSecretKey(String secretKey) {
+            this.secretKey = secretKey;
+        }
+    }
+
     public Auth getAuth() {
         return auth;
     }
@@ -75,5 +101,9 @@ public class AppProperties {
 
     public Cors getCors() {
         return cors;
+    }
+
+    public Aws getAws() {
+        return aws;
     }
 }
