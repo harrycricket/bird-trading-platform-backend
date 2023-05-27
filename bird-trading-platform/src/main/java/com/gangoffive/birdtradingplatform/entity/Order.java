@@ -77,7 +77,7 @@ public class Order {
 	)
 	private ShopOwner shopOwner;
 	
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(name = "shipping_address"
 	,foreignKey = @ForeignKey(name = "FK_ORDER_SHIPPING")
 	)

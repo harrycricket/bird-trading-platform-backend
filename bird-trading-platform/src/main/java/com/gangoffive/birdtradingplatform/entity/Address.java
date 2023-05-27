@@ -1,16 +1,11 @@
 package com.gangoffive.birdtradingplatform.entity;
 
 import java.util.Date;
+import java.util.List;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.SequenceGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,25 +24,25 @@ public class Address {
 	@Column(name = "address_id", updatable = false)
 	private Long id;
 	
-	@Column(name = "line"
+	@Column(name = "street"
 			,nullable = false
 	)
-	private String line;
+	private String street;
 	
+	@Column(name = "ward"
+			,nullable = false
+	)
+	private String ward;
+
 	@Column(name = "district"
 			,nullable = false
 	)
 	private String district;
-
+	
 	@Column(name = "city"
 			,nullable = false
 	)
 	private String city;
-	
-	@Column(name = "country"
-			,nullable = false
-	)
-	private String country;
 	
 	@Column(name = "phone"
 			,nullable = false
@@ -61,8 +56,11 @@ public class Address {
 	@OneToOne(mappedBy = "address")
 	private Account account;
 	
-	@OneToOne(mappedBy = "shippingAddress")
-	private Order order;
-	
+	@OneToMany(mappedBy = "shippingAddress")
+	private List<Order> orders;
+
+	public void addOrder(Order order) {
+		orders.add(order);
+	}
 	
 }

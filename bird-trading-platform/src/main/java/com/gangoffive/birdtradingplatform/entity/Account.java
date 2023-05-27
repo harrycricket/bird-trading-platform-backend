@@ -1,8 +1,12 @@
 package com.gangoffive.birdtradingplatform.entity;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import com.gangoffive.birdtradingplatform.enums.AuthProvider;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.gangoffive.birdtradingplatform.enums.UserRole;
@@ -19,12 +23,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 @Entity(name = "tblAccount")
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -43,6 +46,15 @@ public class Account {
 			nullable = false
 	)
 	private String email;
+
+	@Column(name = "password")
+	private String password;
+	
+//	@Column(name = "password",
+//			unique = true,
+//			nullable = false
+//	)
+//	private String password;
 	
 	@Enumerated(value = EnumType.STRING)
 	private UserRole role;
@@ -53,18 +65,24 @@ public class Account {
 	@Column(name = "status")
 	private Boolean enable;
 	
-	@Column(name = "first_name")
-	private String firstName;
-	
-	@Column(name = "last_name")
-	private String lastName;
+	@Column(name = "full_name")
+	private String fullName;
 	
 	@Column(name = "img_url")
 	private String imgUrl;
+
+	@Column(name = "phone_number")
+	private String phoneNumber;
 	
 	@CreationTimestamp
 	@Column(name = "created_date")
 	private Date createdDate;
+
+//	@NotNull
+	@Enumerated(EnumType.STRING)
+	private AuthProvider provider;
+
+	private String providerId;
 	
 	@OneToOne
 	@JoinColumn(name = "address_id"
@@ -75,14 +93,6 @@ public class Account {
 	//one account may have one shop
 	@OneToOne(mappedBy = "account")
 	private ShopOwner shopOwner;
-	
-	
-	//identify account shop staff
-//	@ManyToOne
-//	@JoinColumn(name = "shop_owner_id"
-//	,foreignKey = @ForeignKey(name = "FK_ACCOUNT_SHOP_OWNER")
-//	)
-//	private ShopOwner shopOwnerId;
 	
 	//identify account of shop staff	
 	@OneToOne(mappedBy = "account")
@@ -116,6 +126,10 @@ public class Account {
 		this.email = email;
 	}
 
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
 	public void setRole(UserRole role) {
 		this.role = role;
 	}
@@ -128,12 +142,8 @@ public class Account {
 		this.enable = enable;
 	}
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 
 	public void setImgUrl(String imgUrl) {
@@ -176,5 +186,21 @@ public class Account {
 
 	public void addNotifications(Notification notification) {
 		this.notifications.add(notification);
+	}
+
+	public AuthProvider getProvider() {
+		return provider;
+	}
+
+	public void setProvider(AuthProvider provider) {
+		this.provider = provider;
+	}
+
+	public String getProviderId() {
+		return providerId;
+	}
+
+	public void setProviderId(String providerId) {
+		this.providerId = providerId;
 	}
 }
