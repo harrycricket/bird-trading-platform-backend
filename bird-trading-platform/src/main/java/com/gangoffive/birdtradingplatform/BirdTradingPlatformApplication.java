@@ -8,21 +8,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @SpringBootApplication
 @EnableConfigurationProperties(AppProperties.class)
 public class BirdTradingPlatformApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(BirdTradingPlatformApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(BirdTradingPlatformApplication.class, args);
 
-//    @Bean
-//    public CommandLineRunner commandLineRunner(
-//            AuthenticationServiceImpl service
-//    ) {
-//        return args -> {
-//            var admin = RegisterRequest.builder()
-//                    .firstname("Admin")
-//                    .lastname("Admin")
-//                    .email("admin@mail.com")
-//                    .password("password")
-//                    .role(ADMIN)
+	}
 }
 
 	

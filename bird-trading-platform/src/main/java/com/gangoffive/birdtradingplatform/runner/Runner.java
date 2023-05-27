@@ -20,7 +20,6 @@ public class Runner implements CommandLineRunner {
     private final ProductRepository productRepository;
 
     private final ProductSummaryService productSummaryService;
-
     @Override
     @Transactional
     public void run(String... args) throws Exception {
@@ -31,4 +30,5 @@ public class Runner implements CommandLineRunner {
         }
         log.info("da run trong nay");
     }
+
 }

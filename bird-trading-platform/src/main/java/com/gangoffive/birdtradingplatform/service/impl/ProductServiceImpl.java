@@ -1,24 +1,30 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
-import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
-import lombok.RequiredArgsConstructor;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.gangoffive.birdtradingplatform.repository.ProductRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
@@ -50,15 +56,14 @@ public class ProductServiceImpl implements ProductService {
             List<Long> orderDetailId = orderDetails.stream().map(id -> id.getId()).collect(Collectors.toList());
             List<Review> listReview = reviewRepository.findAllByOrderDetailIdIn(orderDetailId).get();
             if (listReview != null && listReview.size() != 0) {
-                int sumRating = listReview.stream()
-                        .map(rating -> rating.getRating().ordinal())
+                double sumRating = listReview.stream()
+                        .map(rating -> rating.getRating().ordinal() + 1)
                         .reduce(0, Integer::sum);
-                return (int) Math.ceil(sumRating / listReview.size());
+                return Math.round((sumRating / listReview.size()) * 10.0) / 10.0;
             }
         }
-        return 0.0;
+        return 0;
     }
-
     @Override
     public List<ProductDto> retrieveTopProduct() {
         PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
@@ -77,9 +82,19 @@ public class ProductServiceImpl implements ProductService {
                 priceDiscount = priceDiscount - priceDiscount * sale / 100;
             }
             double percentDiscount = Math.round(((price - priceDiscount) / price) * 100.0) / 100.0;
+
             return percentDiscount;
         }
         return 0.0;
+    }
+    @Override
+    public List<ProductDto> listModelToDto(List<Product> products) {
+        if (products != null && products.size() != 0) {
+            return products.stream()
+                    .map(this::apply)
+                    .collect(Collectors.toList());
+        }
+        return null;
     }
 
     @Override
@@ -91,16 +106,6 @@ public class ProductServiceImpl implements ProductService {
                 .map(this::apply)
                 .collect(Collectors.toList());
         return products;
-    }
-
-    @Override
-    public List<ProductDto> listModelToDto(List<Product> products) {
-        if (products != null && products.size() != 0) {
-            return products.stream()
-                    .map(this::apply).
-                    collect(Collectors.toList());
-        }
-        return null;
     }
 
     private ProductDto apply(Product product) {
@@ -122,4 +127,5 @@ public class ProductServiceImpl implements ProductService {
         }
         return null;
     }
+
 }

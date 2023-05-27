@@ -13,7 +13,6 @@ import java.util.List;
 public class ProductController {
     private final ProductService productService;
 
-
     @GetMapping
     public List<ProductDto> retrieveAllProduct() {
         return productService.retrieveAllProduct();

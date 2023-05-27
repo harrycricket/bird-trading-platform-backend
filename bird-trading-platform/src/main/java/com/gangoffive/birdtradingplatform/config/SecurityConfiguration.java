@@ -61,7 +61,6 @@ public class SecurityConfiguration {
             "/api/v1/birds/**",
             "/api/v1/accessories",
             "/api/v1/accessories/**",
-
             "/api/v1/foods",
             "/api/v1/foods/**",
             "/upload",

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,7 +21,7 @@ public class ProductServiceImplTest {
     @Autowired
     private ProductRepository productRepository;
     @Autowired
-    private ProductServiceImpl productServiceImpl;
+    private ProductService productService;
     @Autowired
     private ReviewRepository reviewRepository;
     @Test
@@ -29,7 +30,7 @@ public class ProductServiceImplTest {
         var product =  productRepository.findById(1l).get();
 //        log.info("product {}",product.getId() );
         List<OrderDetail> orders = product.getOrderDetails();
-        double result= productServiceImpl.CalculationRating(orders);
+        double result= productService.CalculationRating(orders);
 //        log.info("calculation rating {}",result) ;
         assertEquals(3.3, result);
     }
