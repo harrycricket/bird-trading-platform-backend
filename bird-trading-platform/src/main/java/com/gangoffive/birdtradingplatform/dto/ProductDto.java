@@ -35,8 +35,4 @@ public class ProductDto {
 
     protected double star;
 
-
-
-
-
 }

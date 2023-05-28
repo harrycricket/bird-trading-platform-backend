@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -35,6 +36,7 @@ public class Tag {
             inverseJoinColumns = @JoinColumn(name = "bird_id"),
             foreignKey = @ForeignKey(name = "FK_TAG_BIRD")
     )
+    @JsonIgnore
     private List<Bird> birds = new ArrayList<>();
 
     @ManyToMany
@@ -44,6 +46,7 @@ public class Tag {
             inverseJoinColumns = @JoinColumn(name = "accessory_id"),
             foreignKey = @ForeignKey(name = "FK_TAG_ACCESSORY")
     )
+    @JsonIgnore
     private List<Accessory> accessories = new ArrayList<>();
 
     @ManyToMany
@@ -53,6 +56,7 @@ public class Tag {
             inverseJoinColumns = @JoinColumn(name = "food_id"),
             foreignKey = @ForeignKey(name = "FK_TAG_FOOD")
     )
+    @JsonIgnore
     private List<Food> foods = new ArrayList<>();
 
     public String getName() {
@@ -85,5 +89,13 @@ public class Tag {
 
     public void addFoods(Food food) {
         this.foods.add(food);
+    }
+
+    @Override
+    public String toString() {
+        return "Tag{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

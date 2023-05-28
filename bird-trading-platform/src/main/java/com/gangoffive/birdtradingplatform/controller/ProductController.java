@@ -1,19 +1,11 @@
 package com.gangoffive.birdtradingplatform.controller;
 
-import java.util.List;
-
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.gangoffive.birdtradingplatform.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -31,7 +23,7 @@ public class ProductController {
         return productService.retrieveProductByPagenumber(pagenumber);
     }
 
-    @GetMapping("/products/topproduct")
+    @GetMapping("/topproduct")
     public List<ProductDto> retrieveTopProduct() {
         return productService.retrieveTopProduct();
     }

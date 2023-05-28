@@ -30,11 +30,19 @@ public class FoodServiceImpl implements FoodService {
 
     @Override
     public List<FoodDto> retrieveFoodByPagenumber(int pageNumber) {
-        PageRequest page = PageRequest.of(pageNumber, 8);
-        List<FoodDto> lists = foodRepository.findAll(page).getContent().stream()
-                .map(this::apply).
-                collect(Collectors.toList());
-        return lists;
+        if(pageNumber > 0){
+            pageNumber = pageNumber - 1;
+            PageRequest page = PageRequest.of(pageNumber, 8);
+            List<FoodDto> lists = foodRepository.findAll(page).getContent().stream()
+                    .map(this::apply).
+                    collect(Collectors.toList());
+            return lists;
+        }else try {
+            throw new Exception("Page number cannot less than 1");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
 
     }
 
