@@ -32,13 +32,20 @@ public class BirdServiceImpl implements BirdService {
 
     @Override
     public List<BirdDto> retrieveBirdByPageNumber(int pageNumber) {
-        PageRequest pageRequest = PageRequest.of(pageNumber, 8);
-        List<BirdDto> birds = birdRepository
-                .findAll(pageRequest)
-                .stream()
-                .map(this::apply)
-                .collect(Collectors.toList());
-        return birds;
+        if(pageNumber > 0){
+            pageNumber = pageNumber - 1;
+            PageRequest pageRequest = PageRequest.of(pageNumber, 8);
+            List<BirdDto> birds = birdRepository
+                    .findAll(pageRequest)
+                    .stream()
+                    .map(this::apply)
+                    .collect(Collectors.toList());
+            return birds;
+        } else try {
+            throw new Exception("Page number cannot less than 1");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

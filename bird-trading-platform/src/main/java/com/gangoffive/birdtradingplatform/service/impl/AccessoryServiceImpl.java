@@ -32,13 +32,20 @@ public class AccessoryServiceImpl implements AccessoryService {
 
     @Override
     public List<AccessoryDto> retrieveAllAccessory(int pageNumber) {
-        PageRequest pageRequest = PageRequest.of(pageNumber, 8);
-        List<AccessoryDto> accessories = accessoryRepository
-                .findAll(pageRequest)
-                .stream()
-                .map(this::apply)
-                .collect(Collectors.toList());
-        return accessories;
+        if(pageNumber > 0){
+            pageNumber = pageNumber - 1;
+            PageRequest pageRequest = PageRequest.of(pageNumber, 8);
+            List<AccessoryDto> accessories = accessoryRepository
+                    .findAll(pageRequest)
+                    .stream()
+                    .map(this::apply)
+                    .collect(Collectors.toList());
+            return accessories;
+        }else try {
+            throw new Exception("Page number cannot less than 1");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
