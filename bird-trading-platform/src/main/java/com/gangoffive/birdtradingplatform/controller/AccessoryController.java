@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
 import com.gangoffive.birdtradingplatform.service.AccessoryService;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +36,8 @@ public class AccessoryController {
     }
 
     @DeleteMapping("/shopowner/accessories/delete/{id}")
-    @PreAuthorize("hasAnyAuthority('shopowner:update')")
+    @RolesAllowed("SHOPOWNER")
+    @PreAuthorize("hasAnyAuthority('shopowner:delete')")
     public void deleteAccessory(@PathVariable("id") Long id) {
         accessoryService.deleteAccessoryById(id);
     }

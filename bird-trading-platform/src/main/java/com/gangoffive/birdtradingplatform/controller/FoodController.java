@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.FoodDto;
 import com.gangoffive.birdtradingplatform.service.FoodService;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +38,7 @@ public class FoodController {
     }
 
     @DeleteMapping("/shopowner/foods/delete/{id}")
+    @RolesAllowed("SHOPOWNER")
     @PreAuthorize("hasAnyAuthority('shopowner:update')")
     public void deleteFood(@PathVariable("id") Long id) {
         foodService.deleteFoodById(id);

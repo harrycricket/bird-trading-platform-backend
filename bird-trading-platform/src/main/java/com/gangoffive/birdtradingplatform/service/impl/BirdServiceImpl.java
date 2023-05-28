@@ -68,12 +68,6 @@ public class BirdServiceImpl implements BirdService {
 
     @Override
     public void deleteBirdById(Long id) {
-        birdRepository.findById(id).get()
-                .getTags()
-                .stream()
-                .forEach(
-                        tag -> tagRepository.delete(tag)
-                );
         birdRepository.deleteById(id);
     }
 

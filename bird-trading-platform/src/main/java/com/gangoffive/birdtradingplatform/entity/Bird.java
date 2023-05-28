@@ -10,12 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gangoffive.birdtradingplatform.enums.Gender;
+import org.hibernate.annotations.SQLDelete;
 
 @Entity
 @Table(name = "tblBird")
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@SQLDelete(sql = "update tbl_Bird set is_deleted = true where product_id = ?")
 public class Bird extends Product {
     protected Integer age;
 

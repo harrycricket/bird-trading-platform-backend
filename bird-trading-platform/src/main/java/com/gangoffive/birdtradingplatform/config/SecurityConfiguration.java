@@ -129,8 +129,8 @@ public class SecurityConfiguration {
                                 .requestMatchers(PUT, "/api/v1/user/**").hasAnyAuthority(USER_UPDATE.name())
                                 .requestMatchers(DELETE, "/api/v1/user/**").hasAnyAuthority(USER_DELETE.name())
 
-                                .requestMatchers("/api/v1/user/**").hasAnyRole(SHOPSTAFF.name())
-                                .requestMatchers(GET, "/api/v1/user/**").hasAnyAuthority(SHOPSTAFF_READ.name())
+                                .requestMatchers("/api/v1/shopstaff/**").hasAnyRole(SHOPSTAFF.name())
+                                .requestMatchers(GET, "/api/v1/shopstaff/**").hasAnyAuthority(SHOPSTAFF_READ.name())
 
                                 .anyRequest()
                                 .authenticated()

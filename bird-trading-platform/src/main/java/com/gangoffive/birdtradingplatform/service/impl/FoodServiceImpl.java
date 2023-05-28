@@ -66,9 +66,6 @@ public class FoodServiceImpl implements FoodService {
 
     @Override
     public void deleteFoodById(Long id) {
-        foodRepository.findById(id).get().getTags()
-                .stream()
-                .forEach(tag -> tagRepository.delete(tag));
         foodRepository.deleteById(id);
     }
 

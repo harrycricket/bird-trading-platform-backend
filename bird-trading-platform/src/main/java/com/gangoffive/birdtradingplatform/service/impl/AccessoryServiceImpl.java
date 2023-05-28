@@ -68,11 +68,6 @@ public class AccessoryServiceImpl implements AccessoryService {
 
     @Override
     public void deleteAccessoryById(Long id) {
-        accessoryRepository.findById(id).get()
-                .getTags()
-                .stream().forEach(
-                        tag -> tagRepository.delete(tag)
-                );
         accessoryRepository.deleteById(id);
     }
 
