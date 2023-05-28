@@ -15,9 +15,10 @@ import java.util.List;
 @AllArgsConstructor
 public class FoodDto extends ProductDto{
 
-    protected double weight;
+    private double weight;
 
     private TypeFood typeFood;
 
+    private List<Tag> tags;
 
 }

@@ -9,5 +9,4 @@ public interface BirdService {
     List<BirdDto> retrieveAllBird();
     List<BirdDto> retrieveBirdByPageNumber(int pageNumber);
     List<BirdDto> findBirdByName(String name);
-
 }
