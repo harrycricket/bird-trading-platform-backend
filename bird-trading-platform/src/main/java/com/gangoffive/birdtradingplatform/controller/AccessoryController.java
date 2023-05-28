@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
 import com.gangoffive.birdtradingplatform.service.AccessoryService;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +22,8 @@ public class AccessoryController {
     }
 
     @GetMapping("accessories/pages/{pageNumber}")
-    public List<AccessoryDto> retrieveAllBirdByPageNumber(@PathVariable int pageNumber) {
-        return accessoryService.retrieveAllAccessory(pageNumber);
+    public ResponseEntity<? extends Object> retrieveAllBirdByPageNumber(@PathVariable int pageNumber) {
+        return accessoryService.retrieveAccessoryByPageNumber(pageNumber);
     }
 
     @GetMapping("accessories/search")

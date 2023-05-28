@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.service.BirdService;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,7 @@ public class BirdController {
     }
 
     @GetMapping("birds/pages/{pageNumber}")
-    public List<BirdDto> retrieveAllBirdByPageNumber(@PathVariable int pageNumber) {
+    public ResponseEntity<? extends Object> retrieveAllBirdByPageNumber(@PathVariable int pageNumber) {
         return birdService.retrieveBirdByPageNumber(pageNumber);
     }
 

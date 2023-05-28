@@ -62,5 +62,4 @@ public class Address {
 	public void addOrder(Order order) {
 		orders.add(order);
 	}
-	
 }

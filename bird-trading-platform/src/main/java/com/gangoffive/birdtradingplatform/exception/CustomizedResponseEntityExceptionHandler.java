@@ -20,7 +20,6 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         ApiError errorDetails = new ApiError(request.getRequestURI(),
                 ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
         return new ResponseEntity<ApiError>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
-
     }
 
     @Override
@@ -31,5 +30,12 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
                 , HttpStatus.BAD_REQUEST.value()
                 , LocalDateTime.now());
         return new ResponseEntity(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CustomRuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleCustomException(CustomRuntimeException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getErrorCode(), ex.getErrorMessage());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }

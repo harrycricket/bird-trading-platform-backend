@@ -6,16 +6,23 @@ import java.util.stream.Collectors;
 
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.entity.*;
+import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
+import com.gangoffive.birdtradingplatform.exception.ErrorResponse;
+import com.gangoffive.birdtradingplatform.exception.ResourceNotFoundException;
 import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
 import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
@@ -43,19 +50,21 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductDto> retrieveProductByPagenumber(int pageNumber) {
+    public ResponseEntity<?> retrieveProductByPagenumber(int pageNumber) {
         if(pageNumber > 0){
             pageNumber = pageNumber - 1;
             PageRequest page = PageRequest.of(pageNumber, 8);
-            List<ProductDto> lists = productRepository.findAll(page).getContent().stream()
+            Page<Product> pageAble = productRepository.findAll(page);
+            List<ProductDto> lists = pageAble.getContent().stream()
                     .map(this::apply)
                     .collect(Collectors.toList());
-            return lists;
-        }else try {
-            throw new Exception("Page number cannot less than 1");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            pageAble.getTotalPages();
+            PageNumberWraper<ProductDto> result = new PageNumberWraper<>(lists,pageAble.getTotalPages());
+            return ResponseEntity.ok(result);
         }
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                "Page number cannot less than 1");
+        return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
     }
 
     @Override
@@ -111,16 +120,13 @@ public class ProductServiceImpl implements ProductService {
         if(product.isPresent()){
             ProductDto productDto = this.apply(product.get());
             return productDto;
-        }else
-            try{
-                throw new Exception("Can not find product with this id " + id);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        }
+        return null;
     }
 
     @Override
     public List<ProductDto> findProductByName(String name) {
+//        PageRequest page = PageRequest.of(pageNumber, 8);
         List<ProductDto> products = productRepository
                 .findByNameLike("%" + name + "%")
                 .get()

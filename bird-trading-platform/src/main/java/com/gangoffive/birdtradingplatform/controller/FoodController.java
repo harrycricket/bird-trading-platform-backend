@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.dto.FoodDto;
 import com.gangoffive.birdtradingplatform.service.FoodService;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,12 +23,12 @@ public class FoodController {
     }
 
     @GetMapping("foods/pages/{pageNumber}")
-    public List<FoodDto> retrieveFoodByPagenumber(@PathVariable int pageNumber){
+    public ResponseEntity<? extends Object> retrieveFoodByPagenumber(@PathVariable int pageNumber) {
         return foodService.retrieveFoodByPagenumber(pageNumber);
     }
 
     @GetMapping("foods/search")
-    public List<FoodDto> findFoodByName(@RequestParam String name){
+    public List<FoodDto> findFoodByName(@RequestParam String name) {
         return foodService.findFoodByName(name);
     }
 
