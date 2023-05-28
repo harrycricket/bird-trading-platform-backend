@@ -9,9 +9,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccountDto {
-	
 	private Long id;
-	
+
 	private String email;
 
 	private String password;
@@ -20,8 +19,6 @@ public class AccountDto {
 
 	private String matchingPassword;
 
-	private String firstName;
-
-	private String lastName;
+	private String fullName;
 
 }

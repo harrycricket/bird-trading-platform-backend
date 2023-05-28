@@ -25,8 +25,10 @@ public class CookieUtils {
 
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
+        cookie.setPath("/"); //cookie will be valid for the entire domain
+        cookie.setHttpOnly(true); //the cookie is only accessible through HTTP(S)
+        // and cannot be accessed by client-side scripts. This helps protect against certain
+        // types of cross-site scripting (XSS) attacks
         cookie.setMaxAge(maxAge);
         response.addCookie(cookie);
     }

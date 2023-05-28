@@ -65,6 +65,9 @@ public abstract class Product {
     protected ShopOwner shopOwner;
     @ManyToMany(mappedBy = "products")
     protected List<PromotionShop> promotionShops;
+
+    @OneToOne(mappedBy = "product")
+    protected ProductSummary productSummary;
     public Long getId() {
         return id;
     }

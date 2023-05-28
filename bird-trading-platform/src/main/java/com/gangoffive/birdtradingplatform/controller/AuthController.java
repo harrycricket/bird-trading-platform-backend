@@ -11,7 +11,6 @@ import com.gangoffive.birdtradingplatform.security.oauth2.RegisterRequest;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,9 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import java.net.URI;
 
 @RestController
 @RequestMapping("/auth")
@@ -63,26 +59,17 @@ public class AuthController {
 
         // Creating user's account
         Account account = new Account();
-        account.setLastName(registerRequest.getLastname());
-        account.setFirstName(registerRequest.getFirstname());
+        account.setFullName(registerRequest.getFullName());
         account.setEmail(registerRequest.getEmail());
         account.setRole(registerRequest.getRole());
         account.setAddress(registerRequest.getAddress());
         account.setProvider(AuthProvider.local);
 
         account.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-
         Account result = accountRepository.save(account);
-
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentContextPath().path("/user/me")
-                .buildAndExpand(result.getId()).toUri();
-
-        return ResponseEntity.created(location)
-                .body(new AuthenticationResponse(
-                        jwtService.generateToken(UserPrincipal.create(result)),
-                        jwtService.generateRefreshToken(UserPrincipal.create(result))
-                ));
+        String token = jwtService.generateToken(UserPrincipal.create(result));
+        String refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(result));
+        return ResponseEntity.ok(new AuthenticationResponse(token, refreshToken));
     }
 
 }

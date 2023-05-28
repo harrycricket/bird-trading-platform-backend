@@ -1,5 +1,7 @@
 package com.gangoffive.birdtradingplatform.enums;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -49,5 +51,14 @@ public enum UserRole {
 				.collect(Collectors.toList());
 		authorities.add(new SimpleGrantedAuthority("ROLE_" + this.name()));
 		return authorities;
+	}
+
+	public static void main(String[] args) {
+		UserRole role = UserRole.USER;
+		System.out.println(role);
+		List<SimpleGrantedAuthority> list = role.getAuthorities();
+		for (SimpleGrantedAuthority a: list) {
+			System.out.println(a);
+		}
 	}
 }

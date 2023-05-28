@@ -2,17 +2,13 @@ package com.gangoffive.birdtradingplatform.mapper;
 
 import com.gangoffive.birdtradingplatform.dto.FoodDto;
 import com.gangoffive.birdtradingplatform.entity.Food;
-import com.gangoffive.birdtradingplatform.entity.OrderDetail;
-import com.gangoffive.birdtradingplatform.service.ProductService;
+import com.gangoffive.birdtradingplatform.service.impl.ProductServiceImpl;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
 
 
-@Mapper(componentModel = "spring", imports = com.gangoffive.birdtradingplatform.service.ProductService.class)
+@Mapper(componentModel = "spring", imports = ProductServiceImpl.class)
 public interface FoodMapper {
     @Mapping(target = "id", source = "food.id")
     @Mapping(source = "food.typeFood", target = "typeFood")

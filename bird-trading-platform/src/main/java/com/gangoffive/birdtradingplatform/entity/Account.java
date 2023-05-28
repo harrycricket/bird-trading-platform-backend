@@ -65,11 +65,8 @@ public class Account {
 	@Column(name = "status")
 	private Boolean enable;
 	
-	@Column(name = "first_name")
-	private String firstName;
-	
-	@Column(name = "last_name")
-	private String lastName;
+	@Column(name = "full_name")
+	private String fullName;
 	
 	@Column(name = "img_url")
 	private String imgUrl;
@@ -145,12 +142,8 @@ public class Account {
 		this.enable = enable;
 	}
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 
 	public void setImgUrl(String imgUrl) {
@@ -209,5 +202,9 @@ public class Account {
 
 	public void setProviderId(String providerId) {
 		this.providerId = providerId;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
 	}
 }

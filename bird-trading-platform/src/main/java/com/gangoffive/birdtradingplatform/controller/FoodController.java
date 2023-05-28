@@ -1,10 +1,8 @@
 package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.FoodDto;
-import com.gangoffive.birdtradingplatform.entity.Food;
 import com.gangoffive.birdtradingplatform.service.FoodService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,15 +18,13 @@ public class FoodController {
         return foodService.retrieveAllFood();
     }
 
-
     @GetMapping("/pages/{pageNumber}")
-    public List<FoodDto> retrieveFoodByPagenumber(@PathVariable int pageNumber){
+    public List<FoodDto> retrieveFoodByPagenumber(@PathVariable int pageNumber) {
         return foodService.retrieveFoodByPagenumber(pageNumber);
     }
 
     @GetMapping("/search")
-    public List<FoodDto> findFoodByName(@RequestParam String name){
-        return foodService.findFoodByName("%" + name + "%");
+    public List<FoodDto> findFoodByName(@RequestParam String name) {
+        return foodService.findFoodByName(name);
     }
-
 }
