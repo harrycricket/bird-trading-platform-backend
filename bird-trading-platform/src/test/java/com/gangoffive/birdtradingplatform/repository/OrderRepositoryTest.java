@@ -17,11 +17,7 @@ public class OrderRepositoryTest {
 
     @Test
     public void testTotalQuantity(){
-<<<<<<< HEAD
         Optional<Integer> temp = orderDetailRepository.findTotalQuantityByPId(1L);
-=======
-        int temp = orderDetailRepository.findTotalQuantityByPId(1L).get();
->>>>>>> origin/thong
 //        log.info("here is temp {}", temp);
         assertEquals(8, temp.get());
     }
