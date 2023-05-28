@@ -1,8 +1,11 @@
 package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
+import com.gangoffive.birdtradingplatform.exception.ErrorResponse;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +22,7 @@ public class ProductController {
     }
 
     @GetMapping("/pages/{pagenumber}")
-    public List<ProductDto> retrieveProductByPagenumber(@PathVariable int pagenumber) {
+    public ResponseEntity<?> retrieveProductByPagenumber(@PathVariable int pagenumber) {
         return productService.retrieveProductByPagenumber(pagenumber);
     }
 
@@ -34,7 +37,13 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ProductDto findProductById(@PathVariable Long id){
-        return productService.retrieveProductById(id);
+    public ResponseEntity<?> findProductById(@PathVariable Long id){
+        ProductDto product = productService.retrieveProductById(id);
+        if(product == null){
+            ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
+                    "Not found product with id: " + id);
+            return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
+        }
+        return ResponseEntity.ok(product);
     }
 }

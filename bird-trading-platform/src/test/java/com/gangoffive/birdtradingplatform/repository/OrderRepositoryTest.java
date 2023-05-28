@@ -14,7 +14,7 @@ public class OrderRepositoryTest {
 
     @Test
     public void testTotalQuantity(){
-        int temp = orderDetailRepository.findTotalQuantityByPId(1L);
+        int temp = orderDetailRepository.findTotalQuantityByPId(1L).get();
 //        log.info("here is temp {}", temp);
         assertEquals(8, temp);
     }

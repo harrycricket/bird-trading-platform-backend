@@ -1,8 +1,11 @@
 package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
+import com.gangoffive.birdtradingplatform.exception.ErrorResponse;
 import com.gangoffive.birdtradingplatform.service.AccessoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,8 +22,8 @@ public class AccessoryController {
     }
 
     @GetMapping("/pages/{pageNumber}")
-    public List<AccessoryDto> retrieveAllBirdByPageNumber(@PathVariable int pageNumber) {
-        return accessoryService.retrieveAllAccessory(pageNumber);
+    public ResponseEntity<? extends Object> retrieveAllBirdByPageNumber(@PathVariable int pageNumber) {
+        return accessoryService.retrieveAccessoryByPageNumber(pageNumber);
     }
 
     @GetMapping("/search")
