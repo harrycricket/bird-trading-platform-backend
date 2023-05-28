@@ -15,4 +15,5 @@ public interface ProductService {
     List<ProductDto> findProductByName(String name);
     List<ProductDto> retrieveTopProduct();
     List<ProductDto> listModelToDto(List<Product> products);
+    ProductDto retrieveProductById(Long id);
 }

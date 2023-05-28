@@ -22,3 +22,6 @@ RemoteSystemsTempFiles/
 *.iws
 *.iml
 *.ipr
+
+
+bird-trading-platform/src/main/resources/.env
