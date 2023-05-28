@@ -1,7 +1,6 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
-import com.gangoffive.birdtradingplatform.dto.FoodDto;
 import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.exception.ErrorResponse;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
@@ -13,7 +12,6 @@ import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -40,13 +38,8 @@ public class BirdServiceImpl implements BirdService {
     }
 
     @Override
-<<<<<<< HEAD
-    public List<BirdDto> retrieveBirdByPageNumber(int pageNumber) {
-        if (pageNumber > 0) {
-=======
     public ResponseEntity<?> retrieveBirdByPageNumber(int pageNumber) {
-        if(pageNumber > 0){
->>>>>>> origin/thuan
+        if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest pageRequest = PageRequest.of(pageNumber, 8);
             Page<Bird> pageAble = birdRepository.findAll(pageRequest);
@@ -59,7 +52,7 @@ public class BirdServiceImpl implements BirdService {
         }
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
                 "Page number cannot less than 1");
-        return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @Override

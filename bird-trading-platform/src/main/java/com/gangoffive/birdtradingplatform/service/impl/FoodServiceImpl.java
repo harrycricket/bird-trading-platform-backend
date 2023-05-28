@@ -2,11 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.dto.FoodDto;
 import com.gangoffive.birdtradingplatform.entity.Food;
-<<<<<<< HEAD
-import com.gangoffive.birdtradingplatform.entity.Tag;
-=======
 import com.gangoffive.birdtradingplatform.exception.ErrorResponse;
->>>>>>> origin/thuan
 import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
 import com.gangoffive.birdtradingplatform.repository.FoodRepository;
 import com.gangoffive.birdtradingplatform.repository.TagRepository;
@@ -40,33 +36,20 @@ public class FoodServiceImpl implements FoodService {
     }
 
     @Override
-<<<<<<< HEAD
-    public List<FoodDto> retrieveFoodByPagenumber(int pageNumber) {
-        if (pageNumber > 0) {
-=======
     public ResponseEntity<?> retrieveFoodByPagenumber(int pageNumber) {
-        if(pageNumber > 0){
->>>>>>> origin/thuan
+        if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest page = PageRequest.of(pageNumber, 8);
             Page<Food> pageAble = foodRepository.findAll(page);
             List<FoodDto> lists = pageAble.getContent().stream()
                     .map(this::apply).
                     collect(Collectors.toList());
-<<<<<<< HEAD
-            return lists;
-        } else try {
-            throw new Exception("Page number cannot less than 1");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-=======
             PageNumberWraper<FoodDto> result = new PageNumberWraper<>(lists, pageAble.getTotalPages());
             return ResponseEntity.ok(result);
->>>>>>> origin/thuan
         }
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
                 "Page number cannot less than 1");
-        return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @Override
