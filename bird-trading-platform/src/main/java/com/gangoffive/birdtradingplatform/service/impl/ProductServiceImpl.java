@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
@@ -102,6 +103,20 @@ public class ProductServiceImpl implements ProductService {
                     .collect(Collectors.toList());
         }
         return null;
+    }
+
+    @Override
+    public ProductDto retrieveProductById(Long id) {
+        Optional<Product> product = productRepository.findById(id);
+        if(product.isPresent()){
+            ProductDto productDto = this.apply(product.get());
+            return productDto;
+        }else
+            try{
+                throw new Exception("Can not find product with this id " + id);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
     }
 
     @Override
