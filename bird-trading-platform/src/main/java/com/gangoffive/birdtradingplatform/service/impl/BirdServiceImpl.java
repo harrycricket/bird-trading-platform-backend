@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.repository.BirdRepository;
+import com.gangoffive.birdtradingplatform.repository.TagRepository;
 import com.gangoffive.birdtradingplatform.service.BirdService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BirdServiceImpl implements BirdService {
     private final BirdRepository birdRepository;
+    private final TagRepository tagRepository;
     private final BirdMapper birdMapper;
     private final ProductService productService;
 
@@ -32,7 +34,7 @@ public class BirdServiceImpl implements BirdService {
 
     @Override
     public List<BirdDto> retrieveBirdByPageNumber(int pageNumber) {
-        if(pageNumber > 0){
+        if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest pageRequest = PageRequest.of(pageNumber, 8);
             List<BirdDto> birds = birdRepository
@@ -57,6 +59,22 @@ public class BirdServiceImpl implements BirdService {
                 .map(this::apply)
                 .collect(Collectors.toList());
         return birds;
+    }
+
+    @Override
+    public void updateBird(BirdDto birdDto) {
+        birdRepository.save(birdMapper.toModel(birdDto));
+    }
+
+    @Override
+    public void deleteBirdById(Long id) {
+        birdRepository.findById(id).get()
+                .getTags()
+                .stream()
+                .forEach(
+                        tag -> tagRepository.delete(tag)
+                );
+        birdRepository.deleteById(id);
     }
 
     private BirdDto apply(Bird bird) {
