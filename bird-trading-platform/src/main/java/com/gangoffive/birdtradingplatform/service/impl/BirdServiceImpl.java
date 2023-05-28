@@ -1,13 +1,20 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
+import com.gangoffive.birdtradingplatform.dto.FoodDto;
 import com.gangoffive.birdtradingplatform.entity.Bird;
+import com.gangoffive.birdtradingplatform.exception.ErrorResponse;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.repository.BirdRepository;
 import com.gangoffive.birdtradingplatform.service.BirdService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,14 +38,21 @@ public class BirdServiceImpl implements BirdService {
     }
 
     @Override
-    public List<BirdDto> retrieveBirdByPageNumber(int pageNumber) {
-        PageRequest pageRequest = PageRequest.of(pageNumber, 8);
-        List<BirdDto> birds = birdRepository
-                .findAll(pageRequest)
-                .stream()
-                .map(this::apply)
-                .collect(Collectors.toList());
-        return birds;
+    public ResponseEntity<?> retrieveBirdByPageNumber(int pageNumber) {
+        if(pageNumber > 0){
+            pageNumber = pageNumber - 1;
+            PageRequest pageRequest = PageRequest.of(pageNumber, 8);
+            Page<Bird> pageAble = birdRepository.findAll(pageRequest);
+            List<BirdDto> birds = pageAble.getContent()
+                    .stream()
+                    .map(this::apply)
+                    .collect(Collectors.toList());
+            PageNumberWraper<BirdDto> result = new PageNumberWraper<>(birds, pageAble.getTotalPages());
+            return ResponseEntity.ok(result);
+        }
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                "Page number cannot less than 1");
+        return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
     }
 
     @Override

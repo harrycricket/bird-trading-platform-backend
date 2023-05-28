@@ -1,8 +1,11 @@
 package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.FoodDto;
+import com.gangoffive.birdtradingplatform.exception.ErrorResponse;
 import com.gangoffive.birdtradingplatform.service.FoodService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +22,7 @@ public class FoodController {
     }
 
     @GetMapping("/pages/{pageNumber}")
-    public List<FoodDto> retrieveFoodByPagenumber(@PathVariable int pageNumber) {
+    public ResponseEntity<? extends Object> retrieveFoodByPagenumber(@PathVariable int pageNumber){
         return foodService.retrieveFoodByPagenumber(pageNumber);
     }
 
