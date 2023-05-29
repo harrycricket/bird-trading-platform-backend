@@ -2,6 +2,8 @@ package com.gangoffive.birdtradingplatform.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@SQLDelete(sql = "update tbl_Food set is_deleted = true where product_id = ?")
 public class Food extends Product {
     @Column(nullable = false)
     protected double weight;

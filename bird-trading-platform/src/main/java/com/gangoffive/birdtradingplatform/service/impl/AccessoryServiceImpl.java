@@ -2,12 +2,18 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
 import com.gangoffive.birdtradingplatform.entity.Accessory;
+import com.gangoffive.birdtradingplatform.exception.ErrorResponse;
 import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
 import com.gangoffive.birdtradingplatform.repository.AccessoryRepository;
+import com.gangoffive.birdtradingplatform.repository.TagRepository;
 import com.gangoffive.birdtradingplatform.service.AccessoryService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AccessoryServiceImpl implements AccessoryService {
     private final AccessoryRepository accessoryRepository;
+    private final TagRepository tagRepository;
     private final AccessoryMapper accessoryMapper;
     private final ProductService productService;
 
@@ -31,21 +38,21 @@ public class AccessoryServiceImpl implements AccessoryService {
     }
 
     @Override
-    public List<AccessoryDto> retrieveAllAccessory(int pageNumber) {
-        if(pageNumber > 0){
+    public ResponseEntity<?> retrieveAccessoryByPageNumber(int pageNumber) {
+        if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest pageRequest = PageRequest.of(pageNumber, 8);
-            List<AccessoryDto> accessories = accessoryRepository
-                    .findAll(pageRequest)
+            Page<Accessory> pageAble = accessoryRepository.findAll(pageRequest);
+            List<AccessoryDto> accessories = pageAble.getContent()
                     .stream()
                     .map(this::apply)
                     .collect(Collectors.toList());
-            return accessories;
-        }else try {
-            throw new Exception("Page number cannot less than 1");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            PageNumberWraper<AccessoryDto> result = new PageNumberWraper<>(accessories, pageAble.getTotalPages());
+            return ResponseEntity.ok(result);
         }
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                "Page number cannot less than 1");
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @Override
@@ -57,6 +64,16 @@ public class AccessoryServiceImpl implements AccessoryService {
                 .map(this::apply)
                 .collect(Collectors.toList());
         return accessories;
+    }
+
+    @Override
+    public void updateAccessory(AccessoryDto accessoryDto) {
+        accessoryRepository.save(accessoryMapper.toModel(accessoryDto));
+    }
+
+    @Override
+    public void deleteAccessoryById(Long id) {
+        accessoryRepository.deleteById(id);
     }
 
     private AccessoryDto apply(Accessory accessory) {

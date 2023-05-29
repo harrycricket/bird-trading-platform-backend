@@ -203,4 +203,8 @@ public class Account {
 	public void setProviderId(String providerId) {
 		this.providerId = providerId;
 	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
 }

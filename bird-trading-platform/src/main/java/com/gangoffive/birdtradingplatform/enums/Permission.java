@@ -14,6 +14,7 @@ public enum Permission {
     SHOPOWNER_CREATE("shopowner:create"),
     SHOPOWNER_DELETE("shopowner:delete"),
     SHOPSTAFF_READ("shopstaff:read"),
+    SHOPSTAFF_UPDATE("shopstaff:update"),
     USER_READ("user:read"),
     USER_UPDATE("user:update"),
     USER_CREATE("user:create"),

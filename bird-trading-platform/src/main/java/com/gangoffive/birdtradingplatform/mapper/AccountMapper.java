@@ -9,7 +9,6 @@ import com.gangoffive.birdtradingplatform.entity.Account;
 
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
-
 	@InheritInverseConfiguration
 	Account toModel(AccountDto accountDto);
 

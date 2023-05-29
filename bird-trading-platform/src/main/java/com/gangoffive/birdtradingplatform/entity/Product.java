@@ -1,9 +1,11 @@
 package com.gangoffive.birdtradingplatform.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Where;
 
 import java.util.Date;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Where(clause = "is_deleted = false")
 public abstract class Product {
 
     @Id
@@ -53,6 +56,9 @@ public abstract class Product {
 
     @Column(name = "video_url")
     protected String videoUrl;
+
+    @Column(name = "is_deleted")
+    protected boolean deleted;
     
     @OneToMany(mappedBy = "product")
     private List<OrderDetail> orderDetails;
@@ -138,6 +144,14 @@ public abstract class Product {
 
     public void setVideoUrl(String videoUrl) {
         this.videoUrl = videoUrl;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
     public ShopOwner getShopOwner() {

@@ -60,6 +60,9 @@ public class AppProperties {
 
     public static final class Cors {
         private String allowedOrigins;
+        private String allowedMethods;
+        private String allowedHeaders;
+        private String exposedHeaders;
 
         public String getAllowedOrigins() {
             return allowedOrigins;
@@ -67,6 +70,30 @@ public class AppProperties {
 
         public void setAllowedOrigins(String allowedOrigins) {
             this.allowedOrigins = allowedOrigins;
+        }
+
+        public String getAllowedMethods() {
+            return allowedMethods;
+        }
+
+        public void setAllowedMethods(String allowedMethods) {
+            this.allowedMethods = allowedMethods;
+        }
+
+        public String getAllowedHeaders() {
+            return allowedHeaders;
+        }
+
+        public void setAllowedHeaders(String allowedHeaders) {
+            this.allowedHeaders = allowedHeaders;
+        }
+
+        public String getExposedHeaders() {
+            return exposedHeaders;
+        }
+
+        public void setExposedHeaders(String exposedHeaders) {
+            this.exposedHeaders = exposedHeaders;
         }
     }
 

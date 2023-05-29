@@ -2,30 +2,44 @@ package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.service.BirdService;
+import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/birds")
+@RequestMapping("/api/v1")
 public class BirdController {
     private final BirdService birdService;
 
-    @GetMapping
+    @GetMapping("birds")
     public List<BirdDto> retrieveAllBird() {
         return birdService.retrieveAllBird();
     }
 
-    @GetMapping("/pages/{pageNumber}")
-    public List<BirdDto> retrieveAllBirdByPageNumber(@PathVariable int pageNumber) {
+    @GetMapping("birds/pages/{pageNumber}")
+    public ResponseEntity<? extends Object> retrieveAllBirdByPageNumber(@PathVariable int pageNumber) {
         return birdService.retrieveBirdByPageNumber(pageNumber);
     }
 
-    @GetMapping("/search")
+    @GetMapping("birds/search")
     public List<BirdDto> findBirdByName(@RequestParam String name) {
         return birdService.findBirdByName(name);
     }
 
+    @PostMapping("/shopowner/birds/update/{id}")
+    public void updateBird(@RequestParam BirdDto birdDto) {
+        birdService.updateBird(birdDto);
+    }
+
+    @DeleteMapping("/shopowner/birds/delete/{id}")
+    @RolesAllowed("SHOPOWNER")
+    @PreAuthorize("hasAnyAuthority('shopowner:delete')")
+    public void deleteBird(@PathVariable("id") Long id) {
+        birdService.deleteBirdById(id);
+    }
 }
