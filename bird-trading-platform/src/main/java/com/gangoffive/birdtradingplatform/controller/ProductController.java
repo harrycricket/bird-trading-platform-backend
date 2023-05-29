@@ -27,8 +27,14 @@ public class ProductController {
     }
 
     @GetMapping("products/topproduct")
-    public List<ProductDto> retrieveTopProduct() {
-        return productService.retrieveTopProduct();
+    public ResponseEntity<?> retrieveTopProduct() {
+        List<ProductDto> result = productService.retrieveTopProduct();
+        if(result == null){
+            ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
+                    "Not found product top product: ");
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("products/search")

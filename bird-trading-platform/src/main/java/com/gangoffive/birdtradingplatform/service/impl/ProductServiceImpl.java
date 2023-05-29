@@ -85,9 +85,13 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductDto> retrieveTopProduct() {
         PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
                 .and(Sort.by(Sort.Direction.DESC, "totalQuantityOrder")));
-        List<Long> listIds = productSummaryRepository.findAll(page).stream().map(id -> id.getProduct().getId()).toList();
-        List<Product> product = productRepository.findAllById(listIds);
-        return this.listModelToDto(product);
+        List<ProductSummary> listsTemp =  productSummaryRepository.findAll(page).getContent();
+        if(listsTemp != null && listsTemp.size() != 0) {
+            List<Long> listIds = listsTemp.stream().map(id -> id.getProduct().getId()).toList();
+            List<Product> product = productRepository.findAllById(listIds);
+            return this.listModelToDto(product);
+        }
+        return null;
     }
 
     @Override
