@@ -35,7 +35,10 @@ app:
     tokenExpiration: 86400000 # a day
     refreshTokenExpiration: 604800000 # 7 days
   cors:
-    allowedOrigins: http://localhost:3000,http://localhost:8080
+    allowedOrigins: "*"
+    allowedMethods: "*"
+    allowedHeaders: "*"
+    exposedHeaders: "*"
   oauth2:
     # After successfully authenticating with the OAuth2 Provider,
     # we'll be generating an auth token for the user and sending the token to the

@@ -1,22 +1,18 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.entity.*;
-import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.exception.ErrorResponse;
-import com.gangoffive.birdtradingplatform.exception.ResourceNotFoundException;
 import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
+import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,9 +21,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.gangoffive.birdtradingplatform.repository.ProductRepository;
-
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -51,7 +47,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ResponseEntity<?> retrieveProductByPagenumber(int pageNumber) {
-        if(pageNumber > 0){
+        if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest page = PageRequest.of(pageNumber, 8);
             Page<Product> pageAble = productRepository.findAll(page);
@@ -59,12 +55,12 @@ public class ProductServiceImpl implements ProductService {
                     .map(this::apply)
                     .collect(Collectors.toList());
             pageAble.getTotalPages();
-            PageNumberWraper<ProductDto> result = new PageNumberWraper<>(lists,pageAble.getTotalPages());
+            PageNumberWraper<ProductDto> result = new PageNumberWraper<>(lists, pageAble.getTotalPages());
             return ResponseEntity.ok(result);
         }
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
                 "Page number cannot less than 1");
-        return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @Override
@@ -81,6 +77,7 @@ public class ProductServiceImpl implements ProductService {
         }
         return 0;
     }
+
     @Override
     public List<ProductDto> retrieveTopProduct() {
         PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
@@ -104,6 +101,7 @@ public class ProductServiceImpl implements ProductService {
         }
         return 0.0;
     }
+
     @Override
     public List<ProductDto> listModelToDto(List<Product> products) {
         if (products != null && products.size() != 0) {
@@ -117,7 +115,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDto retrieveProductById(Long id) {
         Optional<Product> product = productRepository.findById(id);
-        if(product.isPresent()){
+        if (product.isPresent()) {
             ProductDto productDto = this.apply(product.get());
             return productDto;
         }

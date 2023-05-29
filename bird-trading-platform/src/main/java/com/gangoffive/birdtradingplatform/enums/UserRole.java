@@ -31,7 +31,8 @@ public enum UserRole {
 	),
 	SHOPSTAFF (
 			Set.of(
-					SHOPSTAFF_READ
+					SHOPSTAFF_READ,
+					SHOPSTAFF_UPDATE
 			)
 	),
 	USER (

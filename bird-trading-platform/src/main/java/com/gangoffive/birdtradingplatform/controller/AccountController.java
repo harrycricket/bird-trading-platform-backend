@@ -16,11 +16,10 @@ public class AccountController {
 
     private final AccountService accountService;
 
-    @PutMapping("/shopowner/updateprofile")
-//    @RolesAllowed({"SHOPOWNER"})
-    @PreAuthorize("hasAnyAuthority('shopowner:update') OR hasAnyAuthority('shopstaff:update') OR hasAnyAuthority('user:update')")
+    @PutMapping("/users/updateprofile")
+    @RolesAllowed({"SHOPOWNER", "SHOPSTAFF", "USER"})
+    @PreAuthorize("hasAnyAuthority('shopowner:update', 'shopstaff:update', 'user:update')")
     public void updateProfile(@RequestBody AccountUpdateDto accountUpdateDto){
-        System.out.println("hello");
         accountService.updateAccount(accountUpdateDto);
     }
 }
