@@ -40,7 +40,7 @@ public class FoodController {
 
     @DeleteMapping("/shopowner/foods/delete/{id}")
     @RolesAllowed("SHOPOWNER")
-    @PreAuthorize("hasAnyAuthority('shopowner:update')")
+    @PreAuthorize("hasAnyAuthority('shopowner:delete')")
     public void deleteFood(@PathVariable("id") Long id) {
         foodService.deleteFoodById(id);
     }
