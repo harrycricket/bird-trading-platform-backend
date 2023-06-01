@@ -31,6 +31,11 @@ public class AccessoryController {
         return accessoryService.findAccessoryByName(name);
     }
 
+    @GetMapping("accessories/topproduct")
+    public List<AccessoryDto> findTopAccessories() {
+        return accessoryService.findTopAccessories();
+    }
+
     @PostMapping("/shopowner/accessories/update/{id}")
     public void updateAccessory(@RequestParam AccessoryDto accessoryDto) {
         accessoryService.updateAccessory(accessoryDto);

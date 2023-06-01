@@ -25,6 +25,9 @@ public class ProductSummary {
     @Column(name = "review_total")
     private int reviewTotal;
 
+    @Column(name = "category")
+    private String category;
+
     @Column(name = "total_quantity_order")
     private double totalQuantityOrder;
 }

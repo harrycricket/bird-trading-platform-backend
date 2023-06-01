@@ -16,4 +16,6 @@ public interface FoodService {
     void updateFood(FoodDto foodDto);
 
     void deleteFoodById(Long id);
+
+    List<FoodDto> findTopFood();
 }

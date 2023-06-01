@@ -16,6 +16,7 @@ import java.util.List;
 public class BirdController {
     private final BirdService birdService;
 
+
     @GetMapping("birds")
     public List<BirdDto> retrieveAllBird() {
         return birdService.retrieveAllBird();
@@ -29,6 +30,11 @@ public class BirdController {
     @GetMapping("birds/search")
     public List<BirdDto> findBirdByName(@RequestParam String name) {
         return birdService.findBirdByName(name);
+    }
+
+    @GetMapping("birds/topproduct")
+    public List<BirdDto> findTopBird() {
+        return birdService.findTopBirdProduct();
     }
 
     @PostMapping("/shopowner/birds/update/{id}")

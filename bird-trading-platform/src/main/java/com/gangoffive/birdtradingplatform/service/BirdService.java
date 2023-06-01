@@ -15,4 +15,6 @@ public interface BirdService {
     void updateBird(BirdDto birdDto);
 
     void deleteBirdById(Long id);
+
+    List<BirdDto> findTopBirdProduct();
 }
