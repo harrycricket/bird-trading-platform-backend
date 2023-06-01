@@ -23,8 +23,6 @@ public class BirdTradingPlatformApplication {
 //	public void run(String... args) throws Exception {
 //		emailSenderService.sendSimpleEmail("hoangtienbmt2911@gmail.com", "CHOs", "Hoc ngu");
 //	}
-
-
 }
 
 	
