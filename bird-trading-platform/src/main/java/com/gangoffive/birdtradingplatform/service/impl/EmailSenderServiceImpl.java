@@ -24,5 +24,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
         message.setSubject(subject);
         mailSender.send(message);
         log.info("Mail send to {}", toEmail);
+
+
     }
 }
