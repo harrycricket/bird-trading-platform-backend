@@ -29,6 +29,17 @@ spring:
     multipart:
       max-file-size: 10000MB
       max-request-size: 10000MB
+  mail:
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: 'true'
+          auth: 'true'
+    host: smtp.gmail.com
+    username: ${env.EMAIL_USERNAME}
+    password: ${env.EMAIL_PASSWORD}
+    port: '587'
 app:
   auth:
     secretKey: 645367566B5970337336763979244226452948404D6351665468576D5A713474
@@ -51,3 +62,6 @@ app:
   aws:
     accessKey: ${env.S3_ACCESS_KEY}
     secretKey: ${env.S3_SECRET_KEY}
+
+  email:
+    username: tienphambmt2911@gmail.com

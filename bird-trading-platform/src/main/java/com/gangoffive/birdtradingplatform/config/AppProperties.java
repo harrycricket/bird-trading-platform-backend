@@ -15,6 +15,8 @@ public class AppProperties {
 
     private final Aws aws = new Aws();
 
+    private final Email email = new Email();
+
     public static final class Auth {
         private String secretKey;
         private Long tokenExpiration;
@@ -118,6 +120,18 @@ public class AppProperties {
         }
     }
 
+    public static final class Email {
+        private String username;
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+    }
+
     public Auth getAuth() {
         return auth;
     }
@@ -132,5 +146,9 @@ public class AppProperties {
 
     public Aws getAws() {
         return aws;
+    }
+
+    public Email getEmail() {
+        return email;
     }
 }
