@@ -78,6 +78,7 @@ public class AccountServiceImpl implements AccountService {
                 //set revoked
                 tokenRepo.get().setRevoked(true);
                 account.setEnable(true);
+                verifyTokenRepository.save(tokenRepo.get());
                 accountRepository.save(account);
                 return ResponseEntity.ok(new ApiResponse(LocalDateTime.now(), "Verification of the account was successful!"));
             }
@@ -88,9 +89,6 @@ public class AccountServiceImpl implements AccountService {
         }
         ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.NOT_FOUND.toString())
                 .errorMessage("Not found token. Link not true").build();
-
-        verifyTokenRepository.save(tokenRepo.get());
-
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }
