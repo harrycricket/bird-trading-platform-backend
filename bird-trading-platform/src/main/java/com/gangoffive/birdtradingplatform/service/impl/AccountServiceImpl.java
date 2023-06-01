@@ -79,6 +79,7 @@ public class AccountServiceImpl implements AccountService {
                 }
                 tokenRepo.get().setRevoked(true);
                 verifyTokenRepository.save(tokenRepo.get());
+
                 return ResponseEntity.ok(new ApiResponse(LocalDateTime.now(), "Verification of the account was successful!"));
             }
             ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.BAD_REQUEST.toString())
