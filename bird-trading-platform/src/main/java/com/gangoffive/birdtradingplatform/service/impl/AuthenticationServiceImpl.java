@@ -2,7 +2,9 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.dto.AccountDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
+import com.gangoffive.birdtradingplatform.entity.VerifyToken;
 import com.gangoffive.birdtradingplatform.enums.AuthProvider;
+import com.gangoffive.birdtradingplatform.enums.MailSenderStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
@@ -10,6 +12,7 @@ import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationRequest;
 import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationResponse;
 import com.gangoffive.birdtradingplatform.service.AuthenticationService;
+import com.gangoffive.birdtradingplatform.service.EmailSenderService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,7 +20,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +32,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final AccountMapper accountMapper;
+    private final EmailSenderService emailSenderService;
+    private final String emailSubject = "Reset Your Password";
+    private final int expiration = 600000;
 
     @Override
     public String register(AccountDto accountDto) {
@@ -40,9 +48,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 //                .build();
 //        var saveAccount = accountRepository.save(account);
 //        return getAuthenticationResponse(saveAccount);
-        if (accountDto.getMatchingPassword().equals(accountDto.getPassword())){
+        if (accountDto.getMatchingPassword().equals(accountDto.getPassword())) {
             Optional<Account> temp = accountRepository.findByEmail(accountDto.getEmail());
-            if(!temp.isPresent()) {
+            if (!temp.isPresent()) {
                 Account acc = accountMapper.toModel(accountDto);
                 acc.setPassword(passwordEncoder.encode(accountDto.getPassword()));
                 acc.setRole(UserRole.USER);
@@ -50,7 +58,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 acc.setProvider(AuthProvider.local);
                 accountRepository.save(acc);
                 return "Register Successfully!";
-            }else{
+            } else {
                 return "The email has already been used!";
             }
         }
@@ -69,6 +77,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         var account = accountRepository.findByEmail(request.getEmail()).orElseThrow();
         return getAuthenticationResponse(account);
+    }
+
+    @Override
+    public String resetPassword(String email) {
+        Optional<Account> account = accountRepository.findByEmail(email);
+        if (account.isPresent()) {
+            String randomToken = UUID.randomUUID().toString();
+            VerifyToken verifyToken = new VerifyToken();
+            verifyToken.setToken(randomToken);
+            verifyToken.setExpired(new Date(System.currentTimeMillis() + expiration));
+            verifyToken.setRevoked(false);
+            verifyToken.setAccount(account.get());
+            String linkVerify = "";
+            String bodyMailSent = """
+                    Click on the link below to reset password:
+                        
+                    """;
+            emailSenderService.sendSimpleEmail(email, "", emailSubject);
+            return MailSenderStatus.MAIL_SENT.name();
+        } else {
+            return MailSenderStatus.MAIL_NOT_FOUND.name();
+        }
     }
 
     private AuthenticationResponse getAuthenticationResponse(Account account) {

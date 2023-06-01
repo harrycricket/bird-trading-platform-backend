@@ -14,21 +14,16 @@ public class AccountController {
     private final AccountService accountService;
 
     @PutMapping("/users/updateprofile")
-//    @RolesAllowed({"SHOPOWNER", "SHOPSTAFF", "USER"})
-//    @PreAuthorize("hasAnyAuthority('shopowner:update', 'shopstaff:update', 'user:update')")\
-    @PreAuthorize("hasAnyRole('SHOPOWNER', 'SHOPOWNER')")
     public void updateProfile(@RequestBody AccountUpdateDto accountUpdateDto){
         accountService.updateAccount(accountUpdateDto);
     }
 
     @GetMapping("/users/updateprofile")
-//    @PreAuthorize("hasAnyAuthority('shopowner:update', 'shopstaff:update', 'user:update')")
     public String GetProfile(){
         return "GET";
     }
 
     @DeleteMapping("/users/updateprofile")
-//    @PreAuthorize("hasAnyAuthority('shopowner:update', 'shopstaff:update', 'user:update')")
     public String DeleteProfile(){
         return "DELETE";
     }
