@@ -1,4 +1,4 @@
-package com.gangoffive.birdtradingplatform.exception;
+package com.gangoffive.birdtradingplatform.api.response;
 
 import java.time.LocalDateTime;
 

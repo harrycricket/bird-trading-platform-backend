@@ -123,12 +123,22 @@ public class AppProperties {
     public static final class Email {
         private String username;
 
+        private String verifyLink;
+
         public String getUsername() {
             return username;
         }
 
         public void setUsername(String username) {
             this.username = username;
+        }
+
+        public void setVerifyLink(String verifyLink) {
+            this.verifyLink = verifyLink;
+        }
+
+        public String getVerifyLink() {
+            return this.verifyLink;
         }
     }
 

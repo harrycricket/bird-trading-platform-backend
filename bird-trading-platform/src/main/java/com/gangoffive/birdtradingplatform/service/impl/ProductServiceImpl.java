@@ -2,7 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.entity.*;
-import com.gangoffive.birdtradingplatform.exception.ErrorResponse;
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
@@ -82,9 +82,13 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductDto> retrieveTopProduct() {
         PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
                 .and(Sort.by(Sort.Direction.DESC, "totalQuantityOrder")));
-        List<Long> listIds = productSummaryRepository.findAll(page).stream().map(id -> id.getProduct().getId()).toList();
-        List<Product> product = productRepository.findAllById(listIds);
-        return this.listModelToDto(product);
+        List<ProductSummary> listsTemp =  productSummaryRepository.findAll(page).getContent();
+        if(listsTemp != null && listsTemp.size() != 0) {
+            List<Long> listIds = listsTemp.stream().map(id -> id.getProduct().getId()).toList();
+            List<Product> product = productRepository.findAllById(listIds);
+            return this.listModelToDto(product);
+        }
+        return null;
     }
 
     @Override

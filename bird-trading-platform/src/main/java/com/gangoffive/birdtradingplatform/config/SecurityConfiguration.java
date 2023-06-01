@@ -21,7 +21,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import static com.gangoffive.birdtradingplatform.enums.Permission.*;
 import static com.gangoffive.birdtradingplatform.enums.UserRole.*;
-import static org.springframework.http.HttpMethod.*;
 
 @Configuration
 @EnableWebSecurity
@@ -53,6 +52,9 @@ public class SecurityConfiguration {
             "/user/me",
             "/api/v1/users/register",
             "/api/v1/users/authenticate",
+            "/api/v1/users/resetpassword",
+            "/api/v1/users/verify/register",
+            "/api/v1/users/verify/resetpassword",
             "/api/v1/products",
             "/api/v1/products/**",
             "/api/v1/birds",
