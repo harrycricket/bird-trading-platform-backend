@@ -23,8 +23,8 @@ jobs:
             uses: actions/checkout@v3
 
          -  name: cd TOWORKSPACE
-            run: cd ./bird-trading-platform/
-         
+            run: cd ./bird-trading-platform-backend/bird-trading-platform-backend/bird-trading-platform/
+                 echo $(ls -a)
          -  uses: actions/checkout@v3
          -  name: Set up JDK 18
             uses: actions/setup-java@v3
