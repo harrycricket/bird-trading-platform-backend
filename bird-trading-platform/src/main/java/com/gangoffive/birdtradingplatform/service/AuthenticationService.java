@@ -7,4 +7,6 @@ import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationResponse
 public interface AuthenticationService {
     String register(AccountDto accountDto);
     AuthenticationResponse authenticate(AuthenticationRequest request);
+
+    String resetPassword(String email);
 }

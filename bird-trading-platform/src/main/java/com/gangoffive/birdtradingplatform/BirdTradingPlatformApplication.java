@@ -12,19 +12,9 @@ import org.springframework.context.event.EventListener;
 
 @SpringBootApplication
 @EnableConfigurationProperties(AppProperties.class)
-@RequiredArgsConstructor
 public class BirdTradingPlatformApplication {
-	private final EmailSenderService emailSenderService;
 	public static void main(String[] args) {
 		SpringApplication.run(BirdTradingPlatformApplication.class, args);
 	}
-
-//	@Override
-//	public void run(String... args) throws Exception {
-//		emailSenderService.sendSimpleEmail("hoangtienbmt2911@gmail.com", "CHOs", "Hoc ngu");
-//	}
 }
-
-	
-
 

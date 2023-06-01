@@ -5,6 +5,7 @@ import com.gangoffive.birdtradingplatform.dto.AccountDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.VerifyToken;
 import com.gangoffive.birdtradingplatform.enums.AuthProvider;
+import com.gangoffive.birdtradingplatform.enums.MailSenderStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
@@ -22,8 +23,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalTime;
-import java.time.temporal.TemporalUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
@@ -41,6 +40,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final EmailSenderService emailSenderService;
     private final AppProperties appProperties;
     private final VerifyTokenRepository verifyTokenRepository;
+    private final String emailSubject = "Reset Your Password";
+    private final int expiration = 600000;
+
 
     @Override
     public String register(AccountDto accountDto) {
@@ -65,7 +67,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
                 //sending mail to verify
                 String verificationCode = UUID.randomUUID().toString();
-                String verificationLink = appProperties.getEmail().getVerifyLink() + verificationCode;
+                String verificationLink = appProperties.getEmail().getVerifyLink() + "register?token=" + verificationCode;
                 log.info("verify link {}", verificationLink);
                 String emailSubject = "Account Verification";
                 StringBuffer emailContent = new StringBuffer();
@@ -90,9 +92,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 Date expired = calendar.getTime();
                 verifyToken.setExpired(expired);
                 verifyToken.setRevoked(false);
-
-
-
                 //send mail
                 try {
                     emailSenderService.sendSimpleEmail(accountDto.getEmail(),emailContent.toString(),emailSubject);
@@ -108,7 +107,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             }
         }
         return "Something went wrong!";
-
     }
 
     @Override
@@ -122,6 +120,29 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         var account = accountRepository.findByEmail(request.getEmail()).orElseThrow();
         return getAuthenticationResponse(account);
+    }
+
+    @Override
+    public String resetPassword(String email) {
+        Optional<Account> account = accountRepository.findByEmail(email);
+        if (account.isPresent()) {
+            String randomToken = UUID.randomUUID().toString();
+            VerifyToken verifyToken = new VerifyToken();
+            verifyToken.setToken(randomToken);
+            verifyToken.setExpired(new Date(System.currentTimeMillis() + expiration));
+            verifyToken.setRevoked(false);
+            verifyToken.setAccount(account.get());
+            verifyTokenRepository.save(verifyToken);
+            String linkVerify = appProperties.getEmail().getVerifyLink() + "resetpassword?token=" + randomToken;
+            String bodyMailSent =
+                    "Click on the link below to reset password:\n"
+                    + linkVerify
+                  ;
+            emailSenderService.sendSimpleEmail(email, bodyMailSent, emailSubject);
+            return MailSenderStatus.MAIL_SENT.name();
+        } else {
+            return MailSenderStatus.MAIL_NOT_FOUND.name();
+        }
     }
 
     private AuthenticationResponse getAuthenticationResponse(Account account) {

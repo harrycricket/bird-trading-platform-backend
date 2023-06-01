@@ -133,9 +133,13 @@ public class AppProperties {
             this.username = username;
         }
 
-        public void setVerifyLink(String verifyLink){ this.verifyLink = verifyLink; }
+        public void setVerifyLink(String verifyLink) {
+            this.verifyLink = verifyLink;
+        }
 
-        public String getVerifyLink() { return this.verifyLink; }
+        public String getVerifyLink() {
+            return this.verifyLink;
+        }
     }
 
     public Auth getAuth() {

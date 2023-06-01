@@ -7,5 +7,5 @@ import org.springframework.http.ResponseEntity;
 public interface AccountService {
     Account updateAccount(AccountUpdateDto accountUpdateDto);
 
-    ResponseEntity<?> verifyToken(String token);
+    ResponseEntity<?> verifyToken(String token, boolean isResetPassword);
 }
