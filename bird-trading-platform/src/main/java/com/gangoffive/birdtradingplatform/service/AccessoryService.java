@@ -15,4 +15,6 @@ public interface AccessoryService {
     void updateAccessory(AccessoryDto accessoryDto);
 
     void deleteAccessoryById(Long id);
+
+    List<AccessoryDto> findTopAccessories();
 }

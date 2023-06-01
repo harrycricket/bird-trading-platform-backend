@@ -25,8 +25,9 @@ import java.util.List;
 //    public void run(String... args) throws Exception {
 //        List<Product> lists = productRepository.findAll();
 //        log.info("list {}", lists.size());
-//        for(Product pro : lists){
-//            productSummaryService.apply(pro);
+//        for(Product pro : lists) {
+////            productSummaryService.apply(pro);
+//            productSummaryService.updateCategory(pro);
 //        }
 //        log.info("da run trong nay");
 //    }

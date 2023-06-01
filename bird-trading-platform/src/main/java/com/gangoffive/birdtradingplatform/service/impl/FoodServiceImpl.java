@@ -1,6 +1,8 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
 import com.gangoffive.birdtradingplatform.dto.FoodDto;
+import com.gangoffive.birdtradingplatform.entity.Accessory;
 import com.gangoffive.birdtradingplatform.entity.Food;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
@@ -8,6 +10,7 @@ import com.gangoffive.birdtradingplatform.repository.FoodRepository;
 import com.gangoffive.birdtradingplatform.repository.TagRepository;
 import com.gangoffive.birdtradingplatform.service.FoodService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
+import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +29,7 @@ public class FoodServiceImpl implements FoodService {
     private final TagRepository tagRepository;
     private final FoodMapper foodMapper;
     private final ProductService productService;
+    private final ProductSummaryService productSummaryService;
 
     @Override
     public List<FoodDto> retrieveAllFood() {
@@ -70,6 +74,16 @@ public class FoodServiceImpl implements FoodService {
     @Override
     public void deleteFoodById(Long id) {
         foodRepository.deleteById(id);
+    }
+
+    @Override
+    public List<FoodDto> findTopFood() {
+        List<Food> lists = foodRepository.findAllById(productSummaryService.getIdTopFood());
+        if(lists != null) {
+            List<FoodDto> listDto = lists.stream().map(this::apply).toList();
+            return listDto;
+        }
+        return null;
     }
 
     private FoodDto apply(Food food) {
