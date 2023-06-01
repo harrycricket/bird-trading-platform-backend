@@ -65,30 +65,32 @@ public class AccountServiceImpl implements AccountService {
     public ResponseEntity<?> verifyToken(String token) {
         log.info("token {}", token);
         var tokenRepo = verifyTokenRepository.findByToken(token);
-        if(tokenRepo.isPresent()){
-            if(tokenRepo.get().isRevoked()){
+        if (tokenRepo.isPresent()) {
+            if (!tokenRepo.get().isRevoked()) {
                 Date expireDate = tokenRepo.get().getExpired();
                 Date timeNow = new Date();
-                if(timeNow.after(expireDate)){
-                    ErrorResponse errorResponse = new  ErrorResponse().builder().errorCode(HttpStatus.BAD_REQUEST.toString())
+                if (timeNow.after(expireDate)) {
+                    ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.BAD_REQUEST.toString())
                             .errorMessage("This link has already expired. Please regenerate the link to continue the verification").build();
-                    return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
                 }
                 var account = tokenRepo.get().getAccount();
+                //set revoked
+                tokenRepo.get().setRevoked(true);
                 account.setEnable(true);
                 accountRepository.save(account);
-                return  ResponseEntity.ok(new ApiResponse(LocalDateTime.now(), "Verification of the account was successful!"));
+                return ResponseEntity.ok(new ApiResponse(LocalDateTime.now(), "Verification of the account was successful!"));
             }
-            ErrorResponse errorResponse = new  ErrorResponse().builder().errorCode(HttpStatus.BAD_REQUEST.toString())
+
+            ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.BAD_REQUEST.toString())
                     .errorMessage("This verify link has already used!").build();
-            return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
-        ErrorResponse errorResponse = new  ErrorResponse().builder().errorCode(HttpStatus.NOT_FOUND.toString())
+        ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.NOT_FOUND.toString())
                 .errorMessage("Not found token. Link not true").build();
-        //set revoked
-        tokenRepo.get().setRevoked(true);
+
         verifyTokenRepository.save(tokenRepo.get());
 
-        return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }

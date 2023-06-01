@@ -62,34 +62,46 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 acc.setRole(UserRole.USER);
                 acc.setEnable(false);
                 acc.setProvider(AuthProvider.local);
-                accountRepository.save(acc);
 
                 //sending mail to verify
                 String verificationCode = UUID.randomUUID().toString();
                 String verificationLink = appProperties.getEmail().getVerifyLink() + verificationCode;
                 log.info("verify link {}", verificationLink);
                 String emailSubject = "Account Verification";
-                String emailContent = "Dear User,\n\n"
-                        + "Thank you for registering an account with our service. Please use the following verification code to activate your account:\n\n"
-                        + "Verification Link <a href='http' > hehe </a>: " + verificationLink + "\n\n"
-                        + "This link will expire after 10 minutes.\n\n"
-                        + "If you did not create an account or have any questions, please contact our support team.\n\n"
-                        + "Best regards,\n"
-                        + "BirdStore2ND";
+                StringBuffer emailContent = new StringBuffer();
+                emailContent.append("<html>");
+                emailContent.append("<body>");
+                emailContent.append("<p>Dear User,</p>");
+                emailContent.append("<p>Thank you for registering an account with our service. Please use the following verification code to activate your account:</p>");
+                emailContent.append("<p><strong>Verification:</strong> <a href=\"" + verificationLink + "\">" + "Link here" + "</a></p>");
+                emailContent.append("<p>This link will expire after 10 minutes.</p>");
+                emailContent.append("<p>If you did not create an account or have any questions, please contact our support team.</p>");
+                emailContent.append("<p>Best regards,</p>");
+                emailContent.append("<p>BirdStore2ND</p>");
+                emailContent.append("</body>");
+                emailContent.append("</html>");
+
                 VerifyToken verifyToken = new VerifyToken();
                 verifyToken.setToken(verificationCode);
                 verifyToken.setAccount(acc);
+                verifyToken.setRevoked(false);
                 Calendar calendar = Calendar.getInstance();
                 calendar.add(Calendar.MINUTE,  10);
-                Date expried = calendar.getTime();
-                verifyToken.setExpired(expried);
+                Date expired = calendar.getTime();
+                verifyToken.setExpired(expired);
                 verifyToken.setRevoked(false);
 
-                //save token
-                verifyTokenRepository.save(verifyToken);
+
 
                 //send mail
-                emailSenderService.sendSimpleEmail(accountDto.getEmail(),emailContent,emailSubject);
+                try {
+                    emailSenderService.sendSimpleEmail(accountDto.getEmail(),emailContent.toString(),emailSubject);
+                }catch (Exception e){
+                    return "The mail is not correct!";
+                }
+                accountRepository.save(acc);
+                //save token
+                verifyTokenRepository.save(verifyToken);
                 return "Register Successfully!";
             }else{
                 return "The email has already been used!";
