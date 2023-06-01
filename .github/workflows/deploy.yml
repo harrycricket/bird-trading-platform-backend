@@ -11,10 +11,7 @@ on:
           - "main"
           - "release/**"
           - "dev/**"
-<<<<<<< HEAD
-=======
    workflow_dispatch:
->>>>>>> origin/main
 jobs:
    say-hello:
       name: Build image
