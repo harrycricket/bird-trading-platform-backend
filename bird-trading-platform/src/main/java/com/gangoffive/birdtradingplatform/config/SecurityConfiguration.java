@@ -35,7 +35,6 @@ import static org.springframework.http.HttpMethod.*;
 public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
-    private final AppProperties appProperties;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
@@ -53,6 +52,7 @@ public class SecurityConfiguration {
             "/error",
             "/user/me",
             "/api/v1/users/register",
+            "/api/v1/users/verify",
             "/api/v1/users/authenticate",
             "/api/v1/products",
             "/api/v1/products/**",
@@ -95,29 +95,33 @@ public class SecurityConfiguration {
                         auth -> auth.requestMatchers(WHITE_LIST_URLS)
                                 .permitAll()
 
+                                .requestMatchers(HttpMethod.GET, "/api/v1/admin/**").hasAnyAuthority(ADMIN_READ.getPermission())
+                                .requestMatchers(HttpMethod.POST, "/api/v1/admin/**").hasAnyAuthority(ADMIN_CREATE.getPermission())
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/admin/**").hasAnyAuthority(ADMIN_UPDATE.getPermission())
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/admin/**").hasAnyAuthority(ADMIN_DELETE.getPermission())
                                 .requestMatchers("/api/v1/admin/**").hasAnyRole(ADMIN.name())
-                                .requestMatchers(HttpMethod.GET, "/api/v1/admin/**").hasAnyAuthority(ADMIN_READ.name())
-                                .requestMatchers(HttpMethod.POST, "/api/v1/admin/**").hasAnyAuthority(ADMIN_CREATE.name())
-                                .requestMatchers(HttpMethod.PUT, "/api/v1/admin/**").hasAnyAuthority(ADMIN_UPDATE.name())
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/admin/**").hasAnyAuthority(ADMIN_DELETE.name())
 
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_READ.getPermission())
+                                .requestMatchers(HttpMethod.POST, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_UPDATE.getPermission())
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_DELETE.getPermission())
                                 .requestMatchers("/api/v1/shopowner/**").hasAnyRole(SHOPOWNER.name())
-                                .requestMatchers(HttpMethod.GET, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_READ.name())
-                                .requestMatchers(HttpMethod.POST, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_CREATE.name())
-                                .requestMatchers(HttpMethod.PUT, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_UPDATE.name())
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_DELETE.name())
 
+
+                                .requestMatchers(HttpMethod.GET, "/api/v1/user/**").hasAnyAuthority(USER_READ.getPermission())
+                                .requestMatchers(HttpMethod.POST, "/api/v1/user/**").hasAnyAuthority(USER_CREATE.getPermission())
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/user/**").hasAnyAuthority(USER_UPDATE.getPermission())
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/user/**").hasAnyAuthority(USER_DELETE.getPermission())
                                 .requestMatchers("/api/v1/user/**").hasAnyRole(USER.name())
-                                .requestMatchers(HttpMethod.GET, "/api/v1/user/**").hasAnyAuthority(USER_READ.name())
-                                .requestMatchers(HttpMethod.POST, "/api/v1/user/**").hasAnyAuthority(USER_CREATE.name())
-                                .requestMatchers(HttpMethod.PUT, "/api/v1/user/**").hasAnyAuthority(USER_UPDATE.name())
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/user/**").hasAnyAuthority(USER_DELETE.name())
 
+
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shopstaff/**").hasAnyAuthority(SHOPSTAFF_READ.getPermission())
                                 .requestMatchers("/api/v1/shopstaff/**").hasAnyRole(SHOPSTAFF.name())
-                                .requestMatchers(HttpMethod.GET, "/api/v1/shopstaff/**").hasAnyAuthority(SHOPSTAFF_READ.name())
 
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").hasAnyAuthority(USER_UPDATE.getPermission(), SHOPSTAFF_UPDATE.getPermission(), SHOPOWNER_UPDATE.getPermission())
+                                .requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasAnyAuthority(USER_READ.getPermission(), SHOPSTAFF_READ.getPermission(), SHOPOWNER_READ.getPermission())
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasAnyAuthority(SHOPOWNER_DELETE.getPermission(), USER_DELETE.getPermission())
                                 .requestMatchers("/api/v1/users/**").hasAnyRole(USER.name(), SHOPSTAFF.name(), SHOPOWNER.name())
-                                .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").hasAnyAuthority(USER_UPDATE.name(), SHOPSTAFF_UPDATE.name(), SHOPOWNER_UPDATE.name())
 
                                 .anyRequest()
                                 .authenticated()

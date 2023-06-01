@@ -2,7 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.entity.Bird;
-import com.gangoffive.birdtradingplatform.exception.ErrorResponse;
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.repository.BirdRepository;
 import com.gangoffive.birdtradingplatform.repository.TagRepository;
