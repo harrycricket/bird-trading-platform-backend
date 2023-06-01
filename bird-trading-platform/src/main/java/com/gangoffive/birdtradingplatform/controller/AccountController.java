@@ -17,8 +17,8 @@ public class AccountController {
     private final AccountService accountService;
 
     @PutMapping("/users/updateprofile")
-    @RolesAllowed({"SHOPOWNER", "SHOPSTAFF", "USER"})
-    @PreAuthorize("hasAnyAuthority('shopowner:update', 'shopstaff:update', 'user:update')")
+//    @RolesAllowed({"SHOPOWNER", "SHOPSTAFF", "USER"})
+//    @PreAuthorize("hasAnyAuthority('shopowner:update', 'shopstaff:update', 'user:update')")
     public void updateProfile(@RequestBody AccountUpdateDto accountUpdateDto){
         accountService.updateAccount(accountUpdateDto);
     }
