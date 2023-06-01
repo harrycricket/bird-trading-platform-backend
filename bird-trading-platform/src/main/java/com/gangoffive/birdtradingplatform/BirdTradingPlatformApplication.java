@@ -24,7 +24,7 @@ public class BirdTradingPlatformApplication {
 //		emailSenderService.sendSimpleEmail("hoangtienbmt2911@gmail.com", "CHOs", "Hoc ngu");
 //	}
 
-	
+
 }
 
 	
