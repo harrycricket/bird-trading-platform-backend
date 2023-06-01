@@ -1,23 +1,21 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ApiResponse;
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Address;
-import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
+import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.AddressRepository;
 import com.gangoffive.birdtradingplatform.repository.VerifyTokenRepository;
 import com.gangoffive.birdtradingplatform.service.AccountService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import com.gangoffive.birdtradingplatform.repository.AccountRepository;
-
-import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -62,7 +60,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public ResponseEntity<?> verifyToken(String token) {
+    public ResponseEntity<?> verifyToken(String token, boolean isResetPassword) {
         log.info("token {}", token);
         var tokenRepo = verifyTokenRepository.findByToken(token);
         if (tokenRepo.isPresent()) {
@@ -74,15 +72,15 @@ public class AccountServiceImpl implements AccountService {
                             .errorMessage("This link has already expired. Please regenerate the link to continue the verification").build();
                     return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
                 }
-                var account = tokenRepo.get().getAccount();
-                //set revoked
+                if (!isResetPassword) {
+                    var account = tokenRepo.get().getAccount();
+                    account.setEnable(true);
+                    accountRepository.save(account);
+                }
                 tokenRepo.get().setRevoked(true);
-                account.setEnable(true);
                 verifyTokenRepository.save(tokenRepo.get());
-                accountRepository.save(account);
                 return ResponseEntity.ok(new ApiResponse(LocalDateTime.now(), "Verification of the account was successful!"));
             }
-
             ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.BAD_REQUEST.toString())
                     .errorMessage("This verify link has already used!").build();
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
