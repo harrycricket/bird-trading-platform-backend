@@ -1,7 +1,5 @@
 package com.gangoffive.birdtradingplatform.enums;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -9,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import static com.gangoffive.birdtradingplatform.enums.Permission.*;
 @RequiredArgsConstructor
 

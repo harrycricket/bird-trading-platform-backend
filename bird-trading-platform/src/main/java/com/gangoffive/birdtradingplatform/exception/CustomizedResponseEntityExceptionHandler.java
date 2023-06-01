@@ -1,5 +1,7 @@
 package com.gangoffive.birdtradingplatform.exception;
 
+import com.gangoffive.birdtradingplatform.api.response.ApiError;
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
