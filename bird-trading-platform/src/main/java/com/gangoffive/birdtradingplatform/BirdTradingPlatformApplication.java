@@ -17,6 +17,6 @@ public class BirdTradingPlatformApplication {
 		SpringApplication.run(BirdTradingPlatformApplication.class, args);
 	}
 
-	
+	git ad
 }
 
