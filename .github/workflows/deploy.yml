@@ -32,7 +32,10 @@ jobs:
                java-version: '18'
                distribution: 'temurin'
          -  name: cd INDIRECT
-            run: echo $(pwd)
+            run: |
+               echo $(pwd)
+               echo $(ls -a)
+
          -  name: Build with Maven
             run: mvn install
          -  name: 'Create env file'
