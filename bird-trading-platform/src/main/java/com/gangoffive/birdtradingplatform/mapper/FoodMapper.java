@@ -11,7 +11,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", imports = ProductServiceImpl.class)
 public interface FoodMapper {
     @Mapping(target = "id", source = "food.id")
-    @Mapping(source = "food.typeFood", target = "typeFood")
+    @Mapping(source = "food.typeFood", target = "type")
     @Mapping(source = "food.shopOwner.id", target = "shopOwner.id")
     @Mapping(source = "food.shopOwner.shopName", target = "shopOwner.shopName")
     @Mapping(source = "food.shopOwner.imgUrl", target = "shopOwner.imgUrl", defaultValue = "https://th.bing.com/th/id/R.aeaa38b7aa3046ce9086cc361c820b4c?rik=uVb%2bxcU7Xy6ZzA&pid=ImgRaw&r=0")

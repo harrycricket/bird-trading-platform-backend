@@ -12,7 +12,7 @@ import java.util.List;
 public class AccessoryDto extends ProductDto{
     private String origin;
 
-    private TypeAccessory typeAccessory;
+    private TypeAccessory type;
 
     private List<Tag> tags;
 
