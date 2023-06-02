@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.service;
 
+import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -19,4 +20,6 @@ public interface ProductSummaryService {
     List<Long> getIdTopAccessories();
 
     List<Long> getIdTopFood();
+
+    double CalculationRating(List<OrderDetail> orderDetails);
 }
