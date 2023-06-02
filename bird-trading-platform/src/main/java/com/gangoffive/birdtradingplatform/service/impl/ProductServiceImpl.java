@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -74,25 +75,29 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductDto> retrieveTopProduct() {
         List<Long> birdIds = productSummaryService.getIdTopBird();
-        List<Long> accessorytIds = productSummaryService.getIdTopAccessories();
+        List<Long> accessoryIds = productSummaryService.getIdTopAccessories();
         List<Long> foodIds = productSummaryService.getIdTopFood();
 
-        List<Long> topProductIds = new ArrayList<>();
+        ArrayList<Long> topProductIds = new ArrayList<>();
 
-        if(birdIds != null && accessorytIds != null && foodIds != null){
-            topProductIds.addAll(birdIds.subList(0,3));
-            topProductIds.addAll(accessorytIds.subList(0,3));
-            topProductIds.addAll(foodIds.subList(0,3));
+        if(birdIds != null && accessoryIds != null && foodIds != null){
+
+            topProductIds.addAll(birdIds.subList(0, 3));
+            topProductIds.addAll(accessoryIds.subList(0, 3));
+            topProductIds.addAll(foodIds.subList(0, 3));
+
         }else{
             PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
                                             .and(Sort.by(Sort.Direction.DESC, "totalQuantityOrder")));
             List<ProductSummary> listsTemp =  productSummaryRepository.findAll(page).getContent();
             if(listsTemp != null && listsTemp.size() != 0) {
-                topProductIds = listsTemp.stream().map(id -> id.getProduct().getId()).toList();
+                topProductIds = (ArrayList<Long>) listsTemp.stream().map(id -> id.getProduct().getId()).toList();
             }
         }
         List<Product> product = productRepository.findAllById(topProductIds);
-        return this.listModelToDto(product);
+        List<ProductDto> listDtos = this.listModelToDto(product);
+        Collections.shuffle(listDtos);
+        return listDtos;
     }
 
     @Override
