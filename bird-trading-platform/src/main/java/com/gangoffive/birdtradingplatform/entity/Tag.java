@@ -59,6 +59,14 @@ public class Tag {
     @JsonIgnore
     private List<Food> foods = new ArrayList<>();
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
