@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.AccountDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
@@ -18,6 +19,8 @@ import com.gangoffive.birdtradingplatform.service.EmailSenderService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -110,7 +113,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public ResponseEntity<?> authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -118,8 +121,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 )
         );
 
-        var account = accountRepository.findByEmail(request.getEmail()).orElseThrow();
-        return getAuthenticationResponse(account);
+        var account = accountRepository.findByEmail(request.getEmail()).orElse(null);
+        if(account == null){
+            ErrorResponse error = new ErrorResponse().builder().errorCode(HttpStatus.UNAUTHORIZED.toString()).
+                    errorMessage("Email or password not correct!").build();
+            return new ResponseEntity<>(error,HttpStatus.UNAUTHORIZED);
+        }
+        return ResponseEntity.ok(getAuthenticationResponse(account));
     }
 
     @Override
