@@ -10,6 +10,7 @@ import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
+import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,6 +38,7 @@ public class ProductServiceImpl implements ProductService {
     private final FoodMapper foodMapper;
     private final AccessoryMapper accessoryMapper;
     private final ProductSummaryRepository productSummaryRepository;
+    private final ProductSummaryService productSummaryService;
 
     @Override
     public List<ProductDto> retrieveAllProduct() {
@@ -65,30 +68,31 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public double CalculationRating(List<OrderDetail> orderDetails) {
-        if (orderDetails != null && orderDetails.size() != 0) {
-            List<Long> orderDetailId = orderDetails.stream().map(id -> id.getId()).collect(Collectors.toList());
-            List<Review> listReview = reviewRepository.findAllByOrderDetailIdIn(orderDetailId).get();
-            if (listReview != null && listReview.size() != 0) {
-                double sumRating = listReview.stream()
-                        .map(rating -> rating.getRating().ordinal() + 1)
-                        .reduce(0, Integer::sum);
-                return Math.round((sumRating / listReview.size()) * 10.0) / 10.0;
-            }
-        }
-        return 0;
+       return productSummaryService.CalculationRating(orderDetails);
     }
 
     @Override
     public List<ProductDto> retrieveTopProduct() {
-        PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
-                .and(Sort.by(Sort.Direction.DESC, "totalQuantityOrder")));
-        List<ProductSummary> listsTemp =  productSummaryRepository.findAll(page).getContent();
-        if(listsTemp != null && listsTemp.size() != 0) {
-            List<Long> listIds = listsTemp.stream().map(id -> id.getProduct().getId()).toList();
-            List<Product> product = productRepository.findAllById(listIds);
-            return this.listModelToDto(product);
+        List<Long> birdIds = productSummaryService.getIdTopBird();
+        List<Long> accessorytIds = productSummaryService.getIdTopAccessories();
+        List<Long> foodIds = productSummaryService.getIdTopFood();
+
+        List<Long> topProductIds = new ArrayList<>();
+
+        if(birdIds != null && accessorytIds != null && foodIds != null){
+            topProductIds.addAll(birdIds.subList(0,3));
+            topProductIds.addAll(accessorytIds.subList(0,3));
+            topProductIds.addAll(foodIds.subList(0,3));
+        }else{
+            PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
+                                            .and(Sort.by(Sort.Direction.DESC, "totalQuantityOrder")));
+            List<ProductSummary> listsTemp =  productSummaryRepository.findAll(page).getContent();
+            if(listsTemp != null && listsTemp.size() != 0) {
+                topProductIds = listsTemp.stream().map(id -> id.getProduct().getId()).toList();
+            }
         }
-        return null;
+        List<Product> product = productRepository.findAllById(topProductIds);
+        return this.listModelToDto(product);
     }
 
     @Override

@@ -22,12 +22,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProductSummaryServiceImpl implements ProductSummaryService {
     private final ProductSummaryRepository productSummaryRepository;
-    private final ProductService productService;
     private final ReviewRepository reviewRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
     public double updateProductStar(Product product) {
-        double star = productService.CalculationRating(product.getOrderDetails());
+        double star = this.CalculationRating(product.getOrderDetails());
         var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
         productSummary.setStar(star);
         productSummary.setProduct(product);
@@ -118,6 +117,21 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
         }
 
         return null;
+    }
+
+    @Override
+    public double CalculationRating(List<OrderDetail> orderDetails) {
+        if (orderDetails != null && orderDetails.size() != 0) {
+            List<Long> orderDetailId = orderDetails.stream().map(id -> id.getId()).collect(Collectors.toList());
+            List<Review> listReview = reviewRepository.findAllByOrderDetailIdIn(orderDetailId).get();
+            if (listReview != null && listReview.size() != 0) {
+                double sumRating = listReview.stream()
+                        .map(rating -> rating.getRating().ordinal() + 1)
+                        .reduce(0, Integer::sum);
+                return Math.round((sumRating / listReview.size()) * 10.0) / 10.0;
+            }
+        }
+        return 0;
     }
 
 }
