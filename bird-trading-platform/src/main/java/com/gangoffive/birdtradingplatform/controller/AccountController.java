@@ -20,7 +20,7 @@ public class AccountController {
 //    @RolesAllowed({"SHOPOWNER"})
     @PreAuthorize("hasAnyAuthority('shopowner:update') OR hasAnyAuthority('shopstaff:update') OR hasAnyAuthority('user:update')")
     public void updateProfile(@RequestBody AccountUpdateDto accountUpdateDto){
-        System.out.println("hello");
+//        System.out.println("hello");
         accountService.updateAccount(accountUpdateDto);
     }
 }
