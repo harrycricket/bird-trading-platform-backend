@@ -57,8 +57,7 @@ app:
     # We're not using cookies because they won't work well in mobile clients.
     authorizedRedirectUris:
       - http://localhost:3000/oauth2/redirect
-      - myandroidapp://oauth2/redirect
-      - myiosapp://oauth2/redirect
+      - https://birdstore2nd.vercel.app
   aws:
     accessKey: ${env.S3_ACCESS_KEY}
     secretKey: ${env.S3_SECRET_KEY}
