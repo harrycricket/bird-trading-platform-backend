@@ -48,19 +48,22 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     }
 
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        Optional<String> redirectUri = CookieUtils.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
-                .map(Cookie::getValue);
+//        Optional<String> redirectUri = CookieUtils.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
+//                .map(Cookie::getValue);
 
-        if(redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get())) {
+        String redirectUri = CookieUtils.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
+                .map(Cookie::getValue).orElse("https://birdstore2nd.vercel.app");
+
+        if(!isAuthorizedRedirectUri(redirectUri))
             throw new BadRequestException("Sorry! We've got an Unauthorized Redirect URI and can't proceed with the authentication");
-        }
 
-        String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
+        String targetUrl = redirectUri;
         UserPrincipal userPrincipal = (UserPrincipal)authentication.getPrincipal();
         String token = jwtService.generateToken(userPrincipal);
         String refreshToken;
         log.info("targetUrl {}", targetUrl.toString());
         log.info("getRequestURL {}", request.getRequestURL().toString());
+        log.info("account {}", userPrincipal.getEmail());
         Optional<Account> account = accountRepository.findByEmail(userPrincipal.getEmail());
         if (account.get().getRefreshToken() != null) {
             refreshToken = account.get().getRefreshToken();

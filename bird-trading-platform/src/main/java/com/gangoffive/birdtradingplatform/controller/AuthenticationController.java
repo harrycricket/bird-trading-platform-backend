@@ -6,10 +6,7 @@ import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationResponse
 import com.gangoffive.birdtradingplatform.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -24,9 +21,14 @@ public class AuthenticationController {
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(
+    public ResponseEntity<?> authenticate(
             @RequestBody AuthenticationRequest request
     ) {
-        return ResponseEntity.ok(authenticationService.authenticate(request));
+        return authenticationService.authenticate(request);
+    }
+
+    @GetMapping("/resetpassword")
+    public ResponseEntity<?> resetPassword(@RequestParam String email) {
+        return ResponseEntity.ok(authenticationService.resetPassword(email));
     }
 }

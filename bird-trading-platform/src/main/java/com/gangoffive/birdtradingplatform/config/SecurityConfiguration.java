@@ -9,20 +9,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import static com.gangoffive.birdtradingplatform.enums.Permission.*;
 import static com.gangoffive.birdtradingplatform.enums.UserRole.*;
-import static org.springframework.http.HttpMethod.*;
-import static org.springframework.http.HttpMethod.DELETE;
 
 @Configuration
 @EnableWebSecurity
@@ -36,7 +34,6 @@ import static org.springframework.http.HttpMethod.DELETE;
 public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
-    private final AppProperties appProperties;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
@@ -55,6 +52,9 @@ public class SecurityConfiguration {
             "/user/me",
             "/api/v1/users/register",
             "/api/v1/users/authenticate",
+            "/api/v1/users/resetpassword",
+            "/api/v1/users/verify/register",
+            "/api/v1/users/verify/resetpassword",
             "/api/v1/products",
             "/api/v1/products/**",
             "/api/v1/birds",
@@ -83,27 +83,12 @@ public class SecurityConfiguration {
             "/webjars/**",
             "/swagger-ui.html"
     };
-    private final long MAX_AGE_SECS = 3600;
-
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins(appProperties.getCors().getAllowedOrigins())
-                        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                        .allowedHeaders("*")
-                        .allowCredentials(true)
-                        .maxAge(MAX_AGE_SECS);
-            }
-        };
-    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable())
+                .cors(Customizer.withDefaults())
                 .formLogin(formLogin -> formLogin.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new RestAuthenticationEntryPoint()))
@@ -111,26 +96,33 @@ public class SecurityConfiguration {
                         auth -> auth.requestMatchers(WHITE_LIST_URLS)
                                 .permitAll()
 
+                                .requestMatchers(HttpMethod.GET, "/api/v1/admin/**").hasAnyAuthority(ADMIN_READ.getPermission())
+                                .requestMatchers(HttpMethod.POST, "/api/v1/admin/**").hasAnyAuthority(ADMIN_CREATE.getPermission())
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/admin/**").hasAnyAuthority(ADMIN_UPDATE.getPermission())
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/admin/**").hasAnyAuthority(ADMIN_DELETE.getPermission())
                                 .requestMatchers("/api/v1/admin/**").hasAnyRole(ADMIN.name())
-                                .requestMatchers(GET, "/api/v1/admin/**").hasAnyAuthority(ADMIN_READ.name())
-                                .requestMatchers(POST, "/api/v1/admin/**").hasAnyAuthority(ADMIN_CREATE.name())
-                                .requestMatchers(PUT, "/api/v1/admin/**").hasAnyAuthority(ADMIN_UPDATE.name())
-                                .requestMatchers(DELETE, "/api/v1/admin/**").hasAnyAuthority(ADMIN_DELETE.name())
 
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_READ.getPermission())
+                                .requestMatchers(HttpMethod.POST, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_UPDATE.getPermission())
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_DELETE.getPermission())
                                 .requestMatchers("/api/v1/shopowner/**").hasAnyRole(SHOPOWNER.name())
-                                .requestMatchers(GET, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_READ.name())
-                                .requestMatchers(POST, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_CREATE.name())
-                                .requestMatchers(PUT, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_UPDATE.name())
-                                .requestMatchers(DELETE, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_DELETE.name())
 
+
+                                .requestMatchers(HttpMethod.GET, "/api/v1/user/**").hasAnyAuthority(USER_READ.getPermission())
+                                .requestMatchers(HttpMethod.POST, "/api/v1/user/**").hasAnyAuthority(USER_CREATE.getPermission())
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/user/**").hasAnyAuthority(USER_UPDATE.getPermission())
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/user/**").hasAnyAuthority(USER_DELETE.getPermission())
                                 .requestMatchers("/api/v1/user/**").hasAnyRole(USER.name())
-                                .requestMatchers(GET, "/api/v1/user/**").hasAnyAuthority(USER_READ.name())
-                                .requestMatchers(POST, "/api/v1/user/**").hasAnyAuthority(USER_CREATE.name())
-                                .requestMatchers(PUT, "/api/v1/user/**").hasAnyAuthority(USER_UPDATE.name())
-                                .requestMatchers(DELETE, "/api/v1/user/**").hasAnyAuthority(USER_DELETE.name())
 
+
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shopstaff/**").hasAnyAuthority(SHOPSTAFF_READ.getPermission())
                                 .requestMatchers("/api/v1/shopstaff/**").hasAnyRole(SHOPSTAFF.name())
-                                .requestMatchers(GET, "/api/v1/shopstaff/**").hasAnyAuthority(SHOPSTAFF_READ.name())
+
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").hasAnyAuthority(USER_UPDATE.getPermission(), SHOPSTAFF_UPDATE.getPermission(), SHOPOWNER_UPDATE.getPermission())
+                                .requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasAnyAuthority(USER_READ.getPermission(), SHOPSTAFF_READ.getPermission(), SHOPOWNER_READ.getPermission())
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasAnyAuthority(SHOPOWNER_DELETE.getPermission(), USER_DELETE.getPermission())
+                                .requestMatchers("/api/v1/users/**").hasAnyRole(USER.name(), SHOPSTAFF.name(), SHOPOWNER.name())
 
                                 .anyRequest()
                                 .authenticated()

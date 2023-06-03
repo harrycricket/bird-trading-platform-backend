@@ -32,6 +32,11 @@ public class FoodController {
         return foodService.findFoodByName(name);
     }
 
+    @GetMapping("foods/topproduct")
+    public List<FoodDto> findTopFood() {
+        return foodService.findTopFood();
+    }
+
     @PostMapping("/shopowner/foods/update/{id}")
     @PreAuthorize("hasAnyAuthority('shopowner:update')")
     public void updateFood(@RequestParam FoodDto foodDto) {

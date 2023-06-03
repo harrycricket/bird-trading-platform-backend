@@ -2,12 +2,13 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.entity.Bird;
-import com.gangoffive.birdtradingplatform.exception.ErrorResponse;
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.repository.BirdRepository;
 import com.gangoffive.birdtradingplatform.repository.TagRepository;
 import com.gangoffive.birdtradingplatform.service.BirdService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
+import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,7 @@ public class BirdServiceImpl implements BirdService {
     private final TagRepository tagRepository;
     private final BirdMapper birdMapper;
     private final ProductService productService;
+    private final ProductSummaryService productSummaryService;
 
     @Override
     public List<BirdDto> retrieveAllBird() {
@@ -74,6 +76,16 @@ public class BirdServiceImpl implements BirdService {
     @Override
     public void deleteBirdById(Long id) {
         birdRepository.deleteById(id);
+    }
+
+    @Override
+    public List<BirdDto> findTopBirdProduct() {
+        List<Bird> listBirds = birdRepository.findAllById(productSummaryService.getIdTopBird());
+        if(listBirds != null) {
+            List<BirdDto> birdDtos = listBirds.stream().map(this::apply).toList();
+            return birdDtos;
+        }
+        return null;
     }
 
     private BirdDto apply(Bird bird) {

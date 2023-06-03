@@ -15,6 +15,8 @@ public class AppProperties {
 
     private final Aws aws = new Aws();
 
+    private final Email email = new Email();
+
     public static final class Auth {
         private String secretKey;
         private Long tokenExpiration;
@@ -60,6 +62,9 @@ public class AppProperties {
 
     public static final class Cors {
         private String allowedOrigins;
+        private String allowedMethods;
+        private String allowedHeaders;
+        private String exposedHeaders;
 
         public String getAllowedOrigins() {
             return allowedOrigins;
@@ -67,6 +72,30 @@ public class AppProperties {
 
         public void setAllowedOrigins(String allowedOrigins) {
             this.allowedOrigins = allowedOrigins;
+        }
+
+        public String getAllowedMethods() {
+            return allowedMethods;
+        }
+
+        public void setAllowedMethods(String allowedMethods) {
+            this.allowedMethods = allowedMethods;
+        }
+
+        public String getAllowedHeaders() {
+            return allowedHeaders;
+        }
+
+        public void setAllowedHeaders(String allowedHeaders) {
+            this.allowedHeaders = allowedHeaders;
+        }
+
+        public String getExposedHeaders() {
+            return exposedHeaders;
+        }
+
+        public void setExposedHeaders(String exposedHeaders) {
+            this.exposedHeaders = exposedHeaders;
         }
     }
 
@@ -91,6 +120,28 @@ public class AppProperties {
         }
     }
 
+    public static final class Email {
+        private String username;
+
+        private String verifyLink;
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public void setVerifyLink(String verifyLink) {
+            this.verifyLink = verifyLink;
+        }
+
+        public String getVerifyLink() {
+            return this.verifyLink;
+        }
+    }
+
     public Auth getAuth() {
         return auth;
     }
@@ -105,5 +156,9 @@ public class AppProperties {
 
     public Aws getAws() {
         return aws;
+    }
+
+    public Email getEmail() {
+        return email;
     }
 }

@@ -20,7 +20,7 @@ public class BirdDto extends ProductDto{
 
     private String color;
 
-    private TypeBird typeBird;
+    private TypeBird type;
 
     private List<Tag> tags;
 

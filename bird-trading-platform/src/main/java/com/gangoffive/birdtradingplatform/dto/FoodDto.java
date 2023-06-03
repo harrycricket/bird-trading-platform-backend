@@ -17,7 +17,7 @@ public class FoodDto extends ProductDto{
 
     private double weight;
 
-    private TypeFood typeFood;
+    private TypeFood type;
 
     private List<Tag> tags;
 

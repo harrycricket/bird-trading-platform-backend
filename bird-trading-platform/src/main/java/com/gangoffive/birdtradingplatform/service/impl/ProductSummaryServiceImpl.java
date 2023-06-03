@@ -1,7 +1,6 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
-import com.gangoffive.birdtradingplatform.entity.Product;
-import com.gangoffive.birdtradingplatform.entity.ProductSummary;
+import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
@@ -11,6 +10,8 @@ import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,12 +22,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProductSummaryServiceImpl implements ProductSummaryService {
     private final ProductSummaryRepository productSummaryRepository;
-    private final ProductService productService;
     private final ReviewRepository reviewRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
     public double updateProductStar(Product product) {
-        double star = productService.CalculationRating(product.getOrderDetails());
+        double star = this.CalculationRating(product.getOrderDetails());
         var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
         productSummary.setStar(star);
         productSummary.setProduct(product);
@@ -56,13 +56,82 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
         return totalQuantity;
     }
 
+    public String updateCategory(Product product) {
+        String category = product.getClass().getSimpleName();
+        var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
+        productSummary.setCategory(category);
+        productSummary.setProduct(product);
+        productSummaryRepository.save(productSummary);
+        return category;
+    }
 
     @Transactional
     public boolean apply(Product product){
         this.updateReviewTotal(product);
         this.updateProductStar(product);
         this.updateTotalQuantityOrder(product);
+        this.updateCategory(product);
         return true;
+    }
+
+    @Override
+    public List<Long> getIdTopBird() {
+        PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
+                .and(Sort.by(Sort.Direction.DESC, "totalQuantityOrder")));
+        var listsProductSummary =  productSummaryRepository.
+                                        findByCategory(new Bird().getClass().getSimpleName(), page);
+        if(listsProductSummary.isPresent()){
+            List<Long> listIdTopBird = listsProductSummary.get().stream()
+                                        .map(productSummary -> productSummary.getProduct().getId()).toList();
+            return listIdTopBird;
+        }
+
+        return null;
+    }
+
+    @Override
+    public List<Long> getIdTopAccessories() {
+        PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
+                .and(Sort.by(Sort.Direction.DESC, "totalQuantityOrder")));
+        var listsProductSummary =  productSummaryRepository.
+                findByCategory(new Accessory().getClass().getSimpleName(), page);
+        if(listsProductSummary.isPresent()){
+            List<Long> listIdTopAccessories = listsProductSummary.get().stream()
+                    .map(productSummary -> productSummary.getProduct().getId()).toList();
+            return listIdTopAccessories;
+        }
+
+        return null;
+    }
+
+    @Override
+    public List<Long> getIdTopFood() {
+        PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
+                .and(Sort.by(Sort.Direction.DESC, "totalQuantityOrder")));
+        var listsProductSummary =  productSummaryRepository.
+                findByCategory(new Food().getClass().getSimpleName(), page);
+        if(listsProductSummary.isPresent()){
+            List<Long> listIdTopFood = listsProductSummary.get().stream()
+                    .map(productSummary -> productSummary.getProduct().getId()).toList();
+            return listIdTopFood;
+        }
+
+        return null;
+    }
+
+    @Override
+    public double CalculationRating(List<OrderDetail> orderDetails) {
+        if (orderDetails != null && orderDetails.size() != 0) {
+            List<Long> orderDetailId = orderDetails.stream().map(id -> id.getId()).collect(Collectors.toList());
+            List<Review> listReview = reviewRepository.findAllByOrderDetailIdIn(orderDetailId).get();
+            if (listReview != null && listReview.size() != 0) {
+                double sumRating = listReview.stream()
+                        .map(rating -> rating.getRating().ordinal() + 1)
+                        .reduce(0, Integer::sum);
+                return Math.round((sumRating / listReview.size()) * 10.0) / 10.0;
+            }
+        }
+        return 0;
     }
 
 }

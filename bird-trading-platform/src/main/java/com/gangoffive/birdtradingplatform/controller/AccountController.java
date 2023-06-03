@@ -2,12 +2,9 @@ package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
 import com.gangoffive.birdtradingplatform.service.AccountService;
-import com.gangoffive.birdtradingplatform.service.impl.AccountServiceImpl;
-import jakarta.annotation.security.RolesAllowed;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,11 +13,28 @@ public class AccountController {
 
     private final AccountService accountService;
 
-    @PutMapping("/shopowner/updateprofile")
-//    @RolesAllowed({"SHOPOWNER"})
-    @PreAuthorize("hasAnyAuthority('shopowner:update') OR hasAnyAuthority('shopstaff:update') OR hasAnyAuthority('user:update')")
-    public void updateProfile(@RequestBody AccountUpdateDto accountUpdateDto){
-//        System.out.println("hello");
+    @PutMapping("/users/updateprofile")
+    public void updateProfile(@RequestBody AccountUpdateDto accountUpdateDto) {
         accountService.updateAccount(accountUpdateDto);
+    }
+
+    @GetMapping("/users/updateprofile")
+    public String GetProfile() {
+        return "GET";
+    }
+
+    @DeleteMapping("/users/updateprofile")
+    public String DeleteProfile() {
+        return "DELETE";
+    }
+
+    @GetMapping("/users/verify/register")
+    public ResponseEntity<?> verifyAccountRegister(@RequestParam String token) {
+        return accountService.verifyToken(token, false);
+    }
+
+    @GetMapping("/users/verify/resetpassword")
+    public ResponseEntity<?> verifyResetPassword(@RequestParam String token) {
+        return accountService.verifyToken(token, true);
     }
 }
