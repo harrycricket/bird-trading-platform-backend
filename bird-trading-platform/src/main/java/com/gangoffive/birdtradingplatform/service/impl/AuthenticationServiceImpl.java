@@ -8,6 +8,7 @@ import com.gangoffive.birdtradingplatform.entity.VerifyToken;
 import com.gangoffive.birdtradingplatform.enums.AuthProvider;
 import com.gangoffive.birdtradingplatform.enums.MailSenderStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
+import com.gangoffive.birdtradingplatform.exception.AuthenticateException;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.VerifyTokenRepository;
@@ -23,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -59,9 +61,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 //                .build();
 //        var saveAccount = accountRepository.save(account);
 //        return getAuthenticationResponse(saveAccount);
-        if (accountDto.getMatchingPassword().equals(accountDto.getPassword())){
+        if (accountDto.getMatchingPassword().equals(accountDto.getPassword())) {
             Optional<Account> temp = accountRepository.findByEmail(accountDto.getEmail());
-            if(!temp.isPresent()) {
+            if (!temp.isPresent()) {
                 Account acc = accountMapper.toModel(accountDto);
                 acc.setPassword(passwordEncoder.encode(accountDto.getPassword()));
                 acc.setRole(UserRole.USER);
@@ -91,21 +93,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 verifyToken.setAccount(acc);
                 verifyToken.setRevoked(false);
                 Calendar calendar = Calendar.getInstance();
-                calendar.add(Calendar.MINUTE,  10);
+                calendar.add(Calendar.MINUTE, 10);
                 Date expired = calendar.getTime();
                 verifyToken.setExpired(expired);
                 verifyToken.setRevoked(false);
                 //send mail
                 try {
-                    emailSenderService.sendSimpleEmail(accountDto.getEmail(),emailContent.toString(),emailSubject);
-                }catch (Exception e){
+                    emailSenderService.sendSimpleEmail(accountDto.getEmail(), emailContent.toString(), emailSubject);
+                } catch (Exception e) {
                     return "The mail is not correct!";
                 }
                 accountRepository.save(acc);
                 //save token
                 verifyTokenRepository.save(verifyToken);
                 return "Register Successfully!";
-            }else{
+            } else {
                 return "The email has already been used!";
             }
         }
@@ -114,18 +116,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public ResponseEntity<?> authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (AuthenticationException ex) {
+//            ErrorResponse error = new ErrorResponse().builder()
+//                    .errorCode(HttpStatus.UNAUTHORIZED.toString())
+//                    .errorMessage("Email or password not correct!")
+//                    .build();
+//            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+            throw new AuthenticateException("Email or password not correct!");
+        }
 
         var account = accountRepository.findByEmail(request.getEmail()).orElse(null);
-        if(account == null){
+        log.info("account null {}", account.getEmail().toString());
+        if (account == null) {
             ErrorResponse error = new ErrorResponse().builder().errorCode(HttpStatus.UNAUTHORIZED.toString()).
                     errorMessage("Email or password not correct!").build();
-            return new ResponseEntity<>(error,HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
         }
         return ResponseEntity.ok(getAuthenticationResponse(account));
     }
@@ -144,8 +156,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             String linkVerify = appProperties.getEmail().getVerifyLink() + "resetpassword?token=" + randomToken;
             String bodyMailSent =
                     "Click on the link below to reset password:\n"
-                    + linkVerify
-                  ;
+                            + linkVerify;
             emailSenderService.sendSimpleEmail(email, bodyMailSent, emailSubject);
             return MailSenderStatus.MAIL_SENT.name();
         } else {
