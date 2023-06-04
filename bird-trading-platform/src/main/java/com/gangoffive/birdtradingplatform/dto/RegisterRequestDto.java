@@ -1,4 +1,4 @@
-package com.gangoffive.birdtradingplatform.security.oauth2;
+package com.gangoffive.birdtradingplatform.dto;
 
 import com.gangoffive.birdtradingplatform.entity.Address;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterRequest {
+public class RegisterRequestDto {
     private String email;
     private String password;
     private String fullName;

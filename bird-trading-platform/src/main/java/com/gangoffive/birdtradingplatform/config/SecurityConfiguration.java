@@ -64,6 +64,7 @@ public class SecurityConfiguration {
             "/api/v1/foods",
             "/api/v1/foods/**",
             "/upload",
+            "/api/v1/users/get-cookie",
 //            "/favicon.ico",
 //            "/**/*.png",
 //            "/**/*.gif",

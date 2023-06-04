@@ -1,4 +1,4 @@
-package com.gangoffive.birdtradingplatform.security.oauth2;
+package com.gangoffive.birdtradingplatform.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthenticationRequest {
+public class AuthenticationRequestDto {
     @NotBlank
     @Email
     private String email;

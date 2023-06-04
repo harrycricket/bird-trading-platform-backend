@@ -8,11 +8,11 @@ import lombok.ToString;
 @Setter
 @ToString
 public class AccountUpdateDto {
-    String email;
-    String fullName;
-    String phoneNumber;
-    String street;
-    String ward;
-    String district;
-    String city;
+    private String email;
+    private String fullName;
+    private String phoneNumber;
+    private String street;
+    private String ward;
+    private String district;
+    private String city;
 }

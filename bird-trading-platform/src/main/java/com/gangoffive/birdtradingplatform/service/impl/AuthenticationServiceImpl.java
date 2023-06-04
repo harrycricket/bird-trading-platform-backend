@@ -2,27 +2,31 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
-import com.gangoffive.birdtradingplatform.dto.AccountDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.VerifyToken;
+import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.AuthProvider;
 import com.gangoffive.birdtradingplatform.enums.MailSenderStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
+import com.gangoffive.birdtradingplatform.exception.AuthenticateException;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
+import com.gangoffive.birdtradingplatform.mapper.AddressMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.VerifyTokenRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
-import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationRequest;
-import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationResponse;
 import com.gangoffive.birdtradingplatform.service.AuthenticationService;
 import com.gangoffive.birdtradingplatform.service.EmailSenderService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +47,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final EmailSenderService emailSenderService;
     private final AppProperties appProperties;
     private final VerifyTokenRepository verifyTokenRepository;
+    private final AddressMapper addressMapper;
     private final String emailSubject = "Reset Your Password";
     private final int expiration = 600000;
 
@@ -59,13 +64,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 //                .build();
 //        var saveAccount = accountRepository.save(account);
 //        return getAuthenticationResponse(saveAccount);
-        if (accountDto.getMatchingPassword().equals(accountDto.getPassword())){
+        if (accountDto.getMatchingPassword().equals(accountDto.getPassword())) {
             Optional<Account> temp = accountRepository.findByEmail(accountDto.getEmail());
-            if(!temp.isPresent()) {
+            if (!temp.isPresent()) {
                 Account acc = accountMapper.toModel(accountDto);
                 acc.setPassword(passwordEncoder.encode(accountDto.getPassword()));
                 acc.setRole(UserRole.USER);
-                acc.setEnable(false);
+                acc.setStatus(AccountStatus.NOT_VERIFY);
                 acc.setProvider(AuthProvider.local);
 
                 //sending mail to verify
@@ -74,38 +79,31 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 log.info("verify link {}", verificationLink);
                 String emailSubject = "Account Verification";
                 StringBuffer emailContent = new StringBuffer();
-                emailContent.append("<html>");
-                emailContent.append("<body>");
-                emailContent.append("<p>Dear User,</p>");
-                emailContent.append("<p>Thank you for registering an account with our service. Please use the following verification code to activate your account:</p>");
-                emailContent.append("<p><strong>Verification:</strong> <a href=\"" + verificationLink + "\">" + "Link here" + "</a></p>");
-                emailContent.append("<p>This link will expire after 10 minutes.</p>");
-                emailContent.append("<p>If you did not create an account or have any questions, please contact our support team.</p>");
-                emailContent.append("<p>Best regards,</p>");
-                emailContent.append("<p>BirdStore2ND</p>");
-                emailContent.append("</body>");
-                emailContent.append("</html>");
+                emailContent.append("Dear User,\n");
+                emailContent.append("Thank you for registering an account with our service. Please use the following verification code to activate your account:\n");
+                emailContent.append("Verification: " + verificationLink +"\n");
+                emailContent.append("This link will expire after 10 minutes.\n");
+                emailContent.append("If you did not create an account or have any questions, please contact our support team.\n");
+                emailContent.append("Best regards,\n");
+                emailContent.append("BirdStore2ND\n");
 
                 VerifyToken verifyToken = new VerifyToken();
                 verifyToken.setToken(verificationCode);
                 verifyToken.setAccount(acc);
                 verifyToken.setRevoked(false);
-                Calendar calendar = Calendar.getInstance();
-                calendar.add(Calendar.MINUTE,  10);
-                Date expired = calendar.getTime();
-                verifyToken.setExpired(expired);
+                verifyToken.setExpired(new Date(System.currentTimeMillis() + expiration));
                 verifyToken.setRevoked(false);
                 //send mail
                 try {
-                    emailSenderService.sendSimpleEmail(accountDto.getEmail(),emailContent.toString(),emailSubject);
-                }catch (Exception e){
+                    emailSenderService.sendSimpleEmail(accountDto.getEmail(), emailContent.toString(), emailSubject);
+                } catch (Exception e) {
                     return "The mail is not correct!";
                 }
                 accountRepository.save(acc);
                 //save token
                 verifyTokenRepository.save(verifyToken);
                 return "Register Successfully!";
-            }else{
+            } else {
                 return "The email has already been used!";
             }
         }
@@ -113,21 +111,46 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public ResponseEntity<?> authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+    public ResponseEntity<?> authenticate(AuthenticationRequestDto request, HttpServletResponse response) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (AuthenticationException ex) {
+//            ErrorResponse error = new ErrorResponse().builder()
+//                    .errorCode(HttpStatus.UNAUTHORIZED.toString())
+//                    .errorMessage("Email or password not correct!")
+//                    .build();
+//            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+            throw new AuthenticateException("Email or password not correct!");
+        }
 
         var account = accountRepository.findByEmail(request.getEmail()).orElse(null);
-        if(account == null){
-            ErrorResponse error = new ErrorResponse().builder().errorCode(HttpStatus.UNAUTHORIZED.toString()).
-                    errorMessage("Email or password not correct!").build();
-            return new ResponseEntity<>(error,HttpStatus.UNAUTHORIZED);
+        if (account == null) {
+            ErrorResponse error = ErrorResponse.builder()
+                    .errorCode(HttpStatus.UNAUTHORIZED.toString())
+                    .errorMessage("Email or password not correct!")
+                    .build();
+            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
         }
-        return ResponseEntity.ok(getAuthenticationResponse(account));
+        if (account.getStatus().equals(AccountStatus.NOT_VERIFY)) {
+            ErrorResponse error = ErrorResponse.builder()
+                    .errorCode(HttpStatus.NOT_FOUND.toString())
+                    .errorMessage("Email not found!")
+                    .build();
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        }
+        if (account.getStatus().equals(AccountStatus.BANNED)) {
+            ErrorResponse error = ErrorResponse.builder()
+                    .errorCode(HttpStatus.LOCKED.toString())
+                    .errorMessage("Email banned!")
+                    .build();
+            return new ResponseEntity<>(error, HttpStatus.LOCKED);
+        }
+        return ResponseEntity.ok(getAuthenticationResponse(account, response));
     }
 
     @Override
@@ -142,23 +165,58 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             verifyToken.setAccount(account.get());
             verifyTokenRepository.save(verifyToken);
             String linkVerify = appProperties.getEmail().getVerifyLink() + "resetpassword?token=" + randomToken;
-            String bodyMailSent =
-                    "Click on the link below to reset password:\n"
-                    + linkVerify
-                  ;
-            emailSenderService.sendSimpleEmail(email, bodyMailSent, emailSubject);
+            StringBuffer emailContent = new StringBuffer();
+            emailContent.append("Dear User,\n");
+            emailContent.append("We received a request to reset your account password. Please click on the following link to proceed with the password reset process:\n");
+            emailContent.append("Reset Password: " + linkVerify + "\n");
+            emailContent.append("This link will expire after 10 minutes.\n");
+            emailContent.append("If you did not initiate this request or have any questions, please contact our support team.\n");
+            emailContent.append("Best regards,\n");
+            emailContent.append("BirdStore2ND\n");
+            emailSenderService.sendSimpleEmail(email, emailContent.toString(), emailSubject);
             return MailSenderStatus.MAIL_SENT.name();
         } else {
             return MailSenderStatus.MAIL_NOT_FOUND.name();
         }
     }
 
-    private AuthenticationResponse getAuthenticationResponse(Account account) {
+    private AuthenticationResponseDto getAuthenticationResponse(Account account, HttpServletResponse response) {
         var jwtToken = jwtService.generateToken(UserPrincipal.create(account));
-        var refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
-        return AuthenticationResponse.builder()
+        var refreshToken = account.getRefreshToken();
+        var addressDto = addressMapper.toDto(account.getAddress());
+        if (refreshToken != null) {
+            if (jwtService.isTokenExpired(refreshToken)) {
+                refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
+                account.setRefreshToken(refreshToken);
+                accountRepository.save(account);
+            }
+        } else {
+            refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
+            account.setRefreshToken(refreshToken);
+            accountRepository.save(account);
+        }
+        var tokenDto = TokenDto.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
+                .build();
+        var userInfo = UserInfoDto.builder()
+                .email(account.getEmail())
+                .role(account.getRole())
+                .fullName(account.getFullName())
+                .phoneNumber(account.getPhoneNumber())
+                .imgUrl(account.getImgUrl())
+                .address(addressDto)
+                .build();
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        log.info("refreshTokenCookie: {}", refreshTokenCookie.getValue());
+        refreshTokenCookie.setMaxAge(appProperties.getAuth().getRefreshTokenExpiration().intValue());
+        refreshTokenCookie.setDomain("birdstore2nd.vercel.app,localhost,www.birdland2nd.store");
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setHttpOnly(true);
+        response.addCookie(refreshTokenCookie);
+        return AuthenticationResponseDto.builder()
+                .token(tokenDto)
+                .userInfo(userInfo)
                 .build();
     }
 }

@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
@@ -43,7 +44,7 @@ public class BirdServiceImpl implements BirdService {
     public ResponseEntity<?> retrieveBirdByPageNumber(int pageNumber) {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
-            PageRequest pageRequest = PageRequest.of(pageNumber, 8);
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
             Page<Bird> pageAble = birdRepository.findAll(pageRequest);
             List<BirdDto> birds = pageAble.getContent()
                     .stream()

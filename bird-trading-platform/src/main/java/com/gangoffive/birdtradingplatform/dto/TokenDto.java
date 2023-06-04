@@ -1,6 +1,5 @@
-package com.gangoffive.birdtradingplatform.security.oauth2;
+package com.gangoffive.birdtradingplatform.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,9 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthenticationResponse {
-    @JsonProperty("access_token")
+public class TokenDto {
     private String accessToken;
-    @JsonProperty("refresh_token")
     private String refreshToken;
 }

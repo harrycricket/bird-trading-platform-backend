@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
 import com.gangoffive.birdtradingplatform.dto.FoodDto;
 import com.gangoffive.birdtradingplatform.entity.Accessory;
@@ -43,7 +44,7 @@ public class FoodServiceImpl implements FoodService {
     public ResponseEntity<?> retrieveFoodByPagenumber(int pageNumber) {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
-            PageRequest page = PageRequest.of(pageNumber, 8);
+            PageRequest page = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
             Page<Food> pageAble = foodRepository.findAll(page);
             List<FoodDto> lists = pageAble.getContent().stream()
                     .map(this::apply).
