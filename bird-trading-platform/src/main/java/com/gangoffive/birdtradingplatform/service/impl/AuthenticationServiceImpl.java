@@ -2,7 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
-import com.gangoffive.birdtradingplatform.dto.AccountDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.VerifyToken;
 import com.gangoffive.birdtradingplatform.enums.AccountStatus;
@@ -15,8 +15,6 @@ import com.gangoffive.birdtradingplatform.mapper.AddressMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.VerifyTokenRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
-import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationRequest;
-import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationResponse;
 import com.gangoffive.birdtradingplatform.service.AuthenticationService;
 import com.gangoffive.birdtradingplatform.service.EmailSenderService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
@@ -118,7 +116,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public ResponseEntity<?> authenticate(AuthenticationRequest request) {
+    public ResponseEntity<?> authenticate(AuthenticationRequestDto request) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -182,19 +180,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
-    private AuthenticationResponse getAuthenticationResponse(Account account) {
+    private AuthenticationResponseDto getAuthenticationResponse(Account account) {
         var jwtToken = jwtService.generateToken(UserPrincipal.create(account));
         var refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
         var addressDto = addressMapper.toDto(account.getAddress());
-        return AuthenticationResponse.builder()
+        var tokenDto = TokenDto.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
+                .build();
+        var userInfo = UserInfoDto.builder()
                 .email(account.getEmail())
                 .role(account.getRole())
                 .fullName(account.getFullName())
                 .phoneNumber(account.getPhoneNumber())
                 .imgUrl(account.getImgUrl())
                 .address(addressDto)
+                .build();
+        return AuthenticationResponseDto.builder()
+                .token(tokenDto)
+                .userInfo(userInfo)
                 .build();
     }
 }
