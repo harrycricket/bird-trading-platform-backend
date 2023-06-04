@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.service;
 
 import com.gangoffive.birdtradingplatform.entity.Account;
+import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.AuthProvider;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.OAuth2AuthenticationProcessingException;
@@ -74,7 +75,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         user.setEmail(oAuth2UserInfo.getEmail());
         user.setImgUrl(oAuth2UserInfo.getImageUrl());
         user.setRole(UserRole.USER);
-        user.setEnable(true);
+        user.setStatus(AccountStatus.VERIFY);
         log.info("oAuth2UserInfo {}", oAuth2UserInfo.getAttributes());
         return accountRepository.save(user);
     }

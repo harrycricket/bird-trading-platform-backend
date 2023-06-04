@@ -5,11 +5,13 @@ import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.AccountDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.VerifyToken;
+import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.AuthProvider;
 import com.gangoffive.birdtradingplatform.enums.MailSenderStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.AuthenticateException;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
+import com.gangoffive.birdtradingplatform.mapper.AddressMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.VerifyTokenRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
@@ -45,6 +47,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final EmailSenderService emailSenderService;
     private final AppProperties appProperties;
     private final VerifyTokenRepository verifyTokenRepository;
+    private final AddressMapper addressMapper;
     private final String emailSubject = "Reset Your Password";
     private final int expiration = 600000;
 
@@ -67,7 +70,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 Account acc = accountMapper.toModel(accountDto);
                 acc.setPassword(passwordEncoder.encode(accountDto.getPassword()));
                 acc.setRole(UserRole.USER);
-                acc.setEnable(false);
+                acc.setStatus(AccountStatus.NOT_VERIFY);
                 acc.setProvider(AuthProvider.local);
 
                 //sending mail to verify
@@ -133,11 +136,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         var account = accountRepository.findByEmail(request.getEmail()).orElse(null);
-        log.info("account null {}", account.getEmail().toString());
         if (account == null) {
-            ErrorResponse error = new ErrorResponse().builder().errorCode(HttpStatus.UNAUTHORIZED.toString()).
-                    errorMessage("Email or password not correct!").build();
+            ErrorResponse error = ErrorResponse.builder()
+                    .errorCode(HttpStatus.UNAUTHORIZED.toString())
+                    .errorMessage("Email or password not correct!")
+                    .build();
             return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        }
+        if (account.getStatus().equals(AccountStatus.NOT_VERIFY)) {
+            ErrorResponse error = ErrorResponse.builder()
+                    .errorCode(HttpStatus.NOT_FOUND.toString())
+                    .errorMessage("Email not found!")
+                    .build();
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        }
+        if (account.getStatus().equals(AccountStatus.BANNED)) {
+            ErrorResponse error = ErrorResponse.builder()
+                    .errorCode(HttpStatus.LOCKED.toString())
+                    .errorMessage("Email banned!")
+                    .build();
+            return new ResponseEntity<>(error, HttpStatus.LOCKED);
         }
         return ResponseEntity.ok(getAuthenticationResponse(account));
     }
@@ -167,9 +185,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private AuthenticationResponse getAuthenticationResponse(Account account) {
         var jwtToken = jwtService.generateToken(UserPrincipal.create(account));
         var refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
+        var addressDto = addressMapper.toDto(account.getAddress());
         return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
+                .email(account.getEmail())
+                .role(account.getRole())
+                .fullName(account.getFullName())
+                .phoneNumber(account.getPhoneNumber())
+                .imgUrl(account.getImgUrl())
+                .address(addressDto)
                 .build();
     }
 }
