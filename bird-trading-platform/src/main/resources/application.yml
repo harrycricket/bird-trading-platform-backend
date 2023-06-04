@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${env.DATABASE_LOCAL_URL}
-    username: ${env.DATABASE_LOCAL_USERNAME}
-    password: ${env.DATABASE_LOCAL_PASSWORD}
+    url: ${env.DATABASE_URL}
+    username: ${env.DATABASE_USERNAME}
+    password: ${env.DATABASE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate.ddl-auto: update
@@ -64,4 +64,4 @@ app:
 
   email:
     username: tienphambmt2911@gmail.com
-    verifyLink: "http://localhost:8080/api/v1/users/verify/"
+    verifyLink: "https://thongtienthienphuot.shop/api/v1/users/verify/"
