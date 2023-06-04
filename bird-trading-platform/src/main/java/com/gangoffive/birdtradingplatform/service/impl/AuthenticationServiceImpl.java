@@ -77,13 +77,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 log.info("verify link {}", verificationLink);
                 String emailSubject = "Account Verification";
                 StringBuffer emailContent = new StringBuffer();
-                emailContent.append("Dear User,");
-                emailContent.append("Thank you for registering an account with our service. Please use the following verification code to activate your account:");
-                emailContent.append("Verification: " + verificationLink);
-                emailContent.append("This link will expire after 10 minutes.");
-                emailContent.append("If you did not create an account or have any questions, please contact our support team.");
-                emailContent.append("Best regards,");
-                emailContent.append("BirdStore2ND");
+                emailContent.append("Dear User,\n");
+                emailContent.append("Thank you for registering an account with our service. Please use the following verification code to activate your account:\n");
+                emailContent.append("Verification: " + verificationLink +"\n");
+                emailContent.append("This link will expire after 10 minutes.\n");
+                emailContent.append("If you did not create an account or have any questions, please contact our support team.\n");
+                emailContent.append("Best regards,\n");
+                emailContent.append("BirdStore2ND\n");
 
                 VerifyToken verifyToken = new VerifyToken();
                 verifyToken.setToken(verificationCode);
@@ -164,13 +164,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             verifyTokenRepository.save(verifyToken);
             String linkVerify = appProperties.getEmail().getVerifyLink() + "resetpassword?token=" + randomToken;
             StringBuffer emailContent = new StringBuffer();
-            emailContent.append("Dear User,");
-            emailContent.append("We received a request to reset your account password. Please click on the following link to proceed with the password reset process:");
-            emailContent.append("Reset Password: " + linkVerify);
-            emailContent.append("This link will expire after 10 minutes.");
-            emailContent.append("If you did not initiate this request or have any questions, please contact our support team.");
-            emailContent.append("Best regards,");
-            emailContent.append("BirdStore2ND");
+            emailContent.append("Dear User,\n");
+            emailContent.append("We received a request to reset your account password. Please click on the following link to proceed with the password reset process:\n");
+            emailContent.append("Reset Password: " + linkVerify + "\n");
+            emailContent.append("This link will expire after 10 minutes.\n");
+            emailContent.append("If you did not initiate this request or have any questions, please contact our support team.\n");
+            emailContent.append("Best regards,\n");
+            emailContent.append("BirdStore2ND\n");
             emailSenderService.sendSimpleEmail(email, emailContent.toString(), emailSubject);
             return MailSenderStatus.MAIL_SENT.name();
         } else {

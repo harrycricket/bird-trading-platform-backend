@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
@@ -53,7 +54,7 @@ public class ProductServiceImpl implements ProductService {
     public ResponseEntity<?> retrieveProductByPagenumber(int pageNumber) {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
-            PageRequest page = PageRequest.of(pageNumber, 8);
+            PageRequest page = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
             Page<Product> pageAble = productRepository.findAll(page);
             List<ProductDto> lists = pageAble.getContent().stream()
                     .map(this::apply)
@@ -87,8 +88,8 @@ public class ProductServiceImpl implements ProductService {
             topProductIds.addAll(foodIds.subList(0, 3));
 
         }else{
-            PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
-                                            .and(Sort.by(Sort.Direction.DESC, "totalQuantityOrder")));
+            PageRequest page = PageRequest.of(0, 8, Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
+                                            .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
             List<ProductSummary> listsTemp =  productSummaryRepository.findAll(page).getContent();
             if(listsTemp != null && listsTemp.size() != 0) {
                 topProductIds = (ArrayList<Long>) listsTemp.stream().map(id -> id.getProduct().getId()).toList();
