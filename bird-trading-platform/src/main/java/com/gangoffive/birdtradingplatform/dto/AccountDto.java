@@ -20,5 +20,4 @@ public class AccountDto {
 	private String matchingPassword;
 
 	private String fullName;
-
 }

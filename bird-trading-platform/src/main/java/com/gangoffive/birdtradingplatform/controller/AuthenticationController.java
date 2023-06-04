@@ -1,7 +1,7 @@
 package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.AccountDto;
-import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationRequest;
+import com.gangoffive.birdtradingplatform.dto.AuthenticationRequestDto;
 import com.gangoffive.birdtradingplatform.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,7 @@ public class AuthenticationController {
 
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(
-            @RequestBody AuthenticationRequest request
+            @RequestBody AuthenticationRequestDto request
     ) {
         return authenticationService.authenticate(request);
     }
