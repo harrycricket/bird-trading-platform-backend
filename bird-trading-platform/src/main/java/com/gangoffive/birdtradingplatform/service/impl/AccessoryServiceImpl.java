@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.entity.Accessory;
@@ -45,7 +46,7 @@ public class AccessoryServiceImpl implements AccessoryService {
     public ResponseEntity<?> retrieveAccessoryByPageNumber(int pageNumber) {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
-            PageRequest pageRequest = PageRequest.of(pageNumber, 8);
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
             Page<Accessory> pageAble = accessoryRepository.findAll(pageRequest);
             List<AccessoryDto> accessories = pageAble.getContent()
                     .stream()

@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
@@ -76,8 +77,9 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
 
     @Override
     public List<Long> getIdTopBird() {
-        PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
-                .and(Sort.by(Sort.Direction.DESC, "totalQuantityOrder")));
+        PageRequest page = PageRequest.of(0, PagingAndSorting.DEFAULT_PAGE_SIZE,
+                Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
+                .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
         var listsProductSummary =  productSummaryRepository.
                                         findByCategory(new Bird().getClass().getSimpleName(), page);
         if(listsProductSummary.isPresent()){
@@ -91,8 +93,9 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
 
     @Override
     public List<Long> getIdTopAccessories() {
-        PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
-                .and(Sort.by(Sort.Direction.DESC, "totalQuantityOrder")));
+        PageRequest page = PageRequest.of(0, PagingAndSorting.DEFAULT_PAGE_SIZE,
+                Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
+                .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
         var listsProductSummary =  productSummaryRepository.
                 findByCategory(new Accessory().getClass().getSimpleName(), page);
         if(listsProductSummary.isPresent()){
@@ -106,8 +109,9 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
 
     @Override
     public List<Long> getIdTopFood() {
-        PageRequest page = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "star")
-                .and(Sort.by(Sort.Direction.DESC, "totalQuantityOrder")));
+        PageRequest page = PageRequest.of(0, PagingAndSorting.DEFAULT_PAGE_SIZE,
+                Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
+                .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
         var listsProductSummary =  productSummaryRepository.
                 findByCategory(new Food().getClass().getSimpleName(), page);
         if(listsProductSummary.isPresent()){

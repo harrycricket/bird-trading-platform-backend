@@ -18,6 +18,8 @@ import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.AuthenticationService;
 import com.gangoffive.birdtradingplatform.service.EmailSenderService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -77,13 +79,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 log.info("verify link {}", verificationLink);
                 String emailSubject = "Account Verification";
                 StringBuffer emailContent = new StringBuffer();
-                emailContent.append("Dear User,");
-                emailContent.append("Thank you for registering an account with our service. Please use the following verification code to activate your account:");
-                emailContent.append("Verification: " + verificationLink);
-                emailContent.append("This link will expire after 10 minutes.");
-                emailContent.append("If you did not create an account or have any questions, please contact our support team.");
-                emailContent.append("Best regards,");
-                emailContent.append("BirdStore2ND");
+                emailContent.append("Dear User,\n");
+                emailContent.append("Thank you for registering an account with our service. Please use the following verification code to activate your account:\n");
+                emailContent.append("Verification: " + verificationLink +"\n");
+                emailContent.append("This link will expire after 10 minutes.\n");
+                emailContent.append("If you did not create an account or have any questions, please contact our support team.\n");
+                emailContent.append("Best regards,\n");
+                emailContent.append("BirdStore2ND\n");
 
                 VerifyToken verifyToken = new VerifyToken();
                 verifyToken.setToken(verificationCode);
@@ -109,7 +111,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public ResponseEntity<?> authenticate(AuthenticationRequestDto request) {
+    public ResponseEntity<?> authenticate(AuthenticationRequestDto request, HttpServletResponse response) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -148,7 +150,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .build();
             return new ResponseEntity<>(error, HttpStatus.LOCKED);
         }
-        return ResponseEntity.ok(getAuthenticationResponse(account));
+        return ResponseEntity.ok(getAuthenticationResponse(account, response));
     }
 
     @Override
@@ -164,13 +166,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             verifyTokenRepository.save(verifyToken);
             String linkVerify = appProperties.getEmail().getVerifyLink() + "resetpassword?token=" + randomToken;
             StringBuffer emailContent = new StringBuffer();
-            emailContent.append("Dear User,");
-            emailContent.append("We received a request to reset your account password. Please click on the following link to proceed with the password reset process:");
-            emailContent.append("Reset Password: " + linkVerify);
-            emailContent.append("This link will expire after 10 minutes.");
-            emailContent.append("If you did not initiate this request or have any questions, please contact our support team.");
-            emailContent.append("Best regards,");
-            emailContent.append("BirdStore2ND");
+            emailContent.append("Dear User,\n");
+            emailContent.append("We received a request to reset your account password. Please click on the following link to proceed with the password reset process:\n");
+            emailContent.append("Reset Password: " + linkVerify + "\n");
+            emailContent.append("This link will expire after 10 minutes.\n");
+            emailContent.append("If you did not initiate this request or have any questions, please contact our support team.\n");
+            emailContent.append("Best regards,\n");
+            emailContent.append("BirdStore2ND\n");
             emailSenderService.sendSimpleEmail(email, emailContent.toString(), emailSubject);
             return MailSenderStatus.MAIL_SENT.name();
         } else {
@@ -178,10 +180,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
-    private AuthenticationResponseDto getAuthenticationResponse(Account account) {
+    private AuthenticationResponseDto getAuthenticationResponse(Account account, HttpServletResponse response) {
         var jwtToken = jwtService.generateToken(UserPrincipal.create(account));
-        var refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
+        var refreshToken = account.getRefreshToken();
         var addressDto = addressMapper.toDto(account.getAddress());
+        if (refreshToken != null) {
+            if (jwtService.isTokenExpired(refreshToken)) {
+                refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
+                account.setRefreshToken(refreshToken);
+                accountRepository.save(account);
+            }
+        } else {
+            refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
+            account.setRefreshToken(refreshToken);
+            accountRepository.save(account);
+        }
         var tokenDto = TokenDto.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
@@ -194,6 +207,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .imgUrl(account.getImgUrl())
                 .address(addressDto)
                 .build();
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        log.info("refreshTokenCookie: {}", refreshTokenCookie.getValue());
+        refreshTokenCookie.setMaxAge(appProperties.getAuth().getRefreshTokenExpiration().intValue());
+        refreshTokenCookie.setDomain("birdstore2nd.vercel.app,localhost,www.birdland2nd.store");
+        refreshTokenCookie.setSecure(true);
+        refreshTokenCookie.setHttpOnly(true);
+        response.addCookie(refreshTokenCookie);
         return AuthenticationResponseDto.builder()
                 .token(tokenDto)
                 .userInfo(userInfo)
