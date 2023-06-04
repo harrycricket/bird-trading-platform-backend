@@ -60,13 +60,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String targetUrl = redirectUri;
         UserPrincipal userPrincipal = (UserPrincipal)authentication.getPrincipal();
         String token = jwtService.generateToken(userPrincipal);
-        String refreshToken;
         log.info("targetUrl {}", targetUrl.toString());
         log.info("getRequestURL {}", request.getRequestURL().toString());
         log.info("account {}", userPrincipal.getEmail());
         Optional<Account> account = accountRepository.findByEmail(userPrincipal.getEmail());
-        if (account.get().getRefreshToken() != null) {
-            refreshToken = account.get().getRefreshToken();
+        String refreshToken = account.get().getRefreshToken();
+        if (refreshToken != null) {
             if (jwtService.isTokenExpired(refreshToken)) {
                 refreshToken = jwtService.generateRefreshToken(userPrincipal);
                 account.get().setRefreshToken(refreshToken);

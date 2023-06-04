@@ -3,6 +3,7 @@ package com.gangoffive.birdtradingplatform.controller;
 import com.gangoffive.birdtradingplatform.dto.AccountDto;
 import com.gangoffive.birdtradingplatform.dto.AuthenticationRequestDto;
 import com.gangoffive.birdtradingplatform.service.AuthenticationService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +22,9 @@ public class AuthenticationController {
 
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(
-            @RequestBody AuthenticationRequestDto request
+            @RequestBody AuthenticationRequestDto request, HttpServletResponse response
     ) {
-        return authenticationService.authenticate(request);
+        return authenticationService.authenticate(request, response);
     }
 
     @GetMapping("/resetpassword")
