@@ -5,9 +5,9 @@
 //import com.gangoffive.birdtradingplatform.exception.BadRequestException;
 //import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 //import com.gangoffive.birdtradingplatform.security.UserPrincipal;
-//import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationRequest;
-//import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationResponse;
-//import com.gangoffive.birdtradingplatform.security.oauth2.RegisterRequest;
+//import com.gangoffive.birdtradingplatform.dto.AuthenticationRequest;
+//import com.gangoffive.birdtradingplatform.dto.AuthenticationResponse;
+//import com.gangoffive.birdtradingplatform.dto.RegisterRequest;
 //import com.gangoffive.birdtradingplatform.service.JwtService;
 //import jakarta.validation.Valid;
 //import lombok.RequiredArgsConstructor;
