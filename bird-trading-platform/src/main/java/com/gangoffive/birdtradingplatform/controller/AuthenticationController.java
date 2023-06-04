@@ -2,7 +2,6 @@ package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.AccountDto;
 import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationRequest;
-import com.gangoffive.birdtradingplatform.security.oauth2.AuthenticationResponse;
 import com.gangoffive.birdtradingplatform.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

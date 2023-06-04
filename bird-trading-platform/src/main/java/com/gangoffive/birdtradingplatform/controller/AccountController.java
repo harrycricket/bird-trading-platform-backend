@@ -18,16 +18,6 @@ public class AccountController {
         accountService.updateAccount(accountUpdateDto);
     }
 
-    @GetMapping("/users/updateprofile")
-    public String GetProfile() {
-        return "GET";
-    }
-
-    @DeleteMapping("/users/updateprofile")
-    public String DeleteProfile() {
-        return "DELETE";
-    }
-
     @GetMapping("/users/verify/register")
     public ResponseEntity<?> verifyAccountRegister(@RequestParam String token) {
         return accountService.verifyToken(token, false);

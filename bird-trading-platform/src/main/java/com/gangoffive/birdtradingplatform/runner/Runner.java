@@ -12,24 +12,24 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-//@Component
-//@RequiredArgsConstructor
-//@Slf4j
-//public class Runner implements CommandLineRunner {
-//
-//    private final ProductRepository productRepository;
-//
-//    private final ProductSummaryService productSummaryService;
-//    @Override
-//    @Transactional
-//    public void run(String... args) throws Exception {
-//        List<Product> lists = productRepository.findAll();
-//        log.info("list {}", lists.size());
-//        for(Product pro : lists) {
-////            productSummaryService.apply(pro);
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class Runner implements CommandLineRunner {
+
+    private final ProductRepository productRepository;
+
+    private final ProductSummaryService productSummaryService;
+    @Override
+    @Transactional
+    public void run(String... args) throws Exception {
+        List<Product> lists = productRepository.findAll();
+        log.info("list {}", lists.size());
+        for(Product pro : lists) {
+            productSummaryService.apply(pro);
 //            productSummaryService.updateCategory(pro);
-//        }
-//        log.info("da run trong nay");
-//    }
-//
-//}
+        }
+        log.info("da run trong nay");
+    }
+
+}

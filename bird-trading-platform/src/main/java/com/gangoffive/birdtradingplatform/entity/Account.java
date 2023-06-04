@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.AuthProvider;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -33,7 +34,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 @AllArgsConstructor
 @Getter
 @ToString
-@Where(clause = "status = true")
 public class Account {
 
 	@Id
@@ -52,12 +52,6 @@ public class Account {
 	@Column(name = "password")
 	private String password;
 	
-//	@Column(name = "password",
-//			unique = true,
-//			nullable = false
-//	)
-//	private String password;
-	
 	@Enumerated(value = EnumType.STRING)
 	private UserRole role;
 	
@@ -65,7 +59,8 @@ public class Account {
 	private String refreshToken;
 	
 	@Column(name = "status")
-	private Boolean enable;
+	@Enumerated(value = EnumType.STRING)
+	private AccountStatus status;
 	
 	@Column(name = "full_name")
 	private String fullName;
@@ -140,8 +135,8 @@ public class Account {
 		this.refreshToken = refreshToken;
 	}
 
-	public void setEnable(Boolean enable) {
-		this.enable = enable;
+	public void setStatus(AccountStatus status) {
+		this.status = status;
 	}
 
 	public void setFullName(String fullName) {

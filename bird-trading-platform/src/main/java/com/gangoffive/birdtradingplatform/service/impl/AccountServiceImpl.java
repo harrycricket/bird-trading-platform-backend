@@ -5,6 +5,7 @@ import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Address;
+import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.AddressRepository;
@@ -74,7 +75,7 @@ public class AccountServiceImpl implements AccountService {
                 }
                 if (!isResetPassword) {
                     var account = tokenRepo.get().getAccount();
-                    account.setEnable(true);
+                    account.setStatus(AccountStatus.VERIFY);
                     accountRepository.save(account);
                 }
                 tokenRepo.get().setRevoked(true);

@@ -47,13 +47,8 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)  {
-        try {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
             return config.getAuthenticationManager();
-        } catch (Exception e) {
-            log.info("hehehe");
-            throw new RuntimeException(e);
-        }
     }
 
     @Bean
