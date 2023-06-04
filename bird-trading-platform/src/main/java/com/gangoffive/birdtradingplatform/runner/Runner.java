@@ -26,8 +26,8 @@ import java.util.List;
 //        List<Product> lists = productRepository.findAll();
 //        log.info("list {}", lists.size());
 //        for(Product pro : lists) {
-////            productSummaryService.apply(pro);
-//            productSummaryService.updateCategory(pro);
+//            productSummaryService.apply(pro);
+////            productSummaryService.updateCategory(pro);
 //        }
 //        log.info("da run trong nay");
 //    }
