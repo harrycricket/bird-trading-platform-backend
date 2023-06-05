@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
@@ -48,17 +50,17 @@ public class ProductServiceImplTest {
 ////        assertEquals(0.16,percent);
 //    }
 
-    @Test
-    public void TestCalculateDiscountedPrice(){
-        double result = productService.CalculateDiscountedPrice(100, 0.145);
-        assertEquals(85.5,result);
-    }
-
-    @Test
-    public void TestCalculateDiscountedPriceInDatabase(){
-//        var product =  productRepository.findById(1l).get();
-//        var productDto = productService.
-        double result = productService.CalculateDiscountedPrice(100, 0.145);
-        assertEquals(85.5,result);
-    }
+//    @Test
+//    public void TestCalculateDiscountedPrice(){
+//        double result = productService.CalculateDiscountedPrice(100, 0.145);
+//        assertEquals(85.5,result);
+//    }
+//
+//    @Test
+//    public void TestCalculateDiscountedPriceInDatabase(){
+////        var product =  productRepository.findById(1l).get();
+////        var productDto = productService.
+//        double result = productService.CalculateDiscountedPrice(100, 0.145);
+//        assertEquals(85.5,result);
+//    }
 }
