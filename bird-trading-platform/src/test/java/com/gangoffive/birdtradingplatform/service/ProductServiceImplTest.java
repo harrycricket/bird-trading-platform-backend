@@ -1,29 +1,29 @@
-//package com.gangoffive.birdtradingplatform.service;
-//
-//import com.gangoffive.birdtradingplatform.entity.OrderDetail;
-//import com.gangoffive.birdtradingplatform.repository.ProductRepository;
-//import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
-//import com.gangoffive.birdtradingplatform.service.impl.ProductServiceImpl;
-//import jakarta.transaction.Transactional;
-//import lombok.extern.slf4j.Slf4j;
-//import org.junit.jupiter.api.Test;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.context.SpringBootTest;
-//
-//import static org.junit.jupiter.api.Assertions.*;
-//import java.util.List;
-//
-//import static org.junit.jupiter.api.Assertions.*;
-//
-//@SpringBootTest
-//@Slf4j
-//public class ProductServiceImplTest {
-//    @Autowired
-//    private ProductRepository productRepository;
-//    @Autowired
-//    private ProductService productService;
-//    @Autowired
-//    private ReviewRepository reviewRepository;
+package com.gangoffive.birdtradingplatform.service;
+
+import com.gangoffive.birdtradingplatform.entity.OrderDetail;
+import com.gangoffive.birdtradingplatform.repository.ProductRepository;
+import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
+import com.gangoffive.birdtradingplatform.service.impl.ProductServiceImpl;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+@Slf4j
+public class ProductServiceImplTest {
+    @Autowired
+    private ProductRepository productRepository;
+    @Autowired
+    private ProductService productService;
+    @Autowired
+    private ReviewRepository reviewRepository;
 //    @Test
 //    @Transactional
 //    public void TestCalculation() {
@@ -47,4 +47,18 @@
 ////        double percent = productService.CalculateSaleOff(list, 100);
 ////        assertEquals(0.16,percent);
 //    }
-//}
+
+    @Test
+    public void TestCalculateDiscountedPrice(){
+        double result = productService.CalculateDiscountedPrice(100, 0.145);
+        assertEquals(85.5,result);
+    }
+
+    @Test
+    public void TestCalculateDiscountedPriceInDatabase(){
+//        var product =  productRepository.findById(1l).get();
+//        var productDto = productService.
+        double result = productService.CalculateDiscountedPrice(100, 0.145);
+        assertEquals(85.5,result);
+    }
+}

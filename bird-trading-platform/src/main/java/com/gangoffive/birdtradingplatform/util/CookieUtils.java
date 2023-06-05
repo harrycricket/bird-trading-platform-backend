@@ -3,11 +3,14 @@ package com.gangoffive.birdtradingplatform.util;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.util.SerializationUtils;
 
 import java.util.Base64;
 import java.util.Optional;
 
+@Slf4j
 public class CookieUtils {
     public static Optional<Cookie> getCookie(HttpServletRequest request, String name) {
         Cookie[] cookies = request.getCookies();
@@ -40,8 +43,12 @@ public class CookieUtils {
                 if (cookie.getName().equals(name)) {
                     cookie.setValue("");
                     cookie.setPath("/");
+                    cookie.setDomain("localhost");
+                    cookie.setSecure(false);
+                    cookie.setHttpOnly(false);
                     cookie.setMaxAge(0);
                     response.addCookie(cookie);
+                    log.info("Cookie delete name: {}  value: {}", cookie.getName(), cookie.getValue());
                 }
             }
         }

@@ -33,6 +33,8 @@ public class ProductDto {
 
     protected double discountRate;
 
+    protected double discountedPrice;
+
     protected double star;
 
 }
