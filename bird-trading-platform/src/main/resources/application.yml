@@ -58,6 +58,7 @@ app:
     authorizedRedirectUris:
       - http://localhost:3000/oauth2/redirect
       - https://birdstore2nd.vercel.app
+      - http://localhost:8080/oauth2/redirect
       - https://birdland2nd.store
   aws:
     accessKey: ${env.S3_ACCESS_KEY}
