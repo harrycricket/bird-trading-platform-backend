@@ -116,6 +116,7 @@ public class ProductServiceImpl implements ProductService {
         return 0.0;
     }
 
+
     @Override
     public List<ProductDto> listModelToDto(List<Product> products) {
         if (products != null && products.size() != 0) {
@@ -137,6 +138,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public double CalculateDiscountedPrice(double price, double saleOff) {
+        return price - (price*saleOff);
+    }
+
+    @Override
     public List<ProductDto> findProductByName(String name) {
 //        PageRequest page = PageRequest.of(pageNumber, 8);
         List<ProductDto> products = productRepository
@@ -153,16 +159,19 @@ public class ProductServiceImpl implements ProductService {
             var bird = birdMapper.toDto((Bird) product);
             bird.setStar(this.CalculationRating(product.getOrderDetails()));
             bird.setDiscountRate(this.CalculateSaleOff(product.getPromotionShops(), bird.getPrice()));
+            bird.setDiscountedPrice(this.CalculateDiscountedPrice(bird.getPrice(), bird.getDiscountRate()));
             return bird;
         } else if (product instanceof Food) {
             var food = foodMapper.toDto((Food) product);
             food.setStar(this.CalculationRating(product.getOrderDetails()));
             food.setDiscountRate(this.CalculateSaleOff(product.getPromotionShops(), food.getPrice()));
+            food.setDiscountedPrice(this.CalculateDiscountedPrice(food.getPrice(), food.getDiscountRate()));
             return food;
         } else if (product instanceof Accessory) {
             var accessory = accessoryMapper.toDto((Accessory) product);
             accessory.setStar(this.CalculationRating(product.getOrderDetails()));
             accessory.setDiscountRate(this.CalculateSaleOff(product.getPromotionShops(), accessory.getPrice()));
+            accessory.setDiscountedPrice(this.CalculateDiscountedPrice(accessory.getPrice(), accessory.getDiscountRate()));
             return accessory;
         }
         return null;

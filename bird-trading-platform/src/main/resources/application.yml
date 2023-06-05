@@ -46,7 +46,7 @@ app:
     tokenExpiration: 86400000 # a day
     refreshTokenExpiration: 604800000 # 7 days
   cors:
-    allowedOrigins: "http://localhost:3000,https://birdstore2nd.vercel.app,https://birdstore2nd.vercel.app"
+    allowedOrigins: "http://localhost:3000,https://birdstore2nd.vercel.app,https://www.birdland2nd.store"
     allowedMethods: "*"
     allowedHeaders: "*"
     exposedHeaders: "*"
