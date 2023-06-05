@@ -1,8 +1,13 @@
 package com.gangoffive.birdtradingplatform.security.oauth2;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
+import com.gangoffive.birdtradingplatform.dto.AuthenticationResponseDto;
+import com.gangoffive.birdtradingplatform.dto.TokenDto;
+import com.gangoffive.birdtradingplatform.dto.UserInfoDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.exception.BadRequestException;
+import com.gangoffive.birdtradingplatform.mapper.AddressMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.JwtService;
@@ -13,6 +18,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -28,11 +35,10 @@ import static com.gangoffive.birdtradingplatform.security.oauth2.HttpCookieOAuth
 @RequiredArgsConstructor
 @Slf4j
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-    private final JwtService jwtService;
     private final AccountRepository accountRepository;
     private final AppProperties appProperties;
     private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
-
+    private final JwtService jwtService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -48,38 +54,19 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     }
 
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-//        Optional<String> redirectUri = CookieUtils.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
-//                .map(Cookie::getValue);
 
         String redirectUri = CookieUtils.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
                 .map(Cookie::getValue).orElse("https://birdstore2nd.vercel.app");
-
-        if(!isAuthorizedRedirectUri(redirectUri))
+        log.info("redirectUri {}", redirectUri);
+        if (!isAuthorizedRedirectUri(redirectUri))
             throw new BadRequestException("Sorry! We've got an Unauthorized Redirect URI and can't proceed with the authentication");
-
-        String targetUrl = redirectUri;
-        UserPrincipal userPrincipal = (UserPrincipal)authentication.getPrincipal();
-        String token = jwtService.generateToken(userPrincipal);
-        log.info("targetUrl {}", targetUrl.toString());
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         log.info("getRequestURL {}", request.getRequestURL().toString());
         log.info("account {}", userPrincipal.getEmail());
-        Optional<Account> account = accountRepository.findByEmail(userPrincipal.getEmail());
-        String refreshToken = account.get().getRefreshToken();
-        if (refreshToken != null) {
-            if (jwtService.isTokenExpired(refreshToken)) {
-                refreshToken = jwtService.generateRefreshToken(userPrincipal);
-                account.get().setRefreshToken(refreshToken);
-                accountRepository.save(account.get());
-            }
-        } else {
-            refreshToken = jwtService.generateRefreshToken(userPrincipal);
-            account.get().setRefreshToken(refreshToken);
-            accountRepository.save(account.get());
-        }
-        log.info("account {}", account.get().getEmail());
-        return UriComponentsBuilder.fromUriString(targetUrl)
+        String token = jwtService.generateToken(userPrincipal);
+        return UriComponentsBuilder.fromUriString(redirectUri)
+                .queryParam("email", userPrincipal.getEmail())
                 .queryParam("token", token)
-                .queryParam("refreshToken", refreshToken)
                 .build().toUriString();
     }
 
@@ -96,7 +83,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 .anyMatch(authorizedRedirectUri -> {
                     // Only validate host and port. Let the clients use different paths if they want to
                     URI authorizedURI = URI.create(authorizedRedirectUri);
-                    if(authorizedURI.getHost().equalsIgnoreCase(clientRedirectUri.getHost())
+                    if (authorizedURI.getHost().equalsIgnoreCase(clientRedirectUri.getHost())
                             && authorizedURI.getPort() == clientRedirectUri.getPort()) {
                         return true;
                     }

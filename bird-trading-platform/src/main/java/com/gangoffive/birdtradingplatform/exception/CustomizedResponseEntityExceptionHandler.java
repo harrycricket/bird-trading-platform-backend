@@ -2,6 +2,8 @@ package com.gangoffive.birdtradingplatform.exception;
 
 import com.gangoffive.birdtradingplatform.api.response.ApiError;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -46,5 +48,24 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         ApiError errorDetails = new ApiError(request.getRequestURI(),
                 ex.getMessage(), HttpStatus.UNAUTHORIZED.value(), LocalDateTime.now());
         return new ResponseEntity<ApiError>(errorDetails, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(SignatureException.class)
+    public ResponseEntity<ApiError> handleSignatureException(HttpServletRequest request) {
+        ApiError errorDetails = new ApiError(request.getRequestURI(),
+                "Not correct token to access", HttpStatus.UNAUTHORIZED.value(), LocalDateTime.now());
+        return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(MalformedJwtException.class)
+    public ResponseEntity<ApiError> handleMalformedJwtException(HttpServletRequest request) {
+        ApiError errorDetails = new ApiError(request.getRequestURI(),
+                "Not correct token to access", HttpStatus.UNAUTHORIZED.value(), LocalDateTime.now());
+        return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(OAuth2AuthenticationProcessingException.class)
+    public ResponseEntity<Object> handleOAuth2AuthenticationProcessingException(OAuth2AuthenticationProcessingException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 }
