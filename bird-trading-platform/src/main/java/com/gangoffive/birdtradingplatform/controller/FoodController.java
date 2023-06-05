@@ -32,7 +32,7 @@ public class FoodController {
         return foodService.findFoodByName(name);
     }
 
-    @GetMapping("foods/topproduct")
+    @GetMapping("foods/top-product")
     public List<FoodDto> findTopFood() {
         return foodService.findTopFood();
     }
