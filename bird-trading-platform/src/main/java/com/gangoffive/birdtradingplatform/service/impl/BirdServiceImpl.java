@@ -93,6 +93,7 @@ public class BirdServiceImpl implements BirdService {
         var tmp = birdMapper.toDto((Bird) bird);
         tmp.setStar(productService.CalculationRating(bird.getOrderDetails()));
         tmp.setDiscountRate(productService.CalculateSaleOff(bird.getPromotionShops(), bird.getPrice()));
+        tmp.setDiscountedPrice(productService.CalculateDiscountedPrice(tmp.getPrice(),tmp.getDiscountRate()));
         return tmp;
     }
 }

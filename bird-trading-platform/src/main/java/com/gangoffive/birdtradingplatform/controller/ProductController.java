@@ -42,7 +42,7 @@ public class ProductController {
         return productService.findProductByName(name);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("products/{id}")
     public ResponseEntity<?> findProductById(@PathVariable Long id) {
         ProductDto product = productService.retrieveProductById(id);
         if (product == null) {

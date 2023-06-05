@@ -91,6 +91,7 @@ public class FoodServiceImpl implements FoodService {
         var tmp = foodMapper.toDto((Food) food);
         tmp.setStar(productService.CalculationRating(food.getOrderDetails()));
         tmp.setDiscountRate(productService.CalculateSaleOff(food.getPromotionShops(), food.getPrice()));
+        tmp.setDiscountedPrice(productService.CalculateDiscountedPrice(tmp.getPrice(),tmp.getDiscountRate()));
         return tmp;
     }
 }

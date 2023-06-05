@@ -95,6 +95,7 @@ public class AccessoryServiceImpl implements AccessoryService {
         var tmp = accessoryMapper.toDto((Accessory) accessory);
         tmp.setStar(productService.CalculationRating(accessory.getOrderDetails()));
         tmp.setDiscountRate(productService.CalculateSaleOff(accessory.getPromotionShops(), accessory.getPrice()));
+        tmp.setDiscountedPrice(productService.CalculateDiscountedPrice(tmp.getPrice(),tmp.getDiscountRate()));
         return tmp;
     }
 
