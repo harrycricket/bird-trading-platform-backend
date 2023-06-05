@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${env.DATABASE_LOCAL_URL}
-    username: ${env.DATABASE_LOCAL_USERNAME}
-    password: ${env.DATABASE_LOCAL_PASSWORD}
+    url: ${env.DATABASE_URL}
+    username: ${env.DATABASE_USERNAME}
+    password: ${env.DATABASE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate.ddl-auto: update
@@ -58,6 +58,7 @@ app:
     authorizedRedirectUris:
       - http://localhost:3000/oauth2/redirect
       - https://birdstore2nd.vercel.app
+      - http://localhost:8080/oauth2/redirect
       - https://birdland2nd.store
   aws:
     accessKey: ${env.S3_ACCESS_KEY}
