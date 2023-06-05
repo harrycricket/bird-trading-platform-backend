@@ -54,4 +54,9 @@ public class AuthenticationController {
         }
         return "NO COOKIES";
     }
+
+    @GetMapping("/test-token")
+    public String testToken(){
+        return "Token oke";
+    }
 }
