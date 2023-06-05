@@ -31,7 +31,7 @@ public class AuthenticationController {
         return authenticationService.authenticate(request, response);
     }
 
-    @GetMapping("/resetpassword")
+    @GetMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam String email) {
         return ResponseEntity.ok(authenticationService.resetPassword(email));
     }

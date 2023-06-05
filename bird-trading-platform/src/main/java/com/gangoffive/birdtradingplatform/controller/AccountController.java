@@ -13,7 +13,7 @@ public class AccountController {
 
     private final AccountService accountService;
 
-    @PutMapping("/users/updateprofile")
+    @PutMapping("/users/update-profile")
     public void updateProfile(@RequestBody AccountUpdateDto accountUpdateDto) {
         accountService.updateAccount(accountUpdateDto);
     }
@@ -23,7 +23,7 @@ public class AccountController {
         return accountService.verifyToken(token, false);
     }
 
-    @GetMapping("/users/verify/resetpassword")
+    @GetMapping("/users/verify/reset-password")
     public ResponseEntity<?> verifyResetPassword(@RequestParam String token) {
         return accountService.verifyToken(token, true);
     }

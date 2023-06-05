@@ -32,7 +32,7 @@ public class BirdController {
         return birdService.findBirdByName(name);
     }
 
-    @GetMapping("birds/topproduct")
+    @GetMapping("birds/top-product")
     public List<BirdDto> findTopBird() {
         return birdService.findTopBirdProduct();
     }
