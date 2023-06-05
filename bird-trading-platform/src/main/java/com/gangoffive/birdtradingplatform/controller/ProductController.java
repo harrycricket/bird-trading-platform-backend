@@ -26,7 +26,7 @@ public class ProductController {
         return productService.retrieveProductByPagenumber(pagenumber);
     }
 
-    @GetMapping("products/topproduct")
+    @GetMapping("products/top-product")
     public ResponseEntity<?> retrieveTopProduct() {
         List<ProductDto> result = productService.retrieveTopProduct();
         if(result == null){
