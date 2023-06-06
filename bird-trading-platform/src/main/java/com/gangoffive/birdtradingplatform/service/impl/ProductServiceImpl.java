@@ -1,11 +1,11 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
-import com.gangoffive.birdtradingplatform.dto.ProductDetailDto;
-import com.gangoffive.birdtradingplatform.dto.ProductDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.enums.Category;
+import com.gangoffive.birdtradingplatform.enums.ResponseCode;
 import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
@@ -16,6 +16,7 @@ import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.util.MyUtils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
+import com.gangoffive.birdtradingplatform.wrapper.ProductDetailWrapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -29,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.Utilities;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -135,39 +137,24 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public JsonObject retrieveProductById(Long id) {
+    public ResponseEntity<?> retrieveProductById(Long id) {
         Optional<Product> product = productRepository.findById(id);
         if (product.isPresent()) {
             ProductSummary productSummary = productSummaryRepository.findByProductId(id).get();
             ProductDto productDto = this.ProductToDto(product.get());
 
-            Gson gson = new Gson();
-            JsonObject finalProductDto = new JsonObject();
+            List<String> listImages = MyUtils.toLists(product.get().getImgUrl(),",");
+            int numberSold = (int) productSummary.getTotalQuantityOrder();
+            int numberReview = productSummary.getReviewTotal();
 
-            Field[] fields = ProductDto.class.getDeclaredFields();
-            for (Field field : fields) {
-                field.setAccessible(true);
-                String fieldName = field.getName();
-                try {
-                    Object fieldValue = field.get(productDto);
-                    finalProductDto.add(fieldName, gson.toJsonTree(fieldValue));
-                } catch (IllegalAccessException e) {
-                    // Handle exception if necessary
-                }
-            }
-            JsonArray listImages = new JsonArray();
-            String[] imageUrls = product.get().getImgUrl().split(",");
-            for (String imageUrl : imageUrls) {
-                listImages.add(imageUrl.trim());
-            }
-            finalProductDto.add("listImages", listImages);
-
-            finalProductDto.addProperty("numberSold", productSummary.getTotalQuantityOrder());
-            finalProductDto.addProperty("numberReview", productSummary.getReviewTotal());
-
-            return finalProductDto;
+            ProductDetailWrapper productDetailWrapper = ProductDetailWrapper.builder()
+                    .product(productDto)
+                    .listImages(listImages)
+                    .numberSold(numberSold)
+                    .numberReview(numberReview).build();
+            return ResponseEntity.ok(productDetailWrapper);
         }
-        return null;
+        return new ResponseEntity<>(ResponseCode.NOT_FOUD_THIS_ID.toString(), HttpStatus.NOT_FOUND);
     }
 
     @Override

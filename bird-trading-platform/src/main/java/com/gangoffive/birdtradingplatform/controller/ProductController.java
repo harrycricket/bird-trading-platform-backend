@@ -45,13 +45,6 @@ public class ProductController {
 
     @GetMapping("products/{id}")
     public ResponseEntity<?> findProductById(@PathVariable Long id) {
-        JsonObject product = productService.retrieveProductById(id);
-//        if (product == null) {
-//            ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
-//                    "Not found product with id: " + id);
-//            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-//        }
-        return ResponseEntity.ok(product.toString());
-//        return product;
+        return productService.retrieveProductById(id);
     }
 }
