@@ -39,4 +39,6 @@ public class ProductDto {
 
     protected int CategoryId;
 
+    protected String description;
+
 }
