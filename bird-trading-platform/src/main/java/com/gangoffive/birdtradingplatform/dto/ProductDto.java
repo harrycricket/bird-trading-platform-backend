@@ -37,4 +37,6 @@ public class ProductDto {
 
     protected double star;
 
+    protected int CategoryId;
+
 }

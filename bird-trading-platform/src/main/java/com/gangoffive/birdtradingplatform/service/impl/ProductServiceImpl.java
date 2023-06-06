@@ -1,9 +1,11 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.dto.ProductDetailDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.enums.Category;
 import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
@@ -12,7 +14,11 @@ import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
+import com.gangoffive.birdtradingplatform.util.MyUtils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,7 +52,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductDto> retrieveAllProduct() {
         List<ProductDto> lists = productRepository.findAll().stream()
-                .map(this::apply)
+                .map(this::ProductToDto)
                 .collect(Collectors.toList());
         return lists;
     }
@@ -57,7 +64,7 @@ public class ProductServiceImpl implements ProductService {
             PageRequest page = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
             Page<Product> pageAble = productRepository.findAll(page);
             List<ProductDto> lists = pageAble.getContent().stream()
-                    .map(this::apply)
+                    .map(this::ProductToDto)
                     .collect(Collectors.toList());
             pageAble.getTotalPages();
             PageNumberWraper<ProductDto> result = new PageNumberWraper<>(lists, pageAble.getTotalPages());
@@ -121,18 +128,44 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductDto> listModelToDto(List<Product> products) {
         if (products != null && products.size() != 0) {
             return products.stream()
-                    .map(this::apply)
+                    .map(this::ProductToDto)
                     .collect(Collectors.toList());
         }
         return null;
     }
 
     @Override
-    public ProductDto retrieveProductById(Long id) {
+    public JsonObject retrieveProductById(Long id) {
         Optional<Product> product = productRepository.findById(id);
         if (product.isPresent()) {
-            ProductDto productDto = this.apply(product.get());
-            return productDto;
+            ProductSummary productSummary = productSummaryRepository.findByProductId(id).get();
+            ProductDto productDto = this.ProductToDto(product.get());
+
+            Gson gson = new Gson();
+            JsonObject finalProductDto = new JsonObject();
+
+            Field[] fields = ProductDto.class.getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                String fieldName = field.getName();
+                try {
+                    Object fieldValue = field.get(productDto);
+                    finalProductDto.add(fieldName, gson.toJsonTree(fieldValue));
+                } catch (IllegalAccessException e) {
+                    // Handle exception if necessary
+                }
+            }
+            JsonArray listImages = new JsonArray();
+            String[] imageUrls = product.get().getImgUrl().split(",");
+            for (String imageUrl : imageUrls) {
+                listImages.add(imageUrl.trim());
+            }
+            finalProductDto.add("listImages", listImages);
+
+            finalProductDto.addProperty("numberSold", productSummary.getTotalQuantityOrder());
+            finalProductDto.addProperty("numberReview", productSummary.getReviewTotal());
+
+            return finalProductDto;
         }
         return null;
     }
@@ -144,37 +177,31 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductDto> findProductByName(String name) {
-//        PageRequest page = PageRequest.of(pageNumber, 8);
         List<ProductDto> products = productRepository
                 .findByNameLike("%" + name + "%")
                 .get()
                 .stream()
-                .map(this::apply)
+                .map(this::ProductToDto)
                 .collect(Collectors.toList());
         return products;
     }
 
-    private ProductDto apply(Product product) {
+    @Override
+    public ProductDto ProductToDto(Product product) {
+        var productTemp = new ProductDto();
         if (product instanceof Bird) {
-            var bird = birdMapper.toDto((Bird) product);
-            bird.setStar(this.CalculationRating(product.getOrderDetails()));
-            bird.setDiscountRate(this.CalculateSaleOff(product.getPromotionShops(), bird.getPrice()));
-            bird.setDiscountedPrice(this.CalculateDiscountedPrice(bird.getPrice(), bird.getDiscountRate()));
-            return bird;
+            productTemp = birdMapper.toDto((Bird) product);
         } else if (product instanceof Food) {
-            var food = foodMapper.toDto((Food) product);
-            food.setStar(this.CalculationRating(product.getOrderDetails()));
-            food.setDiscountRate(this.CalculateSaleOff(product.getPromotionShops(), food.getPrice()));
-            food.setDiscountedPrice(this.CalculateDiscountedPrice(food.getPrice(), food.getDiscountRate()));
-            return food;
+            productTemp = foodMapper.toDto((Food) product);
         } else if (product instanceof Accessory) {
-            var accessory = accessoryMapper.toDto((Accessory) product);
-            accessory.setStar(this.CalculationRating(product.getOrderDetails()));
-            accessory.setDiscountRate(this.CalculateSaleOff(product.getPromotionShops(), accessory.getPrice()));
-            accessory.setDiscountedPrice(this.CalculateDiscountedPrice(accessory.getPrice(), accessory.getDiscountRate()));
-            return accessory;
+            productTemp = accessoryMapper.toDto((Accessory) product);
         }
-        return null;
+        productTemp.setImgUrl(MyUtils.toLists(product.getImgUrl(),",").get(0));
+        productTemp.setStar(this.CalculationRating(product.getOrderDetails()));
+        productTemp.setDiscountRate(this.CalculateSaleOff(product.getPromotionShops(), productTemp.getPrice()));
+        productTemp.setDiscountedPrice(this.CalculateDiscountedPrice(productTemp.getPrice(), productTemp.getDiscountRate()));
+        productTemp.setCategoryId(Category.getCategoryIdByName(productTemp.getClass().getSimpleName()));
+        return productTemp;
     }
 
 }

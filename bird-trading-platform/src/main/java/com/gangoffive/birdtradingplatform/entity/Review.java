@@ -31,7 +31,8 @@ public class Review {
 	@Column(name = "review_id")
 	private Long id;
 	
-	@Column(name = "comment")
+	@Column(name = "comment",
+			columnDefinition = "TEXT")
 	private String comment;
 	
 	@Column(name = "rating")
