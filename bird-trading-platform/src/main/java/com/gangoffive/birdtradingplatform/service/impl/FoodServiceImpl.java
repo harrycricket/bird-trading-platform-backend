@@ -35,7 +35,7 @@ public class FoodServiceImpl implements FoodService {
     @Override
     public List<FoodDto> retrieveAllFood() {
         List<FoodDto> lists = foodRepository.findAll().stream()
-                .map(this::apply).
+                .map(food -> (FoodDto) productService.ProductToDto(food)).
                 collect(Collectors.toList());
         return lists;
     }
@@ -47,7 +47,7 @@ public class FoodServiceImpl implements FoodService {
             PageRequest page = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
             Page<Food> pageAble = foodRepository.findAll(page);
             List<FoodDto> lists = pageAble.getContent().stream()
-                    .map(this::apply).
+                    .map(food -> (FoodDto) productService.ProductToDto(food)).
                     collect(Collectors.toList());
             PageNumberWraper<FoodDto> result = new PageNumberWraper<>(lists, pageAble.getTotalPages());
             return ResponseEntity.ok(result);
@@ -63,7 +63,7 @@ public class FoodServiceImpl implements FoodService {
                 .findByNameLike("%" + name + "%")
                 .get()
                 .stream()
-                .map(this::apply).collect(Collectors.toList());
+                .map(food -> (FoodDto) productService.ProductToDto(food)).collect(Collectors.toList());
         return lists;
     }
 
@@ -81,17 +81,10 @@ public class FoodServiceImpl implements FoodService {
     public List<FoodDto> findTopFood() {
         List<Food> lists = foodRepository.findAllById(productSummaryService.getIdTopFood());
         if(lists != null) {
-            List<FoodDto> listDto = lists.stream().map(this::apply).toList();
+            List<FoodDto> listDto = lists.stream().map(food -> (FoodDto) productService.ProductToDto(food)).toList();
             return listDto;
         }
         return null;
     }
 
-    private FoodDto apply(Food food) {
-        var tmp = foodMapper.toDto((Food) food);
-        tmp.setStar(productService.CalculationRating(food.getOrderDetails()));
-        tmp.setDiscountRate(productService.CalculateSaleOff(food.getPromotionShops(), food.getPrice()));
-        tmp.setDiscountedPrice(productService.CalculateDiscountedPrice(tmp.getPrice(),tmp.getDiscountRate()));
-        return tmp;
-    }
 }

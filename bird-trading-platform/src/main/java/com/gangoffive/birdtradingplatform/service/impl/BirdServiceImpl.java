@@ -35,7 +35,7 @@ public class BirdServiceImpl implements BirdService {
         List<BirdDto> birds = birdRepository
                 .findAll()
                 .stream()
-                .map(this::apply)
+                .map(bird -> (BirdDto)productService.ProductToDto(bird))
                 .collect(Collectors.toList());
         return birds;
     }
@@ -48,7 +48,7 @@ public class BirdServiceImpl implements BirdService {
             Page<Bird> pageAble = birdRepository.findAll(pageRequest);
             List<BirdDto> birds = pageAble.getContent()
                     .stream()
-                    .map(this::apply)
+                    .map(bird -> (BirdDto)productService.ProductToDto(bird))
                     .collect(Collectors.toList());
             PageNumberWraper<BirdDto> result = new PageNumberWraper<>(birds, pageAble.getTotalPages());
             return ResponseEntity.ok(result);
@@ -64,7 +64,7 @@ public class BirdServiceImpl implements BirdService {
                 .findByNameLike("%" + name + "%")
                 .get()
                 .stream()
-                .map(this::apply)
+                .map(bird -> (BirdDto)productService.ProductToDto(bird))
                 .collect(Collectors.toList());
         return birds;
     }
@@ -83,17 +83,10 @@ public class BirdServiceImpl implements BirdService {
     public List<BirdDto> findTopBirdProduct() {
         List<Bird> listBirds = birdRepository.findAllById(productSummaryService.getIdTopBird());
         if(listBirds != null) {
-            List<BirdDto> birdDtos = listBirds.stream().map(this::apply).toList();
+            List<BirdDto> birdDtos = listBirds.stream().map(bird -> (BirdDto)productService.ProductToDto(bird)).toList();
             return birdDtos;
         }
         return null;
     }
 
-    private BirdDto apply(Bird bird) {
-        var tmp = birdMapper.toDto((Bird) bird);
-        tmp.setStar(productService.CalculationRating(bird.getOrderDetails()));
-        tmp.setDiscountRate(productService.CalculateSaleOff(bird.getPromotionShops(), bird.getPrice()));
-        tmp.setDiscountedPrice(productService.CalculateDiscountedPrice(tmp.getPrice(),tmp.getDiscountRate()));
-        return tmp;
-    }
 }

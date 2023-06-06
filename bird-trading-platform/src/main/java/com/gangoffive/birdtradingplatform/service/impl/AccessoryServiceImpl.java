@@ -37,7 +37,7 @@ public class AccessoryServiceImpl implements AccessoryService {
         List<AccessoryDto> accessories = accessoryRepository
                 .findAll()
                 .stream()
-                .map(this::apply)
+                .map(accessory -> (AccessoryDto) productService.ProductToDto(accessory))
                 .collect(Collectors.toList());
         return accessories;
     }
@@ -50,7 +50,7 @@ public class AccessoryServiceImpl implements AccessoryService {
             Page<Accessory> pageAble = accessoryRepository.findAll(pageRequest);
             List<AccessoryDto> accessories = pageAble.getContent()
                     .stream()
-                    .map(this::apply)
+                    .map(accessory -> (AccessoryDto) productService.ProductToDto(accessory))
                     .collect(Collectors.toList());
             PageNumberWraper<AccessoryDto> result = new PageNumberWraper<>(accessories, pageAble.getTotalPages());
             return ResponseEntity.ok(result);
@@ -66,7 +66,7 @@ public class AccessoryServiceImpl implements AccessoryService {
                 .findByNameLike("%" + name + "%")
                 .get()
                 .stream()
-                .map(this::apply)
+                .map(accessory -> (AccessoryDto) productService.ProductToDto(accessory))
                 .collect(Collectors.toList());
         return accessories;
     }
@@ -84,19 +84,11 @@ public class AccessoryServiceImpl implements AccessoryService {
     @Override
     public List<AccessoryDto> findTopAccessories() {
         List<Accessory> lists = accessoryRepository.findAllById(productSummaryService.getIdTopAccessories());
-        if(lists != null) {
-            List<AccessoryDto> listDto = lists.stream().map(this::apply).toList();
+        if (lists != null) {
+            List<AccessoryDto> listDto = lists.stream().map(accessory -> (AccessoryDto) productService.ProductToDto(accessory)).toList();
             return listDto;
         }
         return null;
-    }
-
-    private AccessoryDto apply(Accessory accessory) {
-        var tmp = accessoryMapper.toDto((Accessory) accessory);
-        tmp.setStar(productService.CalculationRating(accessory.getOrderDetails()));
-        tmp.setDiscountRate(productService.CalculateSaleOff(accessory.getPromotionShops(), accessory.getPrice()));
-        tmp.setDiscountedPrice(productService.CalculateDiscountedPrice(tmp.getPrice(),tmp.getDiscountRate()));
-        return tmp;
     }
 
 }

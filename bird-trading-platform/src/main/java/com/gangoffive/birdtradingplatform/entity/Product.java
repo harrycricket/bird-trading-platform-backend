@@ -37,7 +37,8 @@ public abstract class Product {
     @Column(nullable = false)
     protected double price;
 
-    @Column(nullable = false)
+    @Column(nullable = false,
+            columnDefinition = "TEXT")
     protected String description;
 
     @Column(name = "created_date")
@@ -51,10 +52,12 @@ public abstract class Product {
     @Column(nullable = false)
     protected Integer quantity;
 
-    @Column(name = "img_url", nullable = false)
+    @Column(name = "img_url", nullable = false,
+            columnDefinition = "TEXT")
     protected String imgUrl;
 
-    @Column(name = "video_url")
+    @Column(name = "video_url",
+            columnDefinition = "TEXT")
     protected String videoUrl;
 
     @Column(name = "is_deleted")
