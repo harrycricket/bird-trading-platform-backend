@@ -156,7 +156,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public double CalculateDiscountedPrice(double price, double saleOff) {
-        return price - (price*saleOff);
+        return Math.round((price - (price*saleOff)) * 100.0) / 100.0 ;
     }
 
     @Override
