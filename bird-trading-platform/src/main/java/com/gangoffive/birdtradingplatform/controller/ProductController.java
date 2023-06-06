@@ -47,4 +47,9 @@ public class ProductController {
     public ResponseEntity<?> findProductById(@PathVariable Long id) {
         return productService.retrieveProductById(id);
     }
+
+    @GetMapping("products/id")
+    public ResponseEntity<?> findProductByListId(@RequestParam("id") long[] ids ) {
+        return productService.retrieveProductByListId(ids);
+    }
 }

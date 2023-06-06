@@ -10,7 +10,9 @@ public enum ResponseCode {
     AUTHENTICATION_FAILED(11, "Invalid refresh token"),
 
     //Product
-    NOT_FOUD_THIS_ID(20,"Cannot found this product!");
+    NOT_FOUD_THIS_ID(20,"Cannot found this product!"),
+    NOT_FOUD_THIS_LIST_ID(21, "Cannot found this product with this list id!");
+
 
     private final int code;
     private final String message;
