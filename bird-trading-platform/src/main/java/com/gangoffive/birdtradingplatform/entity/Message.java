@@ -18,7 +18,8 @@ public class Message {
     @Column(name = "message_id")
     private Long id;
 
-    @Column(name = "message_text")
+    @Column(name = "message_text",
+            columnDefinition = "TEXT")
     private String messageText;
 
     @CreationTimestamp

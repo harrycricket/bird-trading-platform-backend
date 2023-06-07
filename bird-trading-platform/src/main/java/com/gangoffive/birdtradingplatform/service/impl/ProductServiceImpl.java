@@ -1,9 +1,11 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.entity.*;
-import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.enums.Category;
+import com.gangoffive.birdtradingplatform.enums.ResponseCode;
 import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
@@ -12,7 +14,9 @@ import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
+import com.gangoffive.birdtradingplatform.util.MyUtils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
+import com.gangoffive.birdtradingplatform.wrapper.ProductDetailWrapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +49,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductDto> retrieveAllProduct() {
         List<ProductDto> lists = productRepository.findAll().stream()
-                .map(this::apply)
+                .map(this::ProductToDto)
                 .collect(Collectors.toList());
         return lists;
     }
@@ -57,7 +61,7 @@ public class ProductServiceImpl implements ProductService {
             PageRequest page = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
             Page<Product> pageAble = productRepository.findAll(page);
             List<ProductDto> lists = pageAble.getContent().stream()
-                    .map(this::apply)
+                    .map(this::ProductToDto)
                     .collect(Collectors.toList());
             pageAble.getTotalPages();
             PageNumberWraper<ProductDto> result = new PageNumberWraper<>(lists, pageAble.getTotalPages());
@@ -70,7 +74,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public double CalculationRating(List<OrderDetail> orderDetails) {
-       return productSummaryService.CalculationRating(orderDetails);
+        return productSummaryService.CalculationRating(orderDetails);
     }
 
     @Override
@@ -81,17 +85,17 @@ public class ProductServiceImpl implements ProductService {
 
         ArrayList<Long> topProductIds = new ArrayList<>();
 
-        if(birdIds != null && accessoryIds != null && foodIds != null){
+        if (birdIds != null && accessoryIds != null && foodIds != null) {
 
             topProductIds.addAll(birdIds.subList(0, 3));
             topProductIds.addAll(accessoryIds.subList(0, 3));
             topProductIds.addAll(foodIds.subList(0, 3));
 
-        }else{
+        } else {
             PageRequest page = PageRequest.of(0, 8, Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
-                                            .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
-            List<ProductSummary> listsTemp =  productSummaryRepository.findAll(page).getContent();
-            if(listsTemp != null && listsTemp.size() != 0) {
+                    .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
+            List<ProductSummary> listsTemp = productSummaryRepository.findAll(page).getContent();
+            if (listsTemp != null && listsTemp.size() != 0) {
                 topProductIds = (ArrayList<Long>) listsTemp.stream().map(id -> id.getProduct().getId()).toList();
             }
         }
@@ -121,60 +125,65 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductDto> listModelToDto(List<Product> products) {
         if (products != null && products.size() != 0) {
             return products.stream()
-                    .map(this::apply)
+                    .map(this::ProductToDto)
                     .collect(Collectors.toList());
         }
         return null;
     }
 
     @Override
-    public ProductDto retrieveProductById(Long id) {
+    public ResponseEntity<?> retrieveProductById(Long id) {
         Optional<Product> product = productRepository.findById(id);
         if (product.isPresent()) {
-            ProductDto productDto = this.apply(product.get());
-            return productDto;
+            ProductSummary productSummary = productSummaryRepository.findByProductId(id).get();
+            ProductDto productDto = this.ProductToDto(product.get());
+
+            List<String> listImages = MyUtils.toLists(product.get().getImgUrl(), ",");
+            int numberSold = (int) productSummary.getTotalQuantityOrder();
+            int numberReview = productSummary.getReviewTotal();
+
+            ProductDetailWrapper productDetailWrapper = ProductDetailWrapper.builder()
+                    .product(productDto)
+                    .listImages(listImages)
+                    .numberSold(numberSold)
+                    .numberReview(numberReview).build();
+            return ResponseEntity.ok(productDetailWrapper);
         }
-        return null;
+        return new ResponseEntity<>(ResponseCode.NOT_FOUD_THIS_ID.toString(), HttpStatus.NOT_FOUND);
     }
 
     @Override
     public double CalculateDiscountedPrice(double price, double saleOff) {
-        return price - (price*saleOff);
+        return price - (price * saleOff);
     }
 
     @Override
     public List<ProductDto> findProductByName(String name) {
-//        PageRequest page = PageRequest.of(pageNumber, 8);
         List<ProductDto> products = productRepository
                 .findByNameLike("%" + name + "%")
                 .get()
                 .stream()
-                .map(this::apply)
+                .map(this::ProductToDto)
                 .collect(Collectors.toList());
         return products;
     }
 
-    private ProductDto apply(Product product) {
+    @Override
+    public ProductDto ProductToDto(Product product) {
+        var productTemp = new ProductDto();
         if (product instanceof Bird) {
-            var bird = birdMapper.toDto((Bird) product);
-            bird.setStar(this.CalculationRating(product.getOrderDetails()));
-            bird.setDiscountRate(this.CalculateSaleOff(product.getPromotionShops(), bird.getPrice()));
-            bird.setDiscountedPrice(this.CalculateDiscountedPrice(bird.getPrice(), bird.getDiscountRate()));
-            return bird;
+            productTemp = birdMapper.toDto((Bird) product);
         } else if (product instanceof Food) {
-            var food = foodMapper.toDto((Food) product);
-            food.setStar(this.CalculationRating(product.getOrderDetails()));
-            food.setDiscountRate(this.CalculateSaleOff(product.getPromotionShops(), food.getPrice()));
-            food.setDiscountedPrice(this.CalculateDiscountedPrice(food.getPrice(), food.getDiscountRate()));
-            return food;
+            productTemp = foodMapper.toDto((Food) product);
         } else if (product instanceof Accessory) {
-            var accessory = accessoryMapper.toDto((Accessory) product);
-            accessory.setStar(this.CalculationRating(product.getOrderDetails()));
-            accessory.setDiscountRate(this.CalculateSaleOff(product.getPromotionShops(), accessory.getPrice()));
-            accessory.setDiscountedPrice(this.CalculateDiscountedPrice(accessory.getPrice(), accessory.getDiscountRate()));
-            return accessory;
+            productTemp = accessoryMapper.toDto((Accessory) product);
         }
-        return null;
+        productTemp.setImgUrl(MyUtils.toLists(product.getImgUrl(), ",").get(0));
+        productTemp.setStar(this.CalculationRating(product.getOrderDetails()));
+        productTemp.setDiscountRate(this.CalculateSaleOff(product.getPromotionShops(), productTemp.getPrice()));
+        productTemp.setDiscountedPrice(this.CalculateDiscountedPrice(productTemp.getPrice(), productTemp.getDiscountRate()));
+        productTemp.setCategoryId(Category.getCategoryIdByName(productTemp.getClass().getSimpleName()));
+        return productTemp;
     }
 
 }

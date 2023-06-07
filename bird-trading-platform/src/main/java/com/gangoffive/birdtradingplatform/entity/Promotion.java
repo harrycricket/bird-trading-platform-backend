@@ -37,7 +37,7 @@ public class Promotion {
     @Column(name = "promotion_id")
     private Long id;
     
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column

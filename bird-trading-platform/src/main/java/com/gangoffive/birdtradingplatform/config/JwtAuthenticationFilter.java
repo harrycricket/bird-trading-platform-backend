@@ -1,6 +1,5 @@
 package com.gangoffive.birdtradingplatform.config;
 
-import com.gangoffive.birdtradingplatform.exception.AuthenticateException;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
@@ -26,6 +25,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+
     @Override
     protected void doFilterInternal(
             @Nonnull HttpServletRequest request,
@@ -44,14 +44,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         jwt = authHeader.substring(7);
-        log.info("jwt {}", jwt);
         try {
             userEmail = jwtService.extractUsername(jwt);
         } catch (Exception e) {
             filterChain.doFilter(request, response);
             return;
         }
-        log.info("userEmail {}", userEmail);
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
             if (jwtService.isTokenValid(jwt, userDetails)) {
@@ -63,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 System.out.println(userDetails.toString());
                 authToken.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
-                        );
+                );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }

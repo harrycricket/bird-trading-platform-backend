@@ -34,7 +34,8 @@ public class ShopOwner {
 	)
 	private String shopPhone;
 	
-	@Column(name = "description")
+	@Column(name = "description",
+			columnDefinition = "TEXT")
 	private String description;
 	
 	@Column(name = "img_url")
