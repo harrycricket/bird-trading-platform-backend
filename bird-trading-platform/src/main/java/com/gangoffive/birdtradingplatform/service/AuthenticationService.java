@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 
 public interface AuthenticationService {
-    String register(AccountDto accountDto);
+    ResponseEntity<?> register(AccountDto accountDto);
     ResponseEntity<?> authenticate(AuthenticationRequestDto request, HttpServletResponse response);
 
     String resetPassword(String email);
