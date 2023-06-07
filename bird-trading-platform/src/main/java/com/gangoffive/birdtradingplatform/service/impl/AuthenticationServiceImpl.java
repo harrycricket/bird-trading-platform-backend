@@ -30,7 +30,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -53,7 +52,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
     @Override
-    public String register(AccountDto accountDto) {
+    public ResponseEntity<?> register(AccountDto accountDto) {
 //        var account = Account.builder()
 //                .email(request.getEmail())
 //                .password(passwordEncoder.encode(request.getPassword()))
@@ -97,17 +96,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 try {
                     emailSenderService.sendSimpleEmail(accountDto.getEmail(), emailContent.toString(), emailSubject);
                 } catch (Exception e) {
-                    return "The mail is not correct!";
+                    return new ResponseEntity<>(ErrorResponse.builder()
+                            .errorCode(HttpStatus.CONFLICT.name())
+                            .errorMessage("The mail is not correct!").build(), HttpStatus.CONFLICT);
                 }
                 accountRepository.save(acc);
                 //save token
                 verifyTokenRepository.save(verifyToken);
-                return "Register Successfully!";
+                return ResponseEntity.ok("Register Successfully!");
             } else {
-                return "The email has already been used!";
+                return new ResponseEntity<>(ErrorResponse.builder()
+                        .errorCode(HttpStatus.CONFLICT.name())
+                        .errorMessage("The email has already been used!").build(), HttpStatus.CONFLICT);
             }
         }
-        return "Something went wrong!";
+        return new ResponseEntity<>(ErrorResponse.builder()
+                .errorCode(HttpStatus.BAD_REQUEST.name())
+                .errorMessage("Something went wrong!").build(), HttpStatus.BAD_REQUEST);
     }
 
     @Override
