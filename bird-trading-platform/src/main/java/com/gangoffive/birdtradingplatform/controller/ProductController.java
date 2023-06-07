@@ -3,6 +3,7 @@ package com.gangoffive.birdtradingplatform.controller;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.service.ProductService;
+import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class ProductController {
         return productService.retrieveProductByPagenumber(pagenumber);
     }
 
-    @GetMapping("products/topproduct")
+    @GetMapping("products/top-product")
     public ResponseEntity<?> retrieveTopProduct() {
         List<ProductDto> result = productService.retrieveTopProduct();
         if(result == null){
@@ -42,14 +43,13 @@ public class ProductController {
         return productService.findProductByName(name);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("products/{id}")
     public ResponseEntity<?> findProductById(@PathVariable Long id) {
-        ProductDto product = productService.retrieveProductById(id);
-        if (product == null) {
-            ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
-                    "Not found product with id: " + id);
-            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-        }
-        return ResponseEntity.ok(product);
+        return productService.retrieveProductById(id);
+    }
+
+    @GetMapping("products/id")
+    public ResponseEntity<?> findProductByListId(@RequestParam("id") long[] ids ) {
+        return productService.retrieveProductByListId(ids);
     }
 }

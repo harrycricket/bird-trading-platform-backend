@@ -23,6 +23,7 @@ public class CorsConfig {
         configuration.setAllowedMethods(Arrays.stream(appProperties.getCors().getAllowedMethods().split(",")).toList());
         configuration.setAllowedHeaders(Arrays.stream(appProperties.getCors().getAllowedHeaders().split(",")).toList());
         configuration.setExposedHeaders(Arrays.stream(appProperties.getCors().getExposedHeaders().split(",")).toList());
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
         return source;

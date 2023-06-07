@@ -31,7 +31,7 @@ public class AccessoryController {
         return accessoryService.findAccessoryByName(name);
     }
 
-    @GetMapping("accessories/topproduct")
+    @GetMapping("accessories/top-product")
     public List<AccessoryDto> findTopAccessories() {
         return accessoryService.findTopAccessories();
     }

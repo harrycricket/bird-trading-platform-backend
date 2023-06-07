@@ -1,9 +1,11 @@
 package com.gangoffive.birdtradingplatform.service;
 
+import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.entity.PromotionShop;
+import com.google.gson.JsonObject;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -16,5 +18,11 @@ public interface ProductService {
     List<ProductDto> findProductByName(String name);
     List<ProductDto> retrieveTopProduct();
     List<ProductDto> listModelToDto(List<Product> products);
-    ProductDto retrieveProductById(Long id);
+    ResponseEntity<?> retrieveProductById(Long id);
+
+    double CalculateDiscountedPrice(double price, double saleOff);
+
+    ProductDto ProductToDto(Product product);
+
+    ResponseEntity<?> retrieveProductByListId(long[] ids);
 }

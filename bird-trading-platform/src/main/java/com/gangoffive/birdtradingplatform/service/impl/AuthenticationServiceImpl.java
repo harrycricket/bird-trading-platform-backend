@@ -210,9 +210,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
         log.info("refreshTokenCookie: {}", refreshTokenCookie.getValue());
         refreshTokenCookie.setMaxAge(appProperties.getAuth().getRefreshTokenExpiration().intValue());
-        refreshTokenCookie.setDomain("birdstore2nd.vercel.app,localhost,www.birdland2nd.store");
-        refreshTokenCookie.setSecure(true);
-        refreshTokenCookie.setHttpOnly(true);
+//        refreshTokenCookie.setDomain("localhost");
+//        refreshTokenCookie.setDomain("birdstore2nd.vercel.app");
+        refreshTokenCookie.setDomain("www.birdland2nd.store");
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setSecure(false);
+        refreshTokenCookie.setHttpOnly(false);
         response.addCookie(refreshTokenCookie);
         return AuthenticationResponseDto.builder()
                 .token(tokenDto)
