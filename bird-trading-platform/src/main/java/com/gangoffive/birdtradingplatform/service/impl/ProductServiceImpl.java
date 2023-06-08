@@ -2,7 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
-import com.gangoffive.birdtradingplatform.dto.ProductDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.Category;
 import com.gangoffive.birdtradingplatform.enums.ResponseCode;
@@ -27,10 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -149,12 +146,12 @@ public class ProductServiceImpl implements ProductService {
                     .numberReview(numberReview).build();
             return ResponseEntity.ok(productDetailWrapper);
         }
-        return new ResponseEntity<>(ResponseCode.NOT_FOUD_THIS_ID.toString(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(ResponseCode.NOT_FOUND_THIS_ID.toString(), HttpStatus.NOT_FOUND);
     }
 
     @Override
     public double CalculateDiscountedPrice(double price, double saleOff) {
-        return price - (price * saleOff);
+        return Math.round((price - (price * saleOff)) * 100.0) / 100.0;
     }
 
     @Override
@@ -186,4 +183,36 @@ public class ProductServiceImpl implements ProductService {
         return productTemp;
     }
 
+    @Override
+    public ResponseEntity<?> retrieveProductByListId(long[] ids) {
+        List<Product> lists = productRepository.findAllById(Arrays.stream(ids).boxed().toList());
+        if (lists != null) {
+            return ResponseEntity.ok(lists.stream().map(this::productToProductCart).toList());
+        }
+        return new ResponseEntity<>(ResponseCode.NOT_FOUND_THIS_LIST_ID.toString(), HttpStatus.NOT_FOUND);
+    }
+
+    private ProductCartDto productToProductCart(Product product) {
+        if (product != null) {
+            ProductCartDto productCartDto = ProductCartDto.builder()
+                    .id(product.getId())
+                    .name(product.getName())
+                    .price(product.getPrice())
+                    .imgUrl(MyUtils.toLists(product.getImgUrl(), ",").get(0))
+                    .discountRate(this.CalculateSaleOff(product.getPromotionShops(), product.getPrice()))
+                    .quantity(product.getQuantity())
+                    .build();
+            productCartDto.setDiscountedPrice(this.CalculateDiscountedPrice(product.getPrice(),
+                    productCartDto.getDiscountRate()));
+            if (product instanceof Bird) {
+                productCartDto.setCategoryId(Category.getCategoryIdByName(new BirdDto().getClass().getSimpleName()));
+            } else if (product instanceof Food) {
+                productCartDto.setCategoryId(Category.getCategoryIdByName(new FoodDto().getClass().getSimpleName()));
+            } else if (product instanceof Accessory) {
+                productCartDto.setCategoryId(Category.getCategoryIdByName(new AccessoryDto().getClass().getSimpleName()));
+            }
+            return productCartDto;
+        }
+        return null;
+    }
 }

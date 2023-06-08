@@ -2,11 +2,11 @@ package com.gangoffive.birdtradingplatform.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 @Entity(name = "tblProduct_Summary")
 @Data
+@Where(clause = "is_deleted = false")
 public class ProductSummary {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,7 +15,7 @@ public class ProductSummary {
 
     @OneToOne
     @JoinColumn(name = "product_id",
-        foreignKey = @ForeignKey(name = "FK_PRODUCT_SUMMARY_PRODUCT")
+            foreignKey = @ForeignKey(name = "FK_PRODUCT_SUMMARY_PRODUCT")
     )
     private Product product;
 
@@ -30,4 +30,7 @@ public class ProductSummary {
 
     @Column(name = "total_quantity_order")
     private double totalQuantityOrder;
+
+    @Column(name = "is_deleted")
+    private boolean deleted;
 }

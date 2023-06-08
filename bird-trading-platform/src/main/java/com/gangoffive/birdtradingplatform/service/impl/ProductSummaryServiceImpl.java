@@ -38,8 +38,8 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
     public int updateReviewTotal(Product product){
         List<Long> orderDetailIds = product
                                         .getOrderDetails()
-                                                .stream().
-                                                    map(reviewId -> reviewId.getId()).collect(Collectors.toList());
+                                        .stream()
+                                        .map(reviewId -> reviewId.getId()).collect(Collectors.toList());
         int reviewTotal = reviewRepository.findAllByOrderDetailIdIn(orderDetailIds).get().size();
         var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
         productSummary.setReviewTotal(reviewTotal);
@@ -103,7 +103,6 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
                     .map(productSummary -> productSummary.getProduct().getId()).toList();
             return listIdTopAccessories;
         }
-
         return null;
     }
 

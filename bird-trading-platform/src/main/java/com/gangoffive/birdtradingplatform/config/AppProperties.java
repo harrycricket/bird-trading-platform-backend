@@ -122,7 +122,6 @@ public class AppProperties {
 
     public static final class Email {
         private String username;
-
         private String verifyLink;
 
         public String getUsername() {
