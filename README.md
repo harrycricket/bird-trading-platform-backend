@@ -37,7 +37,7 @@ The backend application will start running on the specified port, and you can ac
 ## Database Design
 The project includes a design for the image database to efficiently store bird images. The database design can be found in the database-design directory. It provides a schema and table structure to handle image storage and retrieval effectively.
 
-![[Databse ERD](img/erd.jpg "ERD")](https://github.com/kidhood/bird-trading-platform-backend)
+![Databse ERD](img/erd.jpg "ERD")
 
 ## CI/CD
 The project incorporates basic CI/CD practices to automate the build and deployment processes. The CI/CD pipeline is set up to trigger on changes to the main branch. Upon triggering, the pipeline performs the following steps:
@@ -54,5 +54,4 @@ The CI/CD pipeline configuration files can be found in the ci-cd directory. Modi
 This project was created by kidhood (Nguyễn Văn Thống), 
 hoangtien2911 (Phạm Hoàng Tiến), thuanisuka. Contributions to the project are welcome. Feel free to submit bug reports, feature requests, or pull requests to enhance the functionality of the backend bird trading project.
   
-![[Team pic](img/5ae.jpg "Gang Of Five")](https://github.com/kidhood/bird-trading-platform-backend)
-
+![Team pic](img/5ae.jpg "Gang Of Five")
