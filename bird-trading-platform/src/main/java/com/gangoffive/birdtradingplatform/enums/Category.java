@@ -45,4 +45,15 @@ public enum Category {
         }
         return result;
     }
+    public static String getCategoryNameById(int id) {
+        List<Category> lists = Arrays.asList(Category.values());
+        String result;
+        try {
+            result = lists.stream().filter(item -> item.getCategoryId()==id)
+                    .map(item -> item.getCategoryName()).findFirst().get();
+        }catch (Exception e) {
+            throw new CustomRuntimeException(HttpStatus.NOT_FOUND.name(), "Not found this catagory");
+        }
+        return result;
+    }
 }

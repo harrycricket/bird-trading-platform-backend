@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Objects;
 
 public interface ProductService {
     List<ProductDto> retrieveAllProduct();
@@ -25,4 +26,5 @@ public interface ProductService {
     ProductDto ProductToDto(Product product);
 
     ResponseEntity<?> retrieveProductByListId(long[] ids);
+    List<ProductDto> filter();
 }

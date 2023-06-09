@@ -20,4 +20,5 @@ import java.util.Optional;
 @Repository
 public interface BirdRepository extends JpaRepository<Bird, Long> {
     Optional<List<Bird>> findByNameLike(String name);
+
 }

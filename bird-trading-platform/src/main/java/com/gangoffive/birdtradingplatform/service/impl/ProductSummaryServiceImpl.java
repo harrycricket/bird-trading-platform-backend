@@ -1,16 +1,15 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.entity.*;
-import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
-import com.gangoffive.birdtradingplatform.repository.ProductRepository;
-import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
-import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
+import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -26,6 +25,9 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
     private final ReviewRepository reviewRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
+    private final BirdRepository birdRepository;
+    private final FoodRepository foodRepository;
+    private final AccessoryRepository accessoryRepository;
     public double updateProductStar(Product product) {
         double star = this.CalculationRating(product.getOrderDetails());
         var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
@@ -136,6 +138,34 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
             }
         }
         return 0;
+    }
+
+    @Override
+    public List<Long> getAllIdBird(List<Long> idType) {
+        List<Bird> birds = birdRepository.findAll();
+        List<Long> idbids =birds.stream()
+                .map(Bird::getId)
+                .collect(Collectors.toList());
+        return idbids;
+    }
+
+
+    @Override
+    public List<Long> getAllIdFood() {
+        List<Food> foods = foodRepository.findAll();
+        List<Long> idfoods =foods.stream()
+                .map(Food::getId)
+                .collect(Collectors.toList());
+        return idfoods;
+    }
+
+    @Override
+    public List<Long> getAllIdAccessory() {
+        List<Accessory> accessories = accessoryRepository.findAll();
+        List<Long> idaccsesory =accessories.stream()
+                .map(Accessory::getId)
+                .collect(Collectors.toList());
+        return idaccsesory;
     }
 
 }

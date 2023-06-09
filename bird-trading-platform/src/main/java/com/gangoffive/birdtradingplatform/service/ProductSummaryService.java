@@ -22,4 +22,8 @@ public interface ProductSummaryService {
     List<Long> getIdTopFood();
 
     double CalculationRating(List<OrderDetail> orderDetails);
+
+    List<Long> getAllIdBird(List<Long> idType);
+    List<Long> getAllIdFood();
+    List<Long> getAllIdAccessory();
 }
