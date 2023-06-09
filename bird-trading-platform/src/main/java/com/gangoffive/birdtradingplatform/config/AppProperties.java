@@ -17,6 +17,8 @@ public class AppProperties {
 
     private final Email email = new Email();
 
+    private final Paypal paypal = new Paypal();
+
     public static final class Auth {
         private String secretKey;
         private Long tokenExpiration;
@@ -122,7 +124,6 @@ public class AppProperties {
 
     public static final class Email {
         private String username;
-
         private String verifyLink;
 
         public String getUsername() {
@@ -139,6 +140,36 @@ public class AppProperties {
 
         public String getVerifyLink() {
             return this.verifyLink;
+        }
+    }
+
+    public static final class Paypal {
+        private String mode;
+        private String id;
+        private String secret;
+
+        public String getMode() {
+            return mode;
+        }
+
+        public void setMode(String mode) {
+            this.mode = mode;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getSecret() {
+            return secret;
+        }
+
+        public void setSecret(String secret) {
+            this.secret = secret;
         }
     }
 
@@ -160,5 +191,9 @@ public class AppProperties {
 
     public Email getEmail() {
         return email;
+    }
+
+    public Paypal getPaypal() {
+        return paypal;
     }
 }

@@ -1,9 +1,9 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
-import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.enums.Category;
 import com.gangoffive.birdtradingplatform.enums.ResponseCode;
 import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
@@ -17,9 +17,6 @@ import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.util.MyUtils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import com.gangoffive.birdtradingplatform.wrapper.ProductDetailWrapper;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +27,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.Utilities;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -76,7 +71,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public double CalculationRating(List<OrderDetail> orderDetails) {
-       return productSummaryService.CalculationRating(orderDetails);
+        return productSummaryService.CalculationRating(orderDetails);
     }
 
     @Override
@@ -87,17 +82,17 @@ public class ProductServiceImpl implements ProductService {
 
         ArrayList<Long> topProductIds = new ArrayList<>();
 
-        if(birdIds != null && accessoryIds != null && foodIds != null){
+        if (birdIds != null && accessoryIds != null && foodIds != null) {
 
             topProductIds.addAll(birdIds.subList(0, 3));
             topProductIds.addAll(accessoryIds.subList(0, 3));
             topProductIds.addAll(foodIds.subList(0, 3));
 
-        }else{
+        } else {
             PageRequest page = PageRequest.of(0, 8, Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
-                                            .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
-            List<ProductSummary> listsTemp =  productSummaryRepository.findAll(page).getContent();
-            if(listsTemp != null && listsTemp.size() != 0) {
+                    .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
+            List<ProductSummary> listsTemp = productSummaryRepository.findAll(page).getContent();
+            if (listsTemp != null && listsTemp.size() != 0) {
                 topProductIds = (ArrayList<Long>) listsTemp.stream().map(id -> id.getProduct().getId()).toList();
             }
         }
@@ -110,7 +105,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public double CalculateSaleOff(List<PromotionShop> listPromotion, double price) {
         if (listPromotion != null && listPromotion.size() != 0) {
-            List<Integer> saleOff = listPromotion.stream().map(s -> s.getRate()).collect(Collectors.toList());
+            List<Integer> saleOff = listPromotion.stream().map(s -> s.getDiscountRate()).collect(Collectors.toList());
             double priceDiscount = price;
             for (double sale : saleOff) {
                 priceDiscount = priceDiscount - priceDiscount * sale / 100;
@@ -140,7 +135,7 @@ public class ProductServiceImpl implements ProductService {
             ProductSummary productSummary = productSummaryRepository.findByProductId(id).get();
             ProductDto productDto = this.ProductToDto(product.get());
 
-            List<String> listImages = MyUtils.toLists(product.get().getImgUrl(),",");
+            List<String> listImages = MyUtils.toLists(product.get().getImgUrl(), ",");
             int numberSold = (int) productSummary.getTotalQuantityOrder();
             int numberReview = productSummary.getReviewTotal();
 
@@ -151,12 +146,12 @@ public class ProductServiceImpl implements ProductService {
                     .numberReview(numberReview).build();
             return ResponseEntity.ok(productDetailWrapper);
         }
-        return new ResponseEntity<>(ResponseCode.NOT_FOUD_THIS_ID.toString(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(ResponseCode.NOT_FOUND_THIS_ID.toString(), HttpStatus.NOT_FOUND);
     }
 
     @Override
     public double CalculateDiscountedPrice(double price, double saleOff) {
-        return Math.round((price - (price*saleOff)) * 100.0) / 100.0 ;
+        return Math.round((price - (price * saleOff)) * 100.0) / 100.0;
     }
 
     @Override
@@ -180,7 +175,7 @@ public class ProductServiceImpl implements ProductService {
         } else if (product instanceof Accessory) {
             productTemp = accessoryMapper.toDto((Accessory) product);
         }
-        productTemp.setImgUrl(MyUtils.toLists(product.getImgUrl(),",").get(0));
+        productTemp.setImgUrl(MyUtils.toLists(product.getImgUrl(), ",").get(0));
         productTemp.setStar(this.CalculationRating(product.getOrderDetails()));
         productTemp.setDiscountRate(this.CalculateSaleOff(product.getPromotionShops(), productTemp.getPrice()));
         productTemp.setDiscountedPrice(this.CalculateDiscountedPrice(productTemp.getPrice(), productTemp.getDiscountRate()));
@@ -191,29 +186,29 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ResponseEntity<?> retrieveProductByListId(long[] ids) {
         List<Product> lists = productRepository.findAllById(Arrays.stream(ids).boxed().toList());
-        if(lists != null){
+        if (lists != null) {
             return ResponseEntity.ok(lists.stream().map(this::productToProductCart).toList());
         }
-        return new ResponseEntity<>(ResponseCode.NOT_FOUD_THIS_LIST_ID.toString(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(ResponseCode.NOT_FOUND_THIS_LIST_ID.toString(), HttpStatus.NOT_FOUND);
     }
 
     private ProductCartDto productToProductCart(Product product) {
-        if(product != null) {
+        if (product != null) {
             ProductCartDto productCartDto = ProductCartDto.builder()
                     .id(product.getId())
                     .name(product.getName())
                     .price(product.getPrice())
-                    .imgUrl(MyUtils.toLists(product.getImgUrl(),",").get(0))
-                    .discountRate(this.CalculateSaleOff(product.getPromotionShops(),product.getPrice()))
+                    .imgUrl(MyUtils.toLists(product.getImgUrl(), ",").get(0))
+                    .discountRate(this.CalculateSaleOff(product.getPromotionShops(), product.getPrice()))
                     .quantity(product.getQuantity())
                     .build();
             productCartDto.setDiscountedPrice(this.CalculateDiscountedPrice(product.getPrice(),
                     productCartDto.getDiscountRate()));
             if (product instanceof Bird) {
                 productCartDto.setCategoryId(Category.getCategoryIdByName(new BirdDto().getClass().getSimpleName()));
-            }else if (product instanceof Food) {
+            } else if (product instanceof Food) {
                 productCartDto.setCategoryId(Category.getCategoryIdByName(new FoodDto().getClass().getSimpleName()));
-            } else if (product instanceof Accessory){
+            } else if (product instanceof Accessory) {
                 productCartDto.setCategoryId(Category.getCategoryIdByName(new AccessoryDto().getClass().getSimpleName()));
             }
             productCartDto.setShopOwner(new ShopOwnerDto(product.getShopOwner().getId(),

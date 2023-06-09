@@ -1,176 +1,152 @@
 package com.gangoffive.birdtradingplatform.entity;
 
-import java.util.Date;
-import java.util.List;
-
-import org.hibernate.annotations.CreationTimestamp;
-
 import com.gangoffive.birdtradingplatform.enums.OrderStatus;
-import com.gangoffive.birdtradingplatform.enums.PaymentMethod;
-import com.gangoffive.birdtradingplatform.enums.PaymentStatus;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-@ToString
-@Getter
+import java.util.Date;
+import java.util.List;
+
+@Entity(name = "tblOrder")
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "tblOrder")
+@Getter
+@ToString
 public class Order {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "order_id")
-	private Long id;
-	
-	@Column(name = "total_price")
-	private int totalPrice;
-	
-	@Column(name = "discount")
-	private int discount;
-	
-	@Column(name = "status")
-	@Enumerated(value = EnumType.STRING)
-	private OrderStatus status;
-	
-	@Column(name = "payment_status")
-	@Enumerated(value = EnumType.STRING)
-	private PaymentStatus paymentStatus;
-	
-	@Column(name = "payment_method")
-	@Enumerated(value = EnumType.STRING)
-	private PaymentMethod paymentMethod;
-	
-	@Column(name = "created_date")
-	@CreationTimestamp
-	private Date createdDate;
-	
-	@Column(name = "is_delete")
-	private Boolean delete;
-	
-	@ManyToOne
-	@JoinColumn(name = "buyer_id"
-			,foreignKey = @ForeignKey(name = "FK_ORDER_BUYER")
-	)
-	private Account account; 
-	
-	@ManyToOne
-	@JoinColumn(name = "shop_id"
-	,foreignKey = @ForeignKey(name = "FK_ORDER_SHOP")
-	)
-	private ShopOwner shopOwner;
-	
-	@ManyToOne
-	@JoinColumn(name = "shipping_address"
-	,foreignKey = @ForeignKey(name = "FK_ORDER_SHIPPING")
-	)
-	private Address shippingAddress;
-	
-	@OneToOne
-	@JoinColumn(name = "transaction_id"
-	,foreignKey = @ForeignKey(name = "FK_ORDER_TRANSACTION")
-	)
-	private Transaction transaction;
-	
-	@OneToMany(mappedBy = "order")
-	private List<OrderDetail> orderDetails;
-	
-	//one order may have many report
-	@OneToMany(mappedBy = "order")
-	private List<Report> reports;
 
-    @ManyToMany
-    @JoinTable(
-            name = "tblOrder_Promotion",
-            joinColumns = @JoinColumn(name = "order_id"),
-            foreignKey = @ForeignKey(name = "FK_ORDER_PROMOTION"),
-            inverseJoinColumns = @JoinColumn(name = "promotion_id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_id")
+    private Long id;
+
+    @Column(name = "total_price")
+    private int totalPrice;
+
+    @Column(name = "status")
+    @Enumerated(value = EnumType.STRING)
+    private OrderStatus status;
+
+
+    @Column(name = "created_date")
+    @CreationTimestamp
+    private Date createdDate;
+
+    @Column(name = "lasted_update")
+    @UpdateTimestamp
+    private Date lastedUpdate;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "shop_id",
+            foreignKey = @ForeignKey(name = "FK_ORDER_SHOP")
     )
-    private List<Promotion> promotions;
+    private ShopOwner shopOwner;
+
+    @ManyToOne
+    @JoinColumn(
+            name = "package_order_id",
+            foreignKey = @ForeignKey(name = "FK_ORDER_PACKAGE_ORDER")
+    )
+    private PackageOrder packageOrder;
+
+    @OneToMany(mappedBy = "order")
+    private List<OrderDetail> orderDetails;
+
+    //one order may have many report
+    @OneToMany(mappedBy = "order")
+    private List<Report> reports;
 
     @ManyToMany
     @JoinTable(
             name = "tblOrder_Promotion_Shop",
             joinColumns = @JoinColumn(name = "order_id"),
-            foreignKey = @ForeignKey(name = "FK_ORDER_PROMOTIONSHOP"),
+            foreignKey = @ForeignKey(name = "FK_ORDER_PROMOTION_SHOP"),
             inverseJoinColumns = @JoinColumn(name = "promotion_s_id")
     )
     private List<PromotionShop> promotionShops;
 
+    public Long getId() {
+        return id;
+    }
+
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public int getTotalPrice() {
+        return totalPrice;
     }
 
     public void setTotalPrice(int totalPrice) {
         this.totalPrice = totalPrice;
     }
 
-    public void setDiscount(int discount) {
-        this.discount = discount;
+    public OrderStatus getStatus() {
+        return status;
     }
 
     public void setStatus(OrderStatus status) {
         this.status = status;
     }
 
-    public void setPaymentStatus(PaymentStatus paymentStatus) {
-        this.paymentStatus = paymentStatus;
-    }
-
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
-        this.paymentMethod = paymentMethod;
+    public Date getCreatedDate() {
+        return createdDate;
     }
 
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
     }
 
-    public void setDelete(Boolean delete) {
-        this.delete = delete;
+    public Date getLastedUpdate() {
+        return lastedUpdate;
+    }
+
+    public void setLastedUpdate(Date lastedUpdate) {
+        this.lastedUpdate = lastedUpdate;
+    }
+
+    public ShopOwner getShopOwner() {
+        return shopOwner;
     }
 
     public void setShopOwner(ShopOwner shopOwner) {
         this.shopOwner = shopOwner;
     }
 
-    public void setShippingAddress(Address shippingAddress) {
-        this.shippingAddress = shippingAddress;
+    public PackageOrder getPackageOrder() {
+        return packageOrder;
     }
 
-    public void setTransaction(Transaction transaction) {
-        this.transaction = transaction;
+    public void setPackageOrder(PackageOrder packageOrder) {
+        this.packageOrder = packageOrder;
     }
 
-    public void addOrderDetails(OrderDetail orderDetail) {
+    public List<OrderDetail> getOrderDetails() {
+        return orderDetails;
+    }
+
+    public void addOrderDetail(OrderDetail orderDetail) {
         this.orderDetails.add(orderDetail);
     }
 
-    public void addPromotionShop(PromotionShop promotionShop) {
+    public List<Report> getReports() {
+        return reports;
+    }
+
+    public void addReports(Report report) {
+        this.reports.add(report);
+    }
+
+    public List<PromotionShop> getPromotionShops() {
+        return promotionShops;
+    }
+
+    public void addPromotionShops(PromotionShop promotionShop) {
         this.promotionShops.add(promotionShop);
     }
-    public void addPromotion(Promotion promotion) {
-        this.promotions.add(promotion);
-    }
-	
-	public void addReport(Report report) {
-		this.reports.add(report);
-	}
-	
 }

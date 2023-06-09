@@ -16,7 +16,7 @@ import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.VerifyTokenRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.AuthenticationService;
-import com.gangoffive.birdtradingplatform.service.EmailSenderService;
+import com.gangoffive.birdtradingplatform.service.EmailService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,7 +43,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final AccountMapper accountMapper;
-    private final EmailSenderService emailSenderService;
+    private final EmailService emailService;
     private final AppProperties appProperties;
     private final VerifyTokenRepository verifyTokenRepository;
     private final AddressMapper addressMapper;
@@ -66,6 +66,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (accountDto.getMatchingPassword().equals(accountDto.getPassword())) {
             Optional<Account> temp = accountRepository.findByEmail(accountDto.getEmail());
             if (!temp.isPresent()) {
+//                log.info("Email Valid {}", emailService.isEmailValid(accountDto.getEmail()));
+                if (!emailService.isEmailExist(accountDto.getEmail())) {
+                    return new ResponseEntity<>(ErrorResponse.builder()
+                            .errorCode(HttpStatus.NOT_FOUND.name())
+                            .errorMessage("The mail is not found!").build(), HttpStatus.NOT_FOUND);
+                }
                 Account acc = accountMapper.toModel(accountDto);
                 acc.setPassword(passwordEncoder.encode(accountDto.getPassword()));
                 acc.setRole(UserRole.USER);
@@ -94,11 +100,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 verifyToken.setRevoked(false);
                 //send mail
                 try {
-                    emailSenderService.sendSimpleEmail(accountDto.getEmail(), emailContent.toString(), emailSubject);
+                    emailService.sendSimpleEmail(accountDto.getEmail(), emailContent.toString(), emailSubject);
                 } catch (Exception e) {
                     return new ResponseEntity<>(ErrorResponse.builder()
-                            .errorCode(HttpStatus.CONFLICT.name())
-                            .errorMessage("The mail is not correct!").build(), HttpStatus.CONFLICT);
+                            .errorCode(HttpStatus.NOT_FOUND.name())
+                            .errorMessage("The mail is not found!").build(), HttpStatus.NOT_FOUND);
                 }
                 accountRepository.save(acc);
                 //save token
@@ -178,7 +184,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             emailContent.append("If you did not initiate this request or have any questions, please contact our support team.\n");
             emailContent.append("Best regards,\n");
             emailContent.append("BirdStore2ND\n");
-            emailSenderService.sendSimpleEmail(email, emailContent.toString(), emailSubject);
+            emailService.sendSimpleEmail(email, emailContent.toString(), emailSubject);
             return MailSenderStatus.MAIL_SENT.name();
         } else {
             return MailSenderStatus.MAIL_NOT_FOUND.name();

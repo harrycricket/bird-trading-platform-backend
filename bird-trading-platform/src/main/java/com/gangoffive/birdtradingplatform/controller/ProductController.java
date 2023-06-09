@@ -2,6 +2,8 @@ package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.entity.Product;
+import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
@@ -16,15 +18,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+    private final ProductRepository productRepository;
 
     @GetMapping("products")
     public List<ProductDto> retrieveAllProduct() {
         return productService.retrieveAllProduct();
     }
 
-    @GetMapping("products/pages/{pagenumber}")
-    public ResponseEntity<?> retrieveProductByPagenumber(@PathVariable int pagenumber) {
-        return productService.retrieveProductByPagenumber(pagenumber);
+    @GetMapping("products/pages/{pageNumber}")
+    public ResponseEntity<?> retrieveProductByPageNumber(@PathVariable int pageNumber) {
+        return productService.retrieveProductByPagenumber(pageNumber);
     }
 
     @GetMapping("products/top-product")
@@ -52,4 +55,5 @@ public class ProductController {
     public ResponseEntity<?> findProductByListId(@RequestParam("id") long[] ids ) {
         return productService.retrieveProductByListId(ids);
     }
+
 }

@@ -15,8 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Where(clause = "is_deleted = false")
+//@EntityListeners(ProductEntityListener.class)
 public abstract class Product {
-
     @Id
     @Column(name = "product_id")
     @SequenceGenerator(
@@ -62,7 +62,7 @@ public abstract class Product {
 
     @Column(name = "is_deleted")
     protected boolean deleted;
-    
+
     @OneToMany(mappedBy = "product")
     private List<OrderDetail> orderDetails;
 
@@ -77,6 +77,7 @@ public abstract class Product {
 
     @OneToOne(mappedBy = "product")
     protected ProductSummary productSummary;
+
     public Long getId() {
         return id;
     }
@@ -84,7 +85,7 @@ public abstract class Product {
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -168,6 +169,7 @@ public abstract class Product {
     public void addOrderDetail(OrderDetail orderDetail) {
         orderDetails.add(orderDetail);
     }
+
     public void setShopOwner(ShopOwner shopOwner) {
         this.shopOwner = shopOwner;
     }
@@ -180,13 +182,18 @@ public abstract class Product {
         this.promotionShops.add(promotionShop);
     }
 
+    public ProductSummary getProductSummary() {
+        return productSummary;
+    }
+
+    public void setProductSummary(ProductSummary productSummary) {
+        this.productSummary = productSummary;
+    }
 
     @Override
-	public String toString() {
-		return "Product [id=" + id + ", name=" + name + ", price=" + price + ", description=" + description
-				+ ", createdDate=" + createdDate + ", lastUpDated=" + lastUpDated + ", quantity=" + quantity
-				+ ", imgUrl=" + imgUrl + ", videoUrl=" + videoUrl + "]";
-	}
-    
-    
+    public String toString() {
+        return "Product [id=" + id + ", name=" + name + ", price=" + price + ", description=" + description
+                + ", createdDate=" + createdDate + ", lastUpDated=" + lastUpDated + ", quantity=" + quantity
+                + ", imgUrl=" + imgUrl + ", videoUrl=" + videoUrl + "]";
+    }
 }

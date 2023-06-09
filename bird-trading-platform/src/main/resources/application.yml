@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${env.DATABASE_URL}
-    username: ${env.DATABASE_USERNAME}
-    password: ${env.DATABASE_PASSWORD}
+    url: ${env.DATABASE_LOCAL_URL}
+    username: ${env.DATABASE_LOCAL_USERNAME}
+    password: ${env.DATABASE_LOCAL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate.ddl-auto: update
@@ -59,11 +59,16 @@ app:
       - http://localhost:3000/oauth2/redirect
       - https://birdstore2nd.vercel.app
       - http://localhost:8080/oauth2/redirect
-      - https://birdland2nd.store
+      - https://birdland2nd.store/get-token
+      - http://localhost:3030/home
   aws:
     accessKey: ${env.S3_ACCESS_KEY}
     secretKey: ${env.S3_SECRET_KEY}
 
   email:
-    username: tienphambmt2911@gmail.com
+    username: ${env.EMAIL_USERNAME}
     verifyLink: "https://thongtienthienphuot.shop/api/v1/users/verify/"
+  paypal:
+    mode: sandbox
+    id: ${env.PAYPAL_ID}
+    secret: ${env.PAYPAL_SECRET}

@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.entity;
 
 import java.util.Date;
 
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.gangoffive.birdtradingplatform.enums.TransactionStatus;
@@ -14,37 +15,41 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import org.hibernate.annotations.UpdateTimestamp;
 
-@Getter
-@Setter
-@ToString
+@Entity(name = "tblTransaction" )
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "tblTransaction" )
+@Getter
+@Setter
+@Builder
+@ToString
 public class Transaction {
 	@Id
 	@GeneratedValue(strategy =  GenerationType.IDENTITY)
 	@Column(name = "transaction_id")
 	private Long id;
+
+	@Column(name = "transaction_paypal_id")
+	private Long paypalId;
+
+	@Column(name = "status")
+	@Enumerated(value = EnumType.STRING)
+	private TransactionStatus status;
 	
 	@Column(name = "transaction_date"
 			,nullable = false
 	)
 	@CreationTimestamp
 	private Date transactionDate;
+
+	@Column(name = "lasted_Update")
+	@UpdateTimestamp
+	private Date lastedUpdate;
 	
 	@Column(name = "amount")
-	private String amount;
-	
-	@Column(name = "status")
-	@Enumerated(value = EnumType.STRING)
-	private TransactionStatus status;
-	
+	private double amount;
+
 	@OneToOne(mappedBy = "transaction")
-	private Order order;
+	private PackageOrder packageOrder;
 }

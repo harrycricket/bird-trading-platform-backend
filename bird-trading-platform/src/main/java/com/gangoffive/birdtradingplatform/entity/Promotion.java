@@ -4,55 +4,58 @@
  */
 package com.gangoffive.birdtradingplatform.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import com.gangoffive.birdtradingplatform.enums.PromotionType;
+import jakarta.persistence.*;
+
 import java.util.Date;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  *
  * @author Admins
  */
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 @Table(name = "tblPromotion")
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class Promotion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "promotion_id")
     private Long id;
+
+    @Column
+    private String name;
     
     @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column
-    private int discountRate;
+    private double discount;
 
     @Column
-    private Date starDate;
+    @Enumerated(value = EnumType.STRING)
+    private PromotionType type;
+
+    @Column
+    private Date startDate;
 
     @Column
     private Date endDate;
 
     @ManyToMany(mappedBy = "promotions")
-    protected List<Order> orders;
+    private List<PackageOrder> packageOrders;
 
-    public void addOrder(Order order){
-        this.orders.add(order);
+    public void addOrder(PackageOrder packageOrder){
+        this.packageOrders.add(packageOrder);
     }
 }
