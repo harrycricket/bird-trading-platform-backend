@@ -216,6 +216,9 @@ public class ProductServiceImpl implements ProductService {
             } else if (product instanceof Accessory){
                 productCartDto.setCategoryId(Category.getCategoryIdByName(new AccessoryDto().getClass().getSimpleName()));
             }
+            productCartDto.setShopOwner(new ShopOwnerDto(product.getShopOwner().getId(),
+                    product.getShopOwner().getShopName(),
+                    product.getShopOwner().getImgUrl()));
             return productCartDto;
         }
         return null;
