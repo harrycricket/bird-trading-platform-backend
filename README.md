@@ -25,7 +25,7 @@ The project incorporates the following technologies:
 
 To set up the project locally, follow these steps:
 
-Clone the repository: git clone <repository-url>
+Clone the repository: git clone [<repository-url>](https://github.com/kidhood/bird-trading-platform-backend.git)
 Navigate to the project directory: cd backend-bird-trading-project
 Install the required dependencies using Maven: mvn install
 Set up a MySQL database and configure the connection details in the project's configuration files.
@@ -53,4 +53,6 @@ The CI/CD pipeline configuration files can be found in the ci-cd directory. Modi
 
 This project was created by kidhood (Nguyễn Văn Thống), 
 hoangtien2911 (Phạm Hoàng Tiến), thuanisuka. Contributions to the project are welcome. Feel free to submit bug reports, feature requests, or pull requests to enhance the functionality of the backend bird trading project.
+  
+![Team pic](img/5ae.jpg "Chat screen")
 
