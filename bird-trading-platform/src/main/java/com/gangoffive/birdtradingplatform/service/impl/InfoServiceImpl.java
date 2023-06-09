@@ -24,11 +24,17 @@ public class InfoServiceImpl implements InfoService {
     private final AccountRepository accountRepository;
     private final JwtService jwtService;
     @Override
-    public ResponseEntity<?> getInfo(String email, String token) {
+    public ResponseEntity<?> getInfo(String token) {
         if (token == null || token.isEmpty()) {
             throw new AuthenticateException("Not correct token to access");
         }
-        if (jwtService.extractUsername(token).equalsIgnoreCase(email) && !jwtService.isTokenExpired(token)) {
+        String email;
+        try {
+            email = jwtService.extractUsername(token);
+        } catch (Exception ex) {
+            throw new AuthenticateException("Not correct token to access");
+        }
+        if (!jwtService.isTokenExpired(token)) {
             Optional<Account> account = accountRepository.findByEmail(email);
             UserPrincipal userPrincipal = UserPrincipal.create(account.get());
             String refreshToken = account.get().getRefreshToken();

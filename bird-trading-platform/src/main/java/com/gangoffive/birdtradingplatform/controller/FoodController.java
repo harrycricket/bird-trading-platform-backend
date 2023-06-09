@@ -23,7 +23,7 @@ public class FoodController {
     }
 
     @GetMapping("foods/pages/{pageNumber}")
-    public ResponseEntity<? extends Object> retrieveFoodByPagenumber(@PathVariable int pageNumber) {
+    public ResponseEntity<? extends Object> retrieveFoodByPageNumber(@PathVariable int pageNumber) {
         return foodService.retrieveFoodByPagenumber(pageNumber);
     }
 

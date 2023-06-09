@@ -25,9 +25,9 @@ public class ProductController {
         return productService.retrieveAllProduct();
     }
 
-    @GetMapping("products/pages/{pagenumber}")
-    public ResponseEntity<?> retrieveProductByPagenumber(@PathVariable int pagenumber) {
-        return productService.retrieveProductByPagenumber(pagenumber);
+    @GetMapping("products/pages/{pageNumber}")
+    public ResponseEntity<?> retrieveProductByPageNumber(@PathVariable int pageNumber) {
+        return productService.retrieveProductByPagenumber(pageNumber);
     }
 
     @GetMapping("products/top-product")

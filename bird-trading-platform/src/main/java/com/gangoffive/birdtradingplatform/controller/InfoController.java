@@ -16,18 +16,11 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/api/v1/info")
 @RequiredArgsConstructor
-public class InforController {
+public class InfoController {
     private final InfoService infoService;
 
     @GetMapping
-    public ResponseEntity<?> getInfo(@RequestParam String email, @RequestParam String token) {
-        return infoService.getInfo(email, token);
-    }
-
-    @GetMapping("/error")
-    public ResponseEntity<?> getInfoError(@RequestParam String error, HttpServletRequest request) {
-        ApiError errorDetails = new ApiError(request.getRequestURI(),
-                error, HttpStatus.CONFLICT.value(), LocalDateTime.now());
-        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+    public ResponseEntity<?> getInfo(@RequestParam String token) {
+        return infoService.getInfo(token);
     }
 }

@@ -105,7 +105,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public double CalculateSaleOff(List<PromotionShop> listPromotion, double price) {
         if (listPromotion != null && listPromotion.size() != 0) {
-            List<Integer> saleOff = listPromotion.stream().map(s -> s.getRate()).collect(Collectors.toList());
+            List<Integer> saleOff = listPromotion.stream().map(s -> s.getDiscountRate()).collect(Collectors.toList());
             double priceDiscount = price;
             for (double sale : saleOff) {
                 priceDiscount = priceDiscount - priceDiscount * sale / 100;

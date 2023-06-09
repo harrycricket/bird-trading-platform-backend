@@ -96,7 +96,7 @@ public class Account {
 	private ShopStaff shopStaff;
 	
 	@OneToMany(mappedBy = "account")
-	private List<Order> orders;
+	private List<PackageOrder> packageOrders;
 	
 	@OneToMany(mappedBy = "account")
 	private List<Review> reviews;
@@ -160,8 +160,8 @@ public class Account {
 	}
 
 
-	public void addOrder(Order order) {
-		this.orders.add(order);
+	public void addPackageOrder(PackageOrder packageOrder) {
+		this.packageOrders.add(packageOrder);
 	}
 
 
