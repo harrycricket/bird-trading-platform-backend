@@ -34,7 +34,8 @@ Start the application: mvn spring-boot:run
 The backend application will start running on the specified port, and you can access it via the provided API endpoints.
 
 ## Database Design
-The project includes a design for the image database to efficiently store bird images. The database design can be found in the database-design directory. It provides a schema and table structure to handle image storage and retrieval effectively.
+The physical ERD illustrates the structure of the database tables and their relationships in the bird trading project. It represents the entities, their attributes, and the relationships between them.
+Here is our physical ERD (Entity-Relationship Diagram):
 
 ![Databse ERD](img/erd.jpg "ERD")
 
