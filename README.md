@@ -19,7 +19,6 @@ The project incorporates the following technologies:
 - MySQL: A popular relational database management system used for data storage and retrieval.
 - AWS: Amazon Web Services provides various cloud services utilized for storage, deployment, and other functionalities.
 - CI/CD: Basic Continuous Integration and Continuous Deployment practices are implemented to automate build and deployment processes.
-- Image Database Design: The project includes a database design specifically for storing bird images efficiently.
 
 ## Installation and Setup
 
