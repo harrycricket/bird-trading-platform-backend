@@ -39,14 +39,39 @@ Here is our physical ERD (Entity-Relationship Diagram):
 
 ![Databse ERD](img/erd.jpg "ERD")
 
-## CI/CD
-The project incorporates basic CI/CD practices to automate the build and deployment processes. The CI/CD pipeline is set up to trigger on changes to the main branch. Upon triggering, the pipeline performs the following steps:
+## CI/CD using GitHub Actions and Ansible
 
-Builds the application using Maven.
-Runs automated tests to ensure the application's stability.
-Packages the application into a deployable artifact.
-Deploys the artifact to the target environment, such as an AWS EC2 instance or container service.
-The CI/CD pipeline configuration files can be found in the ci-cd directory. Modify these files according to your specific CI/CD tool and deployment environment.
+This backend project incorporates Continuous Integration (CI) and Continuous Deployment (CD) processes to ensure code quality and automate the deployment process. GitHub Actions is used for CI, while Ansible handles CD.
+
+### Continuous Integration (CI)
+
+The CI process in this project follows these steps:
+
+1. When changes are pushed to the repository, a GitHub Actions workflow is triggered.
+
+2. The workflow initiates the build process using Maven or a similar build tool, generating the application artifact.
+
+3. Automated tests are executed to validate the functionality and integrity of the backend code.
+
+4. Additional code quality checks, such as static code analysis and coding standards, may be performed.
+
+5. Detailed reports on build status, test results, and code quality metrics are generated.
+
+### Continuous Deployment (CD)
+
+The CD process in this project is implemented using Ansible:
+
+1. Ansible playbooks and inventory files define the deployment configuration, including the target environment and server details.
+
+2. After a successful CI build, the CD pipeline is triggered.
+
+3. Ansible connects to the target servers and deploys the application artifact to the specified location.
+
+4. Provisioning and configuration tasks, such as installing dependencies and setting up environment variables, can be automated using Ansible.
+
+5. Rollbacks and health checks ensure successful deployments and monitor the application's health.
+
+6. Reports and notifications provide insights into the deployment status for tracking progress and success.
 
 
 ## Contributing
