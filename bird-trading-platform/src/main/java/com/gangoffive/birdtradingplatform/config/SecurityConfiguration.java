@@ -66,6 +66,8 @@ public class SecurityConfiguration {
             "/upload",
             "/api/v1/info/**",
             "/api/v1/users/get-cookie",
+            "api/v1/package-order",
+            "/api/v1/promotion",
 //            "/favicon.ico",
 //            "/**/*.png",
 //            "/**/*.gif",

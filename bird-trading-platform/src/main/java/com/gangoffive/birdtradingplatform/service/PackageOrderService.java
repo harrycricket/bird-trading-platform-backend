@@ -4,12 +4,13 @@ import com.gangoffive.birdtradingplatform.dto.PackageOrderDto;
 import com.gangoffive.birdtradingplatform.dto.UserOrderDto;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
 import java.util.Map;
 
 public interface PackageOrderService {
-    ResponseEntity<?> packageOrder(PackageOrderDto packageOrderDto);
+    ResponseEntity<?> packageOrder(PackageOrderDto packageOrderDto, String paymentId, String payerId);
 
-    boolean checkPromotion(Long promotionId);
+    boolean checkPromotion(List<Long> promotionId);
     boolean checkListProduct(Map<Long, Integer> productOrder);
     boolean checkUserOrderDto(UserOrderDto userOrderDto);
 }
