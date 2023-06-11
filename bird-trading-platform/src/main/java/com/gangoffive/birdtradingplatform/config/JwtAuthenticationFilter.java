@@ -64,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String requestPath = request.getServletPath();
         log.info("requestPath{}", requestPath);
-        boolean isWhitelisted = Arrays.stream(WHITE_LIST_URLS).anyMatch(s -> s.startsWith(requestPath));
+        boolean isWhitelisted = Arrays.stream(WHITE_LIST_URLS).anyMatch(s -> requestPath.startsWith(s));
         log.info("isWhitelisted {}", isWhitelisted);
         if (isWhitelisted) {
             filterChain.doFilter(request, response);
