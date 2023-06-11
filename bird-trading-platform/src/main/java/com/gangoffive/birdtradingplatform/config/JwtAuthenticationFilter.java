@@ -51,8 +51,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/upload",
             "/api/v1/info/",
             "/api/v1/users/get-cookie",
-            "api/v1/package-order",
+            "/api/v1/package-order",
             "/api/v1/promotions",
+            "/api/v1/products/top-product"
     };
 
     @Override
@@ -62,7 +63,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @Nonnull FilterChain filterChain
     ) throws ServletException, IOException {
         String requestPath = request.getServletPath();
-        boolean isWhitelisted = Arrays.stream(WHITE_LIST_URLS).anyMatch(requestPath::matches);
+        log.info("requestPath{}", requestPath);
+        boolean isWhitelisted = Arrays.stream(WHITE_LIST_URLS).anyMatch(s -> s.startsWith(requestPath));
+        log.info("isWhitelisted {}", isWhitelisted);
         if (isWhitelisted) {
             filterChain.doFilter(request, response);
             return;
