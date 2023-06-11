@@ -1,18 +1,15 @@
 package com.gangoffive.birdtradingplatform.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
-@Getter
-@Setter
-@ToString
+@Entity(name = "tblOrder_Detail")
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "tblOrder_Detail")
+@Getter
+@Setter
+@Builder
+@ToString
 public class OrderDetail {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
