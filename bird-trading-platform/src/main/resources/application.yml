@@ -45,7 +45,8 @@ spring:
 app:
   auth:
     secretKey: ${env.JWT_SECRETKEY}
-    tokenExpiration: 86400000 # a day
+    tokenExpiration: 1000 # a day
+#    86400000
     refreshTokenExpiration: 604800000 # 7 days
   cors:
     allowedOrigins: "http://localhost:3000,https://birdstore2nd.vercel.app,https://www.birdland2nd.store"
