@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/promotion")
+@RequestMapping("/api/v1/promotions")
 public class PromotionController {
     private final PromotionService promotionService;
     @GetMapping
