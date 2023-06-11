@@ -30,10 +30,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private static final String[] WHITE_LIST_URLS = {
-            "/api/v1/auth/**",
-            "/",
-            "/auth/**",
-            "/oauth2/**",
+            "/api/v1/auth/",
+            "/auth/",
+            "/oauth2/",
             "/error",
             "/user/me",
             "/api/v1/users/register",
@@ -42,18 +41,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/v1/users/verify/register",
             "/api/v1/users/verify/reset-password",
             "/api/v1/products",
-            "/api/v1/products/**",
+            "/api/v1/products/",
             "/api/v1/birds",
-            "/api/v1/birds/**",
+            "/api/v1/birds/",
             "/api/v1/accessories",
-            "/api/v1/accessories/**",
+            "/api/v1/accessories/",
             "/api/v1/foods",
-            "/api/v1/foods/**",
+            "/api/v1/foods/",
             "/upload",
-            "/api/v1/info/**",
+            "/api/v1/info/",
             "/api/v1/users/get-cookie",
             "api/v1/package-order",
-            "/api/v1/promotion",
+            "/api/v1/promotions",
     };
 
     @Override
