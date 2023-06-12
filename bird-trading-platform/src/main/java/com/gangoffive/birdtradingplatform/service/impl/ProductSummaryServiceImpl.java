@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -115,7 +116,10 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
                 findByCategory(new Food().getClass().getSimpleName(), page);
         if(listsProductSummary.isPresent()){
             List<Long> listIdTopFood = listsProductSummary.get().stream()
-                    .map(productSummary -> productSummary.getProduct().getId()).toList();
+                    .map(productSummary -> Optional.ofNullable(productSummary.getProduct())
+                            .map(Product::getId)
+                            .orElse(-1L)) // Provide a default value (-1L in this example) if the product is null
+                    .collect(Collectors.toList());
             return listIdTopFood;
         }
 

@@ -1,22 +1,23 @@
-package com.gangoffive.birdtradingplatform.service;
 
-import com.gangoffive.birdtradingplatform.dto.UserOrderDto;
-import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-@SpringBootTest
-@Slf4j
-public class PackageOrderServiceTest {
+//package com.gangoffive.birdtradingplatform.service;
+//
+//import com.gangoffive.birdtradingplatform.dto.UserOrderDto;
+//import jakarta.transaction.Transactional;
+//import lombok.extern.slf4j.Slf4j;
+//import org.junit.jupiter.api.Test;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.boot.test.context.SpringBootTest;
+//
+//import java.util.ArrayList;
+//import java.util.Arrays;
+//import java.util.HashMap;
+//import java.util.Map;
+//
+//import static org.junit.jupiter.api.Assertions.assertTrue;
+//
+//@SpringBootTest
+//@Slf4j
+//public class PackageOrderServiceTest {
 //    @Autowired
 //    private PackageOrderService packageOrderService;
 //
@@ -44,5 +45,6 @@ public class PackageOrderServiceTest {
 //        boolean check = packageOrderService.checkUserOrderDto(userOrderDto);
 //        assertTrue(check);
 //    }
+//
+//}
 
-}

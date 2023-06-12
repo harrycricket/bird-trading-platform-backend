@@ -32,6 +32,7 @@ public class Runner implements CommandLineRunner {
 //        Product product = productRepository.findById(1L).get();
 //        product.setDeleted(true);
 //        productRepository.save(product);
+//        log.info("done");
     }
 
 }
