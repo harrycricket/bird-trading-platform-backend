@@ -16,5 +16,5 @@ public class PromotionDto {
     private String description;
     private double discount;
     private PromotionType type;
-    private Date endDate;
+    private Long endDate;
 }
