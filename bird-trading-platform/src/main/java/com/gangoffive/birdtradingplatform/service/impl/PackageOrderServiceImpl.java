@@ -15,6 +15,7 @@ import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,13 +58,10 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         Instant startTime = Instant.now();
         // Your existing code...
 
-
-
-
-//        log.info("checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()) {}", checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()));
-//        log.info("checkListProduct(packageOrderDto.getProductOrder()) {}", checkListProduct(packageOrderDto.getProductOrder()));
-//        log.info("checkUserOrderDto(packageOrderDto.getUserOrderDto()) {}", checkUserOrderDto(packageOrderDto.getUserOrderDto()));
-//        log.info("checkTotalPrice(packageOrderDto) {}", checkTotalPrice(packageOrderDto));
+        log.info("checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()) {}", checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()));
+        log.info("checkListProduct(packageOrderDto.getProductOrder()) {}", checkListProduct(packageOrderDto.getProductOrder()));
+        log.info("checkUserOrderDto(packageOrderDto.getUserOrderDto()) {}", checkUserOrderDto(packageOrderDto.getUserOrderDto()));
+        log.info("checkTotalPrice(packageOrderDto) {}", checkTotalPrice(packageOrderDto));
         if (paymentId != null && payerId != null) {
             return handleSuccessPayment(packageOrderDto, paymentId, payerId);
         }
@@ -109,11 +109,38 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         if (listPromotion.size() != listPromotionId.size()) {
             return false;
         } else if (listPromotionId.size() > 2) {
-            // min 1 promotion max 2 sua lai so sau
-            log.info("false nef");
             return false;
         }
-        return listPromotion.stream().anyMatch(promotion -> promotion.getEndDate().after(new Date()));
+        int shipping = 0;
+        int discount = 0;
+        for (Promotion promotion : listPromotion) {
+            if (promotion.getType().equals(PromotionType.SHIPPING)) {
+                shipping++;
+            } else if (promotion.getType().equals(PromotionType.DISCOUNT)) {
+                discount++;
+            }
+        }
+        if (shipping > 1 || discount > 1) {
+            return false;
+        }
+
+        boolean hasValidPromotion = false;
+        // Assuming your database uses the UTC time zone
+        ZoneId databaseTimeZone = ZoneId.of("UTC");
+
+        LocalDateTime currentDate = new Date().toInstant().atZone(databaseTimeZone).toLocalDateTime();
+//        log.info("currentDate {}", currentDate);
+        for (Promotion promotion : listPromotion) {
+            if (promotion.getEndDate().toInstant().atZone(databaseTimeZone).toLocalDateTime().isAfter(currentDate)) {
+//                log.info("promotion.getEndDate() {}", promotion.getEndDate().toInstant().atZone(databaseTimeZone).toLocalDateTime());
+                hasValidPromotion = true;
+            } else {
+                hasValidPromotion = false;
+                break;
+            }
+        }
+        return hasValidPromotion;
+//        return listPromotion.stream().anyMatch(promotion -> promotion.getEndDate().after(new Date()));
     }
 
     public boolean checkListProduct(Map<Long, Integer> productOrder) {
@@ -136,10 +163,13 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 
     private boolean checkTotalPrice(PackageOrderDto packageOrderDto) {
         double totalPriceOfAllProduct = calculateTotalPriceOfAllProduct(packageOrderDto.getProductOrder());
-        log.info("totalPriceOfAllProduct {}", totalPriceOfAllProduct);
-        List<Promotion> promotions = promotionRepository.findAllById(packageOrderDto.getTransactionDto().getPromotionId());
         double totalPriceAfterAddVoucher = 0;
         boolean hasShippingPromotion = false;
+        log.info("totalPriceOfAllProduct {}", totalPriceOfAllProduct);
+        if (packageOrderDto.getTransactionDto().getPromotionId() == null || packageOrderDto.getTransactionDto().getPromotionId().isEmpty()) {
+            return (int) packageOrderDto.getTransactionDto().getTotalPrice() == (int) (totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05);
+        }
+        List<Promotion> promotions = promotionRepository.findAllById(packageOrderDto.getTransactionDto().getPromotionId());
         for (Promotion promotion : promotions) {
             if (promotion.getType().equals(PromotionType.SHIPPING)) {
                 totalPriceAfterAddVoucher = calculatePriceAfterAddVoucher(totalPriceOfAllProduct, promotions);
@@ -234,8 +264,13 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 .account(account)
                 .transaction(transaction)
                 .shippingAddress(account.getAddress())
-                .promotions(promotionRepository.findAllById(packageOrderDto.getTransactionDto().getPromotionId()))
                 .build();
+        if (
+                packageOrderDto.getTransactionDto().getPromotionId() != null
+                        && !packageOrderDto.getTransactionDto().getPromotionId().isEmpty()
+        ) {
+            packageOrder.setPromotions(promotionRepository.findAllById(packageOrderDto.getTransactionDto().getPromotionId()));
+        }
         packageOrderRepository.save(packageOrder);
         return packageOrder;
     }
@@ -334,7 +369,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return orderDetails;
     }
 
-    private void saveAll(PackageOrderDto packageOrderDto) {
+    @Transactional
+    public void saveAll(PackageOrderDto packageOrderDto) {
         Transaction transaction = Transaction.builder()
                 .amount(packageOrderDto.getTransactionDto().getTotalPrice())
                 .status(TransactionStatus.PROCESSING)
@@ -345,10 +381,14 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         Account account = saveUserOrderDto(packageOrderDto.getUserOrderDto());
         double shippingFee = 0;
         double discount = 0;
-        List<Promotion> promotions = promotionRepository
-                .findAllById(packageOrderDto.getTransactionDto().getPromotionId());
-        boolean isFreeShip = promotions.stream().anyMatch(promotion -> promotion.getType().equals(PromotionType.SHIPPING));
-        if (!promotions.isEmpty()) {
+        if (
+                packageOrderDto.getTransactionDto().getPromotionId() != null
+                        && !packageOrderDto.getTransactionDto().getPromotionId().isEmpty()
+        ) {
+            List<Promotion> promotions = promotionRepository
+                    .findAllById(packageOrderDto.getTransactionDto().getPromotionId());
+            boolean isFreeShip = promotions.stream().anyMatch(promotion -> promotion.getType().equals(PromotionType.SHIPPING));
+
             for (Promotion promotion : promotions) {
                 if (promotion.getType().equals(PromotionType.SHIPPING)) {
                     shippingFee = 0;
@@ -360,6 +400,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     }
                 }
             }
+
         } else {
             shippingFee = calculateShippingFee(packageOrderDto);
         }
