@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
@@ -28,6 +29,32 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private static final String[] WHITE_LIST_URLS = {
+            "/api/v1/auth/",
+            "/auth/",
+            "/oauth2/",
+            "/error",
+            "/user/me",
+            "/api/v1/users/register",
+            "/api/v1/users/authenticate",
+            "/api/v1/users/reset-password",
+            "/api/v1/users/verify/register",
+            "/api/v1/users/verify/reset-password",
+            "/api/v1/products",
+            "/api/v1/products/",
+            "/api/v1/birds",
+            "/api/v1/birds/",
+            "/api/v1/accessories",
+            "/api/v1/accessories/",
+            "/api/v1/foods",
+            "/api/v1/foods/",
+            "/upload",
+            "/api/v1/info/",
+            "/api/v1/users/get-cookie",
+            "/api/v1/package-order",
+            "/api/v1/promotions",
+            "/api/v1/products/top-product"
+    };
 
     @Override
     protected void doFilterInternal(
@@ -35,10 +62,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @Nonnull HttpServletResponse response,
             @Nonnull FilterChain filterChain
     ) throws ServletException, IOException {
-        if (request.getServletPath().contains("/api/v1/auth")) {
+        String requestPath = request.getServletPath();
+        log.info("requestPath{}", requestPath);
+        boolean isWhitelisted = Arrays.stream(WHITE_LIST_URLS).anyMatch(s -> requestPath.startsWith(s));
+        log.info("isWhitelisted {}", isWhitelisted);
+        if (isWhitelisted) {
             filterChain.doFilter(request, response);
             return;
         }
+//        if (request.getServletPath().contains("/api/v1/auth")) {
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String jwt;
         String userEmail;
