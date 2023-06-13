@@ -34,4 +34,22 @@ public class TypeController {
         return ResponseEntity.ok(typeAllWrapper);
     }
 
+    @GetMapping("/type-birds")
+    public ResponseEntity<?> retrieveTypeBird() {
+        List<TypeBird> typeBirds = typeBirdService.getAllTypeBird();
+        return ResponseEntity.ok(typeBirds);
+    }
+
+    @GetMapping("/type-foods")
+    public ResponseEntity<?> retrieveTypeFood() {
+        List<TypeFood> typeFoods = typeFoodService.getAllTypeFood();
+        return ResponseEntity.ok(typeFoods);
+    }
+
+    @GetMapping("/type-accessories")
+    public ResponseEntity<?> retrieveTypeAccessory() {
+        List<TypeAccessory> typeAccessories = typeAccessoryService.getAllTypeAccessory();
+        return ResponseEntity.ok(typeAccessories);
+    }
+
 }

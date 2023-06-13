@@ -26,9 +26,9 @@ public class ShopOwnerController {
     private final ProductService productService;
     private final ShopOwnerService shopOwnerService;
     private final AccountRepository accountRepository;
-    @GetMapping("/product")
+    @GetMapping("/products")
     public ResponseEntity retrieveAllProduct() {
-        return productService.retrieveProductByShopIdForSO(3);
+        return productService.retrieveProductByShopIdForSO(3, 1);
     }
     @GetMapping("/line-chart")
     public List<LineChartDto> getListLineChartDto() throws ParseException {

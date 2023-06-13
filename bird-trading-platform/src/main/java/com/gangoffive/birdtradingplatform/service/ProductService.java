@@ -22,5 +22,5 @@ public interface ProductService {
     double CalculateDiscountedPrice(double price, double saleOff);
     ProductDto ProductToDto(Product product);
     ResponseEntity<?> retrieveProductByListId(long[] ids);
-    ResponseEntity<?> retrieveProductByShopIdForSO(long shopId);
+    ResponseEntity<?> retrieveProductByShopIdForSO(long shopId, int pageNumber);
 }
