@@ -71,6 +71,8 @@ public class SecurityConfiguration {
             "/api/v1/shop-owner/promotion-shop", // Remember delete just for testing
             "/api/v1/shop-owner/type-all", // Remember delete just for testing
             "/api/v1/shop-owner/product", // Remember delete just for testing
+            "api/v1/shop-owner/**",
+
 //            "/favicon.ico",
 //            "/**/*.png",
 //            "/**/*.gif",

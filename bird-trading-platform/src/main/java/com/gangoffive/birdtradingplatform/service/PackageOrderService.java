@@ -9,7 +9,7 @@ import java.util.Map;
 
 public interface PackageOrderService {
     ResponseEntity<?> packageOrder(PackageOrderDto packageOrderDto, String paymentId, String payerId);
-
+    void saveAll(PackageOrderDto packageOrderDto);
     boolean checkPromotion(List<Long> promotionId);
     boolean checkListProduct(Map<Long, Integer> productOrder);
     boolean checkUserOrderDto(UserOrderDto userOrderDto);

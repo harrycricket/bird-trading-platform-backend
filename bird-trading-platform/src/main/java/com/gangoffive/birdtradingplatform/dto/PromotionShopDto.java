@@ -14,6 +14,6 @@ public class PromotionShopDto {
     private String name;
     private String description;
     private int discountRate;
-    private Date startDate;
-    private Date endDate;
+    private long startDate;
+    private long endDate;
 }

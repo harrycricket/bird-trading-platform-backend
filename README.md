@@ -1,7 +1,7 @@
 
 # Backend Bird Trading Project
 
-This project is the backend implementation of a bird trading platform. It provides the necessary APIs and functionalities to support bird trading operations. The backend is developed using Spring Boot, MySQL for data storage, AWS for cloud services, and includes basic CI/CD (Continuous Integration/Continuous Deployment) capabilities. The project also includes a design for the image database to handle bird images.
+This project is the backend implementation of a bird trading platform. It provides the necessary APIs and functionalities to support bird trading operations. The backend is developed using Spring Boot, MySQL for data storage, AWS for cloud services, and includes basic CI/CD (Continuous Integration/Continuous Deployment) capabilities. The project also integrates MySQL as the database management system. The application incorporates security features, including JWT (JSON Web Token) and OAuth2 for Google login.
 ## Features
 
 - User Management: Allows users to register, log in, and manage their accounts.

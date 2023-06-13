@@ -25,6 +25,6 @@ public class ProductShopDto <T> {
     private double totalOrders;
     private double star;
     private int totalReviews;
-    private Date createDate;
-    private Date lastUpdate;
+    private long createDate;
+    private long lastUpdate;
 }
