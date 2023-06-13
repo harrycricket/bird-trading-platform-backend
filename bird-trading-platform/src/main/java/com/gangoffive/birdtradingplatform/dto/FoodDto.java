@@ -8,11 +8,11 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @ToString
-@NoArgsConstructor
-@AllArgsConstructor
 public class FoodDto extends ProductDto{
 
     private double weight;

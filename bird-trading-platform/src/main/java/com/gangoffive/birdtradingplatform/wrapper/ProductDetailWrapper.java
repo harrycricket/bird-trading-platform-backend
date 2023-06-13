@@ -15,4 +15,5 @@ public class ProductDetailWrapper {
     private List<String> listImages;
     private int numberSold;
     private int numberReview;
+
 }

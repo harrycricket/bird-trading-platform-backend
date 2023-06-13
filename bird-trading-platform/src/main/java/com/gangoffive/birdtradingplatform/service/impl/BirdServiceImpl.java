@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
+import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
 import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;

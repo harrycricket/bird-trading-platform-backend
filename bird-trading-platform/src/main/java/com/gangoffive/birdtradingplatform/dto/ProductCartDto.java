@@ -14,4 +14,5 @@ public class ProductCartDto {
     protected double discountRate;
     protected int quantity;
     protected int categoryId;
+    private ShopOwnerDto shopOwner;
 }

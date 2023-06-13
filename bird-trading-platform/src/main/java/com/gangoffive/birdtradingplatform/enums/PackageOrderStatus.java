@@ -1,7 +1,6 @@
 package com.gangoffive.birdtradingplatform.enums;
 
-public enum PaymentStatus {
-		PROCESSING,
+public enum PackageOrderStatus {
 		SUCCESS,
-		FAILURE
+		CANCEL
 }

@@ -1,10 +1,10 @@
 package com.gangoffive.birdtradingplatform.controller;
 
-import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
+import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
-import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -20,15 +19,16 @@ import java.util.Objects;
 @Slf4j
 public class ProductController {
     private final ProductService productService;
+    private final ProductRepository productRepository;
 
     @GetMapping("products")
     public List<ProductDto> retrieveAllProduct() {
         return productService.retrieveAllProduct();
     }
 
-    @GetMapping("products/pages/{pagenumber}")
-    public ResponseEntity<?> retrieveProductByPagenumber(@PathVariable int pagenumber) {
-        return productService.retrieveProductByPagenumber(pagenumber);
+    @GetMapping("products/pages/{pageNumber}")
+    public ResponseEntity<?> retrieveProductByPageNumber(@PathVariable int pageNumber) {
+        return productService.retrieveProductByPagenumber(pageNumber);
     }
 
     @GetMapping("products/top-product")
@@ -57,10 +57,10 @@ public class ProductController {
         return productService.retrieveProductByListId(ids);
     }
 
-
     @GetMapping("products/filter")
     public List<ProductDto> filter(ProductFilterDto productFilterDto){
-//        log.info("dto {}", productFilterDto);
-        return productService.filter();
+        log.info("dto {}", productFilterDto);
+        return productService.filter(productFilterDto);
     }
+
 }

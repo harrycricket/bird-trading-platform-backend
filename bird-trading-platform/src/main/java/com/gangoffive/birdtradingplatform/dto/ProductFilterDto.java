@@ -10,11 +10,12 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 public class ProductFilterDto {
-    private List<Long> listtypeId;
-    private int catelory ;
+    private int category ;
+    private List<Long> listTypeId;
+    private String name;
+    private String sortPrice;
     private double star ;
-    private String arrange;
-    private int highestprice;
-    private int lowestprice;
-
+    private double highestPrice;
+    private double lowestPrice;
+    private int pageNumber;
 }

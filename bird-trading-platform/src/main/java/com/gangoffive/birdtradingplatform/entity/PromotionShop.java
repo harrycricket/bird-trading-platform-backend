@@ -45,7 +45,7 @@ public class PromotionShop {
     private String description;
 
     @Column(name = "discount_rate")
-    private int rate;
+    private int discountRate;
 
     @Column(name = "start_date")
     private Date startDate;
@@ -73,4 +73,11 @@ public class PromotionShop {
         this.orders.add(order);
     }
 
+    public int getDiscountRate() {
+        return discountRate;
+    }
+
+    public void setDiscountRate(int discountRate) {
+        this.discountRate = discountRate;
+    }
 }

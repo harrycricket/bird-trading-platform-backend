@@ -57,9 +57,9 @@ public class Address {
 	private Account account;
 	
 	@OneToMany(mappedBy = "shippingAddress")
-	private List<Order> orders;
+	private List<PackageOrder> packageOrders;
 
-	public void addOrder(Order order) {
-		orders.add(order);
+	public void addPackageOrder(PackageOrder packageOrder) {
+		packageOrders.add(packageOrder);
 	}
 }

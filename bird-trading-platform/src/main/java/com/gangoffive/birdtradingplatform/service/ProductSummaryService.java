@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.service;
 
+import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
 import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import jakarta.transaction.Transactional;
@@ -22,8 +23,4 @@ public interface ProductSummaryService {
     List<Long> getIdTopFood();
 
     double CalculationRating(List<OrderDetail> orderDetails);
-
-    List<Long> getAllIdBird(List<Long> idType);
-    List<Long> getAllIdFood();
-    List<Long> getAllIdAccessory();
 }

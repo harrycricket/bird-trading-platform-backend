@@ -27,8 +27,10 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
                 .map(Cookie::getValue)
                 .orElse(("/"));
 
-        targetUrl = UriComponentsBuilder.fromUriString(targetUrl + "/error")
-                .queryParam("error", exception.getLocalizedMessage())
+        targetUrl = UriComponentsBuilder.fromUriString(targetUrl)
+//                .queryParam("error", exception.getLocalizedMessage())
+                .queryParam("status", "409")
+                .queryParam("message", "Conflict")
                 .build().toUriString();
 
         httpCookieOAuth2AuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);

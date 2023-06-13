@@ -1,17 +1,15 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
-import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.enums.Category;
 import com.gangoffive.birdtradingplatform.enums.ResponseCode;
 import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
-import com.gangoffive.birdtradingplatform.repository.ProductRepository;
-import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
-import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
+import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.*;
 import com.gangoffive.birdtradingplatform.util.MyUtils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
@@ -25,8 +23,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.io.PrintWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +38,9 @@ public class ProductServiceImpl implements ProductService {
     private final AccessoryMapper accessoryMapper;
     private final ProductSummaryRepository productSummaryRepository;
     private final ProductSummaryService productSummaryService;
+    private final BirdRepository birdRepository;
+    private final FoodRepository foodRepository;
+    private final AccessoryRepository accessoryRepository;
 
     @Override
     public List<ProductDto> retrieveAllProduct() {
@@ -105,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public double CalculateSaleOff(List<PromotionShop> listPromotion, double price) {
         if (listPromotion != null && listPromotion.size() != 0) {
-            List<Integer> saleOff = listPromotion.stream().map(s -> (Integer) s.getRate()).collect(Collectors.toList());
+            List<Integer> saleOff = listPromotion.stream().map(s -> (Integer) s.getDiscountRate()).collect(Collectors.toList());
             double priceDiscount = price;
             for (double sale : saleOff) {
                 priceDiscount = priceDiscount - priceDiscount * sale / 100;
@@ -146,7 +145,7 @@ public class ProductServiceImpl implements ProductService {
                     .numberReview(numberReview).build();
             return ResponseEntity.ok(productDetailWrapper);
         }
-        return new ResponseEntity<>(ResponseCode.NOT_FOUD_THIS_ID.toString(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(ResponseCode.NOT_FOUND_THIS_ID.toString(), HttpStatus.NOT_FOUND);
     }
 
     @Override
@@ -189,7 +188,7 @@ public class ProductServiceImpl implements ProductService {
         if (lists != null) {
             return ResponseEntity.ok(lists.stream().map(this::productToProductCart).toList());
         }
-        return new ResponseEntity<>(ResponseCode.NOT_FOUD_THIS_LIST_ID.toString(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(ResponseCode.NOT_FOUND_THIS_LIST_ID.toString(), HttpStatus.NOT_FOUND);
     }
 
     private ProductCartDto productToProductCart(Product product) {
@@ -211,86 +210,78 @@ public class ProductServiceImpl implements ProductService {
             } else if (product instanceof Accessory) {
                 productCartDto.setCategoryId(Category.getCategoryIdByName(new AccessoryDto().getClass().getSimpleName()));
             }
+            productCartDto.setShopOwner(new ShopOwnerDto(product.getShopOwner().getId(),
+                    product.getShopOwner().getShopName(),
+                    product.getShopOwner().getImgUrl()));
             return productCartDto;
         }
         return null;
     }
 
-    @Override
-    public List<ProductDto> filter() {
-        List<Long> listidtype = new ArrayList<>();
-        listidtype.add(Long.valueOf("1"));
-        listidtype.add(Long.valueOf("2"));
-        listidtype.add(Long.valueOf("3"));
-        listidtype.add(Long.valueOf("4"));
-        int catelory = 1;
-        double star = 0;
-        String arrange = null;
-//       String arrange="Decrease";
-//        String arrange=null;
-        int highestprice = 0;
-        int lowestprice = 0;
+    private List<Long> getAllIdBirdByFilter(ProductFilterDto filterDto) {
+        if (filterDto.getListTypeId()== null) filterDto.setListTypeId(birdRepository.allIdType());
+        if (filterDto.getName() == null) filterDto.setName("%");
+        if (filterDto.getHighestPrice() == 0) filterDto.setHighestPrice(999999999);
+        if (filterDto.getLowestPrice() == 0) filterDto.setLowestPrice(-1);
+        PageRequest pageRequest;
+        if (filterDto.getSortPrice().equals("Increase")){
+            pageRequest= PageRequest.of(0,8,Sort.by(Sort.Direction.ASC,"price"));
+        }else {
+            pageRequest= PageRequest.of(0,8,Sort.by(Sort.Direction.DESC,"price"));
+        }
 
-//        Bird or food or accessory
-        ArrayList<Long> filterProductIds = new ArrayList<>();
-        if (catelory == 1) {
-            List<Long> listidbirds = productSummaryService.getAllIdBird(listidtype);
-            System.out.println(listidbirds);
-            filterProductIds.addAll(listidbirds);
-        } else if (catelory == 2) {
-            List<Long> listfoods = productSummaryService.getAllIdFood();
-            filterProductIds.addAll(listfoods);
-        } else if (catelory == 3) {
-            List<Long> listaccessory = productSummaryService.getAllIdAccessory();
-            filterProductIds.addAll(listaccessory);
+        List<Long> id = birdRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
+                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(),pageRequest);
+//        log.info("list id after filter {}",id );
+        return id;
+    }
+    private List<Long> getAllIdFoodFilter(ProductFilterDto filterDto){
+        if (filterDto.getListTypeId()== null) filterDto.setListTypeId(foodRepository.allIdType());
+        if (filterDto.getName() == null) filterDto.setName("%");
+        if (filterDto.getHighestPrice() == 0) filterDto.setHighestPrice(999999999);
+        if (filterDto.getLowestPrice() == 0) filterDto.setLowestPrice(-1);
+        PageRequest pageRequest;
+        if (filterDto.getSortPrice().equals("Increase")){
+            pageRequest= PageRequest.of(0,8,Sort.by(Sort.Direction.ASC,"price"));
+        }else {
+            pageRequest= PageRequest.of(0,8,Sort.by(Sort.Direction.DESC,"price"));
+        }
+
+        List<Long> id = foodRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
+                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(),pageRequest);
+//        log.info("list id after filter {}",id );
+        return id;
+    }
+    private List<Long> getAllIdAccessoryFilter(ProductFilterDto filterDto){
+        if (filterDto.getListTypeId()== null) filterDto.setListTypeId(accessoryRepository.allIdType());
+        if (filterDto.getName() == null) filterDto.setName("%");
+        if (filterDto.getHighestPrice() == 0) filterDto.setHighestPrice(999999999);
+        if (filterDto.getLowestPrice() == 0) filterDto.setLowestPrice(-1);
+        PageRequest pageRequest;
+        if (filterDto.getSortPrice().equals("Increase")){
+            pageRequest= PageRequest.of(0,8,Sort.by(Sort.Direction.ASC,"price"));
+        }else {
+            pageRequest= PageRequest.of(0,8,Sort.by(Sort.Direction.DESC,"price"));
+        }
+
+        List<Long> id = accessoryRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
+                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(),pageRequest);
+//        log.info("list id after filter {}",id );
+        return id;
+    }
+
+    @Override
+    public List<ProductDto> filter(ProductFilterDto filterDto) {
+        List<Long> filterProductIds = new ArrayList<>();
+        if (filterDto.getCategory() == 1) {
+            filterProductIds = this.getAllIdBirdByFilter(filterDto);
+        } else if (filterDto.getCategory() == 2) {
+            filterProductIds = this.getAllIdFoodFilter(filterDto);
+        } else if (filterDto.getCategory() == 3) {
+            filterProductIds = this.getAllIdAccessoryFilter(filterDto);
         }
         List<Product> product = productRepository.findAllById(filterProductIds);
         List<ProductDto> listdtos = this.listModelToDto(product);
-
-//      star
-        if (star > 0) {
-            List<ProductDto> temp = new ArrayList<>();
-            for (ProductDto list : listdtos) {
-                if (list.getStar() - star > 0) temp.add(list);
-            }
-            listdtos = temp;
-        }
-
-//        //      price (low <x <hight)
-        if (lowestprice == 0 && highestprice == 0) {
-
-        } else if (lowestprice != 0 && highestprice == 0) {
-            List<ProductDto> temp = new ArrayList<>();
-            for (ProductDto list : listdtos) {
-                if (list.getPrice() >= lowestprice) temp.add(list);
-            }
-            listdtos = temp;
-        } else if (lowestprice != 0 && highestprice != 0) {
-            List<ProductDto> temp = new ArrayList<>();
-            for (ProductDto list : listdtos) {
-                if (list.getPrice() >= lowestprice && list.getPrice() <= highestprice) temp.add(list);
-            }
-            listdtos = temp;
-        } else if (lowestprice == 0 && highestprice != 0) {
-            List<ProductDto> temp = new ArrayList<>();
-            for (ProductDto list : listdtos) {
-                if (list.getPrice() <= highestprice) temp.add(list);
-            }
-            listdtos = temp;
-        }
-        //      reorganize
-        if (arrange == null || arrange.equals("Decrease")) {
-            Collections.sort(listdtos, Comparator.comparingDouble(ProductDto::getPrice).reversed());
-        } else {
-            Collections.sort(listdtos, Comparator.comparingDouble(ProductDto::getPrice));
-        }
-        //type
-
-        //test
-        for (ProductDto dto : listdtos
-        ) {
-            System.out.println("id: " + dto.getId() + "  Price: " + dto.getPrice() + " star: " + dto.getStar());
-        }
         return listdtos;
     }
 

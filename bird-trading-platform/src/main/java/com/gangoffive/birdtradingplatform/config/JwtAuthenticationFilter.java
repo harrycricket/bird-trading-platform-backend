@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.config;
 
-import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
@@ -8,7 +9,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,11 +20,11 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.security.sasl.AuthenticationException;
 import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
@@ -38,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String jwt;
-        final String userEmail;
+        String userEmail;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -47,8 +50,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             userEmail = jwtService.extractUsername(jwt);
         } catch (Exception e) {
-            filterChain.doFilter(request, response);
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+
+            // Create the error response JSON object
+            ErrorResponse errorResponse = ErrorResponse
+                                                        .builder()
+                                                        .errorMessage("Invalid token")
+                                                        .errorCode(String.valueOf(HttpStatus.UNAUTHORIZED.value()))
+                                                        .build();
+
+            // Convert the error response to JSON
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonErrorResponse = objectMapper.writeValueAsString(errorResponse);
+
+            // Set the response content type to application/json
+            response.setContentType("application/json");
+
+            // Write the JSON error response to the response body
+            response.getWriter().write(jsonErrorResponse);
+            response.getWriter().flush();
             return;
+//            filterChain.doFilter(request, response);
+//            return;
         }
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);

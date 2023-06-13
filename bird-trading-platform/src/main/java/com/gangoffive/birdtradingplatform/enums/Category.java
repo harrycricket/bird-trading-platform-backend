@@ -38,8 +38,14 @@ public enum Category {
         List<Category> lists = Arrays.asList(Category.values());
         int result;
         try {
-            result = lists.stream().filter(item -> item.getCategoryName().equals(categoryName))
-                    .map(item -> item.getCategoryId()).findFirst().get();
+            result = lists.stream()
+                    .filter(
+                            item -> item.getCategoryName().equals(categoryName)
+                    )
+                    .map(
+                            item -> item.getCategoryId()
+                    )
+                    .findFirst().get();
         }catch (Exception e) {
             throw new CustomRuntimeException(HttpStatus.NOT_FOUND.name(), "Not found this catagoryid");
         }

@@ -1,13 +1,7 @@
 package com.gangoffive.birdtradingplatform.security.oauth2;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
-import com.gangoffive.birdtradingplatform.dto.AuthenticationResponseDto;
-import com.gangoffive.birdtradingplatform.dto.TokenDto;
-import com.gangoffive.birdtradingplatform.dto.UserInfoDto;
-import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.exception.BadRequestException;
-import com.gangoffive.birdtradingplatform.mapper.AddressMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.JwtService;
@@ -18,8 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -27,7 +19,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Optional;
 
 import static com.gangoffive.birdtradingplatform.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME;
 
@@ -65,7 +56,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         log.info("account {}", userPrincipal.getEmail());
         String token = jwtService.generateToken(userPrincipal);
         return UriComponentsBuilder.fromUriString(redirectUri)
-                .queryParam("email", userPrincipal.getEmail())
+//                .queryParam("email", userPrincipal.getEmail())
                 .queryParam("token", token)
                 .build().toUriString();
     }

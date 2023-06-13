@@ -6,12 +6,12 @@ public enum ResponseCode {
     FAILED(1, "Failed"),
 
     //Auth
-    REGITER_USERNAME_OR_PASSWORD(10, "Invalid username or Password"),
+    REGISTER_USERNAME_OR_PASSWORD(10, "Invalid username or Password"),
     AUTHENTICATION_FAILED(11, "Invalid refresh token"),
 
     //Product
-    NOT_FOUD_THIS_ID(20,"Cannot found this product!"),
-    NOT_FOUD_THIS_LIST_ID(21, "Cannot found this product with this list id!");
+    NOT_FOUND_THIS_ID(20,"Cannot found this product!"),
+    NOT_FOUND_THIS_LIST_ID(21, "Cannot found this product with this list id!");
 
 
     private final int code;

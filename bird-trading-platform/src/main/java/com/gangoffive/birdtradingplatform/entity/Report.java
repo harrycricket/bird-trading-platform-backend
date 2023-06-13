@@ -2,8 +2,11 @@ package com.gangoffive.birdtradingplatform.entity;
 
 import java.util.Date;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
@@ -14,30 +17,33 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity(name = "tblReport")
-
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class Report {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "report_id")
 	private Long id;
-	
+
 	@Column(name = "report_text"
 			,nullable = false
 			)
 	private String reportText;
-	
+
 	@Column(name = "report_date"
 			,nullable = false
 			)
 	@CreationTimestamp
 	private Date reportDate;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "account_id"
 				,foreignKey = @ForeignKey(name = "FK_REPORT_ACCOUNT"))
 	private Account account;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "order_id"
 				,foreignKey = @ForeignKey(name = "FK_REPORT_ORDER")
