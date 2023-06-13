@@ -1,20 +1,22 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.dto.BirdDto;
+import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
 import com.gangoffive.birdtradingplatform.entity.*;
-import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
-import com.gangoffive.birdtradingplatform.repository.ProductRepository;
-import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
-import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
+import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,6 +29,10 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
     private final ReviewRepository reviewRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
+    private final BirdRepository birdRepository;
+    private final FoodRepository foodRepository;
+    private final AccessoryRepository accessoryRepository;
+
     public double updateProductStar(Product product) {
         double star = this.CalculationRating(product.getOrderDetails());
         var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
@@ -36,11 +42,11 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
         return star;
     }
 
-    public int updateReviewTotal(Product product){
+    public int updateReviewTotal(Product product) {
         List<Long> orderDetailIds = product
-                                        .getOrderDetails()
-                                        .stream()
-                                        .map(reviewId -> reviewId.getId()).collect(Collectors.toList());
+                .getOrderDetails()
+                .stream()
+                .map(reviewId -> reviewId.getId()).collect(Collectors.toList());
         int reviewTotal = reviewRepository.findAllByOrderDetailIdIn(orderDetailIds).get().size();
         var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
         productSummary.setReviewTotal(reviewTotal);
@@ -49,7 +55,7 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
         return reviewTotal;
     }
 
-    public int updateTotalQuantityOrder(Product product){
+    public int updateTotalQuantityOrder(Product product) {
         int totalQuantity = orderDetailRepository.findTotalQuantityByPId(product.getId()).orElse(0);
         var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
         productSummary.setTotalQuantityOrder(totalQuantity);
@@ -68,7 +74,7 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
     }
 
     @Transactional
-    public boolean apply(Product product){
+    public boolean apply(Product product) {
         this.updateReviewTotal(product);
         this.updateProductStar(product);
         this.updateTotalQuantityOrder(product);
@@ -80,12 +86,12 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
     public List<Long> getIdTopBird() {
         PageRequest page = PageRequest.of(0, PagingAndSorting.DEFAULT_PAGE_SIZE,
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
-                .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
-        var listsProductSummary =  productSummaryRepository.
-                                        findByCategory(new Bird().getClass().getSimpleName(), page);
-        if(listsProductSummary.isPresent()){
+                        .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
+        var listsProductSummary = productSummaryRepository.
+                findByCategory(new Bird().getClass().getSimpleName(), page);
+        if (listsProductSummary.isPresent()) {
             List<Long> listIdTopBird = listsProductSummary.get().stream()
-                                        .map(productSummary -> productSummary.getProduct().getId()).toList();
+                    .map(productSummary -> productSummary.getProduct().getId()).toList();
             return listIdTopBird;
         }
 
@@ -96,10 +102,10 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
     public List<Long> getIdTopAccessories() {
         PageRequest page = PageRequest.of(0, PagingAndSorting.DEFAULT_PAGE_SIZE,
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
-                .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
-        var listsProductSummary =  productSummaryRepository.
+                        .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
+        var listsProductSummary = productSummaryRepository.
                 findByCategory(new Accessory().getClass().getSimpleName(), page);
-        if(listsProductSummary.isPresent()){
+        if (listsProductSummary.isPresent()) {
             List<Long> listIdTopAccessories = listsProductSummary.get().stream()
                     .map(productSummary -> productSummary.getProduct().getId()).toList();
             return listIdTopAccessories;
@@ -111,10 +117,10 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
     public List<Long> getIdTopFood() {
         PageRequest page = PageRequest.of(0, PagingAndSorting.DEFAULT_PAGE_SIZE,
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
-                .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
-        var listsProductSummary =  productSummaryRepository.
+                        .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
+        var listsProductSummary = productSummaryRepository.
                 findByCategory(new Food().getClass().getSimpleName(), page);
-        if(listsProductSummary.isPresent()){
+        if (listsProductSummary.isPresent()) {
             List<Long> listIdTopFood = listsProductSummary.get().stream()
                     .map(productSummary -> Optional.ofNullable(productSummary.getProduct())
                             .map(Product::getId)

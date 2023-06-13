@@ -15,6 +15,7 @@ import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
+import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.util.MyUtils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import com.gangoffive.birdtradingplatform.wrapper.ProductDetailWrapper;
@@ -28,7 +29,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,6 +45,12 @@ public class ProductServiceImpl implements ProductService {
     private final ProductSummaryRepository productSummaryRepository;
     private final ProductSummaryService productSummaryService;
     private final PromotionShopMapper promotionShopMapper;
+    private final BirdRepository birdRepository;
+    private final FoodRepository foodRepository;
+    private final AccessoryRepository accessoryRepository;
+    private final TypeAccessoryRepository typeAccessoryRepository;
+    private final TypeFoodRepository typeFoodRepository;
+    private final TypeBirdRepository typeBirdRepository;
 
     @Override
     public List<ProductDto> retrieveAllProduct() {
@@ -108,7 +114,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public double CalculateSaleOff(List<PromotionShop> listPromotion, double price) {
         if (listPromotion != null && listPromotion.size() != 0) {
-            List<Integer> saleOff = listPromotion.stream().map(s -> s.getDiscountRate()).collect(Collectors.toList());
+            List<Integer> saleOff = listPromotion.stream().map(s -> (Integer) s.getDiscountRate()).collect(Collectors.toList());
             double priceDiscount = price;
             for (double sale : saleOff) {
                 priceDiscount = priceDiscount - priceDiscount * sale / 100;
@@ -282,4 +288,141 @@ public class ProductServiceImpl implements ProductService {
         }
         return null;
     }
+
+    private PageNumberWraper<Long> getAllIdBirdByFilter(ProductFilterDto filterDto) {
+        if (filterDto.getListTypeId()== null)
+            filterDto.setListTypeId(typeBirdRepository.findAllId());
+        if (filterDto.getName() == null || filterDto.getName().isEmpty())
+            filterDto.setName("");
+        if (filterDto.getHighestPrice() == 0.0)
+            filterDto.setHighestPrice(1000);
+        if(filterDto.getStar() == 1)
+            filterDto.setStar(0.0);
+        if (filterDto.getLowestPrice() == 0.0)
+            filterDto.setLowestPrice(-1);
+        PageRequest pageRequest;
+        if (filterDto.getSortPrice().equals("Increase")){
+            pageRequest= PageRequest.of(filterDto.getPageNumber(),PagingAndSorting.DEFAULT_PAGE_SIZE,
+                    Sort.by(Sort.Direction.ASC,"price"));
+            log.info("tang dan ne con di");
+        }else {
+            pageRequest= PageRequest.of(filterDto.getPageNumber(),PagingAndSorting.DEFAULT_PAGE_SIZE,
+                    Sort.by(Sort.Direction.DESC,"price"));
+        }
+        log.info("filter dto {}", filterDto);
+        Page<Long> pageAble = birdRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
+                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(),pageRequest);
+        PageNumberWraper<Long> productDtoPageNumberWraper = new PageNumberWraper<>();
+        productDtoPageNumberWraper.setLists(pageAble.getContent());
+        productDtoPageNumberWraper.setPageNumber(pageAble.getTotalPages());
+        log.info("list id after filter {}",pageAble.getContent() );
+//        productDtoPageNumberWraper.setLists(pageAble);
+//        productDtoPageNumberWraper.setPageNumber(2);
+//        log.info("list id after filter {}",pageAble);
+        return productDtoPageNumberWraper;
+    }
+    private PageNumberWraper<Long> getAllIdFoodFilter(ProductFilterDto filterDto){
+        if (filterDto.getListTypeId()== null)
+            filterDto.setListTypeId(typeFoodRepository.findAllId());
+        if (filterDto.getName() == null || filterDto.getName().isEmpty())
+            filterDto.setName("%");
+        if (filterDto.getHighestPrice() == 0.0)
+            filterDto.setHighestPrice(999999999);
+        if(filterDto.getStar() == 1)
+            filterDto.setStar(0.0);
+        if (filterDto.getLowestPrice() == 0.0)
+            filterDto.setLowestPrice(-1);
+        PageRequest pageRequest;
+        if (filterDto.getSortPrice().equals("Increase")){
+            pageRequest= PageRequest.of(filterDto.getPageNumber(),PagingAndSorting.DEFAULT_PAGE_SIZE,
+                    Sort.by(Sort.Direction.ASC,"price"));
+        }else {
+            pageRequest= PageRequest.of(filterDto.getPageNumber(),PagingAndSorting.DEFAULT_PAGE_SIZE,
+                    Sort.by(Sort.Direction.DESC,"price"));
+        }
+
+        Page<Long> pageAble = foodRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
+                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(),pageRequest);
+        PageNumberWraper<Long> productDtoPageNumberWraper = new PageNumberWraper<>();
+        productDtoPageNumberWraper.setLists(pageAble.getContent());
+        productDtoPageNumberWraper.setPageNumber(pageAble.getTotalPages());
+//        log.info("list id after filter {}",id );
+        return productDtoPageNumberWraper;
+    }
+    private PageNumberWraper<Long> getAllIdAccessoryFilter(ProductFilterDto filterDto){
+        if (filterDto.getListTypeId()== null)
+            filterDto.setListTypeId(typeAccessoryRepository.findAllId());
+        if (filterDto.getName() == null || filterDto.getName().isEmpty())
+            filterDto.setName("%");
+        if (filterDto.getHighestPrice() == 0.0)
+            filterDto.setHighestPrice(999999999);
+        if(filterDto.getStar() == 1)
+            filterDto.setStar(0.0);
+        if (filterDto.getLowestPrice() == 0.0)
+            filterDto.setLowestPrice(-1);
+        PageRequest pageRequest;
+        if (filterDto.getSortPrice().equals("Increase")){
+            pageRequest= PageRequest.of(filterDto.getPageNumber(),PagingAndSorting.DEFAULT_PAGE_SIZE,
+                    Sort.by(Sort.Direction.ASC,"price"));
+        }else {
+            pageRequest= PageRequest.of(filterDto.getPageNumber(),PagingAndSorting.DEFAULT_PAGE_SIZE,
+                    Sort.by(Sort.Direction.DESC,"price"));
+        }
+        log.info("filterDto {} ", filterDto);
+        Page<Long> pageAble = accessoryRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
+                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(),pageRequest);
+        PageNumberWraper<Long> productDtoPageNumberWraper = new PageNumberWraper<>();
+        productDtoPageNumberWraper.setLists(pageAble.getContent());
+        productDtoPageNumberWraper.setPageNumber(pageAble.getTotalPages());
+        log.info("list id after filter {}",pageAble.getContent() );
+        return productDtoPageNumberWraper;
+    }
+
+    @Override
+    public ResponseEntity<?> filter(ProductFilterDto filterDto) {
+        PageNumberWraper<Long> productDtoPageNumberWraper = new PageNumberWraper<>();
+        List<Long> filterProductIds = new ArrayList<>();
+        if (filterDto.getCategory() == 1) {
+            productDtoPageNumberWraper = this.getAllIdBirdByFilter(filterDto);
+            log.info("bird ne");
+        } else if (filterDto.getCategory() == 2) {
+            productDtoPageNumberWraper = this.getAllIdFoodFilter(filterDto);
+            log.info("food ne");
+        } else if (filterDto.getCategory() == 3) {
+            log.info("accessssss ne");
+            productDtoPageNumberWraper = this.getAllIdAccessoryFilter(filterDto);
+        }
+
+
+        log.info("list id ne {}", filterProductIds);
+        List<Product> listTemp = productRepository.findAllById(productDtoPageNumberWraper.getLists());
+        List<ProductDto> listdtos = this.listModelToDto(listTemp);
+        if (filterDto.getSortPrice().equals("Increase")){
+
+            if(listdtos != null ) {
+                Collections.sort(listdtos, new Comparator<ProductDto>() {
+                    @Override
+                    public int compare(ProductDto o1, ProductDto o2) {
+                        return (int) (  o1.getPrice() - o2.getPrice());
+                    }
+                });
+            }
+
+        }else {
+            if(listdtos != null ) {
+                Collections.sort(listdtos, new Comparator<ProductDto>() {
+                    @Override
+                    public int compare(ProductDto o1, ProductDto o2) {
+                        return (int) ( - o1.getPrice() + o2.getPrice());
+                    }
+                });
+            }
+        }
+
+        PageNumberWraper<ProductDto> result = new PageNumberWraper<>();
+        result.setLists(listdtos);
+        result.setPageNumber(productDtoPageNumberWraper.getPageNumber());
+        return ResponseEntity.ok(result);
+    }
+
 }

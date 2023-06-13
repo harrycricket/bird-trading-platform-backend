@@ -28,7 +28,9 @@ public class Runner implements CommandLineRunner {
 //        for(Product pro : lists) {
 //            productSummaryService.apply(pro);
 //            productSummaryService.updateCategory(pro);
+
 //        }
+
 //        Product product = productRepository.findById(1L).get();
 //        product.setDeleted(true);
 //        productRepository.save(product);
