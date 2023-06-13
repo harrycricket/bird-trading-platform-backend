@@ -92,6 +92,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         return getListBarChartDto(barChartDtoList, barChartFoodDtoList, barChartBirdDtoList, barChartAccessoryDtoList);
     }
 
+    @Override
     public List<BarChartDto> dataBarChartByOrderAllTypeProduct(String email) {
         Optional<Account> account = accountRepository.findByEmail(email);
         List<BarChartDto> barChartDtoList = new ArrayList<>();
@@ -169,19 +170,19 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             }
 
             if (countDate == 1) {
-                barChartDto.setDate(DayOfWeek.MONDAY.name());
+                barChartDto.setDate(DayOfWeek.MONDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.MONDAY.name().toLowerCase().substring(1, 3));
             } else if (countDate == 2) {
-                barChartDto.setDate(DayOfWeek.TUESDAY.name());
+                barChartDto.setDate(DayOfWeek.TUESDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.TUESDAY.name().toLowerCase().substring(1, 3));
             } else if (countDate == 3) {
-                barChartDto.setDate(DayOfWeek.WEDNESDAY.name());
+                barChartDto.setDate(DayOfWeek.WEDNESDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.WEDNESDAY.name().toLowerCase().substring(1, 3));
             } else if (countDate == 4) {
-                barChartDto.setDate(DayOfWeek.THURSDAY.name());
+                barChartDto.setDate(DayOfWeek.THURSDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.THURSDAY.name().toLowerCase().substring(1, 3));
             } else if (countDate == 5) {
-                barChartDto.setDate(DayOfWeek.FRIDAY.name());
+                barChartDto.setDate(DayOfWeek.FRIDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.FRIDAY.name().toLowerCase().substring(1, 3));
             } else if (countDate == 6) {
-                barChartDto.setDate(DayOfWeek.SATURDAY.name());
+                barChartDto.setDate(DayOfWeek.SATURDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.SATURDAY.name().toLowerCase().substring(1, 3));
             } else if (countDate == 7) {
-                barChartDto.setDate(DayOfWeek.SUNDAY.name());
+                barChartDto.setDate(DayOfWeek.SUNDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.SUNDAY.name().toLowerCase().substring(1, 3));
             }
 
             if (productClass.equals(Food.class)) {
