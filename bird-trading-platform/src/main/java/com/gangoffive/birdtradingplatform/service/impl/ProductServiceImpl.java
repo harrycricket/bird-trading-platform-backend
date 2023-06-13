@@ -273,6 +273,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductDto> filter(ProductFilterDto filterDto) {
         List<Long> filterProductIds = new ArrayList<>();
+        log.info("catelory ",filterDto.getCategory());
         if (filterDto.getCategory() == 1) {
             filterProductIds = this.getAllIdBirdByFilter(filterDto);
         } else if (filterDto.getCategory() == 2) {
@@ -284,5 +285,10 @@ public class ProductServiceImpl implements ProductService {
         List<ProductDto> listdtos = this.listModelToDto(product);
         return listdtos;
     }
+    private ResponseEntity<?> addProduct(){
 
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                "Page number cannot less than 1");
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
 }
