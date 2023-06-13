@@ -2,10 +2,7 @@ package com.gangoffive.birdtradingplatform.entity;
 
 import com.gangoffive.birdtradingplatform.enums.OrderStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -16,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Builder
 @ToString
 public class Order {
 
@@ -25,7 +23,7 @@ public class Order {
     private Long id;
 
     @Column(name = "total_price")
-    private int totalPrice;
+    private double totalPrice;
 
     @Column(name = "status")
     @Enumerated(value = EnumType.STRING)
@@ -78,11 +76,11 @@ public class Order {
         this.id = id;
     }
 
-    public int getTotalPrice() {
+    public double getTotalPrice() {
         return totalPrice;
     }
 
-    public void setTotalPrice(int totalPrice) {
+    public void setTotalPrice(double totalPrice) {
         this.totalPrice = totalPrice;
     }
 

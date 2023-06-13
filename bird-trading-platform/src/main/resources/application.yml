@@ -17,6 +17,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
+        jdbc:
+          time_zone: UTC
   security:
     oauth2:
       client:
@@ -47,6 +49,7 @@ app:
   auth:
     secretKey: ${env.JWT_SECRETKEY}
     tokenExpiration: 86400000 # a day
+#    86400000
     refreshTokenExpiration: 604800000 # 7 days
   cors:
     allowedOrigins: "http://localhost:3000,https://birdstore2nd.vercel.app,https://www.birdland2nd.store"
@@ -64,6 +67,7 @@ app:
       - http://localhost:8080/oauth2/redirect
       - https://birdland2nd.store/get-token
       - http://localhost:3030/home
+      - https://birdstore2nd.vercel.app/get-token
   aws:
     accessKey: ${env.S3_ACCESS_KEY}
     secretKey: ${env.S3_SECRET_KEY}

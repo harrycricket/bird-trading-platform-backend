@@ -3,6 +3,8 @@ package com.gangoffive.birdtradingplatform.dto;
 import com.gangoffive.birdtradingplatform.enums.PaymentMethod;
 import lombok.*;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -10,6 +12,6 @@ import lombok.*;
 @ToString
 public class TransactionDto {
     private double totalPrice;
-    private Long promotionId;
+    private List<Long> promotionId;
     private PaymentMethod paymentMethod;
 }
