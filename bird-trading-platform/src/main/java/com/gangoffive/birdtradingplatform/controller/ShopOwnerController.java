@@ -1,13 +1,16 @@
 package com.gangoffive.birdtradingplatform.controller;
 
+
 import com.gangoffive.birdtradingplatform.dto.BarChartDto;
 import com.gangoffive.birdtradingplatform.dto.LineChartDto;
 import com.gangoffive.birdtradingplatform.dto.PieChartDto;
 import com.gangoffive.birdtradingplatform.dto.RequestChartDto;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
+import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -18,11 +21,18 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ShopOwnerController {
+    private final ProductService productService;
     private final ShopOwnerService shopOwnerService;
     private final AccountRepository accountRepository;
 
+    @GetMapping("/products/{pagenumber}")
+    public ResponseEntity retrieveAllProduct(@PathVariable int pagenumber) {
+        return productService.retrieveProductByShopIdForSO(3, pagenumber);
+    }
+
     @PostMapping("/line-chart")
     public List<LineChartDto> getListLineChartDto(@RequestBody RequestChartDto requestChartDto) throws ParseException {
+
 //        return shopOwnerService.dataBumpChartByTypeProduct(accountRepository.findByEmail("YamamotoEmi37415@gmail.com").get(), Accessory.class);
 //        String pattern = "MM-dd-yyyy";
 //        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
@@ -37,13 +47,14 @@ public class ShopOwnerController {
 //            log.info("pie {}", pie);
 //        }
     }
+
     @PostMapping("/pie-chart")
     public List<PieChartDto> getListPieChartDto(@RequestBody RequestChartDto requestChartDto) {
         List<PieChartDto> dataPieChart = shopOwnerService.getDataPieChart(requestChartDto.getEmail());
         for (PieChartDto pie : dataPieChart) {
             log.info("pie {}", pie);
         }
-        return  dataPieChart;
+        return dataPieChart;
     }
 
     @PostMapping("/bar-chart/price")
