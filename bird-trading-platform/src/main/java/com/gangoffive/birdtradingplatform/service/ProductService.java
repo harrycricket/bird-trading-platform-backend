@@ -19,10 +19,8 @@ public interface ProductService {
     List<ProductDto> retrieveTopProduct();
     List<ProductDto> listModelToDto(List<Product> products);
     ResponseEntity<?> retrieveProductById(Long id);
-
     double CalculateDiscountedPrice(double price, double saleOff);
-
     ProductDto ProductToDto(Product product);
-
     ResponseEntity<?> retrieveProductByListId(long[] ids);
+    ResponseEntity<?> retrieveProductByShopIdForSO(long shopId);
 }

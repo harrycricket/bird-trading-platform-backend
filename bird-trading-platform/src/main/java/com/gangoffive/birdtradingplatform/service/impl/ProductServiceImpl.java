@@ -9,6 +9,7 @@ import com.gangoffive.birdtradingplatform.enums.ResponseCode;
 import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
+import com.gangoffive.birdtradingplatform.mapper.PromotionShopMapper;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
@@ -42,6 +43,7 @@ public class ProductServiceImpl implements ProductService {
     private final AccessoryMapper accessoryMapper;
     private final ProductSummaryRepository productSummaryRepository;
     private final ProductSummaryService productSummaryService;
+    private final PromotionShopMapper promotionShopMapper;
 
     @Override
     public List<ProductDto> retrieveAllProduct() {
@@ -184,7 +186,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ResponseEntity<?> retrieveProductByListId(long[] ids) {
+    public ResponseEntity<?> retrieveProductByListId (long[] ids) {
         List<Product> lists = productRepository.findAllById(Arrays.stream(ids).boxed().toList());
         if (lists != null) {
             return ResponseEntity.ok(lists.stream().map(this::productToProductCart).toList());
@@ -192,7 +194,59 @@ public class ProductServiceImpl implements ProductService {
         return new ResponseEntity<>(ResponseCode.NOT_FOUND_THIS_LIST_ID.toString(), HttpStatus.NOT_FOUND);
     }
 
-    private ProductCartDto productToProductCart(Product product) {
+    @Override
+    public ResponseEntity<?> retrieveProductByShopIdForSO(long shopId) {
+        var listProduct = productRepository.findByShopOwner_Id(shopId);
+        if(listProduct.isPresent()){
+            List<ProductShopDto> result = listProduct.get().stream().map(this::productToProductShopDto).toList();
+            return ResponseEntity.ok(result);
+        }
+        return new ResponseEntity<>(ErrorResponse.builder().errorMessage(ResponseCode.NOT_FOUND_THIS_PRODUCT_SHOP_ID.toString())
+                .errorCode(HttpStatus.NOT_FOUND.name()).build(), HttpStatus.NOT_FOUND);
+    }
+
+    private ProductShopDto productToProductShopDto (Product product) {
+        if(product != null) {
+            ProductShopDto productShopDto;
+            if (product instanceof Bird) {
+                productShopDto = new ProductShopDto<TypeBird>();
+                productShopDto.setCategory(Category.getCategoryIdByName(new BirdDto().getClass().getSimpleName()));
+                productShopDto.setType(((Bird) product).getTypeBird());
+                productShopDto.setListTag(((Bird) product).getTags());
+            } else if (product instanceof Food) {
+                productShopDto = new ProductShopDto<TypeFood>();
+                productShopDto.setCategory(Category.getCategoryIdByName(new FoodDto().getClass().getSimpleName()));
+                productShopDto.setType(((Food) product).getTypeFood());
+            } else if (product instanceof Accessory) {
+                productShopDto = new ProductShopDto<TypeAccessory>();
+                productShopDto.setCategory(Category.getCategoryIdByName(new AccessoryDto().getClass().getSimpleName()));
+                productShopDto.setType( ((Accessory) product).getTypeAccessory());
+                productShopDto.setListTag(((Accessory) product).getTags());
+            }else {
+                productShopDto = new ProductShopDto();
+            }
+            productShopDto.setId(product.getId());
+            productShopDto.setName(product.getName());
+            productShopDto.setPrice(product.getPrice());
+            productShopDto.setQuantity(product.getQuantity());
+            productShopDto.setStatus(product.isDeleted());
+            productShopDto.setCreateDate(product.getCreatedDate());
+            productShopDto.setLastUpdate(product.getLastUpDated());
+            //get product summary to take total order total review star
+            var productSummary = productSummaryRepository.findByProductId(product.getId());
+            if(productSummary.isPresent()){
+                productShopDto.setTotalOrders(productSummary.get().getTotalQuantityOrder());
+                productShopDto.setTotalReviews(productSummary.get().getReviewTotal());
+                productShopDto.setStar(productSummary.get().getStar());
+            }
+            productShopDto.setListDiscount(product.getPromotionShops().stream().map(promotionShopMapper::modelToDto).toList());
+            return productShopDto;
+        }
+        return null;
+    }
+
+
+    private ProductCartDto productToProductCart (Product product) {
         if (product != null) {
             ProductCartDto productCartDto = ProductCartDto.builder()
                     .id(product.getId())

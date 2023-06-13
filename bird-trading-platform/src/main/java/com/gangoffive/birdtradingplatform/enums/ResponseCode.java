@@ -11,9 +11,10 @@ public enum ResponseCode {
 
     //Product
     NOT_FOUND_THIS_ID(20,"Cannot found this product!"),
-    NOT_FOUND_THIS_LIST_ID(21, "Cannot found this product with this list id!");
-
-
+    NOT_FOUND_THIS_LIST_ID(21, "Cannot found this product with this list id!"),
+    NOT_FOUND_THIS_PRODUCT_SHOP_ID(22, "Cannot found this product with shop id!"),
+    //Promotion shop
+    NOT_FOUND_THIS_SHOP_ID(31, "Cannot found promotion shop with this id!");
     private final int code;
     private final String message;
 
