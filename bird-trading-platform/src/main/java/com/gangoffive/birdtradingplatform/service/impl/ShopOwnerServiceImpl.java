@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -110,8 +111,10 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         }
 
         double totalPrice = listOrderDetailOfProduct.stream().mapToDouble(orderDetail -> orderDetail.getPrice() * orderDetail.getQuantity()).sum();
+        DecimalFormat decimalFormat = new DecimalFormat("#.00");
+        String formattedTotalPrice = decimalFormat.format(totalPrice);
         log.info("totalPrice {}", totalPrice);
-        return totalPrice;
+        return Double.parseDouble(formattedTotalPrice);
     }
 
     private List<DataLineChartDto> dataLineChartByTypeProduct(Account account, Class<?> productClass, Date dateFrom) {
@@ -188,9 +191,11 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                     }
                 }
             }
+            DecimalFormat decimalFormat = new DecimalFormat("#.00");
+            String formattedTotalPrice = decimalFormat.format(totalPrice);
             DataLineChartDto dataLineChartDto = DataLineChartDto.builder()
                     .x(DateUtils.formatLocalDateToString(date))
-                    .y(totalPrice)
+                    .y(Double.parseDouble(formattedTotalPrice))
                     .build();
             dataLineChartDtoListOfProduct.add(dataLineChartDto);
         }
