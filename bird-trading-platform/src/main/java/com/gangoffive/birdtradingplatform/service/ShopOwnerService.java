@@ -1,10 +1,10 @@
 package com.gangoffive.birdtradingplatform.service;
 
-import com.gangoffive.birdtradingplatform.dto.BumpChartDto;
+import com.gangoffive.birdtradingplatform.dto.LineChartDto;
 
 import java.util.Date;
 import java.util.List;
 
 public interface ShopOwnerService {
-    List<BumpChartDto> getTotalPriceAllOrderByEachDate(String email, Date dateFrom);
+    List<LineChartDto> getTotalPriceAllOrderByEachDate(String email, Date dateFrom);
 }

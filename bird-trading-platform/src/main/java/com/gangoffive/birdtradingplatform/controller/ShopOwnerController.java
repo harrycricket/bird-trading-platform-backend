@@ -1,6 +1,6 @@
 package com.gangoffive.birdtradingplatform.controller;
 
-import com.gangoffive.birdtradingplatform.dto.BumpChartDto;
+import com.gangoffive.birdtradingplatform.dto.LineChartDto;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class ShopOwnerController {
     private final AccountRepository accountRepository;
 
     @GetMapping
-    public List<BumpChartDto> getListBumpChartDto() throws ParseException {
+    public List<LineChartDto> getListLineChartDto() throws ParseException {
 //        return shopOwnerService.dataBumpChartByTypeProduct(accountRepository.findByEmail("YamamotoEmi37415@gmail.com").get(), Accessory.class);
 //        String pattern = "MM-dd-yyyy";
 //        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
