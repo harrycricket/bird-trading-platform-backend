@@ -3,22 +3,21 @@ package com.gangoffive.birdtradingplatform.controller;
 import com.gangoffive.birdtradingplatform.dto.BarChartDto;
 import com.gangoffive.birdtradingplatform.dto.LineChartDto;
 import com.gangoffive.birdtradingplatform.dto.PieChartDto;
-import com.gangoffive.birdtradingplatform.dto.RequestChartDto;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
-import com.gangoffive.birdtradingplatform.security.UserPrincipal;
-import com.gangoffive.birdtradingplatform.service.JwtService;
+import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.net.http.HttpResponse;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,9 +28,13 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ShopOwnerController {
+    private final ProductService productService;
     private final ShopOwnerService shopOwnerService;
     private final AccountRepository accountRepository;
-
+    @GetMapping("/products/{pagenumber}")
+    public ResponseEntity retrieveAllProduct(@PathVariable int pagenumber) {
+        return productService.retrieveProductByShopIdForSO(3, pagenumber);
+    }
     @GetMapping("/line-chart")
     public List<LineChartDto> getListLineChartDto() throws ParseException {
 //        return shopOwnerService.dataBumpChartByTypeProduct(accountRepository.findByEmail("YamamotoEmi37415@gmail.com").get(), Accessory.class);
@@ -48,13 +51,14 @@ public class ShopOwnerController {
 //            log.info("pie {}", pie);
 //        }
     }
+
     @GetMapping("/pie-chart")
     public List<PieChartDto> getListPieChartDto() {
         List<PieChartDto> dataPieChart = shopOwnerService.getDataPieChart("YamamotoEmi37415@gmail.com");
         for (PieChartDto pie : dataPieChart) {
             log.info("pie {}", pie);
         }
-        return  dataPieChart;
+        return dataPieChart;
     }
 
     @GetMapping("/bar-chart/price")
