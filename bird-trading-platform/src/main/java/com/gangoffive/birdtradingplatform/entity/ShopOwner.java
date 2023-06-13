@@ -73,6 +73,8 @@ public class ShopOwner {
 	@OneToMany(mappedBy = "shopOwner")
 	private List<Message> messages;
 
+	@OneToMany(mappedBy = "shopOwner")
+	private List<PromotionShop> promotionShopList;
 
     public void setId(Long id) {
         this.id = id;
@@ -120,5 +122,13 @@ public class ShopOwner {
 
 	public void addMessages(Message message) {
 		this.messages.add(message);
+	}
+
+	public List<PromotionShop> getPromotionShopList() {
+		return promotionShopList;
+	}
+
+	public void setPromotionShopList(PromotionShop promotionShopList) {
+		this.promotionShopList.add(promotionShopList);
 	}
 }
