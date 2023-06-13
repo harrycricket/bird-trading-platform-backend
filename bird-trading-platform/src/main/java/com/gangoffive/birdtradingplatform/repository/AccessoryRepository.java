@@ -34,4 +34,5 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "And a.price <= ?5", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
                         double lowestPrice, double hightPrice, Pageable pageable);
+
 }
