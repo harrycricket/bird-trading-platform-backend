@@ -10,6 +10,7 @@ import com.gangoffive.birdtradingplatform.dto.PieChartDto;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,9 +27,9 @@ public class ShopOwnerController {
     private final ProductService productService;
     private final ShopOwnerService shopOwnerService;
     private final AccountRepository accountRepository;
-    @GetMapping("/products")
-    public ResponseEntity retrieveAllProduct() {
-        return productService.retrieveProductByShopIdForSO(3, 1);
+    @GetMapping("/products/{pagenumber}")
+    public ResponseEntity retrieveAllProduct(@PathVariable int pagenumber) {
+        return productService.retrieveProductByShopIdForSO(3, pagenumber);
     }
     @GetMapping("/line-chart")
     public List<LineChartDto> getListLineChartDto() throws ParseException {
