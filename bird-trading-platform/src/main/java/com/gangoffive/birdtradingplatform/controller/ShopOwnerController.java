@@ -6,6 +6,7 @@ import com.gangoffive.birdtradingplatform.dto.PieChartDto;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -79,10 +80,16 @@ public class ShopOwnerController {
     }
 
     @GetMapping("/redirect")
-    public void redirectToShopOwner(HttpServletResponse response) throws IOException {
+    public void redirectToShopOwner(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        StringBuffer url = request.getRequestURL();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        String token = shopOwnerService.redirectToShopOwner("hoangtienbmt2911@gmail.com");
-        response.sendRedirect("https://admin.birdland2nd.store/get-token?token=" + token);
+        String token = shopOwnerService.redirectToShopOwner(username);
+        if (url.toString().startsWith("http://localhost:3000/")) {
+            response.sendRedirect("http://localhost:3001/get-token?token=" + token);
+        } else {
+            response.sendRedirect("https://admin.birdland2nd.store/get-token?token=" + token);
+        }
+
     }
 }
