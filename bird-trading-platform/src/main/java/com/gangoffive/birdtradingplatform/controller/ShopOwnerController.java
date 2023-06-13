@@ -1,6 +1,5 @@
 package com.gangoffive.birdtradingplatform.controller;
 
-import com.gangoffive.birdtradingplatform.dto.BarChartDto;
 import com.gangoffive.birdtradingplatform.dto.DataBarChartDto;
 import com.gangoffive.birdtradingplatform.dto.LineChartDto;
 import com.gangoffive.birdtradingplatform.dto.PieChartDto;
@@ -22,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -33,10 +33,12 @@ public class ShopOwnerController {
     private final ProductService productService;
     private final ShopOwnerService shopOwnerService;
     private final AccountRepository accountRepository;
+
     @GetMapping("/products/{pagenumber}")
     public ResponseEntity retrieveAllProduct(@PathVariable int pagenumber) {
         return productService.retrieveProductByShopIdForSO(3, pagenumber);
     }
+
     @GetMapping("/line-chart")
     public List<LineChartDto> getListLineChartDto() throws ParseException {
 //        return shopOwnerService.dataBumpChartByTypeProduct(accountRepository.findByEmail("YamamotoEmi37415@gmail.com").get(), Accessory.class);
@@ -82,18 +84,22 @@ public class ShopOwnerController {
 
     @GetMapping("/redirect")
     public void redirectToShopOwner(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        StringBuffer url = request.getRequestURL();
-        log.info("url: {}", url);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        log.info("username: {}", username);
         String token = shopOwnerService.redirectToShopOwner(username);
-        if (url.toString().startsWith("http://localhost:3000/")) {
-            log.info("vo ne");
-            response.sendRedirect("http://localhost:3001/get-token?token=" + token);
-        } else {
-            log.info("deo");
-            response.sendRedirect("https://admin.birdland2nd.store/get-token?token=" + token);
-        }
+        response.sendRedirect("https://admin.birdland2nd.store/get-token?token=" + token);
+    }
+
+    @GetMapping("/redirect/local")
+    public void redirectLocalToShopOwner(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        String token = shopOwnerService.redirectToShopOwner(username);
+        response.sendRedirect("http://localhost:3001/get-token?token=" + token);
+    }
+
+    @GetMapping("test")
+    public List<LocalDate> getPreviousTwoWeek() {
+        return shopOwnerService.getAllDatePreviousWeek(2);
     }
 }

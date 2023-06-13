@@ -14,10 +14,10 @@ public interface ShopOwnerService {
     List<PieChartDto> getDataPieChart(String email);
     DataBarChartDto dataBarChartByPriceAllTypeProduct(String email);
     DataBarChartDto dataBarChartByOrderAllTypeProduct(String email);
-    List<Order> getAllOrdersPreviousWeek(Account account);
-    List<LocalDate> getAllDatePreviousWeek();
+    List<Order> getAllOrdersNumberPreviousWeek(Account account, int week);
+    List<LocalDate> getAllDatePreviousWeek(int week);
 
     List<BarChartOneTypeDto> dataBarChartByPriceEachTypeProduct(
-            Account account, Class<?> productClass, boolean isCalcPrice, boolean isCalcQuantity);
+            Account account, Class<?> productClass, boolean isCalcPrice, boolean isCalcQuantity, int week);
     String redirectToShopOwner(String email);
 }
