@@ -83,28 +83,40 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
 
     @Override
-    public List<BarChartDto> dataBarChartByPriceAllTypeProduct(String email) {
+    public DataBarChartDto dataBarChartByPriceAllTypeProduct(String email) {
         Optional<Account> account = accountRepository.findByEmail(email);
-        List<BarChartDto> barChartDtoList = new ArrayList<>();
+        List<BarChartDto> barChartDtoList;
         List<BarChartOneTypeDto> barChartFoodDtoList = dataBarChartByPriceEachTypeProduct(account.get(), Food.class, true, false);
         List<BarChartOneTypeDto> barChartBirdDtoList = dataBarChartByPriceEachTypeProduct(account.get(), Bird.class, true, false);
         List<BarChartOneTypeDto> barChartAccessoryDtoList = dataBarChartByPriceEachTypeProduct(account.get(), Accessory.class, true, false);
-        return getListBarChartDto(barChartDtoList, barChartFoodDtoList, barChartBirdDtoList, barChartAccessoryDtoList);
+        barChartDtoList = getListBarChartDto(barChartFoodDtoList, barChartBirdDtoList, barChartAccessoryDtoList);
+
+        DataBarChartDto dataBarChartDto = DataBarChartDto.builder()
+                .barChartDtoList(barChartDtoList)
+                .build();
+        return dataBarChartDto;
     }
 
     @Override
-    public List<BarChartDto> dataBarChartByOrderAllTypeProduct(String email) {
+    public DataBarChartDto dataBarChartByOrderAllTypeProduct(String email) {
         Optional<Account> account = accountRepository.findByEmail(email);
-        List<BarChartDto> barChartDtoList = new ArrayList<>();
+        List<BarChartDto> barChartDtoList;
         List<BarChartOneTypeDto> barChartFoodDtoList = dataBarChartByPriceEachTypeProduct(account.get(), Food.class, false, true);
         List<BarChartOneTypeDto> barChartBirdDtoList = dataBarChartByPriceEachTypeProduct(account.get(), Bird.class, false, true);
         List<BarChartOneTypeDto> barChartAccessoryDtoList = dataBarChartByPriceEachTypeProduct(account.get(), Accessory.class, false, true);
-        return getListBarChartDto(barChartDtoList, barChartFoodDtoList, barChartBirdDtoList, barChartAccessoryDtoList);
+        barChartDtoList = getListBarChartDto(barChartFoodDtoList, barChartBirdDtoList, barChartAccessoryDtoList);
+        DataBarChartDto dataBarChartDto = DataBarChartDto.builder()
+                .barChartDtoList(barChartDtoList)
+                .build();
+        return dataBarChartDto;
     }
 
     private List<BarChartDto> getListBarChartDto(
-            List<BarChartDto> barChartDtoList, List<BarChartOneTypeDto> barChartFoodDtoList,
-            List<BarChartOneTypeDto> barChartBirdDtoList, List<BarChartOneTypeDto> barChartAccessoryDtoList) {
+                    List<BarChartOneTypeDto> barChartFoodDtoList,
+                    List<BarChartOneTypeDto> barChartBirdDtoList,
+                    List<BarChartOneTypeDto> barChartAccessoryDtoList
+    ) {
+        List<BarChartDto> barChartDtoList = new ArrayList<>();
         for (int i = 0; i < barChartFoodDtoList.size(); i++) {
             BarChartDto barChartDto = BarChartDto.builder()
                     .date(barChartFoodDtoList.get(i).getDate())
