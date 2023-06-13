@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.BarChartDto;
+import com.gangoffive.birdtradingplatform.dto.DataBarChartDto;
 import com.gangoffive.birdtradingplatform.dto.LineChartDto;
 import com.gangoffive.birdtradingplatform.dto.PieChartDto;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
@@ -63,7 +64,7 @@ public class ShopOwnerController {
     }
 
     @GetMapping("/bar-chart/price")
-    public List<BarChartDto> getListBarChartPriceDto() {
+    public DataBarChartDto getListBarChartPriceDto() {
 //        List<Order> allOrdersPreviousWeek = shopOwnerService.getAllOrdersPreviousWeek(accountRepository.findByEmail("YamamotoEmi37415@gmail.com").get());
 //        for (Order order: allOrdersPreviousWeek) {
 //            log.info("order id{}", order.getId());
@@ -75,21 +76,24 @@ public class ShopOwnerController {
     }
 
     @GetMapping("/bar-chart/order")
-    public List<BarChartDto> getListBarChartOrderDto() {
+    public DataBarChartDto getListBarChartOrderDto() {
         return shopOwnerService.dataBarChartByOrderAllTypeProduct("YamamotoEmi37415@gmail.com");
     }
 
     @GetMapping("/redirect")
     public void redirectToShopOwner(HttpServletRequest request, HttpServletResponse response) throws IOException {
         StringBuffer url = request.getRequestURL();
+        log.info("url: {}", url);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
+        log.info("username: {}", username);
         String token = shopOwnerService.redirectToShopOwner(username);
         if (url.toString().startsWith("http://localhost:3000/")) {
+            log.info("vo ne");
             response.sendRedirect("http://localhost:3001/get-token?token=" + token);
         } else {
+            log.info("deo");
             response.sendRedirect("https://admin.birdland2nd.store/get-token?token=" + token);
         }
-
     }
 }
