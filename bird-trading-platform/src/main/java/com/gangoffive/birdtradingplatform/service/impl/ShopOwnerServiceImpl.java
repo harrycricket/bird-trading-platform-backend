@@ -121,13 +121,13 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         double percent = ((totalPriceOfPreviousOneWeek - totalPriceOfPreviousTwoWeek)
                 / (totalPriceOfPreviousOneWeek + totalPriceOfPreviousTwoWeek)) * 100;
         DecimalFormat decimalFormat = new DecimalFormat("#.00");
-        String formattedTotalPrice = decimalFormat.format(percent);
-
+        String formattedPercent = decimalFormat.format(percent);
+        String formattedTotalPrice = decimalFormat.format(totalPriceOfPreviousOneWeek);
 
         DataBarChartDto dataBarChartDto = DataBarChartDto.builder()
                 .barChartDtoList(barChartDtoPreviousOneWeekList)
-                .total(totalPriceOfPreviousOneWeek)
-                .percent(Double.parseDouble(formattedTotalPrice))
+                .total(Double.parseDouble(formattedTotalPrice))
+                .percent(Double.parseDouble(formattedPercent))
                 .build();
         return dataBarChartDto;
     }
@@ -174,12 +174,14 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         double percent = ((totalOrderOfPreviousOneWeek - totalOrderOfPreviousTwoWeek)
                 / (totalOrderOfPreviousTwoWeek + totalOrderOfPreviousOneWeek)) * 100;
         DecimalFormat decimalFormat = new DecimalFormat("#.00");
-        String formattedTotalPrice = decimalFormat.format(percent);
+
+        String formattedPercent = decimalFormat.format(percent);
+        String formattedTotalPrice = decimalFormat.format(totalOrderOfPreviousOneWeek);
 
         DataBarChartDto dataBarChartDto = DataBarChartDto.builder()
                 .barChartDtoList(barChartDtoPreviousOneWeekList)
-                .total(totalOrderOfPreviousOneWeek)
-                .percent(Double.parseDouble(formattedTotalPrice))
+                .total(Double.parseDouble(formattedTotalPrice))
+                .percent(Double.parseDouble(formattedPercent))
                 .build();
         return dataBarChartDto;
     }
