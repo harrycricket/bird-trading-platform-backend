@@ -1,10 +1,8 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
-import com.gangoffive.birdtradingplatform.dto.LineChartDto;
-import com.gangoffive.birdtradingplatform.dto.DataLineChartDto;
-import com.gangoffive.birdtradingplatform.dto.PieChartDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
-import com.gangoffive.birdtradingplatform.enums.ColorPieChart;
+import com.gangoffive.birdtradingplatform.enums.ColorChart;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderRepository;
@@ -15,9 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -57,32 +57,190 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         PieChartDto pieChartDtoOfBird = PieChartDto.builder()
                 .id(Bird.class.getSimpleName())
                 .label(Bird.class.getSimpleName())
-                .color(ColorPieChart.BIRD.getColor())
+                .color(ColorChart.BIRD.getColor())
                 .value(dataPieChartByTypeProduct(account.get(), Bird.class))
                 .build();
         pieChartDtoList.add(pieChartDtoOfBird);
         PieChartDto pieChartDtoOfAccessory = PieChartDto.builder()
                 .id(Accessory.class.getSimpleName())
                 .label(Accessory.class.getSimpleName())
-                .color(ColorPieChart.ACCESSORY.getColor())
+                .color(ColorChart.ACCESSORY.getColor())
                 .value(dataPieChartByTypeProduct(account.get(), Accessory.class))
                 .build();
         pieChartDtoList.add(pieChartDtoOfAccessory);
         PieChartDto pieChartDtoOfFood = PieChartDto.builder()
                 .id(Food.class.getSimpleName())
                 .label(Food.class.getSimpleName())
-                .color(ColorPieChart.FOOD.getColor())
+                .color(ColorChart.FOOD.getColor())
                 .value(dataPieChartByTypeProduct(account.get(), Food.class))
                 .build();
         pieChartDtoList.add(pieChartDtoOfFood);
         return pieChartDtoList;
     }
 
-    public double dataPieChartByTypeProduct(Account account, Class<?> productClass) {
+
+    @Override
+    public List<BarChartDto> dataBarChartByPriceAllTypeProduct(String email) {
+        Optional<Account> account = accountRepository.findByEmail(email);
+        List<BarChartDto> barChartDtoList = new ArrayList<>();
+        List<BarChartOneTypeDto> barChartFoodDtoList = dataBarChartByPriceEachTypeProduct(account.get(), Food.class, true, false);
+        List<BarChartOneTypeDto> barChartBirdDtoList = dataBarChartByPriceEachTypeProduct(account.get(), Bird.class, true, false);
+        List<BarChartOneTypeDto> barChartAccessoryDtoList = dataBarChartByPriceEachTypeProduct(account.get(), Accessory.class, true, false);
+        return getListBarChartDto(barChartDtoList, barChartFoodDtoList, barChartBirdDtoList, barChartAccessoryDtoList);
+    }
+
+    public List<BarChartDto> dataBarChartByOrderAllTypeProduct(String email) {
+        Optional<Account> account = accountRepository.findByEmail(email);
+        List<BarChartDto> barChartDtoList = new ArrayList<>();
+        List<BarChartOneTypeDto> barChartFoodDtoList = dataBarChartByPriceEachTypeProduct(account.get(), Food.class, false, true);
+        List<BarChartOneTypeDto> barChartBirdDtoList = dataBarChartByPriceEachTypeProduct(account.get(), Bird.class, false, true);
+        List<BarChartOneTypeDto> barChartAccessoryDtoList = dataBarChartByPriceEachTypeProduct(account.get(), Accessory.class, false, true);
+        return getListBarChartDto(barChartDtoList, barChartFoodDtoList, barChartBirdDtoList, barChartAccessoryDtoList);
+    }
+
+    private List<BarChartDto> getListBarChartDto(
+            List<BarChartDto> barChartDtoList, List<BarChartOneTypeDto> barChartFoodDtoList,
+            List<BarChartOneTypeDto> barChartBirdDtoList, List<BarChartOneTypeDto> barChartAccessoryDtoList) {
+        for (int i = 0; i < barChartFoodDtoList.size(); i++) {
+            BarChartDto barChartDto = BarChartDto.builder()
+                    .date(barChartFoodDtoList.get(i).getDate())
+                    .accessories(barChartAccessoryDtoList.get(i).getValue())
+                    .colorAccessories(barChartAccessoryDtoList.get(i).getColor())
+                    .birds(barChartBirdDtoList.get(i).getValue())
+                    .colorBirds(barChartBirdDtoList.get(i).getColor())
+                    .foods(barChartFoodDtoList.get(i).getValue())
+                    .colorFoods(barChartFoodDtoList.get(i).getColor())
+                    .build();
+            barChartDtoList.add(barChartDto);
+        }
+        for (BarChartDto barChartDto : barChartDtoList) {
+            log.info("barChartDto {}", barChartDto);
+        }
+        return barChartDtoList;
+    }
+
+    public List<BarChartOneTypeDto> dataBarChartByPriceEachTypeProduct(
+            Account account, Class<?> productClass,
+            boolean isCalcPrice, boolean isCalcQuantity
+    ) {
+        List<BarChartOneTypeDto> barChartOneTypeDtoList = new ArrayList<>();
+        List<LocalDate> dateList = getAllDatePreviousWeek();
+        List<Order> orderList = getAllOrdersPreviousWeek(account);
+        //Get list OrderDetail of list Order
+        List<OrderDetail> orderDetails = orderDetailRepository.findOrderDetailByOrderIn(orderList);
+
+        //Get OrderDetail of Product have instance of Food
+        List<OrderDetail> listOrderDetailOfProduct = orderDetails.stream()
+                .filter(
+                        orderDetail -> productClass.isInstance(orderDetail.getProduct())
+                ).toList();
+
+        List<Order> listOrderOfProduct = listOrderDetailOfProduct.stream().map(OrderDetail::getOrder).distinct().toList();
+        int countDate = 0;
+        for (LocalDate date : dateList) {
+            countDate++;
+            double totalPrice = 0;
+            double totalQuantity = 0;
+            for (Order order : listOrderOfProduct) {
+                if (order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().equals(date)) {
+                    for (OrderDetail orderDetail : listOrderDetailOfProduct) {
+                        if (orderDetail.getOrder().equals(order)) {
+                            if (isCalcPrice) {
+                                totalPrice += orderDetail.getPrice() * orderDetail.getQuantity();
+                            }
+                            if (isCalcQuantity) {
+                                totalQuantity++;
+                            }
+                        }
+                    }
+                }
+            }
+            DecimalFormat decimalFormat = new DecimalFormat("#.00");
+            String formattedTotalPrice = decimalFormat.format(totalPrice);
+            BarChartOneTypeDto barChartDto = new BarChartOneTypeDto();
+            if (isCalcPrice) {
+                barChartDto.setValue(Double.parseDouble(formattedTotalPrice));
+            }
+            if (isCalcQuantity) {
+                barChartDto.setValue(totalQuantity);
+            }
+
+            if (countDate == 1) {
+                barChartDto.setDate(DayOfWeek.MONDAY.name());
+            } else if (countDate == 2) {
+                barChartDto.setDate(DayOfWeek.TUESDAY.name());
+            } else if (countDate == 3) {
+                barChartDto.setDate(DayOfWeek.WEDNESDAY.name());
+            } else if (countDate == 4) {
+                barChartDto.setDate(DayOfWeek.THURSDAY.name());
+            } else if (countDate == 5) {
+                barChartDto.setDate(DayOfWeek.FRIDAY.name());
+            } else if (countDate == 6) {
+                barChartDto.setDate(DayOfWeek.SATURDAY.name());
+            } else if (countDate == 7) {
+                barChartDto.setDate(DayOfWeek.SUNDAY.name());
+            }
+
+            if (productClass.equals(Food.class)) {
+                barChartDto.setColor(ColorChart.FOOD.getColor());
+            } else if (productClass.equals(Accessory.class)) {
+                barChartDto.setColor(ColorChart.ACCESSORY.getColor());
+            } else if (productClass.equals(Bird.class)) {
+                barChartDto.setColor(ColorChart.BIRD.getColor());
+            }
+            barChartOneTypeDtoList.add(barChartDto);
+        }
+        return barChartOneTypeDtoList;
+    }
+
+    public List<LocalDate> getAllDatePreviousWeek() {
+        List<LocalDate> localDateList = new ArrayList<>();
+        // Get the current date
+        LocalDate currentDate = LocalDate.now();
+        // Get the date of the previous week
+        LocalDate previousWeekDate = currentDate.minusWeeks(1);
+        // Get the start and end dates of the previous week
+        LocalDate previousWeekStartDate = previousWeekDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate previousWeekEndDate = previousWeekDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        log.info("Previous week start date: {}", previousWeekStartDate);
+        log.info("Previous week end date: {}", previousWeekEndDate);
+        while (!previousWeekStartDate.isAfter(previousWeekEndDate)) {
+            localDateList.add(previousWeekStartDate);
+            previousWeekStartDate = previousWeekStartDate.plusDays(1);
+        }
+        return localDateList;
+    }
+
+    public List<Order> getAllOrdersPreviousWeek(Account account) {
+        // Get the current date
+        LocalDate currentDate = LocalDate.now();
+
+        // Get the date of the previous week
+        LocalDate previousWeekDate = currentDate.minusWeeks(1);
+
+        // Get the start and end dates of the previous week
+        LocalDate previousWeekStartDate = previousWeekDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate previousWeekEndDate = previousWeekDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
         //Get list Order of Shop Owner
-//        LocalDate currentDate = LocalDate.now();
-        String dateString = "2023-06-24";
-        LocalDate currentDate = LocalDate.parse(dateString);
+        List<Order> tmpOrders = orderRepository.findByShopOwner(account.getShopOwner());
+        List<Order> orders = tmpOrders.stream()
+                .filter(
+                        order ->
+                                (order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().equals(previousWeekStartDate)
+                                || order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().isAfter(previousWeekStartDate))
+                                && (order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().equals(previousWeekEndDate)
+                                || order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().isBefore(previousWeekEndDate))
+                )
+                .collect(Collectors.toList());
+        return orders;
+    }
+
+    private double dataPieChartByTypeProduct(Account account, Class<?> productClass) {
+        //Get list Order of Shop Owner
+        LocalDate currentDate = LocalDate.now();
+//        String dateString = "2023-06-24";
+//        LocalDate currentDate = LocalDate.parse(dateString);
 
         //Get list Orders before now 7 day
         LocalDate sevenDaysAgo = currentDate.minus(6, ChronoUnit.DAYS);
@@ -160,8 +318,8 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 //        }
 
         List<LocalDate> listDistinctDateOfProduct = new ArrayList<>();
-//        LocalDate now = LocalDate.now();
-        LocalDate now = LocalDate.of(2023, 06, 22);
+        LocalDate now = LocalDate.now();
+//        LocalDate now = LocalDate.of(2023, 06, 22);
 
         LocalDate currentDate = dateFrom.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         log.info("currentDate {}", currentDate);
