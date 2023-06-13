@@ -1,18 +1,17 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
-import com.gangoffive.birdtradingplatform.dto.BumpChartDto;
-import com.gangoffive.birdtradingplatform.dto.DataBumpChartDto;
+import com.gangoffive.birdtradingplatform.dto.LineChartDto;
+import com.gangoffive.birdtradingplatform.dto.DataLineChartDto;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderRepository;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
+import com.gangoffive.birdtradingplatform.util.DateUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -26,28 +25,28 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     @Override
-    public List<BumpChartDto> getTotalPriceAllOrderByEachDate(String email, Date dateFrom) {
+    public List<LineChartDto> getTotalPriceAllOrderByEachDate(String email, Date dateFrom) {
         Optional<Account> account = accountRepository.findByEmail(email);
-        List<BumpChartDto> bumpChartDtoList = new ArrayList<>();
-        BumpChartDto bumpChartDtoOfBird = BumpChartDto.builder()
-                .type(Bird.class.getSimpleName())
-                .dataBumpCharts(dataBumpChartByTypeProduct(account.get(), Bird.class, dateFrom))
+        List<LineChartDto> lineChartDtoList = new ArrayList<>();
+        LineChartDto lineChartDtoOfBird = LineChartDto.builder()
+                .id(Bird.class.getSimpleName())
+                .data(dataBumpChartByTypeProduct(account.get(), Bird.class, dateFrom))
                 .build();
-        bumpChartDtoList.add(bumpChartDtoOfBird);
-        BumpChartDto bumpChartDtoOfAccessory = BumpChartDto.builder()
-                .type(Accessory.class.getSimpleName())
-                .dataBumpCharts(dataBumpChartByTypeProduct(account.get(), Accessory.class, dateFrom))
+        lineChartDtoList.add(lineChartDtoOfBird);
+        LineChartDto lineChartDtoOfAccessory = LineChartDto.builder()
+                .id(Accessory.class.getSimpleName())
+                .data(dataBumpChartByTypeProduct(account.get(), Accessory.class, dateFrom))
                 .build();
-        bumpChartDtoList.add(bumpChartDtoOfAccessory);
-        BumpChartDto bumpChartDtoOfFood = BumpChartDto.builder()
-                .type(Food.class.getSimpleName())
-                .dataBumpCharts(dataBumpChartByTypeProduct(account.get(), Food.class, dateFrom))
+        lineChartDtoList.add(lineChartDtoOfAccessory);
+        LineChartDto lineChartDtoOfFood = LineChartDto.builder()
+                .id(Food.class.getSimpleName())
+                .data(dataBumpChartByTypeProduct(account.get(), Food.class, dateFrom))
                 .build();
-        bumpChartDtoList.add(bumpChartDtoOfFood);
-        return bumpChartDtoList;
+        lineChartDtoList.add(lineChartDtoOfFood);
+        return lineChartDtoList;
     }
 
-    private List<DataBumpChartDto> dataBumpChartByTypeProduct(Account account, Class<?> productClass, Date dateFrom) {
+    private List<DataLineChartDto> dataBumpChartByTypeProduct(Account account, Class<?> productClass, Date dateFrom) {
         //Get list Order of Shop Owner
         List<Order> tmpOrder = orderRepository.findByShopOwner(account.getShopOwner());
         List<Order> orders = tmpOrder.stream().filter(order -> order.getCreatedDate().after(dateFrom)).collect(Collectors.toList());
@@ -98,7 +97,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             listDistinctDateOfProduct.add(currentDate);
             currentDate = currentDate.plusDays(1);
         }
-        List<DataBumpChartDto> dataBumpChartDtoListOfProduct = new ArrayList<>();
+        List<DataLineChartDto> dataLineChartDtoListOfProduct = new ArrayList<>();
         for (LocalDate date : listDistinctDateOfProduct) {
             //One day have many orders
             double totalPrice = 0;
@@ -110,22 +109,23 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                     for (OrderDetail orderDetail : listOrderDetailOfProduct) {
                         log.info("orderDetail id {}", orderDetail.getId());
                         if (orderDetail.getOrder().equals(order)) {
+                            log.info("orderDetail.getPrice() {}, orderDetail.getQuantity() {}", orderDetail.getPrice(), orderDetail.getQuantity());
                             totalPrice += orderDetail.getPrice() * orderDetail.getQuantity();
                             log.info("total {}", totalPrice);
                         }
                     }
                 }
             }
-            DataBumpChartDto dataBumpChartDto = DataBumpChartDto.builder()
-                    .dateOfPrice(date)
-                    .price(totalPrice)
+            DataLineChartDto dataLineChartDto = DataLineChartDto.builder()
+                    .x(DateUtils.formatLocalDateToString(date))
+                    .y(totalPrice)
                     .build();
-            dataBumpChartDtoListOfProduct.add(dataBumpChartDto);
+            dataLineChartDtoListOfProduct.add(dataLineChartDto);
         }
-        for (DataBumpChartDto dataBumpChartDto : dataBumpChartDtoListOfProduct) {
-            log.info("dataBumpChartDto {}", dataBumpChartDto);
+        for (DataLineChartDto dataLineChartDto : dataLineChartDtoListOfProduct) {
+            log.info("dataLineChartDto {}", dataLineChartDto);
         }
-        return dataBumpChartDtoListOfProduct;
+        return dataLineChartDtoListOfProduct;
     }
 
 }

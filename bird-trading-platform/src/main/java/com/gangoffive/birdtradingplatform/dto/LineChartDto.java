@@ -2,7 +2,7 @@ package com.gangoffive.birdtradingplatform.dto;
 
 import lombok.*;
 
-import java.time.LocalDate;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Setter
 @Builder
 @ToString
-public class DataBumpChartDto {
-    LocalDate dateOfPrice;
-    double price;
+public class LineChartDto {
+    String id;
+    List<DataLineChartDto> data;
 }
