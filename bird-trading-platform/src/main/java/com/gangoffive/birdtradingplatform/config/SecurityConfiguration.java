@@ -68,7 +68,7 @@ public class SecurityConfiguration {
             "/api/v1/users/get-cookie",
             "api/v1/package-order",
             "/api/v1/promotions",
-            "api/v1/shop-owner",
+            "api/v1/shop-owner/**",
 //            "/favicon.ico",
 //            "/**/*.png",
 //            "/**/*.gif",
