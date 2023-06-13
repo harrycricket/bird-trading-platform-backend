@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.repository;
 
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,5 +18,5 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Long>{
 	Optional<List<Product>> findByNameLike(String name);
 
-	Optional<List<Product>> findByShopOwner_Id(long id);
+	Optional<Page<Product>> findByShopOwner_Id(long id, Pageable pageable);
 }

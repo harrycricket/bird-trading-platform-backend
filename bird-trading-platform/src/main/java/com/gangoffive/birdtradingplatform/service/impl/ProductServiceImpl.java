@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -195,11 +196,20 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ResponseEntity<?> retrieveProductByShopIdForSO(long shopId) {
-        var listProduct = productRepository.findByShopOwner_Id(shopId);
-        if(listProduct.isPresent()){
-            List<ProductShopDto> result = listProduct.get().stream().map(this::productToProductShopDto).toList();
-            return ResponseEntity.ok(result);
+    public ResponseEntity<?> retrieveProductByShopIdForSO(long shopId, int pageNumber) {
+        if(pageNumber > 0) {
+            --pageNumber;
+        }
+        PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
+
+        Optional<Page<Product>> pageAble = productRepository.findByShopOwner_Id(shopId, pageRequest);
+        if(pageAble.isPresent()){
+            List<ProductShopDto> result = pageAble.get().stream().map(this::productToProductShopDto).toList();
+            PageNumberWraper<ProductShopDto> pageNumberWraper = new PageNumberWraper<>();
+            pageNumberWraper.setPageNumber(pageAble.get().getTotalPages());
+            pageNumberWraper.setLists(result);
+            return ResponseEntity.ok(pageNumberWraper);
         }
         return new ResponseEntity<>(ErrorResponse.builder().errorMessage(ResponseCode.NOT_FOUND_THIS_PRODUCT_SHOP_ID.toString())
                 .errorCode(HttpStatus.NOT_FOUND.name()).build(), HttpStatus.NOT_FOUND);
