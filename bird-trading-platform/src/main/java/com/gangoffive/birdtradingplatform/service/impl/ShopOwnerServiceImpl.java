@@ -6,6 +6,8 @@ import com.gangoffive.birdtradingplatform.enums.ColorChart;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderRepository;
+import com.gangoffive.birdtradingplatform.security.UserPrincipal;
+import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final AccountRepository accountRepository;
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final JwtService jwtService;
     @Override
     public List<LineChartDto> getDataLineChart(String email, Date dateFrom) {
         Optional<Account> account = accountRepository.findByEmail(email);
@@ -191,6 +194,11 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             barChartOneTypeDtoList.add(barChartDto);
         }
         return barChartOneTypeDtoList;
+    }
+
+    @Override
+    public String redirectToShopOwner(String email) {
+        return jwtService.generateToken(UserPrincipal.create(accountRepository.findByEmail(email).get()));
     }
 
     public List<LocalDate> getAllDatePreviousWeek() {

@@ -21,4 +21,5 @@ public interface ShopOwnerService {
     List<BarChartDto> dataBarChartByOrderAllTypeProduct(String email);
     List<BarChartOneTypeDto> dataBarChartByPriceEachTypeProduct(
             Account account, Class<?> productClass, boolean isCalcPrice, boolean isCalcQuantity);
+    String redirectToShopOwner(String email);
 }
