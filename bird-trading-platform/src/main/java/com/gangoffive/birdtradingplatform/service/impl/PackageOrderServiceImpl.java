@@ -185,8 +185,9 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         boolean hasShippingPromotion = false;
         log.info("totalPriceOfAllProduct {}", totalPriceOfAllProduct);
         if (packageOrderDto.getTransactionDto().getPromotionId() == null || packageOrderDto.getTransactionDto().getPromotionId().isEmpty()) {
-            log.info("Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100 / 100) {}", Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100 / 100));
-            return packageOrderDto.getTransactionDto().getTotalPrice() == Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100 / 100);
+            log.info("Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100 / 100) {}", Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100.0) / 100.0);
+
+            return packageOrderDto.getTransactionDto().getTotalPrice() == Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100.0) / 100.0;
         }
         List<Promotion> promotions = promotionRepository.findAllById(packageOrderDto.getTransactionDto().getPromotionId());
         for (Promotion promotion : promotions) {
@@ -201,12 +202,14 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         }
 
         log.info("totalPriceAfterAddVoucher {}", totalPriceAfterAddVoucher);
-        log.info("Math.round(totalPriceAfterAddVoucher * 100 / 100) {}", Math.round(totalPriceAfterAddVoucher * 100 / 100));
-        return (int) packageOrderDto.getTransactionDto().getTotalPrice() == Math.round(totalPriceAfterAddVoucher * 100 / 100);
+        log.info("Math.round(totalPriceAfterAddVoucher * 100 / 100) {}", (Math.round(totalPriceAfterAddVoucher * 100.0) / 100.0));
+        return packageOrderDto.getTransactionDto().getTotalPrice() == Math.round(totalPriceAfterAddVoucher * 100.0) / 100.0;
     }
 
     private double calculatePriceAfterAddVoucher(double totalPrice, List<Promotion> promotions) {
-        return promotions.stream()
+        return Math.round(
+                (
+                promotions.stream()
                 .mapToDouble(
                         promotion -> {
                             if (promotion.getType().equals(PromotionType.DISCOUNT)) {
@@ -216,29 +219,33 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                             }
                             return 0;
                         })
-                .reduce(totalPrice, (subtotal, discount) -> subtotal - discount);
+                .reduce(totalPrice, (subtotal, discount) -> subtotal - discount)
+                ) * 100.0) / 100.0;
     }
 
     private double calculateTotalPriceOfAllProduct(Map<Long, Integer> productOrder) {
-        return productOrder.entrySet().stream().mapToDouble(
-                entry -> {
-                    Long productId = entry.getKey();
-                    Integer quantity = entry.getValue();
-                    Optional<Product> productOptional = productRepository.findById(productId);
-                    Product product = productOptional.get();
-                    double saleOff = productService.CalculateSaleOff(product.getPromotionShops(), product.getPrice());
-                    double discountPrice = productService.CalculateDiscountedPrice(product.getPrice(), saleOff);
-                    return discountPrice * quantity;
-                }
-        ).sum();
+        return Math.round(
+                (
+                        productOrder.entrySet().stream().mapToDouble(
+                                entry -> {
+                                    Long productId = entry.getKey();
+                                    Integer quantity = entry.getValue();
+                                    Optional<Product> productOptional = productRepository.findById(productId);
+                                    Product product = productOptional.get();
+                                    double saleOff = productService.CalculateSaleOff(product.getPromotionShops(), product.getPrice());
+                                    double discountPrice = productService.CalculateDiscountedPrice(product.getPrice(), saleOff);
+                                    return Math.round((discountPrice * quantity) * 100.0) / 100.0;
+                                }
+                        ).sum()
+                ) * 100.0
+        ) / 100.0;
     }
 
     private double calculateShippingFee(PackageOrderDto packageOrderDto) {
         double totalPriceProduct = calculateTotalPriceOfAllProduct(packageOrderDto.getProductOrder());
         //5 % for shipping fee để tạm
         double shippingFee = totalPriceProduct * 0.05;
-        String formattedShippingFee = String.format("%.2f", shippingFee);
-        return Double.parseDouble(formattedShippingFee);
+        return Math.round(shippingFee * 100.0) / 100.0;
     }
 
     private Account saveUserOrderDto(UserOrderDto userOrderDto) {
@@ -319,6 +326,11 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 .forEach(
                         price -> log.info("key {} value {}", price.getKey().toString(), price.getValue().toString())
                 );
+
+        for (Long id : totalPriceByShop.keySet()) {
+            totalPriceByShop.put(id, Math.round(totalPriceByShop.get(id) * 100.0) / 100.0);
+        }
+
         shops.stream().forEach(shopOwner -> {
             List<PromotionShop> promotionShops = products.stream()
                     .filter(
