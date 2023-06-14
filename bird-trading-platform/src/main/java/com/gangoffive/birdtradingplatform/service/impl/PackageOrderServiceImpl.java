@@ -61,7 +61,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 //        log.info("checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()) {}", checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()));
         log.info("checkListProduct(packageOrderDto.getProductOrder()) {}", checkListProduct(packageOrderDto.getProductOrder()));
 //        log.info("checkUserOrderDto(packageOrderDto.getUserOrderDto()) {}", checkUserOrderDto(packageOrderDto.getUserOrderDto()));
-//        log.info("checkTotalPrice(packageOrderDto) {}", checkTotalPrice(packageOrderDto));
+        log.info("checkTotalPrice(packageOrderDto) {}", checkTotalPrice(packageOrderDto));
         if (paymentId != null && payerId != null) {
             return handleSuccessPayment(packageOrderDto, paymentId, payerId);
         }
@@ -185,6 +185,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         boolean hasShippingPromotion = false;
         log.info("totalPriceOfAllProduct {}", totalPriceOfAllProduct);
         if (packageOrderDto.getTransactionDto().getPromotionId() == null || packageOrderDto.getTransactionDto().getPromotionId().isEmpty()) {
+            log.info("Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100 / 100) {}", Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100 / 100));
             return packageOrderDto.getTransactionDto().getTotalPrice() == Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100 / 100);
         }
         List<Promotion> promotions = promotionRepository.findAllById(packageOrderDto.getTransactionDto().getPromotionId());
@@ -200,6 +201,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         }
 
         log.info("totalPriceAfterAddVoucher {}", totalPriceAfterAddVoucher);
+        log.info("Math.round(totalPriceAfterAddVoucher * 100 / 100) {}", Math.round(totalPriceAfterAddVoucher * 100 / 100));
         return (int) packageOrderDto.getTransactionDto().getTotalPrice() == Math.round(totalPriceAfterAddVoucher * 100 / 100);
     }
 
