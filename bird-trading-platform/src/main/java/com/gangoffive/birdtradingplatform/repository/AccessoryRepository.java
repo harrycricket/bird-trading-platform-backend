@@ -6,6 +6,7 @@
 package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.Accessory;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -31,6 +32,6 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "And ps.star >= ?3 " +
             "And a.price >= ?4 " +
             "And a.price <= ?5", nativeQuery = true)
-    List<Long> idFilter(String name, List<Long> listTypeId, double star,
+    Page<Long> idFilter(String name, List<Long> listTypeId, double star,
                         double lowestPrice, double hightPrice, Pageable pageable);
 }

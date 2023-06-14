@@ -8,7 +8,9 @@ import lombok.*;
 @Setter
 @Builder
 @ToString
-public class DataLineChartDto {
-    private String x;
-    private double y;
+public class PieChartDto {
+    private String id;
+    private String label;
+    private double value;
+    private String color;
 }

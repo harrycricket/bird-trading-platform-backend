@@ -11,6 +11,6 @@ import java.util.List;
 @Builder
 @ToString
 public class LineChartDto {
-    String id;
-    List<DataLineChartDto> data;
+    private String id;
+    private List<DataLineChartDto> data;
 }

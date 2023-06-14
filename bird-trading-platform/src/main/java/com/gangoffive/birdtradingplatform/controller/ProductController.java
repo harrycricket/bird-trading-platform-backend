@@ -58,7 +58,7 @@ public class ProductController {
     }
 
     @GetMapping("products/filter")
-    public List<ProductDto> filter(ProductFilterDto productFilterDto){
+    public ResponseEntity<?> filter(ProductFilterDto productFilterDto){
         log.info("dto {}", productFilterDto);
         return productService.filter(productFilterDto);
     }

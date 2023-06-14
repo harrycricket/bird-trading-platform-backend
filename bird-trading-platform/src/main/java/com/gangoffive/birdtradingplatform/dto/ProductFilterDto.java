@@ -18,5 +18,4 @@ public class ProductFilterDto {
     private double highestPrice;
     private double lowestPrice;
     private int pageNumber;
-    private int maxPageNumber;
 }

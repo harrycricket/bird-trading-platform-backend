@@ -12,12 +12,14 @@ package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
 import com.gangoffive.birdtradingplatform.entity.Bird;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,12 +35,23 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
     @Query(value = "SELECT b.product_id " +
             "FROM `bird-trading-platform`.tbl_bird b " +
             "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
-            "ON b.product_id= ps.product_id " +
-            "where b.name LIKE %?1% " +
-            "And b.type_id in (?2) " +
-            "And ps.star >= ?3 " +
-            "And b.price >= ?4 " +
-            "And b.price <= ?5", nativeQuery = true)
-    List<Long> idFilter(String name, List<Long> listTypeId, double star,
-                        double lowestPrice, double hightPrice, Pageable pageable);
+            "ON b.product_id = ps.product_id " +
+            "WHERE b.name LIKE %?1% " +
+            "AND b.type_id IN ?2 " +
+            "AND ps.star >= ?3 " +
+            "AND b.price >= ?4 " +
+            "AND b.price <= ?5",
+            countQuery = "SELECT COUNT(*) " +
+                    "FROM `bird-trading-platform`.tbl_bird b " +
+                    "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
+                    "ON b.product_id = ps.product_id " +
+                    "WHERE b.name LIKE %?1% " +
+                    "AND b.type_id IN ?2 " +
+                    "AND ps.star >= ?3 " +
+                    "AND b.price >= ?4 " +
+                    "AND b.price <= ?5",
+            nativeQuery = true)
+    Page<Long> idFilter(String name, Collection<Long> listType, double star,
+                        double lowestPrice, double highestPrice, Pageable pageable);
+
 }

@@ -28,13 +28,13 @@ public interface ProductService {
     List<ProductDto> listModelToDto(List<Product> products);
 
     ResponseEntity<?> retrieveProductById(Long id);
-
     double CalculateDiscountedPrice(double price, double saleOff);
-
     ProductDto ProductToDto(Product product);
-
     ResponseEntity<?> retrieveProductByListId(long[] ids);
 
-    List<ProductDto> filter(ProductFilterDto filterDto);
+    //ForSO it mean For Shop Owner
+    ResponseEntity<?> retrieveProductByShopIdForSO(long shopId, int pageNumber);
+    ResponseEntity<?> filter(ProductFilterDto filterDto);
 
 }
+
