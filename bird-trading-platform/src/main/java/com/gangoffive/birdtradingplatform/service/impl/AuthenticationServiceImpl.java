@@ -211,6 +211,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .refreshToken(refreshToken)
                 .build();
         var userInfo = UserInfoDto.builder()
+                .id(account.getId())
                 .email(account.getEmail())
                 .role(account.getRole())
                 .fullName(account.getFullName())
