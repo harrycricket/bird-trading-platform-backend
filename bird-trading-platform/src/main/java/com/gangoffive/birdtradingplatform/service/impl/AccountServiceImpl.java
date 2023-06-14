@@ -34,7 +34,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account updateAccount(AccountUpdateDto accountUpdateDto) {
-        log.info("acc {}", accountUpdateDto.toString());
+//        log.info("acc {}", accountUpdateDto.toString());
         Optional<Account> editAccount = accountRepository.findByEmail(accountUpdateDto.getEmail());
         editAccount.get().setFullName(accountUpdateDto.getFullName());
         editAccount.get().setPhoneNumber(accountUpdateDto.getPhoneNumber());
