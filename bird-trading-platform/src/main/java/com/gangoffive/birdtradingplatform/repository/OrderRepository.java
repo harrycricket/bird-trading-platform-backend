@@ -12,5 +12,5 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByShopOwner(ShopOwner shopOwner);
 
-    List<Order> findByShopOwnerAndCreatedDateAfter(ShopOwner shopOwner, Date date);
+    List<Order> findByShopOwnerAndCreatedDateBetween(ShopOwner shopOwner, Date dateFrom, Date dateTo);
 }

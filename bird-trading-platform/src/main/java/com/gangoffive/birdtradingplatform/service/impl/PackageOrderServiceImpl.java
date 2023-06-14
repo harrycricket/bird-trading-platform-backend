@@ -58,10 +58,10 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         Instant startTime = Instant.now();
         // Your existing code...
 
-        log.info("checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()) {}", checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()));
+//        log.info("checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()) {}", checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()));
         log.info("checkListProduct(packageOrderDto.getProductOrder()) {}", checkListProduct(packageOrderDto.getProductOrder()));
-        log.info("checkUserOrderDto(packageOrderDto.getUserOrderDto()) {}", checkUserOrderDto(packageOrderDto.getUserOrderDto()));
-        log.info("checkTotalPrice(packageOrderDto) {}", checkTotalPrice(packageOrderDto));
+//        log.info("checkUserOrderDto(packageOrderDto.getUserOrderDto()) {}", checkUserOrderDto(packageOrderDto.getUserOrderDto()));
+//        log.info("checkTotalPrice(packageOrderDto) {}", checkTotalPrice(packageOrderDto));
         if (paymentId != null && payerId != null) {
             return handleSuccessPayment(packageOrderDto, paymentId, payerId);
         }
@@ -73,7 +73,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         ) {
             PaymentMethod paymentMethod = packageOrderDto.getTransactionDto().getPaymentMethod();
             if (paymentMethod.equals(PaymentMethod.PAYPAL)) {
-                return handleInitialPayment(packageOrderDto, paymentId, payerId);
+                return handleInitialPayment(packageOrderDto);
             } else if (paymentMethod.equals(PaymentMethod.DELIVERY)) {
                 saveAll(packageOrderDto);
                 // Capture the end time
@@ -144,10 +144,28 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     }
 
     public boolean checkListProduct(Map<Long, Integer> productOrder) {
+//        for (Long id : productOrder.keySet()) {
+//            if (!productRepository.findById(id).isPresent()) {
+//                return false;
+//            } else {
+//                if (productRepository.findById(id).get().getQuantity() >= productOrder.get(id)) {
+//                    return false;
+//                }
+//            }
+//        }
+//        return true;
         return productOrder.keySet()
                 .stream()
                 .allMatch(
-                        productId -> productRepository.findById(productId).isPresent()
+                        productId -> {
+                            Optional<Product> productOptional = productRepository.findById(productId);
+                            if (!productOptional.isPresent()) {
+                                return false;
+                            } else {
+                                Product product = productOptional.get();
+                                return product.getQuantity() >= productOrder.get(productId);
+                            }
+                        }
                 );
     }
 
@@ -409,7 +427,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         saveOrderDetails(orders, packageOrderDto);
     }
 
-    private ResponseEntity<?> handleInitialPayment(PackageOrderDto packageOrderDto, String paymentId, String payerId) {
+    private ResponseEntity<?> handleInitialPayment(PackageOrderDto packageOrderDto) {
         // Handle initial payment request
         try {
             String description = packageOrderDto.getUserOrderDto().getEmail()
@@ -420,7 +438,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     .method(PaymentMethod.PAYPAL)
                     .intent(PaypalPaymentIntent.SALE)
                     .description(description)
-                    .successUrl("http://localhost:8080/api/v1/package-order?status=success")
+                    .successUrl("https://thongtienthienphuot.shop/api/v1/package-order?status=success")
                     .cancelUrl("https://www.birdland2nd.store/")
                     .build();
             Payment payment = paypalService.createPayment(paymentDto);
