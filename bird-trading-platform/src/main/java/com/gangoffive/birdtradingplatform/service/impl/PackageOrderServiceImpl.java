@@ -58,10 +58,10 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         Instant startTime = Instant.now();
         // Your existing code...
 
-        log.info("checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()) {}", checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()));
-        log.info("checkListProduct(packageOrderDto.getProductOrder()) {}", checkListProduct(packageOrderDto.getProductOrder()));
-        log.info("checkUserOrderDto(packageOrderDto.getUserOrderDto()) {}", checkUserOrderDto(packageOrderDto.getUserOrderDto()));
-        log.info("checkTotalPrice(packageOrderDto) {}", checkTotalPrice(packageOrderDto));
+//        log.info("checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()) {}", checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()));
+//        log.info("checkListProduct(packageOrderDto.getProductOrder()) {}", checkListProduct(packageOrderDto.getProductOrder()));
+//        log.info("checkUserOrderDto(packageOrderDto.getUserOrderDto()) {}", checkUserOrderDto(packageOrderDto.getUserOrderDto()));
+//        log.info("checkTotalPrice(packageOrderDto) {}", checkTotalPrice(packageOrderDto));
         if (paymentId != null && payerId != null) {
             return handleSuccessPayment(packageOrderDto, paymentId, payerId);
         }
@@ -144,10 +144,10 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     }
 
     public boolean checkListProduct(Map<Long, Integer> productOrder) {
-        return productOrder.keySet()
+        return !productOrder.keySet()
                 .stream()
                 .allMatch(
-                        productId -> productRepository.findById(productId).isPresent()
+                        productId -> !productRepository.findById(productId).isPresent()
                 );
     }
 
