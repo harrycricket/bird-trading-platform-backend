@@ -15,9 +15,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -186,6 +189,12 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         return dataBarChartDto;
     }
 
+    private double dataPieChartByTypeProduct(Account account, Class<?> productClass) {
+        List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
+                dataBarChartByPriceEachTypeProduct(account, productClass, true, false, 1);
+        return barChartFoodPreviousOneWeekDtoList.stream().mapToDouble(BarChartOneTypeDto::getValue).sum();
+    }
+
     private List<BarChartDto> getListBarChartDto(
                     List<BarChartOneTypeDto> barChartFoodDtoList,
                     List<BarChartOneTypeDto> barChartBirdDtoList,
@@ -257,19 +266,26 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             }
 
             if (countDate == 1) {
-                barChartDto.setDate(DayOfWeek.MONDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.MONDAY.name().toLowerCase().substring(1, 3));
+                barChartDto.setDate(DayOfWeek.MONDAY.name().substring(0, 1).toUpperCase()
+                        + DayOfWeek.MONDAY.name().toLowerCase().substring(1, 3));
             } else if (countDate == 2) {
-                barChartDto.setDate(DayOfWeek.TUESDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.TUESDAY.name().toLowerCase().substring(1, 3));
+                barChartDto.setDate(DayOfWeek.TUESDAY.name().substring(0, 1).toUpperCase()
+                        + DayOfWeek.TUESDAY.name().toLowerCase().substring(1, 3));
             } else if (countDate == 3) {
-                barChartDto.setDate(DayOfWeek.WEDNESDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.WEDNESDAY.name().toLowerCase().substring(1, 3));
+                barChartDto.setDate(DayOfWeek.WEDNESDAY.name().substring(0, 1).toUpperCase()
+                        + DayOfWeek.WEDNESDAY.name().toLowerCase().substring(1, 3));
             } else if (countDate == 4) {
-                barChartDto.setDate(DayOfWeek.THURSDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.THURSDAY.name().toLowerCase().substring(1, 3));
+                barChartDto.setDate(DayOfWeek.THURSDAY.name().substring(0, 1).toUpperCase()
+                        + DayOfWeek.THURSDAY.name().toLowerCase().substring(1, 3));
             } else if (countDate == 5) {
-                barChartDto.setDate(DayOfWeek.FRIDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.FRIDAY.name().toLowerCase().substring(1, 3));
+                barChartDto.setDate(DayOfWeek.FRIDAY.name().substring(0, 1).toUpperCase()
+                        + DayOfWeek.FRIDAY.name().toLowerCase().substring(1, 3));
             } else if (countDate == 6) {
-                barChartDto.setDate(DayOfWeek.SATURDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.SATURDAY.name().toLowerCase().substring(1, 3));
+                barChartDto.setDate(DayOfWeek.SATURDAY.name().substring(0, 1).toUpperCase()
+                        + DayOfWeek.SATURDAY.name().toLowerCase().substring(1, 3));
             } else if (countDate == 7) {
-                barChartDto.setDate(DayOfWeek.SUNDAY.name().substring(0, 1).toUpperCase() + DayOfWeek.SUNDAY.name().toLowerCase().substring(1, 3));
+                barChartDto.setDate(DayOfWeek.SUNDAY.name().substring(0, 1).toUpperCase()
+                        + DayOfWeek.SUNDAY.name().toLowerCase().substring(1, 3));
             }
 
             if (productClass.equals(Food.class)) {
@@ -332,44 +348,45 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         return orders;
     }
 
-    private double dataPieChartByTypeProduct(Account account, Class<?> productClass) {
-        //Get list Order of Shop Owner
-        LocalDate currentDate = LocalDate.now();
-//        String dateString = "2023-06-24";
-//        LocalDate currentDate = LocalDate.parse(dateString);
-
-        //Get list Orders before now 7 day
-        LocalDate sevenDaysAgo = currentDate.minus(6, ChronoUnit.DAYS);
-        log.info("sevenDaysAgo {}", sevenDaysAgo);
-        Date sevenDaysAgoDate = Date.from(sevenDaysAgo.atStartOfDay(ZoneId.of("UTC")).toInstant());
-        log.info("sevenDaysAgoDate {}", sevenDaysAgoDate);
-        List<Order> orders = orderRepository.findByShopOwnerAndCreatedDateAfter(account.getShopOwner(), sevenDaysAgoDate);
-        for (Order order : orders) {
-            log.info("order.getId() {}", order.getId());
-            log.info("order.getCreatedDate() {}", order.getCreatedDate());
-        }
-
-        //Get list OrderDetail of list Order
-        List<OrderDetail> orderDetails = orderDetailRepository.findOrderDetailByOrderIn(orders);
-
-        List<OrderDetail> listOrderDetailOfProduct = orderDetails.stream()
-                .filter(
-//                        orderDetail -> orderDetail.getProduct() instanceof Food
-                        orderDetail -> productClass.isInstance(orderDetail.getProduct())
-                ).toList();
-
-        for (OrderDetail order : listOrderDetailOfProduct) {
-            log.info("order.getId() {}", order.getId());
-            log.info("order.getOrder().getId() {}", order.getOrder().getId());
-            log.info("order.getCreatedDate() {}", order.getProduct());
-        }
-
-        double totalPrice = listOrderDetailOfProduct.stream().mapToDouble(orderDetail -> orderDetail.getPrice() * orderDetail.getQuantity()).sum();
-        DecimalFormat decimalFormat = new DecimalFormat("#.00");
-        String formattedTotalPrice = decimalFormat.format(totalPrice);
-        log.info("totalPrice {}", totalPrice);
-        return Double.parseDouble(formattedTotalPrice);
-    }
+//    private double dataPieChartByTypeProduct(Account account, Class<?> productClass) throws ParseException {
+//        List<LocalDate> dateList = getAllDatePreviousWeek(1);
+//        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+//        String formattedDateFrom = dateList.get(0).format(outputFormatter);
+//        String formattedDateTo = dateList.get(6).format(outputFormatter);
+//
+//        Date dateFrom = new SimpleDateFormat("dd/MM/yyyy").parse(formattedDateFrom);
+//        Date dateTo= new SimpleDateFormat("dd/MM/yyyy").parse(formattedDateTo);
+//        log.info("dateFrom {}", dateFrom);
+//        log.info("dateTo {}", dateTo);
+//        //Get list Orders before now 7 day
+//        List<Order> orders = getAllOrdersNumberPreviousWeek(account, 1);
+//        for (Order order : orders) {
+//            log.info("order.getId() {}", order.getId());
+//            log.info("order.getCreatedDate() {}", order.getCreatedDate());
+//        }
+//
+//        //Get list OrderDetail of list Order
+//        List<OrderDetail> orderDetails = orderDetailRepository.findOrderDetailByOrderIn(orders);
+//
+//        List<OrderDetail> listOrderDetailOfProduct = orderDetails.stream()
+//                .filter(
+////                        orderDetail -> orderDetail.getProduct() instanceof Food
+//                        orderDetail -> productClass.isInstance(orderDetail.getProduct())
+//                ).toList();
+//
+//        for (OrderDetail order : listOrderDetailOfProduct) {
+//            log.info("order.getId() {}", order.getId());
+//            log.info("order.getOrder().getId() {}", order.getOrder().getId());
+//            log.info("order.getCreatedDate() {}", order.getProduct());
+//        }
+//
+//        double totalPrice = listOrderDetailOfProduct.stream()
+//                .mapToDouble(orderDetail -> orderDetail.getPrice() * orderDetail.getQuantity()).sum();
+//        DecimalFormat decimalFormat = new DecimalFormat("#.00");
+//        String formattedTotalPrice = decimalFormat.format(totalPrice);
+//        log.info("totalPrice {}", totalPrice);
+//        return Double.parseDouble(formattedTotalPrice);
+//    }
 
     private List<DataLineChartDto> dataLineChartByTypeProduct(Account account, Class<?> productClass, Date dateFrom) {
         //Get list Order of Shop Owner
