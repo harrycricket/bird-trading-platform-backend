@@ -24,7 +24,7 @@ public class UploadController {
 
     @PostMapping
     public ResponseEntity<?> handleUploadForm(Model model, String description,
-                                           @RequestBody MultipartFile multipart) throws IOException {
+                                           @RequestParam("multipart") MultipartFile multipart) throws IOException {
         log.info("multipart {}", multipart.getInputStream());
         String fileName = multipart.getOriginalFilename();
         int dotIndex = fileName.lastIndexOf(".");
