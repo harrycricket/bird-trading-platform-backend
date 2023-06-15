@@ -192,7 +192,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private AuthenticationResponseDto getAuthenticationResponse(Account account, HttpServletResponse response) {
-        var jwtToken = jwtService.generateToken(UserPrincipal.create(account));
+        var jwtToken = jwtService.generateToken(UserPrincipal.create(account), "ROLE_USERS");
         var refreshToken = account.getRefreshToken();
         var addressDto = addressMapper.toDto(account.getAddress());
         if (refreshToken != null) {

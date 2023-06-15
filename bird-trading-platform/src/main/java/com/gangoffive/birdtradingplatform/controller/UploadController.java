@@ -2,19 +2,20 @@ package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.enums.ContentType;
 import com.gangoffive.birdtradingplatform.util.S3Utils;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
-@Controller
+@RestController
 @RequestMapping("/upload")
+@Slf4j
 public class UploadController {
     @GetMapping
     public String viewHomePage() {
@@ -22,8 +23,9 @@ public class UploadController {
     }
 
     @PostMapping
-    public String handleUploadForm(Model model, String description,
-                                   @RequestParam("file") MultipartFile multipart) {
+    public ResponseEntity<?> handleUploadForm(Model model, String description,
+                                           @RequestBody MultipartFile multipart) throws IOException {
+        log.info("multipart {}", multipart.getInputStream());
         String fileName = multipart.getOriginalFilename();
         int dotIndex = fileName.lastIndexOf(".");
         String typeFile = fileName.substring(dotIndex + 1);
@@ -55,6 +57,6 @@ public class UploadController {
 
         model.addAttribute("message", message);
 
-        return "message";
+        return ResponseEntity.ok("ok");
     }
 }
