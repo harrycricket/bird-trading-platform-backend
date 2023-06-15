@@ -23,6 +23,7 @@ public class UploadController {
     }
 
     @PostMapping
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
     public ResponseEntity<?> handleUploadForm(Model model, String description,
                                            @RequestParam("multipart") MultipartFile multipart) throws IOException {
         log.info("multipart {}", multipart.getInputStream());
