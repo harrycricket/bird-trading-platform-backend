@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -44,6 +45,15 @@ public class JwtService {
         return generateToken(new HashMap<>(), userDetails);
     }
 
+    public String generateToken(UserDetails userDetails, String ...scopes) {
+        return generateToken(Map.of("scopes", scopes), userDetails);
+    }
+
+    public String generateToken(UserDetails userDetails, List<String> scopes) {
+        return generateToken(Map.of("scopes", scopes), userDetails);
+    }
+
+
     public String generateToken(
             Map<String, Object> extractClaims,
             UserDetails userDetails
@@ -53,6 +63,14 @@ public class JwtService {
 
     public String generateRefreshToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails, appProperties.getAuth().getRefreshTokenExpiration());
+    }
+
+    public String generateRefreshToken(UserDetails userDetails, String ...scopes) {
+        return generateToken(Map.of("scopes", scopes), userDetails, appProperties.getAuth().getRefreshTokenExpiration());
+    }
+
+    public String generateRefreshToken(UserDetails userDetails, List<String> scopes) {
+        return generateToken(Map.of("scopes", scopes), userDetails, appProperties.getAuth().getRefreshTokenExpiration());
     }
 
     private String generateToken(
