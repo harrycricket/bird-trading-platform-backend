@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/upload")
+@RequestMapping("/api/v1/upload")
 @Slf4j
 public class UploadController {
     @GetMapping
