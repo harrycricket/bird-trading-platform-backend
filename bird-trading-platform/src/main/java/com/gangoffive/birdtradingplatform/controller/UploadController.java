@@ -35,7 +35,7 @@ public class UploadController {
     @PostMapping
     public ResponseEntity<?> handleUploadForm(
             @RequestParam("multipart") List<MultipartFile> multipartFiles,
-            @RequestParam("data") ProductShopOwnerDto productShopOwnerDto
+            @ModelAttribute ProductShopOwnerDto productShopOwnerDto
     ) {
         log.info("productShopOwnerDto {}", productShopOwnerDto);
         for (MultipartFile multipartFile : multipartFiles) {
