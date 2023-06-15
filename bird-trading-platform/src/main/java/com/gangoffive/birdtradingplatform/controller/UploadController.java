@@ -36,7 +36,7 @@ public class UploadController {
     public ResponseEntity<?> handleUploadForm(
             @RequestParam("multipart") List<MultipartFile> multipartFiles,
             @RequestParam("data") MultipartFile data,
-            @ModelAttribute(name = "data") ProductShopOwnerDto productShopOwnerDto
+            @RequestPart("data") ProductShopOwnerDto productShopOwnerDto
     ) {
         log.info("productShopOwnerDto {}", productShopOwnerDto);
         log.info("data {}", data.toString());
@@ -67,8 +67,6 @@ public class UploadController {
                 ex.getMessage();
             }
         }
-
-
         return ResponseEntity.ok("ok");
     }
 }
