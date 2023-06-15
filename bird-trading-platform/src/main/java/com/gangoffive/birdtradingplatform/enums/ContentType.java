@@ -5,6 +5,7 @@ import java.util.HashMap;
 public enum ContentType {
     gif,
     jpeg,
+    jpg,
     png,
     tiff,
     ico,
@@ -20,6 +21,7 @@ public enum ContentType {
         type = new HashMap<>();
         type.put(gif, "image/gif");
         type.put(jpeg, "image/jpeg");
+        type.put(jpg, "image/jpeg");
         type.put(png, "image/png");
         type.put(tiff, "image/tiff");
         type.put(ico, "image/vnd.microsoft.icon");
