@@ -35,9 +35,11 @@ public class UploadController {
     @PostMapping
     public ResponseEntity<?> handleUploadForm(
             @RequestParam("multipart") List<MultipartFile> multipartFiles,
-            @ModelAttribute ProductShopOwnerDto productShopOwnerDto
+            @RequestParam("data") MultipartFile data,
+            @ModelAttribute(name = "data") ProductShopOwnerDto productShopOwnerDto
     ) {
         log.info("productShopOwnerDto {}", productShopOwnerDto);
+        log.info("data {}", data.toString());
         for (MultipartFile multipartFile : multipartFiles) {
             String fileName = multipartFile.getOriginalFilename();
             int dotIndex = fileName.lastIndexOf(".");
