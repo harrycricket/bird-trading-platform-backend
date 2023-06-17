@@ -6,5 +6,5 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface PromotionShopService {
-    ResponseEntity<?> retrieveAllPromotionShop(long shopId);
+    ResponseEntity<?> retrieveAllPromotionShop();
 }

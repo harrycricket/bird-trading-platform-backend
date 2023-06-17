@@ -82,6 +82,11 @@ public class ShopOwnerController {
         return shopOwnerService.dataBarChartByOrderAllTypeProduct("YamamotoEmi37415@gmail.com");
     }
 
+    @GetMapping("/bar-chart/review")
+    public DataBarChartDto getListBarChartReviewDto() {
+        return shopOwnerService.dataBarChartByReviewAllTypeProduct("YamamotoEmi37415@gmail.com");
+    }
+
     @GetMapping("/redirect")
     public void redirectToShopOwner(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
