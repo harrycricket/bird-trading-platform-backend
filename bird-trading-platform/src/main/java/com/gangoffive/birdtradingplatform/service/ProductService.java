@@ -3,11 +3,13 @@ package com.gangoffive.birdtradingplatform.service;
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
+import com.gangoffive.birdtradingplatform.dto.ProductShopOwnerDto;
 import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.entity.PromotionShop;
 import com.google.gson.JsonObject;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Objects;
@@ -35,6 +37,8 @@ public interface ProductService {
     //ForSO it mean For Shop Owner
     ResponseEntity<?> retrieveProductByShopIdForSO(long shopId, int pageNumber);
     ResponseEntity<?> filter(ProductFilterDto filterDto);
+
+    ResponseEntity<?> addNewProduct(List<MultipartFile> multipartImgList, MultipartFile multipartVideo, ProductShopOwnerDto productShopOwnerDto);
 
 }
 

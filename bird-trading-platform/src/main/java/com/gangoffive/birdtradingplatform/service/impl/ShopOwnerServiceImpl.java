@@ -242,7 +242,8 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             double totalPrice = 0;
             double totalQuantity = 0;
             for (Order order : listOrderOfProduct) {
-                if (order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().equals(date)) {
+                if (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(date)) {
+                    log.info("order.getCreatedDate().toInstant().atZone(ZoneId.of(\"Asia/Bangkok\")) {}", order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")));
                     for (OrderDetail orderDetail : listOrderDetailOfProduct) {
                         if (orderDetail.getOrder().equals(order)) {
                             if (isCalcPrice) {
@@ -339,10 +340,10 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         List<Order> orders = tmpOrders.stream()
                 .filter(
                         order ->
-                                (order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().equals(previousWeekStartDate)
-                                || order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().isAfter(previousWeekStartDate))
-                                && (order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().equals(previousWeekEndDate)
-                                || order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().isBefore(previousWeekEndDate))
+                                (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(previousWeekStartDate)
+                                || order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().isAfter(previousWeekStartDate))
+                                && (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(previousWeekEndDate)
+                                || order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().isBefore(previousWeekEndDate))
                 )
                 .collect(Collectors.toList());
         return orders;
@@ -449,7 +450,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 log.info("order id {}", order.getId());
                 log.info("order.getCreatedDate() {}", order.getCreatedDate());
                 log.info("date {}", date);
-                if (order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().equals(date)) {
+                if (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(date)) {
                     log.info("order id {}", order.getId());
 
                     for (OrderDetail orderDetail : listOrderDetailOfProduct) {

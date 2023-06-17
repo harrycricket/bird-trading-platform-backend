@@ -126,7 +126,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 
         boolean hasValidPromotion = false;
         // Assuming your database uses the UTC time zone
-        ZoneId databaseTimeZone = ZoneId.of("UTC");
+        ZoneId databaseTimeZone = ZoneId.of("Asia/Bangkok");
 
         LocalDateTime currentDate = new Date().toInstant().atZone(databaseTimeZone).toLocalDateTime();
 //        log.info("currentDate {}", currentDate);

@@ -195,17 +195,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var jwtToken = jwtService.generateToken(UserPrincipal.create(account), "ROLE_USERS");
         var refreshToken = account.getRefreshToken();
         var addressDto = addressMapper.toDto(account.getAddress());
-        if (refreshToken != null) {
-            if (jwtService.isTokenExpired(refreshToken)) {
-                refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
-                account.setRefreshToken(refreshToken);
-                accountRepository.save(account);
-            }
-        } else {
+//        if (refreshToken != null && !refreshToken.isEmpty()) {
+//            if (jwtService.isTokenExpired(refreshToken)) {
+//                refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
+//                account.setRefreshToken(refreshToken);
+//                accountRepository.save(account);
+//            }
+//        } else {
             refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
             account.setRefreshToken(refreshToken);
             accountRepository.save(account);
-        }
+//        }
         var tokenDto = TokenDto.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
