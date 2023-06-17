@@ -2,7 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
-import com.gangoffive.birdtradingplatform.dto.PackageOrderDto;
+import com.gangoffive.birdtradingplatform.dto.PackageOrderRequestDto;
 import com.gangoffive.birdtradingplatform.dto.PaymentDto;
 import com.gangoffive.birdtradingplatform.dto.UserOrderDto;
 import com.gangoffive.birdtradingplatform.entity.*;
@@ -53,29 +53,29 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 
 
     @Override
-    public ResponseEntity<?> packageOrder(PackageOrderDto packageOrderDto, String paymentId, String payerId) {
+    public ResponseEntity<?> packageOrder(PackageOrderRequestDto packageOrderRequestDto, String paymentId, String payerId) {
         // Capture the start time
         Instant startTime = Instant.now();
         // Your existing code...
 
-//        log.info("checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()) {}", checkPromotion(packageOrderDto.getTransactionDto().getPromotionId()));
-        log.info("checkListProduct(packageOrderDto.getProductOrder()) {}", checkListProduct(packageOrderDto.getProductOrder()));
-//        log.info("checkUserOrderDto(packageOrderDto.getUserOrderDto()) {}", checkUserOrderDto(packageOrderDto.getUserOrderDto()));
-        log.info("checkTotalPrice(packageOrderDto) {}", checkTotalPrice(packageOrderDto));
+//        log.info("checkPromotion(packageOrderRequestDto.getTransactionDto().getPromotionId()) {}", checkPromotion(packageOrderRequestDto.getTransactionDto().getPromotionId()));
+        log.info("checkListProduct(packageOrderRequestDto.getProductOrder()) {}", checkListProduct(packageOrderRequestDto.getProductOrder()));
+//        log.info("checkUserOrderDto(packageOrderRequestDto.getUserOrderDto()) {}", checkUserOrderDto(packageOrderRequestDto.getUserOrderDto()));
+        log.info("checkTotalPrice(packageOrderRequestDto) {}", checkTotalPrice(packageOrderRequestDto));
         if (paymentId != null && payerId != null) {
-            return handleSuccessPayment(packageOrderDto, paymentId, payerId);
+            return handleSuccessPayment(packageOrderRequestDto, paymentId, payerId);
         }
         if (
-                checkPromotion(packageOrderDto.getTransactionDto().getPromotionId())
-                        && checkListProduct(packageOrderDto.getProductOrder())
-                        && checkUserOrderDto(packageOrderDto.getUserOrderDto())
-                        && checkTotalPrice(packageOrderDto)
+                checkPromotion(packageOrderRequestDto.getTransactionDto().getPromotionId())
+                        && checkListProduct(packageOrderRequestDto.getProductOrder())
+                        && checkUserOrderDto(packageOrderRequestDto.getUserOrderDto())
+                        && checkTotalPrice(packageOrderRequestDto)
         ) {
-            PaymentMethod paymentMethod = packageOrderDto.getTransactionDto().getPaymentMethod();
+            PaymentMethod paymentMethod = packageOrderRequestDto.getTransactionDto().getPaymentMethod();
             if (paymentMethod.equals(PaymentMethod.PAYPAL)) {
-                return handleInitialPayment(packageOrderDto);
+                return handleInitialPayment(packageOrderRequestDto);
             } else if (paymentMethod.equals(PaymentMethod.DELIVERY)) {
-                saveAll(packageOrderDto);
+                saveAll(packageOrderRequestDto);
                 // Capture the end time
                 Instant endTime = Instant.now();
                 // Calculate the duration
@@ -179,17 +179,17 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 && accountRepository.findByEmail(userOrderDto.getEmail()).isPresent();
     }
 
-    private boolean checkTotalPrice(PackageOrderDto packageOrderDto) {
-        double totalPriceOfAllProduct = calculateTotalPriceOfAllProduct(packageOrderDto.getProductOrder());
+    private boolean checkTotalPrice(PackageOrderRequestDto packageOrderRequestDto) {
+        double totalPriceOfAllProduct = calculateTotalPriceOfAllProduct(packageOrderRequestDto.getProductOrder());
         double totalPriceAfterAddVoucher = 0;
         boolean hasShippingPromotion = false;
         log.info("totalPriceOfAllProduct {}", totalPriceOfAllProduct);
-        if (packageOrderDto.getTransactionDto().getPromotionId() == null || packageOrderDto.getTransactionDto().getPromotionId().isEmpty()) {
+        if (packageOrderRequestDto.getTransactionDto().getPromotionId() == null || packageOrderRequestDto.getTransactionDto().getPromotionId().isEmpty()) {
             log.info("Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100 / 100) {}", Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100.0) / 100.0);
 
-            return packageOrderDto.getTransactionDto().getTotalPrice() == Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100.0) / 100.0;
+            return packageOrderRequestDto.getTransactionDto().getTotalPrice() == Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100.0) / 100.0;
         }
-        List<Promotion> promotions = promotionRepository.findAllById(packageOrderDto.getTransactionDto().getPromotionId());
+        List<Promotion> promotions = promotionRepository.findAllById(packageOrderRequestDto.getTransactionDto().getPromotionId());
         for (Promotion promotion : promotions) {
             if (promotion.getType().equals(PromotionType.SHIPPING)) {
                 totalPriceAfterAddVoucher = calculatePriceAfterAddVoucher(totalPriceOfAllProduct, promotions);
@@ -203,7 +203,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 
         log.info("totalPriceAfterAddVoucher {}", totalPriceAfterAddVoucher);
         log.info("Math.round(totalPriceAfterAddVoucher * 100 / 100) {}", (Math.round(totalPriceAfterAddVoucher * 100.0) / 100.0));
-        return packageOrderDto.getTransactionDto().getTotalPrice() == Math.round(totalPriceAfterAddVoucher * 100.0) / 100.0;
+        return packageOrderRequestDto.getTransactionDto().getTotalPrice() == Math.round(totalPriceAfterAddVoucher * 100.0) / 100.0;
     }
 
     private double calculatePriceAfterAddVoucher(double totalPrice, List<Promotion> promotions) {
@@ -241,8 +241,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         ) / 100.0;
     }
 
-    private double calculateShippingFee(PackageOrderDto packageOrderDto) {
-        double totalPriceProduct = calculateTotalPriceOfAllProduct(packageOrderDto.getProductOrder());
+    private double calculateShippingFee(PackageOrderRequestDto packageOrderRequestDto) {
+        double totalPriceProduct = calculateTotalPriceOfAllProduct(packageOrderRequestDto.getProductOrder());
         //5 % for shipping fee để tạm
         double shippingFee = totalPriceProduct * 0.05;
         return Math.round(shippingFee * 100.0) / 100.0;
@@ -264,43 +264,43 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     }
 
     private PackageOrder savePackageOrder(
-            PackageOrderDto packageOrderDto, Account account,
+            PackageOrderRequestDto packageOrderRequestDto, Account account,
             Transaction transaction, double discount, double shippingFee
     ) {
-        log.info("packageOrderDto {}", packageOrderDto.toString());
+        log.info("packageOrderRequestDto {}", packageOrderRequestDto.toString());
         log.info("transaction {}", transaction.toString());
         log.info("discount {}", discount);
         transactionRepository.save(transaction);
         log.info("shippingFee {}", shippingFee);
         Address address = new Address();
-        address.setPhone(packageOrderDto.getUserOrderDto().getPhoneNumber());
-        address.setStreet(packageOrderDto.getUserOrderDto().getStreet());
-        address.setWard(packageOrderDto.getUserOrderDto().getWard());
-        address.setDistrict(packageOrderDto.getUserOrderDto().getDistrict());
-        address.setCity(packageOrderDto.getUserOrderDto().getCity());
+        address.setPhone(packageOrderRequestDto.getUserOrderDto().getPhoneNumber());
+        address.setStreet(packageOrderRequestDto.getUserOrderDto().getStreet());
+        address.setWard(packageOrderRequestDto.getUserOrderDto().getWard());
+        address.setDistrict(packageOrderRequestDto.getUserOrderDto().getDistrict());
+        address.setCity(packageOrderRequestDto.getUserOrderDto().getCity());
         addressRepository.save(address);
         PackageOrder packageOrder = PackageOrder.builder()
-                .totalPrice(packageOrderDto.getTransactionDto().getTotalPrice())
+                .totalPrice(packageOrderRequestDto.getTransactionDto().getTotalPrice())
                 .discount(discount)
                 .shippingFee(shippingFee)
-                .paymentMethod(packageOrderDto.getTransactionDto().getPaymentMethod())
+                .paymentMethod(packageOrderRequestDto.getTransactionDto().getPaymentMethod())
                 .account(account)
                 .transaction(transaction)
                 .shippingAddress(address)
                 .build();
         if (
-                packageOrderDto.getTransactionDto().getPromotionId() != null
-                        && !packageOrderDto.getTransactionDto().getPromotionId().isEmpty()
+                packageOrderRequestDto.getTransactionDto().getPromotionId() != null
+                        && !packageOrderRequestDto.getTransactionDto().getPromotionId().isEmpty()
         ) {
-            packageOrder.setPromotions(promotionRepository.findAllById(packageOrderDto.getTransactionDto().getPromotionId()));
+            packageOrder.setPromotions(promotionRepository.findAllById(packageOrderRequestDto.getTransactionDto().getPromotionId()));
         }
         packageOrderRepository.save(packageOrder);
         return packageOrder;
     }
 
-    private List<Order> saveOrder(PackageOrder packageOrder, PackageOrderDto packageOrderDto) {
+    private List<Order> saveOrder(PackageOrder packageOrder, PackageOrderRequestDto packageOrderRequestDto) {
         List<Order> orderList = new ArrayList<>();
-        List<Long> productListId = getListProductId(packageOrderDto);
+        List<Long> productListId = getListProductId(packageOrderRequestDto);
         List<Product> products = productRepository.findAllById(productListId);
         products.stream().forEach(s -> log.info("pro {}", s.getId()));
         List<ShopOwner> shops = getListShopOwners(products);
@@ -315,7 +315,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                                         product -> {
                                             double saleOff = productService.CalculateSaleOff(product.getPromotionShops(), product.getPrice());
                                             double priceAfterDiscount = productService.CalculateDiscountedPrice(product.getPrice(), saleOff);
-                                            return priceAfterDiscount * packageOrderDto.getProductOrder().get(product.getId());
+                                            return priceAfterDiscount * packageOrderRequestDto.getProductOrder().get(product.getId());
                                         }
                                 )
                         )
@@ -351,8 +351,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return orderList;
     }
 
-    private List<OrderDetail> saveOrderDetails(List<Order> orders, PackageOrderDto packageOrderDto) {
-        List<Long> productListId = getListProductId(packageOrderDto);
+    private List<OrderDetail> saveOrderDetails(List<Order> orders, PackageOrderRequestDto packageOrderRequestDto) {
+        List<Long> productListId = getListProductId(packageOrderRequestDto);
         List<Product> products = productRepository.findAllById(productListId);
         List<ShopOwner> shopOwners = getListShopOwners(products);
         List<OrderDetail> orderDetails = new ArrayList<>();
@@ -367,7 +367,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 //                                    .order(order)
 //                                    .product(product)
 //                                    .price(discountedPrice)
-//                                    .quantity(packageOrderDto.getProductOrder().get(product.getId()))
+//                                    .quantity(packageOrderRequestDto.getProductOrder().get(product.getId()))
 //                                    .build();
 //                            orderDetails.add(orderDetail);
 //                            orderDetailRepository.save(orderDetail);
@@ -382,14 +382,14 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 .forEach(order -> products.stream()
                         .filter(product -> product.getShopOwner().equals(order.getShopOwner()))
                         .forEach(product -> {
-                            int newQuantity = product.getQuantity() - packageOrderDto.getProductOrder().get(product.getId());
+                            int newQuantity = product.getQuantity() - packageOrderRequestDto.getProductOrder().get(product.getId());
                             double saleOff = productService.CalculateSaleOff(product.getPromotionShops(), product.getPrice());
                             double discountedPrice = productService.CalculateDiscountedPrice(product.getPrice(), saleOff);
                             OrderDetail orderDetail = OrderDetail.builder()
                                     .order(order)
                                     .product(product)
                                     .price(discountedPrice)
-                                    .quantity(packageOrderDto.getProductOrder().get(product.getId()))
+                                    .quantity(packageOrderRequestDto.getProductOrder().get(product.getId()))
                                     .build();
                             orderDetails.add(orderDetail);
                             product.setQuantity(newQuantity);
@@ -401,23 +401,23 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     }
 
     @Transactional
-    public void saveAll(PackageOrderDto packageOrderDto) {
+    public void saveAll(PackageOrderRequestDto packageOrderRequestDto) {
         Transaction transaction = Transaction.builder()
-                .amount(packageOrderDto.getTransactionDto().getTotalPrice())
+                .amount(packageOrderRequestDto.getTransactionDto().getTotalPrice())
                 .status(TransactionStatus.PROCESSING)
                 .build();
-        if (packageOrderDto.getTransactionDto().getPaymentMethod().equals(PaymentMethod.PAYPAL)) {
+        if (packageOrderRequestDto.getTransactionDto().getPaymentMethod().equals(PaymentMethod.PAYPAL)) {
             transaction.setStatus(TransactionStatus.SUCCESS);
         }
-        Account account = saveUserOrderDto(packageOrderDto.getUserOrderDto());
+        Account account = saveUserOrderDto(packageOrderRequestDto.getUserOrderDto());
         double shippingFee = 0;
         double discount = 0;
         if (
-                packageOrderDto.getTransactionDto().getPromotionId() != null
-                        && !packageOrderDto.getTransactionDto().getPromotionId().isEmpty()
+                packageOrderRequestDto.getTransactionDto().getPromotionId() != null
+                        && !packageOrderRequestDto.getTransactionDto().getPromotionId().isEmpty()
         ) {
             List<Promotion> promotions = promotionRepository
-                    .findAllById(packageOrderDto.getTransactionDto().getPromotionId());
+                    .findAllById(packageOrderRequestDto.getTransactionDto().getPromotionId());
             boolean isFreeShip = promotions.stream().anyMatch(promotion -> promotion.getType().equals(PromotionType.SHIPPING));
 
             for (Promotion promotion : promotions) {
@@ -427,26 +427,26 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 } else if (promotion.getType().equals(PromotionType.DISCOUNT)) {
                     discount = promotion.getDiscount();
                     if (!isFreeShip) {
-                        shippingFee = calculateShippingFee(packageOrderDto);
+                        shippingFee = calculateShippingFee(packageOrderRequestDto);
                     }
                 }
             }
 
         } else {
-            shippingFee = calculateShippingFee(packageOrderDto);
+            shippingFee = calculateShippingFee(packageOrderRequestDto);
         }
-        PackageOrder packageOrder = savePackageOrder(packageOrderDto, account, transaction, discount, shippingFee);
-        List<Order> orders = saveOrder(packageOrder, packageOrderDto);
-        saveOrderDetails(orders, packageOrderDto);
+        PackageOrder packageOrder = savePackageOrder(packageOrderRequestDto, account, transaction, discount, shippingFee);
+        List<Order> orders = saveOrder(packageOrder, packageOrderRequestDto);
+        saveOrderDetails(orders, packageOrderRequestDto);
     }
 
-    private ResponseEntity<?> handleInitialPayment(PackageOrderDto packageOrderDto) {
+    private ResponseEntity<?> handleInitialPayment(PackageOrderRequestDto packageOrderRequestDto) {
         // Handle initial payment request
         try {
-            String description = packageOrderDto.getUserOrderDto().getEmail()
-                    + " pay with paypal for " + packageOrderDto.getTransactionDto().getTotalPrice();
+            String description = packageOrderRequestDto.getUserOrderDto().getEmail()
+                    + " pay with paypal for " + packageOrderRequestDto.getTransactionDto().getTotalPrice();
             PaymentDto paymentDto = PaymentDto.builder()
-                    .total(packageOrderDto.getTransactionDto().getTotalPrice())
+                    .total(packageOrderRequestDto.getTransactionDto().getTotalPrice())
                     .currency(Currency.USD.toString())
                     .method(PaymentMethod.PAYPAL)
                     .intent(PaypalPaymentIntent.SALE)
@@ -474,7 +474,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return new ResponseEntity<>(error, HttpStatus.EXPECTATION_FAILED);
     }
 
-    private ResponseEntity<?> handleSuccessPayment(PackageOrderDto packageOrderDto, String paymentId, String payerId) {
+    private ResponseEntity<?> handleSuccessPayment(PackageOrderRequestDto packageOrderRequestDto, String paymentId, String payerId) {
         // Handle success payment
         try {
             Payment payment = paypalService.executePayment(paymentId, payerId);
@@ -482,7 +482,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
             log.info("payerId id{}", payerId);
             log.info("paymentId id{}", paymentId);
             if (payment.getState().equals("approved")) {
-                saveAll(packageOrderDto);
+                saveAll(packageOrderRequestDto);
                 SuccessResponse successResponse = SuccessResponse.builder()
                         .successCode(String.valueOf(HttpStatus.OK.value()))
                         .successMessage("Payment with paypal successful.")
@@ -508,8 +508,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 .collect(Collectors.toList());
     }
 
-    private List<Long> getListProductId(PackageOrderDto packageOrderDto) {
-        return packageOrderDto.getProductOrder()
+    private List<Long> getListProductId(PackageOrderRequestDto packageOrderRequestDto) {
+        return packageOrderRequestDto.getProductOrder()
                 .entrySet()
                 .stream()
                 .map(
