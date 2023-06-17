@@ -15,7 +15,7 @@ public class PromotionShopController {
 
     @GetMapping("/promotion-shop")
     public ResponseEntity<?> retrieveAllPromotion () {
-        return promotionShopService.retrieveAllPromotionShop(3);
+        return promotionShopService.retrieveAllPromotionShop();
     }
 
 }
