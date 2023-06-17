@@ -16,11 +16,12 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("api/v1")
 @Slf4j
 public class PackageOrderController {
 
     private final PackageOrderService packageOrderService;
-    @RequestMapping(value = "api/v1/package-order", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = "/package-order", method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<?> getPackageOrder(
             @RequestBody PackageOrderDto packageOrderDto,
             @RequestParam(value = "paymentId", required = false) String paymentId,
@@ -28,5 +29,10 @@ public class PackageOrderController {
     ) {
         packageOrderDto.getProductOrder().entrySet().forEach(pro -> log.info("pro {}", pro.getKey()));
         return packageOrderService.packageOrder(packageOrderDto, paymentId, payerId);
+    }
+
+    @RequestMapping("/view-order")
+    public ResponseEntity<?> viewOrder() {
+        return ResponseEntity.ok("");
     }
 }
