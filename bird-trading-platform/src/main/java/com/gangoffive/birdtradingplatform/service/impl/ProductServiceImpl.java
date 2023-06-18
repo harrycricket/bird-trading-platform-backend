@@ -492,10 +492,14 @@ public class ProductServiceImpl implements ProductService {
                 bird.setImgUrl(imgUrl);
                 bird.setVideoUrl(urlVideo);
                 bird.setTypeBird(typeBirdRepository.findById(productShopOwnerDto.getTypeId()).get());
+                log.info("loi 0");
                 bird.setAge(productShopOwnerDto.getFeature().getAge());
                 bird.setGender(productShopOwnerDto.getFeature().getGender());
                 bird.setColor(productShopOwnerDto.getFeature().getColor());
                 bird.setShopOwner(account.get().getShopOwner());
+                log.info("loi 1");
+                productRepository.save(bird);
+                log.info("loi 2");
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
                     List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
                     promotionShops.stream().forEach(promotionShop -> {
@@ -503,6 +507,7 @@ public class ProductServiceImpl implements ProductService {
                         promotionShopRepository.save(promotionShop);
                     });
                 }
+                log.info("loi 3");
                 if (productShopOwnerDto.getTagId() != null && !productShopOwnerDto.getTagId().isEmpty()) {
                     List<Tag> tagPresentInList = tagRepository.findByIdIn(productShopOwnerDto.getTagId());
                     tagPresentInList.stream().forEach(tag -> {
@@ -510,20 +515,7 @@ public class ProductServiceImpl implements ProductService {
                         tagRepository.save(tag);
                     });
                 }
-//                List<String> newTags = productShopOwnerDto.getNameTag().stream()
-//                        .filter(
-//                                tagName -> tagPresentInList.stream()
-//                                        .noneMatch(
-//                                                tag -> tag.getName().equalsIgnoreCase(tagName)
-//                                        )
-//                        )
-//                        .collect(Collectors.toList());
-//                newTags.stream().forEach(tagName -> {
-//                    Tag tag = new Tag();
-//                    tag.setName(tagName);
-//                    tag.addBirds(bird);
-//                    tagRepository.save(tag);
-//                });
+                log.info("loi 4");
                 productRepository.save(bird);
             } else if (productShopOwnerDto.getCategoryId() == 2) {
                 Food food = new Food();
