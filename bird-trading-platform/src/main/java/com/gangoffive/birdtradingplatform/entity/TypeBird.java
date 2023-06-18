@@ -16,15 +16,16 @@ import java.util.List;
 public class TypeBird {
     @Id
     @Column(name = "type_b_id")
-    @SequenceGenerator(
-            name = "type_bird_id_seq",
-            sequenceName = "type_bird_id_seq",
-            allocationSize = 1
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "type_bird_id_seq"
-    )
+//    @SequenceGenerator(
+//            name = "type_bird_id_seq",
+//            sequenceName = "type_bird_id_seq",
+//            allocationSize = 1
+//    )
+//    @GeneratedValue(
+//            strategy = GenerationType.SEQUENCE,
+//            generator = "type_bird_id_seq"
+//    )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
 

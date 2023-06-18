@@ -15,15 +15,16 @@ import java.util.List;
 public class TypeAccessory {
     @Id
     @Column(name = "type_a_id")
-    @SequenceGenerator(
-            name = "type_accessory_id_seq",
-            sequenceName = "type_accessory_id_seq",
-            allocationSize = 1
-    )
-    @GeneratedValue(
-            strategy = GenerationType.IDENTITY,
-            generator = "type_accessory_id_seq"
-    )
+//    @SequenceGenerator(
+//            name = "type_accessory_id_seq",
+//            sequenceName = "type_accessory_id_seq",
+//            allocationSize = 1
+//    )
+//    @GeneratedValue(
+//            strategy = GenerationType.IDENTITY,
+//            generator = "type_accessory_id_seq"
+//    )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)

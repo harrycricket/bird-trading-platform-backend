@@ -69,15 +69,4 @@ public class ProductController {
         return productService.filter(productFilterDto);
     }
 
-    @PostMapping("/product/add-new")
-    public ResponseEntity<?> addNewProduct(
-            @RequestParam("multipart") List<MultipartFile> multipartFiles,
-            @RequestParam("multipart") MultipartFile multipartVideo,
-//            @RequestParam("data") MultipartFile data,
-            @RequestPart("data") ProductShopOwnerDto productShopOwnerDto
-    ) {
-        log.info("productShopOwnerDto {}", productShopOwnerDto);
-        return productService.addNewProduct(multipartFiles, multipartVideo, productShopOwnerDto);
-    }
-
 }
