@@ -104,7 +104,7 @@ public class ShopOwnerController {
             @RequestParam("image") List<MultipartFile> multipartFiles,
             @RequestParam(name = "video", required = false) MultipartFile multipartVideo,
 //            @RequestParam("data") MultipartFile data,
-            @RequestPart(name = "data", required = false) ProductShopOwnerDto productShopOwnerDto
+            @RequestPart(name = "data") ProductShopOwnerDto productShopOwnerDto
     ) {
         log.info("productShopOwnerDto {}", productShopOwnerDto);
         return productService.addNewProduct(multipartFiles, multipartVideo, productShopOwnerDto);

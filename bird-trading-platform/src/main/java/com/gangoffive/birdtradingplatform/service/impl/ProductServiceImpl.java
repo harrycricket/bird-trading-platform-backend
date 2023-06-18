@@ -496,7 +496,8 @@ public class ProductServiceImpl implements ProductService {
                 bird.setGender(productShopOwnerDto.getFeature().getGender());
                 bird.setColor(productShopOwnerDto.getFeature().getColor());
                 bird.setShopOwner(account.get().getShopOwner());
-                productRepository.save(bird);
+                Bird saveBird = productRepository.save(bird);
+                productSummaryService.updateCategory(saveBird);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
                     List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
                     promotionShops.stream().forEach(promotionShop -> {
@@ -523,7 +524,8 @@ public class ProductServiceImpl implements ProductService {
                 food.setTypeFood(typeFoodRepository.findById(productShopOwnerDto.getTypeId()).get());
                 food.setWeight(productShopOwnerDto.getFeature().getWeight());
                 food.setShopOwner(account.get().getShopOwner());
-                productRepository.save(food);
+                Food saveFood = productRepository.save(food);
+                productSummaryService.updateCategory(saveFood);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
                     List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
                     promotionShops.stream().forEach(promotionShop -> {
@@ -550,7 +552,8 @@ public class ProductServiceImpl implements ProductService {
                 accessory.setTypeAccessory(typeAccessoryRepository.findById(productShopOwnerDto.getTypeId()).get());
                 accessory.setOrigin(productShopOwnerDto.getFeature().getOrigin());
                 accessory.setShopOwner(account.get().getShopOwner());
-                productRepository.save(accessory);
+                Accessory saveAccessory = productRepository.save(accessory);
+                productSummaryService.updateCategory(saveAccessory);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
                     List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
                     promotionShops.stream().forEach(promotionShop -> {
