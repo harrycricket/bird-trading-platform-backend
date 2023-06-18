@@ -110,9 +110,4 @@ public class ShopOwnerController {
         String token = shopOwnerService.redirectToShopOwner(username);
         response.sendRedirect("http://localhost:3001/get-token?token=" + token);
     }
-
-    @GetMapping("test")
-    public List<LocalDate> getPreviousTwoWeek() {
-        return shopOwnerService.getAllDatePreviousWeek(2);
-    }
 }

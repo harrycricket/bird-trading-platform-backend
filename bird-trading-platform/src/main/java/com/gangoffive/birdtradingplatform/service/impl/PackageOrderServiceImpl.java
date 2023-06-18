@@ -186,7 +186,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         log.info("totalPriceOfAllProduct {}", totalPriceOfAllProduct);
         if (packageOrderRequestDto.getTransactionDto().getPromotionId() == null || packageOrderRequestDto.getTransactionDto().getPromotionId().isEmpty()) {
             log.info("Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100 / 100) {}", Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100.0) / 100.0);
-
+            log.info("packageOrderRequestDto.getTransactionDto().getTotalPrice() {}", packageOrderRequestDto.getTransactionDto().getTotalPrice());
             return packageOrderRequestDto.getTransactionDto().getTotalPrice() == Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100.0) / 100.0;
         }
         List<Promotion> promotions = promotionRepository.findAllById(packageOrderRequestDto.getTransactionDto().getPromotionId());
@@ -202,6 +202,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         }
 
         log.info("totalPriceAfterAddVoucher {}", totalPriceAfterAddVoucher);
+        log.info("packageOrderRequestDto.getTransactionDto().getTotalPrice() {}", packageOrderRequestDto.getTransactionDto().getTotalPrice());
         log.info("Math.round(totalPriceAfterAddVoucher * 100 / 100) {}", (Math.round(totalPriceAfterAddVoucher * 100.0) / 100.0));
         return packageOrderRequestDto.getTransactionDto().getTotalPrice() == Math.round(totalPriceAfterAddVoucher * 100.0) / 100.0;
     }
