@@ -102,9 +102,9 @@ public class ShopOwnerController {
     @PostMapping("/products")
     public ResponseEntity<?> addNewProduct(
             @RequestParam("image") List<MultipartFile> multipartFiles,
-            @RequestParam("video") MultipartFile multipartVideo,
+            @RequestParam(name = "video", required = false) MultipartFile multipartVideo,
 //            @RequestParam("data") MultipartFile data,
-            @RequestPart("data") ProductShopOwnerDto productShopOwnerDto
+            @RequestPart(name = "data", required = false) ProductShopOwnerDto productShopOwnerDto
     ) {
         log.info("productShopOwnerDto {}", productShopOwnerDto);
         return productService.addNewProduct(multipartFiles, multipartVideo, productShopOwnerDto);

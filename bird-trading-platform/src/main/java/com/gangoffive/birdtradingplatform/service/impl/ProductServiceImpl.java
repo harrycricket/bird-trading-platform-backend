@@ -444,11 +444,11 @@ public class ProductServiceImpl implements ProductService {
         if (account.get().getRole() == UserRole.SHOPOWNER) {
             if (multipartImgList != null && !multipartImgList.isEmpty()) {
                 for (MultipartFile multipartFile : multipartImgList) {
-                    String fileName = multipartFile.getOriginalFilename();
-                    int dotIndex = fileName.lastIndexOf(".");
-                    String newFilename = UUID.randomUUID().toString() + fileName.substring(dotIndex);
+                    String contentType = multipartFile.getContentType();
+                    log.info("contentType: {}", contentType);
+                    String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
                     newFilename = "image/" + newFilename;
-                    log.info("filename: {}", newFilename);
+                    log.info("newFilename: {}", newFilename);
                     urlImgList.add(originUrl + newFilename);
                     try {
                         S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
@@ -463,10 +463,10 @@ public class ProductServiceImpl implements ProductService {
             }
 
             if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                String fileName = multipartVideo.getOriginalFilename();
-                int dotIndex = fileName.lastIndexOf(".");
-                String newFilename = UUID.randomUUID() + fileName.substring(dotIndex);
+                String contentType = multipartVideo.getContentType();
+                String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
                 newFilename = "video/" + newFilename;
+                log.info("FileName video: {}", newFilename);
                 urlVideo = originUrl + newFilename;
                 try {
                     S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
