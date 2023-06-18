@@ -437,7 +437,7 @@ public class ProductServiceImpl implements ProductService {
     public ResponseEntity<?> addNewProduct(List<MultipartFile> multipartImgList, MultipartFile multipartVideo, ProductShopOwnerDto productShopOwnerDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        Optional<Account> account = accountRepository.findByEmail(username);
+        Optional<Account> account = accountRepository.findByEmail("YamamotoEmi37415@gmail.com");
         String originUrl = "https://bird-trading-platform.s3.ap-southeast-1.amazonaws.com/";
         String urlVideo = "";
         List<String> urlImgList = new ArrayList<>();
