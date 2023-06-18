@@ -482,6 +482,7 @@ public class ProductServiceImpl implements ProductService {
             String imgUrl = urlImgList.stream()
                     .collect(Collectors.joining(","));
 
+            log.info("productShopOwnerDto.toString() {}", productShopOwnerDto.toString());
             if (productShopOwnerDto.getCategoryId() == 1) {
                 Bird bird = new Bird();
                 bird.setName(productShopOwnerDto.getName());
@@ -495,17 +496,20 @@ public class ProductServiceImpl implements ProductService {
                 bird.setGender(productShopOwnerDto.getFeature().getGender());
                 bird.setColor(productShopOwnerDto.getFeature().getColor());
                 bird.setShopOwner(account.get().getShopOwner());
-                List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
-                promotionShops.stream().forEach(promotionShop -> {
-                    promotionShop.addProduct(bird);
-                    promotionShopRepository.save(promotionShop);
-                });
-
-                List<Tag> tagPresentInList = tagRepository.findByIdIn(productShopOwnerDto.getTagId());
-                tagPresentInList.stream().forEach(tag -> {
-                    tag.addBirds(bird);
-                    tagRepository.save(tag);
-                });
+                if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
+                    List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
+                    promotionShops.stream().forEach(promotionShop -> {
+                        promotionShop.addProduct(bird);
+                        promotionShopRepository.save(promotionShop);
+                    });
+                }
+                if (productShopOwnerDto.getTagId() != null && !productShopOwnerDto.getTagId().isEmpty()) {
+                    List<Tag> tagPresentInList = tagRepository.findByIdIn(productShopOwnerDto.getTagId());
+                    tagPresentInList.stream().forEach(tag -> {
+                        tag.addBirds(bird);
+                        tagRepository.save(tag);
+                    });
+                }
 //                List<String> newTags = productShopOwnerDto.getNameTag().stream()
 //                        .filter(
 //                                tagName -> tagPresentInList.stream()
