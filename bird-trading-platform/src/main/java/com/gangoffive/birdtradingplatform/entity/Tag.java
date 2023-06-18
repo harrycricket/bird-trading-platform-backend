@@ -15,15 +15,16 @@ import java.util.List;
 public class Tag {
     @Id
     @Column(name = "tag_id")
-    @SequenceGenerator(
-            name = "tag_id_seq",
-            sequenceName = "tag_id_seq",
-            allocationSize = 1
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "tag_id_seq"
-    )
+//    @SequenceGenerator(
+//            name = "tag_id_seq",
+//            sequenceName = "tag_id_seq",
+//            allocationSize = 1
+//    )
+//    @GeneratedValue(
+//            strategy = GenerationType.SEQUENCE,
+//            generator = "tag_id_seq"
+//    )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false,

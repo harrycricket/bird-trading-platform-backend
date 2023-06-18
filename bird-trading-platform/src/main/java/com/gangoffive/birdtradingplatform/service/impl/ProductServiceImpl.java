@@ -491,9 +491,9 @@ public class ProductServiceImpl implements ProductService {
                 bird.setImgUrl(imgUrl);
                 bird.setVideoUrl(urlVideo);
                 bird.setTypeBird(typeBirdRepository.findById(productShopOwnerDto.getTypeId()).get());
-                bird.setAge(productShopOwnerDto.getAge());
-                bird.setGender(productShopOwnerDto.getGender());
-                bird.setColor(productShopOwnerDto.getColor());
+                bird.setAge(productShopOwnerDto.getFeature().getAge());
+                bird.setGender(productShopOwnerDto.getFeature().getGender());
+                bird.setColor(productShopOwnerDto.getFeature().getColor());
                 bird.setShopOwner(account.get().getShopOwner());
                 List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
                 promotionShops.stream().forEach(promotionShop -> {
@@ -501,25 +501,25 @@ public class ProductServiceImpl implements ProductService {
                     promotionShopRepository.save(promotionShop);
                 });
 
-                List<Tag> tagPresentInList = tagRepository.findByNameIn(productShopOwnerDto.getNameTag());
+                List<Tag> tagPresentInList = tagRepository.findByIdIn(productShopOwnerDto.getTagId());
                 tagPresentInList.stream().forEach(tag -> {
                     tag.addBirds(bird);
                     tagRepository.save(tag);
                 });
-                List<String> newTags = productShopOwnerDto.getNameTag().stream()
-                        .filter(
-                                tagName -> tagPresentInList.stream()
-                                        .noneMatch(
-                                                tag -> tag.getName().equalsIgnoreCase(tagName)
-                                        )
-                        )
-                        .collect(Collectors.toList());
-                newTags.stream().forEach(tagName -> {
-                    Tag tag = new Tag();
-                    tag.setName(tagName);
-                    tag.addBirds(bird);
-                    tagRepository.save(tag);
-                });
+//                List<String> newTags = productShopOwnerDto.getNameTag().stream()
+//                        .filter(
+//                                tagName -> tagPresentInList.stream()
+//                                        .noneMatch(
+//                                                tag -> tag.getName().equalsIgnoreCase(tagName)
+//                                        )
+//                        )
+//                        .collect(Collectors.toList());
+//                newTags.stream().forEach(tagName -> {
+//                    Tag tag = new Tag();
+//                    tag.setName(tagName);
+//                    tag.addBirds(bird);
+//                    tagRepository.save(tag);
+//                });
                 productRepository.save(bird);
             } else if (productShopOwnerDto.getCategoryId() == 2) {
                 Food food = new Food();
@@ -530,30 +530,15 @@ public class ProductServiceImpl implements ProductService {
                 food.setImgUrl(imgUrl);
                 food.setVideoUrl(urlVideo);
                 food.setTypeFood(typeFoodRepository.findById(productShopOwnerDto.getTypeId()).get());
-                food.setWeight(productShopOwnerDto.getWeight());
+                food.setWeight(productShopOwnerDto.getFeature().getWeight());
                 food.setShopOwner(account.get().getShopOwner());
                 List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
                 promotionShops.stream().forEach(promotionShop -> {
                     promotionShop.addProduct(food);
                     promotionShopRepository.save(promotionShop);
                 });
-
-                List<Tag> tagPresentInList = tagRepository.findByNameIn(productShopOwnerDto.getNameTag());
+                List<Tag> tagPresentInList = tagRepository.findByIdIn(productShopOwnerDto.getTagId());
                 tagPresentInList.stream().forEach(tag -> {
-                    tag.addFoods(food);
-                    tagRepository.save(tag);
-                });
-                List<String> newTags = productShopOwnerDto.getNameTag().stream()
-                        .filter(
-                                tagName -> tagPresentInList.stream()
-                                        .noneMatch(
-                                                tag -> tag.getName().equalsIgnoreCase(tagName)
-                                        )
-                        )
-                        .collect(Collectors.toList());
-                newTags.stream().forEach(tagName -> {
-                    Tag tag = new Tag();
-                    tag.setName(tagName);
                     tag.addFoods(food);
                     tagRepository.save(tag);
                 });
@@ -567,30 +552,15 @@ public class ProductServiceImpl implements ProductService {
                 accessory.setImgUrl(imgUrl);
                 accessory.setVideoUrl(urlVideo);
                 accessory.setTypeAccessory(typeAccessoryRepository.findById(productShopOwnerDto.getTypeId()).get());
-                accessory.setOrigin(productShopOwnerDto.getOrigin());
+                accessory.setOrigin(productShopOwnerDto.getFeature().getOrigin());
                 accessory.setShopOwner(account.get().getShopOwner());
                 List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
                 promotionShops.stream().forEach(promotionShop -> {
                     promotionShop.addProduct(accessory);
                     promotionShopRepository.save(promotionShop);
                 });
-
-                List<Tag> tagPresentInList = tagRepository.findByNameIn(productShopOwnerDto.getNameTag());
+                List<Tag> tagPresentInList = tagRepository.findByIdIn(productShopOwnerDto.getTagId());
                 tagPresentInList.stream().forEach(tag -> {
-                    tag.addAccessories(accessory);
-                    tagRepository.save(tag);
-                });
-                List<String> newTags = productShopOwnerDto.getNameTag().stream()
-                        .filter(
-                                tagName -> tagPresentInList.stream()
-                                        .noneMatch(
-                                                tag -> tag.getName().equalsIgnoreCase(tagName)
-                                        )
-                        )
-                        .collect(Collectors.toList());
-                newTags.stream().forEach(tagName -> {
-                    Tag tag = new Tag();
-                    tag.setName(tagName);
                     tag.addAccessories(accessory);
                     tagRepository.save(tag);
                 });

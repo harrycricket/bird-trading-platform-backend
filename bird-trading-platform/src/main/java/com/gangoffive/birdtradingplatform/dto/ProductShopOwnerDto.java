@@ -13,15 +13,12 @@ import java.util.List;
 public class ProductShopOwnerDto {
     private String name;
     private double price;
-    private String description;
     private int quantity;
+    private String description;
     private List<Long> promotionShopId;
     private Long typeId;
-    private List<String> nameTag;
+
+    private List<Long> tagId;
     private Long categoryId;
-    private int age;
-    private Gender gender;
-    private String color;
-    private double weight;
-    private String origin;
+    private FeatureDto feature;
 }

@@ -15,15 +15,16 @@ import java.util.List;
 public class TypeFood {
     @Id
     @Column(name = "type_f_id")
-    @SequenceGenerator(
-            name = "type_food_id_seq",
-            sequenceName = "type_food_id_seq",
-            allocationSize = 1
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "type_food_id_seq"
-    )
+//    @SequenceGenerator(
+//            name = "type_food_id_seq",
+//            sequenceName = "type_food_id_seq",
+//            allocationSize = 1
+//    )
+//    @GeneratedValue(
+//            strategy = GenerationType.SEQUENCE,
+//            generator = "type_food_id_seq"
+//    )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
