@@ -48,24 +48,24 @@ spring:
   ##########################
   # Kafka
   ##########################
-  kafka:
-    retry:
-      topic:
-        attempts: 1
-    bootstrap-servers: ${env.PORT}:9092
-    consumer:
-      group-id: bird-trading-platform
-      auto-offset-reset: earliest
-      enable-auto-commit: false
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    producer:
-      acks: all
-      retries: 0
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-    listener:
-      log-container-config: off
+#  kafka:
+#    retry:
+#      topic:
+#        attempts: 1
+#    bootstrap-servers: ${env.PORT}:9092
+#    consumer:
+#      group-id: bird-trading-platform
+#      auto-offset-reset: earliest
+#      enable-auto-commit: false
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#    producer:
+#      acks: all
+#      retries: 0
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+#    listener:
+#      log-container-config: off
 app:
   auth:
     secretKey: ${env.JWT_SECRETKEY}
