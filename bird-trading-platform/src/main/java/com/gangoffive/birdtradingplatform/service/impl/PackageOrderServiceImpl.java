@@ -455,7 +455,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     .method(PaymentMethod.PAYPAL)
                     .intent(PaypalPaymentIntent.SALE)
                     .description(description)
-                    .successUrl("https://thongtienthienphuot.shop/api/v1/package-order?status=success")
+                    .successUrl("http://localhost:3000/checkout?status=success")
                     .cancelUrl("http://localhost:3000/checkout")
                     .build();
             Payment payment = paypalService.createPayment(paymentDto);
