@@ -23,11 +23,11 @@ public class Runner implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        List<Product> lists = productRepository.findAll();
-        log.info("list {}", lists.size());
-        for(Product pro : lists) {
-            productSummaryService.apply(pro);
-        }
+//        List<Product> lists = productRepository.findAll();
+//        log.info("list {}", lists.size());
+//        for(Product pro : lists) {
+//            productSummaryService.apply(pro);
+//        }
 
         log.info("done");
     }

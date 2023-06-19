@@ -1,6 +1,6 @@
 package com.gangoffive.birdtradingplatform.controller;
 
-import com.gangoffive.birdtradingplatform.dto.PieChartDto;
+import com.gangoffive.birdtradingplatform.dto.DataBumpChartDto;
 import com.gangoffive.birdtradingplatform.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ import java.util.List;
 public class AdminController {
     private final AdminService adminService;
     @GetMapping
-    public void getAllOrder() {
-        adminService.dataBumpChartRankOfShop();
+    public List<DataBumpChartDto> getAllOrder() {
+        return adminService.dataBumpChartRankOfShop();
     }
 }

@@ -8,6 +8,7 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 @ToString
 public class DataBumpChartDto {
     private String id;

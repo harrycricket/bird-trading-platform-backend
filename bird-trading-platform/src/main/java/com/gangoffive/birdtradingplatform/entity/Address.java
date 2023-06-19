@@ -23,6 +23,9 @@ public class Address {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "address_id", updatable = false)
 	private Long id;
+
+	@Column(name = "full_name")
+	private String fullName;
 	
 	@Column(name = "street"
 			,nullable = false
