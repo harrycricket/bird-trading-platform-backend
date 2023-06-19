@@ -9,7 +9,7 @@ import java.util.Map;
 @Getter
 @Setter
 @ToString
-public class PackageOrderDto {
+public class PackageOrderRequestDto {
     private UserOrderDto userOrderDto;
     private TransactionDto transactionDto;
     private Map<Long, Integer> productOrder;

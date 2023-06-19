@@ -1,10 +1,10 @@
 name: Deploy to ECR
 on:
-   #push:
-   #   branches:
-   #      - "main"
-   #      - "release/**"
-   #      - "!dev/**"
+   push:
+     branches:
+        - "chat-noti"
+        - "release/**"
+        - "!dev/**"
    pull_request:
        types: [closed]
        branches:
@@ -13,7 +13,7 @@ on:
           - "dev/**"
    workflow_dispatch:
 jobs:
-   say-hello:
+   update_images:
       name: Build image
       runs-on: ubuntu-latest
       permissions:
@@ -68,3 +68,35 @@ jobs:
             run: |
               docker build -t $REGISTRY/$REPOSITORY:latest .
               docker push $REGISTRY/$REPOSITORY:latest
+   run_ansible:
+      needs: update_images
+      name: update-docker-container
+      runs-on: ubuntu-latest
+      permissions:
+         id-token: write
+         contents: write
+      defaults:
+         run:
+            working-directory: ./ansible/
+      steps:
+         -  name: Checkout repo
+            uses: actions/checkout@v3
+         -  name: 'Create env file'
+            run: |
+               echo "${{ secrets.INVENTORY }}" > ./inventory
+               echo "${{ secrets.AWS_CREDENTIAL }}" > ./aws-credentials.j2
+               echo "${{ secrets.PEM }}" > ./ansible-hosts-v2.pem
+               echo $(pwd)
+               echo $(ls -la "./")
+               echo $( "./src/main/resources/.env")
+
+         -  name: 'Create env file'
+            run: |
+               sudo chmod 400 ./ansible-hosts-v2.pem
+         -  name: Run playbook
+            uses: dawidd6/action-ansible-playbook@v2
+            with:
+               playbook: update_docker.yml
+               directory: ./ansible/
+               options: |
+                  --inventory inventory

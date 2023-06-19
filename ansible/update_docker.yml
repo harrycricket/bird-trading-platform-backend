@@ -1,0 +1,39 @@
+- name: Update Docker Container
+  hosts: all
+  become: yes
+  become_user: root
+  become_method: sudo
+
+  tasks:
+    - name: Set up Docker ECR login
+      become: true
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
+      shell: |
+        aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin "{{ account_id }}".dkr.ecr.ap-southeast-1.amazonaws.com
+
+    
+
+    - name: Stop old container
+      become: true
+      command: docker stop bs2nd
+      ignore_errors: true
+
+    - name: Remove old container
+      become: true
+      command: docker rm bs2nd
+      ignore_errors: true
+
+    - name: Remove old images
+      become: true
+      command: sudo docker rmi -f "{{ docker_images }}"
+      ignore_errors: true
+
+    - name: Pull latest Docker image
+      become: true
+      command: sudo docker pull "{{ docker_images }}"
+
+    - name: Run new container
+      become: true
+      command: docker run -d -p 80:8080 --name bs2nd "{{ docker_images }}"

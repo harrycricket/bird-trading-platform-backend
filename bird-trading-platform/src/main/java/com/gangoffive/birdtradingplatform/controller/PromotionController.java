@@ -16,4 +16,5 @@ public class PromotionController {
     public ResponseEntity<?> getAllPromotion() {
         return promotionService.getAllPromotion();
     }
+
 }

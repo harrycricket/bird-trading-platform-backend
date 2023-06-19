@@ -1,5 +1,8 @@
 spring:
   datasource:
+#    url: ${env.DATABASE_LOCAL_URL}
+#    username: ${env.DATABASE_LOCAL_USERNAME}
+#    password: ${env.DATABASE_LOCAL_PASSWORD}
     url: ${env.DATABASE_URL}
     username: ${env.DATABASE_USERNAME}
     password: ${env.DATABASE_PASSWORD}
@@ -9,13 +12,13 @@ spring:
     generate-ddl: true
     hibernate:
       ddl-auto: update
-    #    show-sql: true
+      show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
         jdbc:
-          time_zone: UTC
+          time_zone: Asia/Bangkok
   security:
     oauth2:
       client:
@@ -42,6 +45,27 @@ spring:
     username: ${env.EMAIL_USERNAME}
     password: ${env.EMAIL_PASSWORD}
     port: '587'
+  ##########################
+  # Kafka
+  ##########################
+  kafka:
+    retry:
+      topic:
+        attempts: 1
+    bootstrap-servers: ${env.PORT}:9092
+    consumer:
+      group-id: bird-trading-platform
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      acks: all
+      retries: 0
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    listener:
+      log-container-config: off
 app:
   auth:
     secretKey: ${env.JWT_SECRETKEY}
@@ -49,7 +73,8 @@ app:
 #    86400000
     refreshTokenExpiration: 604800000 # 7 days
   cors:
-    allowedOrigins: "http://localhost:3000,https://birdstore2nd.vercel.app,https://www.birdland2nd.store"
+    allowedOrigins: "http://localhost:3000,https://birdstore2nd.vercel.app,https://www.birdland2nd.store,https://admin.birdland2nd.store/,http://localhost:3001"
+
     allowedMethods: "*"
     allowedHeaders: "*"
     exposedHeaders: "*"

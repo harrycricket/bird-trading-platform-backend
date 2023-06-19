@@ -24,7 +24,11 @@ public class PromotionServiceImpl implements PromotionService {
         List<Promotion> promotions = promotionRepository.findAll();
         List<PromotionDto> promotionDtos = promotions.stream()
                 .filter(promotion -> promotion.getEndDate().after(new Date()))
-                .map(promotion -> promotionMapper.toDto(promotion))
+                .map(promotion -> {
+                    PromotionDto promotionDto = promotionMapper.toDto(promotion);
+                    promotionDto.setEndDate(promotion.getEndDate().getTime());
+                    return promotionDto;
+                })
                 .collect(Collectors.toList());
         return ResponseEntity.ok(promotionDtos);
     }

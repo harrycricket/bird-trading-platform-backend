@@ -56,6 +56,7 @@ public class InfoServiceImpl implements InfoService {
                     .refreshToken(refreshToken)
                     .build();
             UserInfoDto userInfo = UserInfoDto.builder()
+                    .id(account.get().getId())
                     .email(account.get().getEmail())
                     .role(account.get().getRole())
                     .fullName(account.get().getFullName())

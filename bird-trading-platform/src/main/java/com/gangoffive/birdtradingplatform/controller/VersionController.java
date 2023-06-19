@@ -12,6 +12,6 @@ public class VersionController {
     public String getDateRelease() {
         String date = "06/06/2023 21h24";
         String version = "0.0.9 SNAPSHOT";
-        return date + " - version " + version + " - COPYRIGHT @c GANGOFFIVE - BS2ND";
+        return date + " - Version " + version + " - COPYRIGHT © GANG_OF_FIVE - BS2ND";
     }
 }
