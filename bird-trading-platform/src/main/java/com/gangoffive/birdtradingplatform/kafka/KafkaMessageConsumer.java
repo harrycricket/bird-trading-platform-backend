@@ -43,7 +43,7 @@ public class KafkaMessageConsumer {
         MessageDto messDto = JsonUtil.INSTANCE.getObject(message, MessageDto.class);
         try {
             this.sendMessage(messDto);
-            
+
         }catch (Exception e) {
             log.info(e.getMessage());
         }
