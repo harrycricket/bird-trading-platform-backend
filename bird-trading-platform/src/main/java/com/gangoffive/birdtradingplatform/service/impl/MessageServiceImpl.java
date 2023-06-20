@@ -53,11 +53,14 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public boolean maskAllSeen(long senderId, long channelId) {
+        log.info(String.format("Here is sender id %d channelid %d", senderId, channelId));
         try{
             messageRepository.updateStatusToSeen(channelId, senderId);
         }catch (Exception e) {
-            throw new CustomRuntimeException("400", "Something went wrong");
+//            throw new CustomRuntimeException("400", "Something went wrong");
+            e.printStackTrace();
         }
+
         return false;
     }
 

@@ -31,16 +31,9 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             "AND f.type_id IN (?2) " +
             "AND ps.star >= ?3 " +
             "AND f.price >= ?4 " +
-            "AND f.price <= ?5",
-            countQuery = "SELECT COUNT(*) " +
-                    "FROM `bird-trading-platform`.tbl_food f " +
-                    "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
-                    "ON f.product_id = ps.product_id " +
-                    "WHERE f.name LIKE %?1% " +
-                    "AND f.type_id IN (?2) " +
-                    "AND ps.star >= ?3 " +
-                    "AND f.price >= ?4 " +
-                    "AND f.price <= ?5",
+            "AND f.price <= ?5 " +
+            "AND f.is_deleted = 0 " +
+            "AND f.quantity > 0 ",
             nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
                         double lowestPrice, double hightPrice, Pageable pageable);
