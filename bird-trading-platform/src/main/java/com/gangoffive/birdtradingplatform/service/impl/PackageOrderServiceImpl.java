@@ -75,7 +75,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
             if (paymentMethod.equals(PaymentMethod.PAYPAL)) {
                 return handleInitialPayment(packageOrderRequestDto);
             } else if (paymentMethod.equals(PaymentMethod.DELIVERY)) {
-                saveAll(packageOrderRequestDto);
+                saveAll(packageOrderRequestDto, "");
                 // Capture the end time
                 Instant endTime = Instant.now();
                 // Calculate the duration
@@ -402,11 +402,14 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     }
 
     @Transactional
-    public void saveAll(PackageOrderRequestDto packageOrderRequestDto) {
+    public void saveAll(PackageOrderRequestDto packageOrderRequestDto, String paymentId) {
         Transaction transaction = Transaction.builder()
                 .amount(packageOrderRequestDto.getTransactionDto().getTotalPrice())
                 .status(TransactionStatus.PROCESSING)
                 .build();
+        if (packageOrderRequestDto.getTransactionDto().getPaymentMethod().equals(PaymentMethod.PAYPAL)) {
+            transaction.setPaypalId(paymentId);
+        }
         if (packageOrderRequestDto.getTransactionDto().getPaymentMethod().equals(PaymentMethod.PAYPAL)) {
             transaction.setStatus(TransactionStatus.SUCCESS);
         }
@@ -483,7 +486,13 @@ public class PackageOrderServiceImpl implements PackageOrderService {
             log.info("payerId id{}", payerId);
             log.info("paymentId id{}", paymentId);
             if (payment.getState().equals("approved")) {
-                saveAll(packageOrderRequestDto);
+                if (transactionRepository.findByPaypalId(paymentId).isPresent()) {
+                    ErrorResponse error = new ErrorResponse(String.valueOf(HttpStatus.EXPECTATION_FAILED.value()),
+                            "paymentId " + paymentId + " already exist.");
+                    return new ResponseEntity<>(error, HttpStatus.EXPECTATION_FAILED);
+                } else {
+                    saveAll(packageOrderRequestDto, paymentId);
+                }
                 SuccessResponse successResponse = SuccessResponse.builder()
                         .successCode(String.valueOf(HttpStatus.OK.value()))
                         .successMessage("Payment with paypal successful.")

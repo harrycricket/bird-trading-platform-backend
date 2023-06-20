@@ -70,6 +70,7 @@ public class ShopOwner {
     @OneToMany(mappedBy = "shopOwner")
     private List<Product> products;
 
+
 	@OneToMany(mappedBy = "shopOwner")
 	private List<PromotionShop> promotionShopList;
 
@@ -124,5 +125,4 @@ public class ShopOwner {
 	public void setPromotionShopList(PromotionShop promotionShopList) {
 		this.promotionShopList.add(promotionShopList);
 	}
-
 }

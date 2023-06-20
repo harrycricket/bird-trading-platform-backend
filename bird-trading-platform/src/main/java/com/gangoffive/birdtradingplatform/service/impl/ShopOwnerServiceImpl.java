@@ -1,38 +1,21 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.gangoffive.birdtradingplatform.dto.ShopOwnerDto;
-import com.gangoffive.birdtradingplatform.entity.Account;
-import com.gangoffive.birdtradingplatform.entity.ShopOwner;
-import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
-import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
-import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
-import com.gangoffive.birdtradingplatform.service.ChannelService;
-import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
-import com.gangoffive.birdtradingplatform.util.JsonUtil;
-import com.google.gson.*;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.ColorChart;
+import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
+import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderRepository;
+import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
+import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
+import com.google.gson.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,7 +25,10 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -50,10 +36,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class ShopOwnerServiceImpl implements ShopOwnerService {
-
     private final ShopOwnerRepository shopOwnerRepository;
     private final ShopOwnerMapper shopOwnerMapper;
     private final ChannelService channelService;
+    private final AccountRepository accountRepository;
+    private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
+    private final JwtService jwtService;
     @Override
     public List<String> listShopDto(List<Long> listShopId, long userId) {
         var listShop = shopOwnerRepository.findAllById(listShopId);
@@ -96,10 +85,6 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
     }
 
-    private final AccountRepository accountRepository;
-    private final OrderRepository orderRepository;
-    private final OrderDetailRepository orderDetailRepository;
-    private final JwtService jwtService;
     @Override
     public List<LineChartDto> getDataLineChart(String email, Date dateFrom) {
         Optional<Account> account = accountRepository.findByEmail(email);

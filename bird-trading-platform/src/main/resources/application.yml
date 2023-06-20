@@ -52,7 +52,7 @@ spring:
     retry:
       topic:
         attempts: 1
-    bootstrap-servers: PLAINTEXT://127.0.0.1:9092
+    bootstrap-servers: PLAINTEXT_INTERNAL://broker:29092
     consumer:
       group-id: bird-trading-platform
       auto-offset-reset: earliest
@@ -74,7 +74,6 @@ app:
     refreshTokenExpiration: 604800000 # 7 days
   cors:
     allowedOrigins: "http://localhost:3000,https://birdstore2nd.vercel.app,https://www.birdland2nd.store,https://admin.birdland2nd.store/,http://localhost:3001"
-
     allowedMethods: "*"
     allowedHeaders: "*"
     exposedHeaders: "*"

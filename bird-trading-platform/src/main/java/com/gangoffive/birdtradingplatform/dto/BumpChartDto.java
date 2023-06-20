@@ -6,8 +6,9 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 @ToString
 public class BumpChartDto {
     private String x;
-    private int y;
+    private Integer y;
 }
