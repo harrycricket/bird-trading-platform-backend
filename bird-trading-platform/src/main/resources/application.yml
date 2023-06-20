@@ -45,6 +45,27 @@ spring:
     username: ${env.EMAIL_USERNAME}
     password: ${env.EMAIL_PASSWORD}
     port: '587'
+  ##########################
+  # Kafka
+  ##########################
+  kafka:
+    retry:
+      topic:
+        attempts: 1
+    bootstrap-servers: ${env.PORT}:9092
+    consumer:
+      group-id: bird-trading-platform
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      acks: all
+      retries: 0
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    listener:
+      log-container-config: off
 app:
   auth:
     secretKey: ${env.JWT_SECRETKEY}
@@ -79,5 +100,5 @@ app:
     mode: sandbox
     id: ${env.PAYPAL_ID}
     secret: ${env.PAYPAL_SECRET}
-    successUrl: http://localhost:3000/checkout?status=success
-    cancelUrl: http://localhost:3000/checkout
+    successUrl: https://www.birdland2nd.store/checkout?status=success
+    cancelUrl: https://www.birdland2nd.store/checkout

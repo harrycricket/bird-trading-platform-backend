@@ -5,7 +5,10 @@ import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Address;
+import com.gangoffive.birdtradingplatform.entity.Channel;
+import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.enums.AccountStatus;
+import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.AddressRepository;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -90,5 +94,37 @@ public class AccountServiceImpl implements AccountService {
         ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.NOT_FOUND.toString())
                 .errorMessage("Not found token. Link not true").build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public long retrieveShopID(long accountId) {
+        var acc = accountRepository.findById(accountId);
+        if(acc.isPresent()) {
+            ShopOwner shopOwner = acc.get().getShopOwner();
+            if(shopOwner != null) {
+                return shopOwner.getId();
+            }else {
+                throw new CustomRuntimeException("400", String.format("Cannot found shop with account id: %d",accountId));
+            }
+        } else {
+            throw new CustomRuntimeException("400", String.format("Cannot found account with account id: %d",accountId));
+        }
+    }
+
+    @Override
+    @Transactional
+    public List<Long> getAllChanelByUserId(long userId) {
+        var acc = accountRepository.findById(userId);
+        if(acc.isPresent()) {
+            List<Channel> channels = acc.get().getChannels();
+            if( channels != null || channels.size() != 0) {
+                List<Long> listShopId = channels.stream().map(channel -> channel.getShopOwner().getId()).toList();
+                return listShopId;
+            } else {
+                throw new CustomRuntimeException("400", "Cannot find channel");
+            }
+        } else {
+            throw new CustomRuntimeException("400", String.format("Cannot find account with id %d", userId));
+        }
     }
 }

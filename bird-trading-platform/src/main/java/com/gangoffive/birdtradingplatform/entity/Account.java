@@ -110,10 +110,10 @@ public class Account {
 	private  List<VerifyToken> verifyTokens;
 
 	@OneToMany(mappedBy = "account")
-	private List<Message> messages;
+	private List<Notification> notifications;
 
 	@OneToMany(mappedBy = "account")
-	private List<Notification> notifications;
+	private List<Channel> channels;
 
 	public void setId(Long id) {
 		this.id = id;
@@ -177,10 +177,6 @@ public class Account {
 		this.verifyTokens.add(verifyToken);
 	}
 
-	public void addMessages(Message message) {
-		this.messages.add(message);
-	}
-
 	public void addNotifications(Notification notification) {
 		this.notifications.add(notification);
 	}
@@ -203,5 +199,13 @@ public class Account {
 
 	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
+	}
+
+	public List<Channel> getChannels() {
+		return channels;
+	}
+
+	public void setChannels(List<Channel> channels) {
+		this.channels = channels;
 	}
 }

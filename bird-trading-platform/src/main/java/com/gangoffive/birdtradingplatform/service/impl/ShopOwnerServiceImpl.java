@@ -1,15 +1,21 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.ColorChart;
+import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
+import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderRepository;
+import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
+import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
+import com.google.gson.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,17 +25,66 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ShopOwnerServiceImpl implements ShopOwnerService {
+    private final ShopOwnerRepository shopOwnerRepository;
+    private final ShopOwnerMapper shopOwnerMapper;
+    private final ChannelService channelService;
     private final AccountRepository accountRepository;
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final JwtService jwtService;
+    @Override
+    public List<String> listShopDto(List<Long> listShopId, long userId) {
+        var listShop = shopOwnerRepository.findAllById(listShopId);
+        if(listShop != null && !listShop.isEmpty()) {
+            return listShop.stream().map(shop -> this.shopOwnerToDtoWithUnread(shop, userId)).toList();
+        }
+        return null;
+    }
+
+    @Override
+    public long getAccountIdByShopid(long shopId) {
+        var shop = shopOwnerRepository.findById(shopId);
+        if(shop.isPresent()) {
+            Account acc = shop.get().getAccount();
+            if (acc != null) {
+                return acc.getId();
+            }
+        }else {
+            throw new CustomRuntimeException("400", String.format("Cannot found shop with id : %d", shopId));
+        }
+        return 0;
+    }
+
+    private String shopOwnerToDtoWithUnread (ShopOwner shopOwner, long userId) {
+        ShopOwnerDto shopOwnerDto = shopOwnerMapper.modelToDto(shopOwner);
+//        String shopDtoJson = JsonUtil.INSTANCE.getJsonString(shopOwner);
+        Gson gson = new GsonBuilder()
+                .disableHtmlEscaping()
+                .create();
+        String shopDtoJson = gson.toJson(shopOwnerDto, ShopOwnerDto.class);
+
+        JsonParser parser = new JsonParser();
+
+        JsonElement shopElement = parser.parse(shopDtoJson);
+        JsonObject jsonObject = shopElement.getAsJsonObject();
+        //get out channel id
+        int unread = channelService.getMessageUnreadByUserAndShop(userId, shopOwner.getId());
+        jsonObject.addProperty("unread", unread);
+        return jsonObject.toString();
+
+    }
+
     @Override
     public List<LineChartDto> getDataLineChart(String email, Date dateFrom) {
         Optional<Account> account = accountRepository.findByEmail(email);
