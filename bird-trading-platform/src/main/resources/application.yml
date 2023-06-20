@@ -102,3 +102,5 @@ app:
     secret: ${env.PAYPAL_SECRET}
     successUrl: https://www.birdland2nd.store/checkout?status=success
     cancelUrl: https://www.birdland2nd.store/checkout
+  S3:
+    url: https://bird-trading-platform.s3.ap-southeast-1.amazonaws.com/

@@ -5,6 +5,7 @@ import com.gangoffive.birdtradingplatform.api.response.ApiResponse;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.Category;
@@ -48,7 +49,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
-    private final ReviewRepository reviewRepository;
     private final BirdMapper birdMapper;
     private final FoodMapper foodMapper;
     private final AccessoryMapper accessoryMapper;
@@ -64,6 +64,7 @@ public class ProductServiceImpl implements ProductService {
     private final AccountRepository accountRepository;
     private final PromotionShopRepository promotionShopRepository;
     private final TagRepository tagRepository;
+    private final AppProperties appProperties;
 
     @Override
     public List<ProductDto> retrieveAllProduct() {
@@ -438,7 +439,7 @@ public class ProductServiceImpl implements ProductService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail("YamamotoEmi37415@gmail.com");
-        String originUrl = "https://bird-trading-platform.s3.ap-southeast-1.amazonaws.com/";
+        String originUrl = appProperties.getS3().getUrl();
         String urlVideo = "";
         List<String> urlImgList = new ArrayList<>();
         if (account.get().getRole() == UserRole.SHOPOWNER) {
