@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@Where(clause = "is_deleted = false")
+@Where(clause = "is_deleted = false AND quantity > 0")
 //@EntityListeners(ProductEntityListener.class)
 public abstract class Product {
     @Id

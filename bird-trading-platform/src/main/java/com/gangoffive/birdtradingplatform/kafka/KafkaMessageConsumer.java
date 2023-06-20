@@ -38,7 +38,7 @@ public class KafkaMessageConsumer {
     private final AccountService accountService;
     private final ShopOwnerService shopOwnerService;
 
-    @KafkaListener(topics = KafkaConstant.KAFKA_PRIVATE_CHAT, groupId = KafkaConstant.KAFKA_GROUP_ID)
+//    @KafkaListener(topics = KafkaConstant.KAFKA_PRIVATE_CHAT, groupId = KafkaConstant.KAFKA_GROUP_ID)
     public void consumeMessagePrivate(String message) {
         MessageDto messDto = JsonUtil.INSTANCE.getObject(message, MessageDto.class);
         try {

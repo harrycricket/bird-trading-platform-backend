@@ -90,10 +90,7 @@ public class Account {
 	//one account may have one shop
 	@OneToOne(mappedBy = "account")
 	private ShopOwner shopOwner;
-	
-	//identify account of shop staff	
-	@OneToOne(mappedBy = "account")
-	private ShopStaff shopStaff;
+
 	
 	@OneToMany(mappedBy = "account")
 	private List<PackageOrder> packageOrders;
