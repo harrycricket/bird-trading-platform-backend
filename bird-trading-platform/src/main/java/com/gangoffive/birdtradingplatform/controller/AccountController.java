@@ -22,7 +22,7 @@ public class AccountController {
 
     @PutMapping("/users/update-profile")
     public ResponseEntity<?> updateProfile(
-            @RequestParam("image") MultipartFile multipartImage,
+            @RequestParam(name = "image", required = false) MultipartFile multipartImage,
             @RequestPart(name = "data") AccountUpdateDto accountUpdateDto) {
         return accountService.updateAccount(accountUpdateDto, multipartImage);
     }
