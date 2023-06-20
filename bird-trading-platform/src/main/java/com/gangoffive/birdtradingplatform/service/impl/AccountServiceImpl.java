@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ApiResponse;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Address;
@@ -14,17 +15,20 @@ import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.AddressRepository;
 import com.gangoffive.birdtradingplatform.repository.VerifyTokenRepository;
 import com.gangoffive.birdtradingplatform.service.AccountService;
+import com.gangoffive.birdtradingplatform.util.S3Utils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -35,9 +39,26 @@ public class AccountServiceImpl implements AccountService {
     private final AccountMapper accountMapper;
     private final AddressRepository addressRepository;
     private final VerifyTokenRepository verifyTokenRepository;
+    private final S3Utils s3Utils;
 
     @Override
-    public Account updateAccount(AccountUpdateDto accountUpdateDto) {
+    public ResponseEntity<?> updateAccount(AccountUpdateDto accountUpdateDto, MultipartFile multipartImage) {
+        if (multipartImage != null && !multipartImage.isEmpty()) {
+            String contentType = multipartImage.getContentType();
+            log.info("contentType: {}", contentType);
+            String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
+            newFilename = "image/" + newFilename;
+            log.info("newFilename update account: {}", newFilename);
+            try {
+                S3Utils.uploadFile(newFilename, multipartImage.getInputStream());
+            } catch (Exception ex) {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .errorMessage("Upload file fail")
+                        .build();
+                new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+        }
 //        log.info("acc {}", accountUpdateDto.toString());
         Optional<Account> editAccount = accountRepository.findByEmail(accountUpdateDto.getEmail());
         editAccount.get().setFullName(accountUpdateDto.getFullName());
@@ -60,7 +81,12 @@ public class AccountServiceImpl implements AccountService {
             addressUpdate.setCity(accountUpdateDto.getCity());
             addressRepository.save(addressUpdate);
         }
-        return accountRepository.save(editAccount.get());
+        accountRepository.save(editAccount.get());
+        SuccessResponse successResponse = SuccessResponse.builder()
+                .successCode(String.valueOf(HttpStatus.OK.value()))
+                .successMessage("Update profile successfully.")
+                .build();
+        return new ResponseEntity<>(successResponse, HttpStatus.OK);
     }
 
     @Override
@@ -99,15 +125,15 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public long retrieveShopID(long accountId) {
         var acc = accountRepository.findById(accountId);
-        if(acc.isPresent()) {
+        if (acc.isPresent()) {
             ShopOwner shopOwner = acc.get().getShopOwner();
-            if(shopOwner != null) {
+            if (shopOwner != null) {
                 return shopOwner.getId();
-            }else {
-                throw new CustomRuntimeException("400", String.format("Cannot found shop with account id: %d",accountId));
+            } else {
+                throw new CustomRuntimeException("400", String.format("Cannot found shop with account id: %d", accountId));
             }
         } else {
-            throw new CustomRuntimeException("400", String.format("Cannot found account with account id: %d",accountId));
+            throw new CustomRuntimeException("400", String.format("Cannot found account with account id: %d", accountId));
         }
     }
 
@@ -115,9 +141,9 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public List<Long> getAllChanelByUserId(long userId) {
         var acc = accountRepository.findById(userId);
-        if(acc.isPresent()) {
+        if (acc.isPresent()) {
             List<Channel> channels = acc.get().getChannels();
-            if( channels != null || channels.size() != 0) {
+            if (channels != null || channels.size() != 0) {
                 List<Long> listShopId = channels.stream().map(channel -> channel.getShopOwner().getId()).toList();
                 return listShopId;
             } else {
