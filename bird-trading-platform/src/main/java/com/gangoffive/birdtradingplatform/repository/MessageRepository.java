@@ -20,8 +20,10 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
                            @Param("userId") long userId);
 
     Page<Message> findByChannel_Id(long id, Pageable pageable);
-//    @Modifying
-//    @Query(value = "UPDATE Message m SET m.status = 'SEEN' WHERE m.userId <> :userId " +
-//            "AND m.channelId = :channelId AND m.status IN :statusList")
-//    void updateStatusToSeen(Long userId, Long channelId, List<String> statusList);
+    @Modifying
+    @Query(value = "UPDATE `bird-trading-platform`.tbl_message\n" +
+            "SET status = \"SEEN\"\n" +
+            "WHERE channel_id = :channelId and sender_id <> :userId and status in ('SENT')", nativeQuery = true)
+    void updateStatusToSeen(@Param("channelId") Long channelId,
+                                    @Param("userId") long userId);
 }

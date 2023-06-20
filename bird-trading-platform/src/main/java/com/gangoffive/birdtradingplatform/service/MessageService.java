@@ -8,5 +8,5 @@ public interface MessageService {
 
     ResponseEntity<?> getListMessageByChannelId (long channelId, int pageNumber, long id);
 
-    boolean maskAllRead(long senderId, long shopID);
+    boolean maskAllSeen(long senderId, long channelId);
 }
