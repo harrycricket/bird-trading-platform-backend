@@ -52,7 +52,7 @@ spring:
     retry:
       topic:
         attempts: 1
-    bootstrap-servers: PLAINTEXT_INTERNAL://broker:29092
+    bootstrap-servers: ${env.PORT}:9092
     consumer:
       group-id: bird-trading-platform
       auto-offset-reset: earliest
