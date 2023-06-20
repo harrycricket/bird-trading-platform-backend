@@ -300,22 +300,19 @@ public class ProductServiceImpl implements ProductService {
             filterDto.setStar(0.0);
         if (filterDto.getLowestPrice() == 0.0)
             filterDto.setLowestPrice(-1);
-        PageRequest pageRequest;
+        Pageable pageRequest;
         if (filterDto.getSortPrice().equals("Increase")){
-            pageRequest= PageRequest.of(filterDto.getPageNumber(),PagingAndSorting.DEFAULT_PAGE_SIZE,
+            pageRequest= PageRequest.of(filterDto.getPageNumber()-1,PagingAndSorting.DEFAULT_PAGE_SIZE,
                     Sort.by(Sort.Direction.ASC,"price"));
-            log.info("tang dan ne con di");
         }else {
-            pageRequest= PageRequest.of(filterDto.getPageNumber(),PagingAndSorting.DEFAULT_PAGE_SIZE,
+            pageRequest= PageRequest.of(filterDto.getPageNumber()-1,PagingAndSorting.DEFAULT_PAGE_SIZE,
                     Sort.by(Sort.Direction.DESC,"price"));
         }
-        log.info("filter dto {}", filterDto);
         Page<Long> pageAble = birdRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
                 filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(),pageRequest);
         PageNumberWraper<Long> productDtoPageNumberWraper = new PageNumberWraper<>();
         productDtoPageNumberWraper.setLists(pageAble.getContent());
         productDtoPageNumberWraper.setPageNumber(pageAble.getTotalPages());
-        log.info("list id after filter {}",pageAble.getContent() );
 //        productDtoPageNumberWraper.setLists(pageAble);
 //        productDtoPageNumberWraper.setPageNumber(2);
 //        log.info("list id after filter {}",pageAble);
@@ -334,10 +331,10 @@ public class ProductServiceImpl implements ProductService {
             filterDto.setLowestPrice(-1);
         PageRequest pageRequest;
         if (filterDto.getSortPrice().equals("Increase")){
-            pageRequest= PageRequest.of(filterDto.getPageNumber(),PagingAndSorting.DEFAULT_PAGE_SIZE,
+            pageRequest= PageRequest.of(filterDto.getPageNumber()-1,PagingAndSorting.DEFAULT_PAGE_SIZE,
                     Sort.by(Sort.Direction.ASC,"price"));
         }else {
-            pageRequest= PageRequest.of(filterDto.getPageNumber(),PagingAndSorting.DEFAULT_PAGE_SIZE,
+            pageRequest= PageRequest.of(filterDto.getPageNumber()-1,PagingAndSorting.DEFAULT_PAGE_SIZE,
                     Sort.by(Sort.Direction.DESC,"price"));
         }
 
@@ -362,19 +359,18 @@ public class ProductServiceImpl implements ProductService {
             filterDto.setLowestPrice(-1);
         PageRequest pageRequest;
         if (filterDto.getSortPrice().equals("Increase")){
-            pageRequest= PageRequest.of(filterDto.getPageNumber(),PagingAndSorting.DEFAULT_PAGE_SIZE,
+            pageRequest= PageRequest.of(filterDto.getPageNumber()-1,PagingAndSorting.DEFAULT_PAGE_SIZE,
                     Sort.by(Sort.Direction.ASC,"price"));
         }else {
-            pageRequest= PageRequest.of(filterDto.getPageNumber(),PagingAndSorting.DEFAULT_PAGE_SIZE,
+            pageRequest= PageRequest.of(filterDto.getPageNumber()-1,PagingAndSorting.DEFAULT_PAGE_SIZE,
                     Sort.by(Sort.Direction.DESC,"price"));
         }
-        log.info("filterDto {} ", filterDto);
         Page<Long> pageAble = accessoryRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
                 filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(),pageRequest);
         PageNumberWraper<Long> productDtoPageNumberWraper = new PageNumberWraper<>();
         productDtoPageNumberWraper.setLists(pageAble.getContent());
         productDtoPageNumberWraper.setPageNumber(pageAble.getTotalPages());
-        log.info("list id after filter {}",pageAble.getContent() );
+
         return productDtoPageNumberWraper;
     }
 
@@ -395,7 +391,6 @@ public class ProductServiceImpl implements ProductService {
         }
 
 
-        log.info("list id ne {}", filterProductIds);
         List<Product> listTemp = productRepository.findAllById(productDtoPageNumberWraper.getLists());
         List<ProductDto> listdtos = this.listModelToDto(listTemp);
         if (filterDto.getSortPrice().equals("Increase")){

@@ -51,7 +51,7 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
                     "AND b.price >= ?4 " +
                     "AND b.price <= ?5",
             nativeQuery = true)
-    Page<Long> idFilter(String name, Collection<Long> listType, double star,
+    Page<Long> idFilter(String name, List<Long> listType, double star,
                         double lowestPrice, double highestPrice, Pageable pageable);
 
 }
