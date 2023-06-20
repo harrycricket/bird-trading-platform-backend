@@ -3,14 +3,19 @@ package com.gangoffive.birdtradingplatform.service.impl;
 import com.gangoffive.birdtradingplatform.api.response.ApiResponse;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
+import com.gangoffive.birdtradingplatform.dto.AddressDto;
+import com.gangoffive.birdtradingplatform.dto.UserInfoDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Address;
 import com.gangoffive.birdtradingplatform.entity.Channel;
 import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.enums.AccountStatus;
+import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
+import com.gangoffive.birdtradingplatform.mapper.AddressMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.AddressRepository;
 import com.gangoffive.birdtradingplatform.repository.VerifyTokenRepository;
@@ -39,16 +44,20 @@ public class AccountServiceImpl implements AccountService {
     private final AccountMapper accountMapper;
     private final AddressRepository addressRepository;
     private final VerifyTokenRepository verifyTokenRepository;
-    private final S3Utils s3Utils;
+    private final AppProperties appProperties;
+    private final AddressMapper addressMapper;
 
     @Override
     public ResponseEntity<?> updateAccount(AccountUpdateDto accountUpdateDto, MultipartFile multipartImage) {
+        String originUrl = appProperties.getS3().getUrl();
+        String urlImage = "";
         if (multipartImage != null && !multipartImage.isEmpty()) {
             String contentType = multipartImage.getContentType();
             log.info("contentType: {}", contentType);
             String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
             newFilename = "image/" + newFilename;
             log.info("newFilename update account: {}", newFilename);
+            urlImage = originUrl + newFilename;
             try {
                 S3Utils.uploadFile(newFilename, multipartImage.getInputStream());
             } catch (Exception ex) {
@@ -59,10 +68,12 @@ public class AccountServiceImpl implements AccountService {
                 new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
             }
         }
-//        log.info("acc {}", accountUpdateDto.toString());
         Optional<Account> editAccount = accountRepository.findByEmail(accountUpdateDto.getEmail());
         editAccount.get().setFullName(accountUpdateDto.getFullName());
         editAccount.get().setPhoneNumber(accountUpdateDto.getPhoneNumber());
+        if (multipartImage != null && !multipartImage.isEmpty()) {
+            editAccount.get().setImgUrl(urlImage);
+        }
         if (editAccount.get().getAddress() == null) {
             Address address = new Address();
             address.setPhone(accountUpdateDto.getPhoneNumber());
@@ -81,12 +92,17 @@ public class AccountServiceImpl implements AccountService {
             addressUpdate.setCity(accountUpdateDto.getCity());
             addressRepository.save(addressUpdate);
         }
-        accountRepository.save(editAccount.get());
-        SuccessResponse successResponse = SuccessResponse.builder()
-                .successCode(String.valueOf(HttpStatus.OK.value()))
-                .successMessage("Update profile successfully.")
+        Account updateAccount = accountRepository.save(editAccount.get());
+        UserInfoDto userInfoDto = UserInfoDto.builder()
+                .id(updateAccount.getId())
+                .email(updateAccount.getEmail())
+                .role(updateAccount.getRole())
+                .fullName(updateAccount.getFullName())
+                .phoneNumber(updateAccount.getPhoneNumber())
+                .imgUrl(updateAccount.getImgUrl())
+                .address(addressMapper.toDto(updateAccount.getAddress()))
                 .build();
-        return new ResponseEntity<>(successResponse, HttpStatus.OK);
+        return ResponseEntity.ok().body(userInfoDto);
     }
 
     @Override
