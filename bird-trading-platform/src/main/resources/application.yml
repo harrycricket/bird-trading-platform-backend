@@ -100,5 +100,5 @@ app:
     mode: sandbox
     id: ${env.PAYPAL_ID}
     secret: ${env.PAYPAL_SECRET}
-    successUrl: https://www.birdland2nd.store/checkout?status=success
-    cancelUrl: https://www.birdland2nd.store/checkout
+    successUrl: http://localhost:3000/checkout?status=success
+    cancelUrl: http://localhost:3000/checkout
