@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.PackageOrderRequestDto;
 import com.gangoffive.birdtradingplatform.dto.PaymentDto;
 import com.gangoffive.birdtradingplatform.dto.UserOrderDto;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class PackageOrderServiceImpl implements PackageOrderService {
+    private final AppProperties appProperties;
     private final ProductRepository productRepository;
     private final PromotionRepository promotionRepository;
     private final OrderDetailRepository orderDetailRepository;
@@ -455,8 +457,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     .method(PaymentMethod.PAYPAL)
                     .intent(PaypalPaymentIntent.SALE)
                     .description(description)
-                    .successUrl("http://localhost:3000/checkout?status=success")
-                    .cancelUrl("http://localhost:3000/checkout")
+                    .successUrl(appProperties.getPaypal().getSuccessUrl())
+                    .cancelUrl(appProperties.getPaypal().getCancelUrl())
                     .build();
             Payment payment = paypalService.createPayment(paymentDto);
             for (Links link : payment.getLinks()) {

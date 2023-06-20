@@ -148,6 +148,10 @@ public class AppProperties {
         private String id;
         private String secret;
 
+        private String successUrl;
+
+        private String cancelUrl;
+
         public String getMode() {
             return mode;
         }
@@ -170,6 +174,22 @@ public class AppProperties {
 
         public void setSecret(String secret) {
             this.secret = secret;
+        }
+
+        public String getSuccessUrl() {
+            return successUrl;
+        }
+
+        public void setSuccessUrl(String successUrl) {
+            this.successUrl = successUrl;
+        }
+
+        public String getCancelUrl() {
+            return cancelUrl;
+        }
+
+        public void setCancelUrl(String cancelUrl) {
+            this.cancelUrl = cancelUrl;
         }
     }
 
