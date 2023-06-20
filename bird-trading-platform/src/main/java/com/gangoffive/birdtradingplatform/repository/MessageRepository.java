@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.entity.Message;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.parameters.P;
@@ -19,4 +20,8 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
                            @Param("userId") long userId);
 
     Page<Message> findByChannel_Id(long id, Pageable pageable);
+//    @Modifying
+//    @Query(value = "UPDATE Message m SET m.status = 'SEEN' WHERE m.userId <> :userId " +
+//            "AND m.channelId = :channelId AND m.status IN :statusList")
+//    void updateStatusToSeen(Long userId, Long channelId, List<String> statusList);
 }

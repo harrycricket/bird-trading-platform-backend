@@ -50,6 +50,11 @@ public class MessageServiceImpl implements MessageService {
         return null;
     }
 
+    @Override
+    public boolean maskAllRead(long senderId, long shopID) {
+        return false;
+    }
+
     private MessageDto messageToDto (Message message, long id) {
         //only other message change to seen
         if(message.getAccount().getId() != id) {
