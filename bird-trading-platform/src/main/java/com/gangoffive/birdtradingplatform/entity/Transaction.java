@@ -52,4 +52,7 @@ public class Transaction {
 
 	@OneToOne(mappedBy = "transaction")
 	private PackageOrder packageOrder;
+
+	@OneToOne(mappedBy = "transaction")
+	private Order order;
 }

@@ -26,43 +26,28 @@ public class Address {
 
 	@Column(name = "full_name")
 	private String fullName;
-	
-	@Column(name = "street"
-			,nullable = false
-	)
-	private String street;
-	
-	@Column(name = "ward"
-			,nullable = false
-	)
-	private String ward;
 
-	@Column(name = "district"
-			,nullable = false
-	)
-	private String district;
-	
-	@Column(name = "city"
-			,nullable = false
-	)
-	private String city;
-	
 	@Column(name = "phone"
 			,nullable = false
 	)
 	private String phone;
 	
+	@Column(name = "address"
+			,nullable = false
+	)
+	private String address;
+
 	@Column(name = "last_updated")
 	@UpdateTimestamp
 	private Date lastUpdated;
 	
 	@OneToOne(mappedBy = "address")
 	private Account account;
-	
-	@OneToMany(mappedBy = "shippingAddress")
-	private List<PackageOrder> packageOrders;
 
-	public void addPackageOrder(PackageOrder packageOrder) {
-		packageOrders.add(packageOrder);
-	}
+	@OneToOne(mappedBy = "address")
+	private ShopOwner shopOwner;
+	
+	@OneToOne(mappedBy = "shippingAddress")
+	private PackageOrder packageOrder;
+
 }

@@ -19,11 +19,11 @@ public class ShopStaff {
 	@Column(name = "staff_id")
 	private Long id;
 	
-	@OneToOne
-	@JoinColumn(name = "account_id"
-				,foreignKey = @ForeignKey(name = "FK_SHOP_STAFF_ACCOUNT")
-	)
-	private Account account;
+	@Column
+	private String username;
+
+	@Column
+	private String password;
 	
 	@ManyToOne
 	@JoinColumn(name = "shop_id"

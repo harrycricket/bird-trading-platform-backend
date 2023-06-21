@@ -2,10 +2,7 @@ package com.gangoffive.birdtradingplatform.entity;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
@@ -14,6 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Setter
 @ToString
 public class ShopOwner {
 	@Id
@@ -54,12 +52,12 @@ public class ShopOwner {
 				,foreignKey = @ForeignKey(name = "FK_SHOP_ACCOUNT")
 	)
 	private Account account;
-	
-//	one shop have many staff account
-//	@OneToMany(mappedBy = "shopOwnerId")
-//	private List<Account> shopStaffAccounts;
-	
-	//one shop may have MANY staff account
+
+	@OneToOne
+	@JoinColumn(name = "address_id",
+				foreignKey = @ForeignKey(name = "FK_SHOP_ADDRESS"))
+	private Address address;
+
 	@OneToMany(mappedBy = "shopOwner")
 	private List<ShopStaff> shopStaffAccount;
 	
