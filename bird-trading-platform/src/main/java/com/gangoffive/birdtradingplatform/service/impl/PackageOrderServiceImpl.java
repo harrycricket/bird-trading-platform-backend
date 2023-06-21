@@ -174,10 +174,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     public boolean checkUserOrderDto(UserOrderDto userOrderDto) {
         return !(userOrderDto.getName() == null || userOrderDto.getName().isEmpty())
                 && !(userOrderDto.getPhoneNumber() == null || userOrderDto.getPhoneNumber().isEmpty())
-                && !(userOrderDto.getStreet() == null || userOrderDto.getStreet().isEmpty())
-                && !(userOrderDto.getWard() == null || userOrderDto.getWard().isEmpty())
-                && !(userOrderDto.getDistrict() == null || userOrderDto.getDistrict().isEmpty())
-                && !(userOrderDto.getCity() == null || userOrderDto.getCity().isEmpty())
+                && !(userOrderDto.getAddress() == null || userOrderDto.getAddress().isEmpty())
                 && accountRepository.findByEmail(userOrderDto.getEmail()).isPresent();
     }
 
@@ -277,15 +274,12 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         log.info("shippingFee {}", shippingFee);
         Address address = new Address();
         address.setPhone(packageOrderRequestDto.getUserOrderDto().getPhoneNumber());
-        address.setStreet(packageOrderRequestDto.getUserOrderDto().getStreet());
-        address.setWard(packageOrderRequestDto.getUserOrderDto().getWard());
-        address.setDistrict(packageOrderRequestDto.getUserOrderDto().getDistrict());
-        address.setCity(packageOrderRequestDto.getUserOrderDto().getCity());
+        address.setFullName(packageOrderRequestDto.getUserOrderDto().getName());
+        address.setAddress(packageOrderRequestDto.getUserOrderDto().getAddress());
         addressRepository.save(address);
         PackageOrder packageOrder = PackageOrder.builder()
                 .totalPrice(packageOrderRequestDto.getTransactionDto().getTotalPrice())
                 .discount(discount)
-                .shippingFee(shippingFee)
                 .paymentMethod(packageOrderRequestDto.getTransactionDto().getPaymentMethod())
                 .account(account)
                 .transaction(transaction)
@@ -343,7 +337,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     .collect(Collectors.toList());
             Order order = Order.builder()
                     .packageOrder(packageOrder)
-                    .status(OrderStatus.PROCESSING)
+                    .status(OrderStatus.PENDING)
                     .shopOwner(shopOwner)
                     .promotionShops(promotionShops)
                     .totalPrice(totalPriceByShop.get(shopOwner.getId()))

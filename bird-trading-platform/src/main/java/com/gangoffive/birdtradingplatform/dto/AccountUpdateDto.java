@@ -11,8 +11,5 @@ public class AccountUpdateDto {
     private String email;
     private String fullName;
     private String phoneNumber;
-    private String street;
-    private String ward;
-    private String district;
-    private String city;
+    private String address;
 }

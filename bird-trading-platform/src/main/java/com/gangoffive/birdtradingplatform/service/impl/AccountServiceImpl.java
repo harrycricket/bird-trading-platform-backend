@@ -75,21 +75,20 @@ public class AccountServiceImpl implements AccountService {
             editAccount.get().setImgUrl(urlImage);
         }
         if (editAccount.get().getAddress() == null) {
+            log.info("address null");
+            log.info("editAccount.get().getAddress() == null {}", editAccount.get().getAddress().toString());
             Address address = new Address();
+            address.setFullName(accountUpdateDto.getFullName());
             address.setPhone(accountUpdateDto.getPhoneNumber());
-            address.setStreet(accountUpdateDto.getStreet());
-            address.setWard(accountUpdateDto.getWard());
-            address.setDistrict(accountUpdateDto.getDistrict());
-            address.setCity(accountUpdateDto.getCity());
+            address.setAddress(accountUpdateDto.getAddress());
             addressRepository.save(address);
             editAccount.get().setAddress(address);
         } else {
+            log.info("editAccount.get().getAddress() {}", editAccount.get().getAddress().getAccount().getId());
             Address addressUpdate = editAccount.get().getAddress();
+            addressUpdate.setFullName(accountUpdateDto.getFullName());
             addressUpdate.setPhone(accountUpdateDto.getPhoneNumber());
-            addressUpdate.setStreet(accountUpdateDto.getStreet());
-            addressUpdate.setWard(accountUpdateDto.getWard());
-            addressUpdate.setDistrict(accountUpdateDto.getDistrict());
-            addressUpdate.setCity(accountUpdateDto.getCity());
+            addressUpdate.setAddress(accountUpdateDto.getAddress());
             addressRepository.save(addressUpdate);
         }
         Account updateAccount = accountRepository.save(editAccount.get());

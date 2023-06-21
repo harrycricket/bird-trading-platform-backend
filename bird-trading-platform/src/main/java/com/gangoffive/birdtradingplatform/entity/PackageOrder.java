@@ -1,6 +1,5 @@
 package com.gangoffive.birdtradingplatform.entity;
 
-import com.gangoffive.birdtradingplatform.enums.PackageOrderStatus;
 import com.gangoffive.birdtradingplatform.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,13 +28,6 @@ public class PackageOrder {
     @Column(name = "discount")
     private double discount;
 
-    @Column(name = "shipping_fee")
-    private double shippingFee;
-
-    @Column(name = "status")
-    @Enumerated(value = EnumType.STRING)
-    private PackageOrderStatus status;
-
     @Column(name = "payment_method")
     @Enumerated(value = EnumType.STRING)
     private PaymentMethod paymentMethod;
@@ -60,7 +52,7 @@ public class PackageOrder {
     )
     private Transaction transaction;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "shipping_address_id"
             , foreignKey = @ForeignKey(name = "FK_PACKAGE_ORDER_SHIPPING")
     )

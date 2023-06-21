@@ -91,7 +91,6 @@ public class Account {
 	@OneToOne(mappedBy = "account")
 	private ShopOwner shopOwner;
 
-	
 	@OneToMany(mappedBy = "account")
 	private List<PackageOrder> packageOrders;
 	
