@@ -99,7 +99,7 @@ public class AccountServiceImpl implements AccountService {
                 .fullName(updateAccount.getFullName())
                 .phoneNumber(updateAccount.getPhoneNumber())
                 .imgUrl(updateAccount.getImgUrl())
-                .address(addressMapper.toDto(updateAccount.getAddress()))
+                .address(updateAccount.getAddress().getAddress())
                 .build();
         return ResponseEntity.ok().body(userInfoDto);
     }

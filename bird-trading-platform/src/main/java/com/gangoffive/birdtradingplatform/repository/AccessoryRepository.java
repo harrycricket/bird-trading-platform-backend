@@ -19,7 +19,7 @@ import java.util.Optional;
 public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
     Optional<List<Accessory>> findByNameLike(String name);
     @Query(value = "SELECT product_id FROM `bird-trading-platform`.tbl_accessory where type_id=?;", nativeQuery =true)
-    List<Long> findType(Long idtype);
+    List<Long> findType(Long typeId);
     @Query(value = "SELECT type_id FROM `bird-trading-platform`.tbl_accessory;", nativeQuery = true)
     List<Long> allIdType();
 
@@ -35,7 +35,7 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "And a.is_deleted = 0 " +
             "And a.quantity > 0 ", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
-                        double lowestPrice, double hightPrice, Pageable pageable);
+                        double lowestPrice, double highestPrice, Pageable pageable);
 
     Page<Accessory> findAllByQuantityGreaterThanAndDeletedFalse(int quantity, Pageable pageable);
 
