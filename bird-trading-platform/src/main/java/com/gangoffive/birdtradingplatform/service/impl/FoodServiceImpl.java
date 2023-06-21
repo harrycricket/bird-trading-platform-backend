@@ -45,7 +45,7 @@ public class FoodServiceImpl implements FoodService {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest page = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
-            Page<Food> pageAble = foodRepository.findAll(page);
+            Page<Food> pageAble = foodRepository.findAllByQuantityGreaterThanAndDeletedFalse(0, page);
             List<FoodDto> lists = pageAble.getContent().stream()
                     .map(food -> (FoodDto) productService.ProductToDto(food)).
                     collect(Collectors.toList());

@@ -37,4 +37,6 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
                         double lowestPrice, double hightPrice, Pageable pageable);
 
+    Page<Accessory> findAllByQuantityGreaterThanAndDeletedFalse(int quantity, Pageable pageable);
+
 }

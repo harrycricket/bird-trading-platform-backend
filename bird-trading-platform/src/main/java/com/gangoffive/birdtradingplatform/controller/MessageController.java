@@ -35,7 +35,7 @@ public class MessageController {
     private final AccountService accountService;
     private final MessageService messageService;
 
-//    @PostMapping("/users/message/send")
+    @PostMapping("/users/message/send")
     public ResponseEntity<?> sendMessage (@RequestBody MessageDto messageDto) {
         String message = JsonUtil.INSTANCE.getJsonString(messageDto);
         CompletableFuture<SendResult<String, String>> future =

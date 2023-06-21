@@ -14,5 +14,7 @@ public interface ProductSummaryRepository extends JpaRepository<ProductSummary,L
     Optional<ProductSummary> findByProductId(Long productId);
 
     Optional<List<ProductSummary>> findByCategory(String category, Pageable pageable);
+    Optional<List<ProductSummary>> findByCategoryAndProductQuantityGreaterThanAndDeletedFalse
+                    (String category, int quantity, Pageable pageable);
 
 }

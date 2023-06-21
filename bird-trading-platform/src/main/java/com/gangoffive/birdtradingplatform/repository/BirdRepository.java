@@ -47,4 +47,6 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
     Page<Long> idFilter(String name, List<Long> listType, double star,
                         double lowestPrice, double highestPrice, Pageable pageable);
 
+    Page<Bird> findAllByDeletedFalseAndQuantityGreaterThan(int quantity, Pageable pageable);
+
 }

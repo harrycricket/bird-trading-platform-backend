@@ -49,7 +49,7 @@ public class BirdServiceImpl implements BirdService {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
-            Page<Bird> pageAble = birdRepository.findAll(pageRequest);
+            Page<Bird> pageAble = birdRepository.findAllByDeletedFalseAndQuantityGreaterThan(0, pageRequest);
             List<BirdDto> birds = pageAble.getContent()
                     .stream()
                     .map(bird -> (BirdDto)productService.ProductToDto(bird))

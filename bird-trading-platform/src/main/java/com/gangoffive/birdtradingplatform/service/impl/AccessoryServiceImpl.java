@@ -47,7 +47,7 @@ public class AccessoryServiceImpl implements AccessoryService {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
-            Page<Accessory> pageAble = accessoryRepository.findAll(pageRequest);
+            Page<Accessory> pageAble = accessoryRepository.findAllByQuantityGreaterThanAndDeletedFalse(0 ,pageRequest);
             List<AccessoryDto> accessories = pageAble.getContent()
                     .stream()
                     .map(accessory -> (AccessoryDto) productService.ProductToDto(accessory))
