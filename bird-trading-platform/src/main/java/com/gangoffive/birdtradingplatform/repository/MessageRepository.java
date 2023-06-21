@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.Message;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,9 +23,10 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     Page<Message> findByChannel_Id(long id, Pageable pageable);
 
     @Modifying
-    @Query(value = "UPDATE tbl_message  " +
-            "SET status = 'SEEN' " +
-            "WHERE channel_id = :channelId AND sender_id <> :userId AND status = 'SENT'", nativeQuery = true)
-    int updateStatusToSeen(@Param("channelId") long channelId,
-                            @Param("userId") long userId);
+    @Transactional
+    @Query(value = "UPDATE tbl_message m " +
+            "SET m.status = ?1 " +
+            "WHERE m.channel_id = ?2 AND m.sender_id <> ?3 AND m.status =?4 ", nativeQuery = true)
+    int updateStatusToSeen( String seenStatus ,long channelId,
+                             long userId, String sentStatus);
 }
