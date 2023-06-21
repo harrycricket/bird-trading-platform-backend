@@ -5,6 +5,7 @@ import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.MessageDto;
 import com.gangoffive.birdtradingplatform.entity.Message;
 import com.gangoffive.birdtradingplatform.enums.MessageStatus;
+import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.MessageMapper;
 import com.gangoffive.birdtradingplatform.repository.MessageRepository;
 import com.gangoffive.birdtradingplatform.service.MessageService;
@@ -48,6 +49,19 @@ public class MessageServiceImpl implements MessageService {
             return ResponseEntity.ok(pageNumberWraper);
         }
         return null;
+    }
+
+    @Override
+    public boolean maskAllSeen(long senderId, long channelId) {
+        log.info(String.format("Here is sender id %d channelid %d", senderId, channelId));
+        try{
+            messageRepository.updateStatusToSeen(MessageStatus.SEEN.name(),channelId, senderId,MessageStatus.SENT.name());
+        }catch (Exception e) {
+//            throw new CustomRuntimeException("400", "Something went wrong");
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     private MessageDto messageToDto (Message message, long id) {

@@ -31,7 +31,9 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "And a.type_id in (?2) " +
             "And ps.star >= ?3 " +
             "And a.price >= ?4 " +
-            "And a.price <= ?5", nativeQuery = true)
+            "And a.price <= ?5 " +
+            "And a.is_deleted = 0 " +
+            "And a.quantity > 0 ", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
                         double lowestPrice, double hightPrice, Pageable pageable);
 

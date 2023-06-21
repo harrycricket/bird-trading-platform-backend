@@ -18,13 +18,13 @@ public class ShopStaff {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "staff_id")
 	private Long id;
-	
-	@Column
-	private String username;
 
-	@Column
+	@Column(name = "user_name")
+	private String userName;
+
+	@Column(name = "password")
 	private String password;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "shop_id"
 			,foreignKey = @ForeignKey(name = "FK_SHOP_STAFF_SHOP")

@@ -107,6 +107,8 @@ public class KafkaMessageConsumer {
         messTemp.setAccount(acc);
         //save message
         messageService.saveMessage(messTemp);
+        //mask all other message to read;
+        messageService.maskAllSeen(senderId,channel.getId());
         log.info(String.format("Message like %s",message.toString()));
     }
 

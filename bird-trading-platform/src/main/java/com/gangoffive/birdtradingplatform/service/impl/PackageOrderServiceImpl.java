@@ -337,7 +337,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     .collect(Collectors.toList());
             Order order = Order.builder()
                     .packageOrder(packageOrder)
-                    .status(OrderStatus.PROCESSING)
+                    .status(OrderStatus.PENDING)
                     .shopOwner(shopOwner)
                     .promotionShops(promotionShops)
                     .totalPrice(totalPriceByShop.get(shopOwner.getId()))
@@ -390,10 +390,6 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                                     .build();
                             orderDetails.add(orderDetail);
                             product.setQuantity(newQuantity);
-                            //when quantity of product = 0 will setProductSummary to delete
-                            if (newQuantity == 0) {
-                                product.getProductSummary().setDeleted(true);
-                            }
                             productRepository.save(product);
                             orderDetailRepository.save(orderDetail);
                         })
