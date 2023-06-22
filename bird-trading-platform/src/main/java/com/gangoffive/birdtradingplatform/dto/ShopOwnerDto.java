@@ -12,4 +12,5 @@ public class ShopOwnerDto {
     private Long id;
     private String shopName;
     private String imgUrl;
+    private AddressDto address;
 }
