@@ -22,7 +22,7 @@ public class PromotionServiceImpl implements PromotionService {
     @Override
     public ResponseEntity<?> getAllPromotion() {
         List<Promotion> promotions = promotionRepository.findAll();
-        List<PromotionDto> promotionDtos = promotions.stream()
+        List<PromotionDto> promotionDtoList = promotions.stream()
                 .filter(promotion -> promotion.getEndDate().after(new Date()))
                 .map(promotion -> {
                     PromotionDto promotionDto = promotionMapper.toDto(promotion);
@@ -30,6 +30,6 @@ public class PromotionServiceImpl implements PromotionService {
                     return promotionDto;
                 })
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(promotionDtos);
+        return ResponseEntity.ok(promotionDtoList);
     }
 }

@@ -50,6 +50,8 @@ public class Promotion {
     @Column(name = "usage_limit")
     private int usageLimit;
 
+    private int used;
+
     @Column
     private Date startDate;
 
