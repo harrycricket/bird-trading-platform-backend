@@ -16,8 +16,8 @@ public class PromotionDto {
     private String description;
     private double discount;
     private double minimumOrderValue;
-    private Long limit;
-    private Long used;
+    private int usageLimit;
+    private int used;
     private PromotionType type;
     private Long endDate;
 }
