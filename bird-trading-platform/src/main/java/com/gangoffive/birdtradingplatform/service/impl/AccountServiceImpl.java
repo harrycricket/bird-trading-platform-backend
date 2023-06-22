@@ -139,14 +139,14 @@ public class AccountServiceImpl implements AccountService {
                 .imgUrl(urlImage)
                 .active(true)
                 .build();
-        shopOwnerRepository.save(shopOwner);
         Address address = Address.builder()
                 .fullName(registerShopOwnerDto.getShopName())
                 .address(registerShopOwnerDto.getShopAddress())
                 .phone(registerShopOwnerDto.getPhoneShop())
-                .shopOwner(shopOwner)
                 .build();
-        addressRepository.save(address);
+        Address saveAddress = addressRepository.save(address);
+        shopOwner.setAddress(saveAddress);
+        shopOwnerRepository.save(shopOwner);
         account.get().setRole(UserRole.SHOPOWNER);
         accountRepository.save(account.get());
         SuccessResponse successResponse = SuccessResponse.builder()
