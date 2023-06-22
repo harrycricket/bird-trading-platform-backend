@@ -5,7 +5,6 @@ import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
-import com.gangoffive.birdtradingplatform.dto.AddressDto;
 import com.gangoffive.birdtradingplatform.dto.RegisterShopOwnerDto;
 import com.gangoffive.birdtradingplatform.dto.UserInfoDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
@@ -15,8 +14,6 @@ import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
-import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
-import com.gangoffive.birdtradingplatform.mapper.AddressMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.AddressRepository;
 import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
@@ -112,48 +109,56 @@ public class AccountServiceImpl implements AccountService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(username);
-        String originUrl = appProperties.getS3().getUrl();
-        String urlImage = "";
-        if (multipartImage != null && !multipartImage.isEmpty()) {
-            String contentType = multipartImage.getContentType();
-            log.info("contentType: {}", contentType);
-            String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
-            newFilename = "image/" + newFilename;
-            log.info("newFilename update account: {}", newFilename);
-            urlImage = originUrl + newFilename;
-            try {
-                S3Utils.uploadFile(newFilename, multipartImage.getInputStream());
-            } catch (Exception ex) {
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                        .errorMessage("Upload file fail")
-                        .build();
-                new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        if (account.get().getShopOwner() == null) {
+            String originUrl = appProperties.getS3().getUrl();
+            String urlImage = "";
+            if (multipartImage != null && !multipartImage.isEmpty()) {
+                String contentType = multipartImage.getContentType();
+                log.info("contentType: {}", contentType);
+                String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
+                newFilename = "image/" + newFilename;
+                log.info("newFilename update account: {}", newFilename);
+                urlImage = originUrl + newFilename;
+                try {
+                    S3Utils.uploadFile(newFilename, multipartImage.getInputStream());
+                } catch (Exception ex) {
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .errorMessage("Upload file fail")
+                            .build();
+                    new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                }
             }
+            ShopOwner shopOwner = ShopOwner.builder()
+                    .account(account.get())
+                    .shopName(registerShopOwnerDto.getShopName())
+                    .shopPhone(registerShopOwnerDto.getPhoneShop())
+                    .description(registerShopOwnerDto.getDescription())
+                    .imgUrl(urlImage)
+                    .active(true)
+                    .build();
+            Address address = Address.builder()
+                    .fullName(registerShopOwnerDto.getShopName())
+                    .address(registerShopOwnerDto.getShopAddress())
+                    .phone(registerShopOwnerDto.getPhoneShop())
+                    .build();
+            Address saveAddress = addressRepository.save(address);
+            shopOwner.setAddress(saveAddress);
+            shopOwnerRepository.save(shopOwner);
+            account.get().setRole(UserRole.SHOPOWNER);
+            accountRepository.save(account.get());
+            SuccessResponse successResponse = SuccessResponse.builder()
+                    .successCode(String.valueOf(HttpStatus.CREATED.value()))
+                    .successMessage("Create shop owner account successfully.")
+                    .build();
+            return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
+        } else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.CONFLICT))
+                    .errorMessage("Account already have shop account.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
         }
-        ShopOwner shopOwner = ShopOwner.builder()
-                .account(account.get())
-                .shopName(registerShopOwnerDto.getShopName())
-                .shopPhone(registerShopOwnerDto.getPhoneShop())
-                .description(registerShopOwnerDto.getDescription())
-                .imgUrl(urlImage)
-                .active(true)
-                .build();
-        Address address = Address.builder()
-                .fullName(registerShopOwnerDto.getShopName())
-                .address(registerShopOwnerDto.getShopAddress())
-                .phone(registerShopOwnerDto.getPhoneShop())
-                .build();
-        Address saveAddress = addressRepository.save(address);
-        shopOwner.setAddress(saveAddress);
-        shopOwnerRepository.save(shopOwner);
-        account.get().setRole(UserRole.SHOPOWNER);
-        accountRepository.save(account.get());
-        SuccessResponse successResponse = SuccessResponse.builder()
-                .successCode(String.valueOf(HttpStatus.CREATED.value()))
-                .successMessage("Create shop owner account successfully.")
-                .build();
-        return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
     }
 
     @Override

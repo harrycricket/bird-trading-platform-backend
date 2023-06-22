@@ -1,6 +1,5 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
-import com.gangoffive.birdtradingplatform.dto.AddressDto;
 import com.gangoffive.birdtradingplatform.dto.AuthenticationResponseDto;
 import com.gangoffive.birdtradingplatform.dto.TokenDto;
 import com.gangoffive.birdtradingplatform.dto.UserInfoDto;
@@ -20,9 +19,9 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class InfoServiceImpl implements InfoService {
-    private final AddressMapper addressMapper;
     private final AccountRepository accountRepository;
     private final JwtService jwtService;
+
     @Override
     public ResponseEntity<?> getInfo(String token) {
         if (token == null || token.isEmpty()) {
@@ -50,7 +49,6 @@ public class InfoServiceImpl implements InfoService {
                 accountRepository.save(account.get());
             }
 
-            AddressDto addressDto = addressMapper.toDto(account.get().getAddress());
             TokenDto tokenDto = TokenDto.builder()
                     .accessToken(token)
                     .refreshToken(refreshToken)
