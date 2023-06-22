@@ -20,6 +20,8 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Array;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -50,13 +52,18 @@ public class MessageController {
         }
     }
 
-    @GetMapping("/users/{userid}/get-channel")
+    @GetMapping("/users/{userid}/channels")
     public String getShop (@PathVariable long userid) {
         List<Long> listShopId = accountService.getAllChanelByUserId(userid);
-        return StringEscapeUtils.unescapeJson(shopOwnerService.listShopDto(listShopId, userid).toString());
+        List<String> result = shopOwnerService.listShopDto(listShopId, userid);
+        if(result != null ){
+            return StringEscapeUtils.unescapeJson(result.toString());
+        }else {
+            return new ArrayList<>().toString();
+        }
     }
 
-    @GetMapping("/users/{userid}/get-messages")
+    @GetMapping("/users/{userid}/messages")
     public ResponseEntity<?> getMessage (@PathVariable long userid, @RequestParam long shopId) {
         long channelID = channelService.getAndSaveChannel(userid, shopId).getId();
         return messageService.getListMessageByChannelId(channelID,1, userid);
