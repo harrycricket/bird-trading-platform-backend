@@ -25,7 +25,10 @@ public class Notification {
 	@Column(name = "noti_text",
 		columnDefinition = "text")
 	private String notiText;
-	
+
+	@Column(name = "name")
+	private String name;
+
 	@CreationTimestamp
 	@Column(name = "noti_date")
 	private Date notiDate;

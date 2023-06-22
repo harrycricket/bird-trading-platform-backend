@@ -12,10 +12,7 @@ import com.gangoffive.birdtradingplatform.enums.Category;
 import com.gangoffive.birdtradingplatform.enums.ContentType;
 import com.gangoffive.birdtradingplatform.enums.ResponseCode;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
-import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
-import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
-import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
-import com.gangoffive.birdtradingplatform.mapper.PromotionShopMapper;
+import com.gangoffive.birdtradingplatform.mapper.*;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
@@ -52,6 +49,7 @@ public class ProductServiceImpl implements ProductService {
     private final BirdMapper birdMapper;
     private final FoodMapper foodMapper;
     private final AccessoryMapper accessoryMapper;
+    private final AddressMapper addressMapper;
     private final ProductSummaryRepository productSummaryRepository;
     private final ProductSummaryService productSummaryService;
     private final PromotionShopMapper promotionShopMapper;
@@ -295,9 +293,11 @@ public class ProductServiceImpl implements ProductService {
             } else if (product instanceof Accessory) {
                 productCartDto.setCategoryId(Category.getCategoryIdByName(new AccessoryDto().getClass().getSimpleName()));
             }
+            AddressDto address = addressMapper.toDto(product.getShopOwner().getAddress());
             productCartDto.setShopOwner(new ShopOwnerDto(product.getShopOwner().getId(),
                     product.getShopOwner().getShopName(),
-                    product.getShopOwner().getImgUrl()));
+                    product.getShopOwner().getImgUrl(),
+                    address));
             return productCartDto;
         }
         return null;
