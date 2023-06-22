@@ -4,19 +4,15 @@ import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
-@ToString
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
+@Builder
+@ToString
 @Entity(name = "tblAddress")
 public class Address {
 	@Id
