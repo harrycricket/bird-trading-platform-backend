@@ -63,6 +63,7 @@ public class ProductServiceImpl implements ProductService {
     private final PromotionShopRepository promotionShopRepository;
     private final TagRepository tagRepository;
     private final AppProperties appProperties;
+    private final ShopOwnerMapper shopOwnerMapper;
 
     @Override
     public List<ProductDto> retrieveAllProduct() {
@@ -294,10 +295,12 @@ public class ProductServiceImpl implements ProductService {
                 productCartDto.setCategoryId(Category.getCategoryIdByName(new AccessoryDto().getClass().getSimpleName()));
             }
             AddressDto address = addressMapper.toDto(product.getShopOwner().getAddress());
-            productCartDto.setShopOwner(new ShopOwnerDto(product.getShopOwner().getId(),
-                    product.getShopOwner().getShopName(),
-                    product.getShopOwner().getImgUrl(),
-                    address));
+            ShopOwnerDto shopOwner = shopOwnerMapper.modelToDto(product.getShopOwner());
+//            productCartDto.setShopOwner(new ShopOwnerDto(product.getShopOwner().getId(),
+//                    product.getShopOwner().getShopName(),
+//                    product.getShopOwner().getImgUrl(),
+//                    address));
+            productCartDto.setShopOwner(shopOwner);
             return productCartDto;
         }
         return null;

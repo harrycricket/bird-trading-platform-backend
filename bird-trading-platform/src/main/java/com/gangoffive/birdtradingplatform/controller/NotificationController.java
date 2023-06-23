@@ -38,8 +38,14 @@ public class NotificationController {
         }
     }
 
-    @GetMapping("/users/notifications")
-    public ResponseEntity<?> getNotification (@RequestParam long id) {
-        return notificationService.getNotifications(id, 0);
+    @GetMapping("/users/{userid}/notifications")
+    public ResponseEntity<?> getNotification (@PathVariable long userid, @RequestParam int pagenumber) {
+        return notificationService.getNotifications(userid, pagenumber);
     }
+
+    @GetMapping("/users/{userid}/notifications/unread")
+    public ResponseEntity<?> getUnreadNotification (@PathVariable long userid) {
+        return notificationService.getUserUnreadNotification(userid);
+    }
+
 }

@@ -7,4 +7,6 @@ public interface NotificationService {
     public boolean saveNotify(Notification notification);
 
     ResponseEntity<?> getNotifications(long id, int pageNumber);
+
+    ResponseEntity<?> getUserUnreadNotification(long userid);
 }
