@@ -1,5 +1,8 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
@@ -19,9 +22,10 @@ import com.paypal.base.rest.PayPalRESTException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -521,5 +525,38 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                         entry -> entry.getKey()
                 )
                 .collect(Collectors.toList());
+    }
+
+    private double getShippingFeeByDistance(double distance) throws JsonProcessingException {
+        RestTemplate restTemplate = new RestTemplate();
+        String apiUrl = appProperties.getShip().getUrl();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl)
+                .queryParam("distance", distance);
+
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                entity,
+                String.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            String responseBody = response.getBody();
+
+            // Parse the JSON response
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object> jsonMap = objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
+
+            // Access the 'shippingFee' field
+            Double shippingFee = (Double) jsonMap.get("shippingFee");
+            return shippingFee;
+        } else {
+            throw new RuntimeException();
+        }
     }
 }
