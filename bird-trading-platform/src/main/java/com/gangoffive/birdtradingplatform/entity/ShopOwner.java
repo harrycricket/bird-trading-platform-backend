@@ -37,8 +37,12 @@ public class ShopOwner {
 			columnDefinition = "TEXT")
 	private String description;
 	
-	@Column(name = "img_url")
-	private String imgUrl;
+	@Column(name = "avatar_img_url")
+	private String avatarImgUrl;
+
+	@Column(name = "cover_img_url")
+	private String coverImgUrl;
+
 	
 	@Column(name = "active")
 	private Boolean active;
@@ -87,10 +91,6 @@ public class ShopOwner {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public void setImgUrl(String imgUrl) {
-        this.imgUrl = imgUrl;
     }
 
     public void setActive(Boolean active) {

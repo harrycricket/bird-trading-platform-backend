@@ -41,9 +41,9 @@ public class ShopOwnerController {
         return accountService.registerShopOwnerAccount(registerShopOwnerDto, multipartImage);
     }
 
-    @GetMapping("/products/{pagenumber}")
-    public ResponseEntity retrieveAllProduct(@PathVariable int pagenumber) {
-        return productService.retrieveProductByShopIdForSO(3, pagenumber);
+    @GetMapping("/products/{pageNumber}")
+    public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
+        return productService.retrieveProductByShopIdForSO(3, pageNumber);
     }
 
     @GetMapping("/line-chart")

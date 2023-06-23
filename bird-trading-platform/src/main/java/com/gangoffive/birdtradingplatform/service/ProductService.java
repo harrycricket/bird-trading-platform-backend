@@ -17,7 +17,7 @@ import java.util.Objects;
 public interface ProductService {
     List<ProductDto> retrieveAllProduct();
 
-    ResponseEntity<?> retrieveProductByPagenumber(int pageNumber);
+    ResponseEntity<?> retrieveProductByPageNumber(int pageNumber);
 
     double CalculationRating(List<OrderDetail> orderDetails);
 
@@ -34,7 +34,10 @@ public interface ProductService {
     ProductDto ProductToDto(Product product);
     ResponseEntity<?> retrieveProductByListId(long[] ids);
 
+    ResponseEntity<?> retrieveProductByShopId(long shopId, int pageNumber);
+
     //ForSO it mean For Shop Owner
+    //nhớ sửa này ko cần truyền vô shop id, authentication
     ResponseEntity<?> retrieveProductByShopIdForSO(long shopId, int pageNumber);
     ResponseEntity<?> filter(ProductFilterDto filterDto);
 

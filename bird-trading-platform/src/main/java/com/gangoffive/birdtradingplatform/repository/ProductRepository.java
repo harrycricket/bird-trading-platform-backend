@@ -22,5 +22,5 @@ public interface ProductRepository extends JpaRepository<Product, Long>{
 
 	@Query(value = "SELECT p FROM Product p where p.quantity > 0 and p.id = ?1")
 	Optional<Product> findByIdWithCondition(long id);
-
+	Integer countAllByShopOwner_Id(Long id);
 }

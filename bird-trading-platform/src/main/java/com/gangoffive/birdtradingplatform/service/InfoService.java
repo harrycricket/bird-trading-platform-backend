@@ -3,5 +3,7 @@ package com.gangoffive.birdtradingplatform.service;
 import org.springframework.http.ResponseEntity;
 
 public interface InfoService {
-    ResponseEntity<?> getInfo(String token);
+    ResponseEntity<?> getUserInfo(String token);
+
+    ResponseEntity<?> getShopInfo(Long id);
 }
