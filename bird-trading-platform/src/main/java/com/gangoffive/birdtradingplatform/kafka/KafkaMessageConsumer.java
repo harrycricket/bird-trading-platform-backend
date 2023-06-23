@@ -55,7 +55,7 @@ public class KafkaMessageConsumer {
 
     }
 
-//    @KafkaListener(topics = KafkaConstant.KAFKA_PRIVATE_NOTIFICATION, groupId = KafkaConstant.KAFKA_GROUP_ID)
+    @KafkaListener(topics = KafkaConstant.KAFKA_PRIVATE_NOTIFICATION, groupId = KafkaConstant.KAFKA_GROUP_ID)
     public void consumeNotificationPrivate(String notification) {
         NotificationDto noti = JsonUtil.INSTANCE.getObject(notification, NotificationDto.class);
         this.sendNotificationPrivate(noti);
@@ -120,6 +120,7 @@ public class KafkaMessageConsumer {
     @Async
     void sendNotificationPrivate (NotificationDto notification) {
         Notification noti = notificationMapper.dtoToModel(notification);
+        notification.setId(System.currentTimeMillis());
         log.info("Here is noti after mapper {}", noti);
         //check send to shop or account
         Account acc = new Account();
@@ -135,7 +136,7 @@ public class KafkaMessageConsumer {
         } else {
             throw new CustomRuntimeException("400","Receive name not correct!");
         }
-        messagingTemplate.convertAndSend(destination, noti);
+        messagingTemplate.convertAndSend(destination, notification);
 
         //save notification
         notificationService.saveNotify(noti);
