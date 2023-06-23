@@ -67,8 +67,10 @@ public class InfoServiceImpl implements InfoService {
                     .fullName(account.get().getFullName())
                     .phoneNumber(account.get().getPhoneNumber())
                     .imgUrl(account.get().getImgUrl())
-                    .address(account.get().getAddress().getAddress())
                     .build();
+            if (account.get().getAddress() != null) {
+                userInfo.setAddress(account.get().getAddress().getAddress());
+            }
             AuthenticationResponseDto authenticationResponseDto = AuthenticationResponseDto.builder()
                     .token(tokenDto)
                     .userInfo(userInfo)
