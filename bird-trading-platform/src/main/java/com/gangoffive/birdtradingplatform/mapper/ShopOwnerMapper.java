@@ -10,7 +10,9 @@ import org.mapstruct.Mapping;
 public interface ShopOwnerMapper {
     @Mapping(target = "address.id", source = "address.id")
     @Mapping(target = "address.address", source = "address.address")
+    @Mapping(target = "imgUrl", source = "avatarImgUrl")
     ShopOwnerDto modelToDto (ShopOwner shopOwner);
+
 
     @Mapping(target = "address.id", source = "address.id")
     @Mapping(target = "address.address", source = "address.address")

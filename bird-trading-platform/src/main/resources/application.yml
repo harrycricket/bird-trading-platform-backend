@@ -1,8 +1,5 @@
 spring:
   datasource:
-#    url: ${env.DATABASE_LOCAL_URL}
-#    username: ${env.DATABASE_LOCAL_USERNAME}
-#    password: ${env.DATABASE_LOCAL_PASSWORD}
     url: ${env.DATABASE_URL}
     username: ${env.DATABASE_USERNAME}
     password: ${env.DATABASE_PASSWORD}
