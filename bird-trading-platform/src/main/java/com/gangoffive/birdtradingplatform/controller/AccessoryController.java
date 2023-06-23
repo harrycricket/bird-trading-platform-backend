@@ -21,6 +21,11 @@ public class AccessoryController {
         return accessoryService.retrieveAllAccessory();
     }
 
+    @GetMapping("accessories/by-shop-id")
+    public ResponseEntity<?> retrieveAllProduct(@RequestParam int pageNumber, @RequestParam Long shopId) {
+        return accessoryService.retrieveAccessoriesByShopId(shopId, pageNumber);
+    }
+
     @GetMapping("accessories/pages/{pageNumber}")
     public ResponseEntity<? extends Object> retrieveAllBirdByPageNumber(@PathVariable int pageNumber) {
         return accessoryService.retrieveAccessoryByPageNumber(pageNumber);

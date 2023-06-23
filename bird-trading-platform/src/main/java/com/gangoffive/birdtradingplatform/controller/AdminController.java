@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.controller;
 
+
 import com.gangoffive.birdtradingplatform.dto.DataBumpChartDto;
 import com.gangoffive.birdtradingplatform.service.AdminService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 @Slf4j
 public class AdminController {
     private final AdminService adminService;
+
     @GetMapping
     public List<DataBumpChartDto> getAllOrder() {
         return adminService.dataBumpChartRankOfShop();

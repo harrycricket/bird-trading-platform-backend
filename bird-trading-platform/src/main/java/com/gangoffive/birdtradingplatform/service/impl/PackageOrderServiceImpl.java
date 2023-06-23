@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.PackageOrderRequestDto;
 import com.gangoffive.birdtradingplatform.dto.PaymentDto;
 import com.gangoffive.birdtradingplatform.dto.UserOrderDto;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class PackageOrderServiceImpl implements PackageOrderService {
+    private final AppProperties appProperties;
     private final ProductRepository productRepository;
     private final PromotionRepository promotionRepository;
     private final OrderDetailRepository orderDetailRepository;
@@ -57,7 +59,6 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         // Capture the start time
         Instant startTime = Instant.now();
         // Your existing code...
-
 //        log.info("checkPromotion(packageOrderRequestDto.getTransactionDto().getPromotionId()) {}", checkPromotion(packageOrderRequestDto.getTransactionDto().getPromotionId()));
         log.info("checkListProduct(packageOrderRequestDto.getProductOrder()) {}", checkListProduct(packageOrderRequestDto.getProductOrder()));
 //        log.info("checkUserOrderDto(packageOrderRequestDto.getUserOrderDto()) {}", checkUserOrderDto(packageOrderRequestDto.getUserOrderDto()));
@@ -172,10 +173,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     public boolean checkUserOrderDto(UserOrderDto userOrderDto) {
         return !(userOrderDto.getName() == null || userOrderDto.getName().isEmpty())
                 && !(userOrderDto.getPhoneNumber() == null || userOrderDto.getPhoneNumber().isEmpty())
-                && !(userOrderDto.getStreet() == null || userOrderDto.getStreet().isEmpty())
-                && !(userOrderDto.getWard() == null || userOrderDto.getWard().isEmpty())
-                && !(userOrderDto.getDistrict() == null || userOrderDto.getDistrict().isEmpty())
-                && !(userOrderDto.getCity() == null || userOrderDto.getCity().isEmpty())
+                && !(userOrderDto.getAddress() == null || userOrderDto.getAddress().isEmpty())
                 && accountRepository.findByEmail(userOrderDto.getEmail()).isPresent();
     }
 
@@ -275,15 +273,12 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         log.info("shippingFee {}", shippingFee);
         Address address = new Address();
         address.setPhone(packageOrderRequestDto.getUserOrderDto().getPhoneNumber());
-        address.setStreet(packageOrderRequestDto.getUserOrderDto().getStreet());
-        address.setWard(packageOrderRequestDto.getUserOrderDto().getWard());
-        address.setDistrict(packageOrderRequestDto.getUserOrderDto().getDistrict());
-        address.setCity(packageOrderRequestDto.getUserOrderDto().getCity());
+        address.setFullName(packageOrderRequestDto.getUserOrderDto().getName());
+        address.setAddress(packageOrderRequestDto.getUserOrderDto().getAddress());
         addressRepository.save(address);
         PackageOrder packageOrder = PackageOrder.builder()
                 .totalPrice(packageOrderRequestDto.getTransactionDto().getTotalPrice())
                 .discount(discount)
-                .shippingFee(shippingFee)
                 .paymentMethod(packageOrderRequestDto.getTransactionDto().getPaymentMethod())
                 .account(account)
                 .transaction(transaction)
@@ -341,7 +336,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     .collect(Collectors.toList());
             Order order = Order.builder()
                     .packageOrder(packageOrder)
-                    .status(OrderStatus.PROCESSING)
+                    .status(OrderStatus.PENDING)
                     .shopOwner(shopOwner)
                     .promotionShops(promotionShops)
                     .totalPrice(totalPriceByShop.get(shopOwner.getId()))
@@ -455,8 +450,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     .method(PaymentMethod.PAYPAL)
                     .intent(PaypalPaymentIntent.SALE)
                     .description(description)
-                    .successUrl("http://localhost:3000/checkout?status=success")
-                    .cancelUrl("http://localhost:3000/checkout")
+                    .successUrl(appProperties.getPaypal().getSuccessUrl())
+                    .cancelUrl(appProperties.getPaypal().getCancelUrl())
                     .build();
             Payment payment = paypalService.createPayment(paymentDto);
             for (Links link : payment.getLinks()) {

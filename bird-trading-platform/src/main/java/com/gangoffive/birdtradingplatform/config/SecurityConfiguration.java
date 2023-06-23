@@ -55,6 +55,7 @@ public class SecurityConfiguration {
             "/api/v1/users/reset-password",
             "/api/v1/users/verify/register",
             "/api/v1/users/verify/reset-password",
+            "/api/v1/users/sent",
             "/api/v1/products",
             "/api/v1/products/**",
             "/api/v1/birds",
@@ -65,15 +66,20 @@ public class SecurityConfiguration {
             "/api/v1/foods/**",
             "/api/v1/product/add-new",
             "/api/v1/info/**",
+            "/api/v1/shop-info",
             "/api/v1/users/get-cookie",
             "api/v1/package-order",
             "/api/v1/promotions",
+            "/ws/**", // websockets
+            "/api/v1/users/message/send",
+            "/api/v1/users/{userid}/get-channel", // config get channel must to delete
+            "/api/v1//users/{userid}/get-messages", // must delete to
             "/api/v1/shop-owner/promotion-shop", // Remember delete just for testing
             "/api/v1/shop-owner/type-all", // Remember delete just for testing
             "/api/v1/shop-owner/product", // Remember delete just for testing
             "api/v1/shop-owner/**",
+            "api/v1/shop-owner",
             "api/v1/admin",
-
 //            "/favicon.ico",
 //            "/**/*.png",
 //            "/**/*.gif",

@@ -8,6 +8,8 @@ import java.util.List;
 public interface AccessoryService {
     List<AccessoryDto> retrieveAllAccessory();
 
+    ResponseEntity<?> retrieveAccessoriesByShopId(Long shopId, int pageNumber);
+
     ResponseEntity<?> retrieveAccessoryByPageNumber(int pageNumber);
 
     List<AccessoryDto> findAccessoryByName(String name);

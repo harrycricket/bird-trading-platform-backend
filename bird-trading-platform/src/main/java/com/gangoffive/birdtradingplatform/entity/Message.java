@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.entity;
 
+import com.gangoffive.birdtradingplatform.enums.MessageStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,16 +26,19 @@ public class Message {
     @CreationTimestamp
     private Date timestamp;
 
-    @Column(name = "is_shop_send")
-    private boolean shopSend;
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private MessageStatus status;
 
     @ManyToOne
     @JoinColumn(name = "sender_id")
     private Account account;
 
     @ManyToOne
-    @JoinColumn(name = "receiver_id")
-    private ShopOwner shopOwner;
+    @JoinColumn(name = "channel_id",
+    foreignKey = @ForeignKey(name = "FK_MESSAGE_CHANNEL"))
+    private Channel channel;
+
 
     public void setMessageText(String messageText) {
         this.messageText = messageText;
@@ -44,15 +48,22 @@ public class Message {
         this.timestamp = timestamp;
     }
 
-    public void setShopSend(boolean shopSend) {
-        this.shopSend = shopSend;
-    }
-
     public void setAccount(Account account) {
         this.account = account;
     }
 
-    public void setShopOwner(ShopOwner shopOwner) {
-        this.shopOwner = shopOwner;
+    public MessageStatus getStatus() {
+        return status;
+    }
+    public void setStatus(MessageStatus status) {
+        this.status = status;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
 }

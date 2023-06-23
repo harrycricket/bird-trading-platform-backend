@@ -11,6 +11,5 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ApiResponse {
     private LocalDateTime time;
-
     private String message;
 }

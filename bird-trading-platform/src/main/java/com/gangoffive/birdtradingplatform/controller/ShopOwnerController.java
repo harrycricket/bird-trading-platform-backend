@@ -1,11 +1,9 @@
 package com.gangoffive.birdtradingplatform.controller;
 
-import com.gangoffive.birdtradingplatform.dto.DataBarChartDto;
-import com.gangoffive.birdtradingplatform.dto.LineChartDto;
-import com.gangoffive.birdtradingplatform.dto.PieChartDto;
-import com.gangoffive.birdtradingplatform.dto.ProductShopOwnerDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Tag;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
+import com.gangoffive.birdtradingplatform.service.AccountService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.service.TagService;
@@ -33,12 +31,19 @@ import java.util.List;
 public class ShopOwnerController {
     private final ProductService productService;
     private final ShopOwnerService shopOwnerService;
-    private final AccountRepository accountRepository;
+    private final AccountService accountService;
     private final TagService tagService;
 
-    @GetMapping("/products/{pagenumber}")
-    public ResponseEntity retrieveAllProduct(@PathVariable int pagenumber) {
-        return productService.retrieveProductByShopIdForSO(3, pagenumber);
+    @PostMapping()
+    public ResponseEntity<?> registerShopOwnerAccount(
+            @RequestParam(name = "image") MultipartFile multipartImage,
+            @RequestPart(name = "data") RegisterShopOwnerDto registerShopOwnerDto) {
+        return accountService.registerShopOwnerAccount(registerShopOwnerDto, multipartImage);
+    }
+
+    @GetMapping("/products/{pageNumber}")
+    public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
+        return productService.retrieveProductByShopIdForSO(3, pageNumber);
     }
 
     @GetMapping("/line-chart")

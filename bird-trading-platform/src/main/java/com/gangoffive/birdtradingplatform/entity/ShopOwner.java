@@ -2,10 +2,7 @@ package com.gangoffive.birdtradingplatform.entity;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
@@ -14,6 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Setter
+@Builder
 @ToString
 public class ShopOwner {
 	@Id
@@ -38,8 +37,12 @@ public class ShopOwner {
 			columnDefinition = "TEXT")
 	private String description;
 	
-	@Column(name = "img_url")
-	private String imgUrl;
+	@Column(name = "avatar_img_url")
+	private String avatarImgUrl;
+
+	@Column(name = "cover_img_url")
+	private String coverImgUrl;
+
 	
 	@Column(name = "active")
 	private Boolean active;
@@ -54,12 +57,12 @@ public class ShopOwner {
 				,foreignKey = @ForeignKey(name = "FK_SHOP_ACCOUNT")
 	)
 	private Account account;
-	
-//	one shop have many staff account
-//	@OneToMany(mappedBy = "shopOwnerId")
-//	private List<Account> shopStaffAccounts;
-	
-	//one shop may have MANY staff account
+
+	@OneToOne
+	@JoinColumn(name = "address_id",
+				foreignKey = @ForeignKey(name = "FK_SHOP_ADDRESS"))
+	private Address address;
+
 	@OneToMany(mappedBy = "shopOwner")
 	private List<ShopStaff> shopStaffAccount;
 	
@@ -70,8 +73,6 @@ public class ShopOwner {
     @OneToMany(mappedBy = "shopOwner")
     private List<Product> products;
 
-	@OneToMany(mappedBy = "shopOwner")
-	private List<Message> messages;
 
 	@OneToMany(mappedBy = "shopOwner")
 	private List<PromotionShop> promotionShopList;
@@ -90,10 +91,6 @@ public class ShopOwner {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public void setImgUrl(String imgUrl) {
-        this.imgUrl = imgUrl;
     }
 
     public void setActive(Boolean active) {
@@ -119,10 +116,6 @@ public class ShopOwner {
     public void addProducts(Product product) {
         this.products.add(product);
     }
-
-	public void addMessages(Message message) {
-		this.messages.add(message);
-	}
 
 	public List<PromotionShop> getPromotionShopList() {
 		return promotionShopList;

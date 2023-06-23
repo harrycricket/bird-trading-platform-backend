@@ -44,6 +44,14 @@ public class Promotion {
     @Enumerated(value = EnumType.STRING)
     private PromotionType type;
 
+    @Column(name = "minimum_order_value")
+    private double minimumOrderValue;
+
+    @Column(name = "usage_limit")
+    private int usageLimit;
+
+    private int used;
+
     @Column
     private Date startDate;
 

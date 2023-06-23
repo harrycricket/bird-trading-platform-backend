@@ -22,9 +22,14 @@ public class FoodController {
         return foodService.retrieveAllFood();
     }
 
+    @GetMapping("foods/by-shop-id")
+    public ResponseEntity<?> retrieveAllProduct(@RequestParam int pageNumber, @RequestParam Long shopId) {
+        return foodService.retrieveFoodsByShopId(shopId, pageNumber);
+    }
+
     @GetMapping("foods/pages/{pageNumber}")
     public ResponseEntity<? extends Object> retrieveFoodByPageNumber(@PathVariable int pageNumber) {
-        return foodService.retrieveFoodByPagenumber(pageNumber);
+        return foodService.retrieveFoodByPageNumber(pageNumber);
     }
 
     @GetMapping("foods/search")
