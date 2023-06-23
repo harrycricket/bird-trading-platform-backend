@@ -8,7 +8,9 @@ import java.util.List;
 public interface FoodService {
     List<FoodDto> retrieveAllFood();
 
-    ResponseEntity<?> retrieveFoodByPagenumber(int pageNumber);
+    ResponseEntity<?> retrieveFoodsByShopId(Long shopId, int pageNumber);
+
+    ResponseEntity<?> retrieveFoodByPageNumber(int pageNumber);
 
     List<FoodDto> findFoodByName(String name);
 

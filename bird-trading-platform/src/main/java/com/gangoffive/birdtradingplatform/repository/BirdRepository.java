@@ -12,6 +12,7 @@ package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
 import com.gangoffive.birdtradingplatform.entity.Bird;
+import com.gangoffive.birdtradingplatform.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,7 +28,7 @@ import java.util.Optional;
 public interface BirdRepository extends JpaRepository<Bird, Long> {
     Optional<List<Bird>> findByNameLike(String name);
     @Query(value = "SELECT product_id FROM `bird-trading-platform`.tbl_bird Where type_id= ?;", nativeQuery =true)
-    List<Long> findType(Long idtype);
+    List<Long> findType(Long typeId);
 
     @Query(value = "SELECT type_id FROM `bird-trading-platform`.tbl_bird;", nativeQuery = true)
     List<Long> allIdType();
@@ -48,5 +49,5 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
                         double lowestPrice, double highestPrice, Pageable pageable);
 
     Page<Bird> findAllByDeletedFalseAndQuantityGreaterThan(int quantity, Pageable pageable);
-
+    Optional<Page<Product>> findByShopOwner_Id(long id, Pageable pageable);
 }

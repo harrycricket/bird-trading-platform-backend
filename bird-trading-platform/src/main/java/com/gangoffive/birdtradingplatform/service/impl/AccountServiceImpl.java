@@ -134,7 +134,7 @@ public class AccountServiceImpl implements AccountService {
                     .shopName(registerShopOwnerDto.getShopName())
                     .shopPhone(registerShopOwnerDto.getPhoneShop())
                     .description(registerShopOwnerDto.getDescription())
-                    .imgUrl(urlImage)
+                    .avatarImgUrl(urlImage)
                     .active(true)
                     .build();
             Address address = Address.builder()

@@ -6,6 +6,7 @@
 package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.Food;
+import com.gangoffive.birdtradingplatform.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,4 +39,6 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
                         double lowestPrice, double hightPrice, Pageable pageable);
     Page<Food> findAllByQuantityGreaterThanAndDeletedFalse(int quantity, Pageable pageable);
+
+    Optional<Page<Product>> findByShopOwner_Id(long id, Pageable pageable);
 }
