@@ -2,25 +2,38 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ApiResponse;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
+import com.gangoffive.birdtradingplatform.dto.AddressDto;
+import com.gangoffive.birdtradingplatform.dto.UserInfoDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Address;
+import com.gangoffive.birdtradingplatform.entity.Channel;
+import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.enums.AccountStatus;
+import com.gangoffive.birdtradingplatform.enums.UserRole;
+import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
+import com.gangoffive.birdtradingplatform.mapper.AddressMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.AddressRepository;
 import com.gangoffive.birdtradingplatform.repository.VerifyTokenRepository;
 import com.gangoffive.birdtradingplatform.service.AccountService;
+import com.gangoffive.birdtradingplatform.util.S3Utils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -31,13 +44,36 @@ public class AccountServiceImpl implements AccountService {
     private final AccountMapper accountMapper;
     private final AddressRepository addressRepository;
     private final VerifyTokenRepository verifyTokenRepository;
+    private final AppProperties appProperties;
+    private final AddressMapper addressMapper;
 
     @Override
-    public Account updateAccount(AccountUpdateDto accountUpdateDto) {
-//        log.info("acc {}", accountUpdateDto.toString());
+    public ResponseEntity<?> updateAccount(AccountUpdateDto accountUpdateDto, MultipartFile multipartImage) {
+        String originUrl = appProperties.getS3().getUrl();
+        String urlImage = "";
+        if (multipartImage != null && !multipartImage.isEmpty()) {
+            String contentType = multipartImage.getContentType();
+            log.info("contentType: {}", contentType);
+            String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
+            newFilename = "image/" + newFilename;
+            log.info("newFilename update account: {}", newFilename);
+            urlImage = originUrl + newFilename;
+            try {
+                S3Utils.uploadFile(newFilename, multipartImage.getInputStream());
+            } catch (Exception ex) {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .errorMessage("Upload file fail")
+                        .build();
+                new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+        }
         Optional<Account> editAccount = accountRepository.findByEmail(accountUpdateDto.getEmail());
         editAccount.get().setFullName(accountUpdateDto.getFullName());
         editAccount.get().setPhoneNumber(accountUpdateDto.getPhoneNumber());
+        if (multipartImage != null && !multipartImage.isEmpty()) {
+            editAccount.get().setImgUrl(urlImage);
+        }
         if (editAccount.get().getAddress() == null) {
             Address address = new Address();
             address.setPhone(accountUpdateDto.getPhoneNumber());
@@ -56,7 +92,17 @@ public class AccountServiceImpl implements AccountService {
             addressUpdate.setCity(accountUpdateDto.getCity());
             addressRepository.save(addressUpdate);
         }
-        return accountRepository.save(editAccount.get());
+        Account updateAccount = accountRepository.save(editAccount.get());
+        UserInfoDto userInfoDto = UserInfoDto.builder()
+                .id(updateAccount.getId())
+                .email(updateAccount.getEmail())
+                .role(updateAccount.getRole())
+                .fullName(updateAccount.getFullName())
+                .phoneNumber(updateAccount.getPhoneNumber())
+                .imgUrl(updateAccount.getImgUrl())
+                .address(addressMapper.toDto(updateAccount.getAddress()))
+                .build();
+        return ResponseEntity.ok().body(userInfoDto);
     }
 
     @Override
@@ -90,5 +136,37 @@ public class AccountServiceImpl implements AccountService {
         ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.NOT_FOUND.toString())
                 .errorMessage("Not found token. Link not true").build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public long retrieveShopID(long accountId) {
+        var acc = accountRepository.findById(accountId);
+        if (acc.isPresent()) {
+            ShopOwner shopOwner = acc.get().getShopOwner();
+            if (shopOwner != null) {
+                return shopOwner.getId();
+            } else {
+                throw new CustomRuntimeException("400", String.format("Cannot found shop with account id: %d", accountId));
+            }
+        } else {
+            throw new CustomRuntimeException("400", String.format("Cannot found account with account id: %d", accountId));
+        }
+    }
+
+    @Override
+    @Transactional
+    public List<Long> getAllChanelByUserId(long userId) {
+        var acc = accountRepository.findById(userId);
+        if (acc.isPresent()) {
+            List<Channel> channels = acc.get().getChannels();
+            if (channels != null || channels.size() != 0) {
+                List<Long> listShopId = channels.stream().map(channel -> channel.getShopOwner().getId()).toList();
+                return listShopId;
+            } else {
+                throw new CustomRuntimeException("400", "Cannot find channel");
+            }
+        } else {
+            throw new CustomRuntimeException("400", String.format("Cannot find account with id %d", userId));
+        }
     }
 }

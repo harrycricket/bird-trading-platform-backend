@@ -2,20 +2,11 @@ package com.gangoffive.birdtradingplatform.entity;
 
 import java.util.Date;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.gangoffive.birdtradingplatform.enums.ReviewRating;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.ValidationMode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,6 +19,7 @@ import lombok.ToString;
 @Entity(name = "tblReview")
 public class Review {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "review_id")
 	private Long id;
 	

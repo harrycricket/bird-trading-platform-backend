@@ -7,4 +7,6 @@ public class PagingAndSorting {
     public static final int DEFAULT_PAGE_SHOP_PRODUCT_SIZE = 10;
     public static final Integer DEFAULT_PAGE_NUMBER = 1;
     public static final Sort.Direction DEFAULT_SORT_DIRECTION = Sort.Direction.DESC;
+
+    public static final int DEFAULT_PAGE_MESSAGE_SIZE = 100;
 }

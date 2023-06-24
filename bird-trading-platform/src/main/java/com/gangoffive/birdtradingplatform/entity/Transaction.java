@@ -31,7 +31,7 @@ public class Transaction {
 	private Long id;
 
 	@Column(name = "transaction_paypal_id")
-	private Long paypalId;
+	private String paypalId;
 
 	@Column(name = "status")
 	@Enumerated(value = EnumType.STRING)

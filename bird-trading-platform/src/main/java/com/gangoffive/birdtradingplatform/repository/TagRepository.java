@@ -6,6 +6,10 @@ import org.springframework.stereotype.Repository;
 
 import com.gangoffive.birdtradingplatform.entity.Tag;
 
+import java.util.List;
+
 @Repository
 public interface TagRepository extends JpaRepository<Tag, Long>{
+    List<Tag> findByNameIn(List<String> namList);
+    List<Tag> findByIdIn(List<Long> idList);
 }

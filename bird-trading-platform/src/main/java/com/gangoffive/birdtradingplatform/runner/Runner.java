@@ -11,6 +11,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -28,11 +29,10 @@ public class Runner implements CommandLineRunner {
 //        for(Product pro : lists) {
 //            productSummaryService.apply(pro);
 //        }
-//
-//        Product product = productRepository.findById(1L).get();
-//        product.setDeleted(true);
-//        productRepository.save(product);
-//        log.info("done");
+//        Optional<Product> product = productRepository.findById(8L);
+//        product.get().setDeleted(true);
+//        productRepository.save(product.get());
+        log.info("done");
     }
 
 }

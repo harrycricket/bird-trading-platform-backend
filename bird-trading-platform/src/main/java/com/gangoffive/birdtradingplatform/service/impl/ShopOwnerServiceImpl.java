@@ -1,39 +1,90 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.ColorChart;
+import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
+import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderRepository;
+import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
+import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
+import com.google.gson.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ShopOwnerServiceImpl implements ShopOwnerService {
+    private final ShopOwnerRepository shopOwnerRepository;
+    private final ShopOwnerMapper shopOwnerMapper;
+    private final ChannelService channelService;
     private final AccountRepository accountRepository;
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final JwtService jwtService;
+    @Override
+    public List<String> listShopDto(List<Long> listShopId, long userId) {
+        var listShop = shopOwnerRepository.findAllById(listShopId);
+        if(listShop != null && !listShop.isEmpty()) {
+            return listShop.stream().map(shop -> this.shopOwnerToDtoWithUnread(shop, userId)).toList();
+        }
+        return null;
+    }
+
+    @Override
+    public long getAccountIdByShopid(long shopId) {
+        var shop = shopOwnerRepository.findById(shopId);
+        if(shop.isPresent()) {
+            Account acc = shop.get().getAccount();
+            if (acc != null) {
+                return acc.getId();
+            }
+        }else {
+            throw new CustomRuntimeException("400", String.format("Cannot found shop with id : %d", shopId));
+        }
+        return 0;
+    }
+
+    private String shopOwnerToDtoWithUnread (ShopOwner shopOwner, long userId) {
+        ShopOwnerDto shopOwnerDto = shopOwnerMapper.modelToDto(shopOwner);
+//        String shopDtoJson = JsonUtil.INSTANCE.getJsonString(shopOwner);
+        Gson gson = new GsonBuilder()
+                .disableHtmlEscaping()
+                .create();
+        String shopDtoJson = gson.toJson(shopOwnerDto, ShopOwnerDto.class);
+
+        JsonParser parser = new JsonParser();
+
+        JsonElement shopElement = parser.parse(shopDtoJson);
+        JsonObject jsonObject = shopElement.getAsJsonObject();
+        //get out channel id
+        int unread = channelService.getMessageUnreadByUserAndShop(userId, shopOwner.getId());
+        jsonObject.addProperty("unread", unread);
+        return jsonObject.toString();
+
+    }
+
     @Override
     public List<LineChartDto> getDataLineChart(String email, Date dateFrom) {
         Optional<Account> account = accountRepository.findByEmail(email);
@@ -90,11 +141,11 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         Optional<Account> account = accountRepository.findByEmail(email);
         List<BarChartDto> barChartDtoPreviousOneWeekList;
         List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
-                dataBarChartByPriceEachTypeProduct(account.get(), Food.class, true, false, 1);
+                dataBarChartEachTypeProduct(account.get(), Food.class, true, false, false, 1);
         List<BarChartOneTypeDto> barChartBirdPreviousOneWeekDtoList =
-                dataBarChartByPriceEachTypeProduct(account.get(), Bird.class, true, false, 1);
+                dataBarChartEachTypeProduct(account.get(), Bird.class, true, false, false, 1);
         List<BarChartOneTypeDto> barChartAccessoryPreviousOneWeekDtoList =
-                dataBarChartByPriceEachTypeProduct(account.get(), Accessory.class, true, false, 1);
+                dataBarChartEachTypeProduct(account.get(), Accessory.class, true, false, false, 1);
         barChartDtoPreviousOneWeekList = getListBarChartDto(
                 barChartFoodPreviousOneWeekDtoList,
                 barChartBirdPreviousOneWeekDtoList,
@@ -107,11 +158,11 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
         List<BarChartDto> barChartDtoPreviousTwoWeekList;
         List<BarChartOneTypeDto> barChartFoodDtoPreviousTwoWeekList =
-                dataBarChartByPriceEachTypeProduct(account.get(), Food.class, true, false, 2);
+                dataBarChartEachTypeProduct(account.get(), Food.class, true, false, false, 2);
         List<BarChartOneTypeDto> barChartBirdDtoPreviousTwoWeekList =
-                dataBarChartByPriceEachTypeProduct(account.get(), Bird.class, true, false, 2);
+                dataBarChartEachTypeProduct(account.get(), Bird.class, true, false, false, 2);
         List<BarChartOneTypeDto> barChartAccessoryDtoPreviousTwoWeekList =
-                dataBarChartByPriceEachTypeProduct(account.get(), Accessory.class, true, false, 2);
+                dataBarChartEachTypeProduct(account.get(), Accessory.class, true, false, false, 2);
         barChartDtoPreviousTwoWeekList = getListBarChartDto(
                 barChartFoodDtoPreviousTwoWeekList,
                 barChartBirdDtoPreviousTwoWeekList,
@@ -140,11 +191,11 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         Optional<Account> account = accountRepository.findByEmail(email);
         List<BarChartDto> barChartDtoPreviousOneWeekList;
         List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
-                dataBarChartByPriceEachTypeProduct(account.get(), Food.class, false, true, 1);
+                dataBarChartEachTypeProduct(account.get(), Food.class, false, true, false, 1);
         List<BarChartOneTypeDto> barChartBirdPreviousOneWeekDtoList =
-                dataBarChartByPriceEachTypeProduct(account.get(), Bird.class, false, true, 1);
+                dataBarChartEachTypeProduct(account.get(), Bird.class, false, true, false, 1);
         List<BarChartOneTypeDto> barChartAccessoryPreviousOneWeekDtoList =
-                dataBarChartByPriceEachTypeProduct(account.get(), Accessory.class, false, true, 1);
+                dataBarChartEachTypeProduct(account.get(), Accessory.class, false, true, false, 1);
         barChartDtoPreviousOneWeekList = getListBarChartDto(
                 barChartFoodPreviousOneWeekDtoList,
                 barChartBirdPreviousOneWeekDtoList,
@@ -156,11 +207,11 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
         List<BarChartDto> barChartDtoPreviousTwoWeekList;
         List<BarChartOneTypeDto> barChartFoodDtoPreviousTwoWeekList =
-                dataBarChartByPriceEachTypeProduct(account.get(), Food.class, false, true, 2);
+                dataBarChartEachTypeProduct(account.get(), Food.class, false, true, false, 2);
         List<BarChartOneTypeDto> barChartBirdDtoPreviousTwoWeekList =
-                dataBarChartByPriceEachTypeProduct(account.get(), Bird.class, false, true, 2);
+                dataBarChartEachTypeProduct(account.get(), Bird.class, false, true, false, 2);
         List<BarChartOneTypeDto> barChartAccessoryDtoPreviousTwoWeekList =
-                dataBarChartByPriceEachTypeProduct(account.get(), Accessory.class, false, true, 2);
+                dataBarChartEachTypeProduct(account.get(), Accessory.class, false, true, false, 2);
         barChartDtoPreviousTwoWeekList = getListBarChartDto(
                 barChartFoodDtoPreviousTwoWeekList,
                 barChartBirdDtoPreviousTwoWeekList,
@@ -188,10 +239,64 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 .build();
         return dataBarChartDto;
     }
+    @Override
+    public DataBarChartDto dataBarChartByReviewAllTypeProduct(String email) {
+        Optional<Account> account = accountRepository.findByEmail(email);
+        List<BarChartDto> barChartDtoPreviousOneWeekList;
+        List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
+                dataBarChartEachTypeProduct(account.get(), Food.class, false, false, true, 1);
+        List<BarChartOneTypeDto> barChartBirdPreviousOneWeekDtoList =
+                dataBarChartEachTypeProduct(account.get(), Bird.class, false, false, true, 1);
+        List<BarChartOneTypeDto> barChartAccessoryPreviousOneWeekDtoList =
+                dataBarChartEachTypeProduct(account.get(), Accessory.class, false, false, true, 1);
+        barChartDtoPreviousOneWeekList = getListBarChartDto(
+                barChartFoodPreviousOneWeekDtoList,
+                barChartBirdPreviousOneWeekDtoList,
+                barChartAccessoryPreviousOneWeekDtoList);
+        double totalOrderOfPreviousOneWeek = 0;
+        for (BarChartDto barChartDto: barChartDtoPreviousOneWeekList) {
+            totalOrderOfPreviousOneWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
+        }
+
+        List<BarChartDto> barChartDtoPreviousTwoWeekList;
+        List<BarChartOneTypeDto> barChartFoodDtoPreviousTwoWeekList =
+                dataBarChartEachTypeProduct(account.get(), Food.class, false, false, true, 2);
+        List<BarChartOneTypeDto> barChartBirdDtoPreviousTwoWeekList =
+                dataBarChartEachTypeProduct(account.get(), Bird.class, false, false, true, 2);
+        List<BarChartOneTypeDto> barChartAccessoryDtoPreviousTwoWeekList =
+                dataBarChartEachTypeProduct(account.get(), Accessory.class, false, false, true, 2);
+        barChartDtoPreviousTwoWeekList = getListBarChartDto(
+                barChartFoodDtoPreviousTwoWeekList,
+                barChartBirdDtoPreviousTwoWeekList,
+                barChartAccessoryDtoPreviousTwoWeekList
+        );
+        double totalOrderOfPreviousTwoWeek = 0;
+        for (BarChartDto barChartDto: barChartDtoPreviousTwoWeekList) {
+            log.info("barChartDto.getAccessories() {}", barChartDto.getAccessories());
+            log.info("barChartDto.getBirds() {}", barChartDto.getBirds());
+            log.info("barChartDto.getFoods() {}", barChartDto.getFoods());
+            totalOrderOfPreviousTwoWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
+        }
+        log.info("totalOrderOfPreviousTwoWeek {}", totalOrderOfPreviousTwoWeek);
+        double percent = ((totalOrderOfPreviousOneWeek - totalOrderOfPreviousTwoWeek)
+                / (totalOrderOfPreviousTwoWeek + totalOrderOfPreviousOneWeek)) * 100;
+        DecimalFormat decimalFormat = new DecimalFormat("#.00");
+
+        String formattedPercent = decimalFormat.format(percent);
+        String formattedTotalReview = decimalFormat.format(totalOrderOfPreviousOneWeek);
+
+        DataBarChartDto dataBarChartDto = DataBarChartDto.builder()
+                .barChartDtoList(barChartDtoPreviousOneWeekList)
+                .total(Double.parseDouble(formattedTotalReview))
+                .percent(Double.parseDouble(formattedPercent))
+                .build();
+        return dataBarChartDto;
+    }
+
 
     private double dataPieChartByTypeProduct(Account account, Class<?> productClass) {
         List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
-                dataBarChartByPriceEachTypeProduct(account, productClass, true, false, 1);
+                dataBarChartEachTypeProduct(account, productClass, true, false, false,  1);
         return barChartFoodPreviousOneWeekDtoList.stream().mapToDouble(BarChartOneTypeDto::getValue).sum();
     }
 
@@ -219,12 +324,12 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         return barChartDtoList;
     }
 
-    public List<BarChartOneTypeDto> dataBarChartByPriceEachTypeProduct(
+    public List<BarChartOneTypeDto> dataBarChartEachTypeProduct(
             Account account, Class<?> productClass,
-            boolean isCalcPrice, boolean isCalcQuantity, int week
+            boolean isCalcPrice, boolean isCalcQuantity, boolean isCalcReview, int week
     ) {
         List<BarChartOneTypeDto> barChartOneTypeDtoList = new ArrayList<>();
-        List<LocalDate> dateList = getAllDatePreviousWeek(week);
+        List<LocalDate> dateList = DateUtils.getAllDatePreviousWeek(week);
         List<Order> orderList = getAllOrdersNumberPreviousWeek(account, week);
         //Get list OrderDetail of list Order
         List<OrderDetail> orderDetails = orderDetailRepository.findOrderDetailByOrderIn(orderList);
@@ -241,8 +346,10 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             countDate++;
             double totalPrice = 0;
             double totalQuantity = 0;
+            double totalReview = 0;
             for (Order order : listOrderOfProduct) {
-                if (order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().equals(date)) {
+                if (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(date)) {
+                    log.info("order.getCreatedDate().toInstant().atZone(ZoneId.of(\"Asia/Bangkok\")) {}", order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")));
                     for (OrderDetail orderDetail : listOrderDetailOfProduct) {
                         if (orderDetail.getOrder().equals(order)) {
                             if (isCalcPrice) {
@@ -250,6 +357,11 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                             }
                             if (isCalcQuantity) {
                                 totalQuantity++;
+                            }
+                            if (isCalcReview) {
+                                if (orderDetail.getReview() != null) {
+                                    totalReview++;
+                                }
                             }
                         }
                     }
@@ -263,6 +375,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             }
             if (isCalcQuantity) {
                 barChartDto.setValue(totalQuantity);
+            }
+            if (isCalcReview) {
+                barChartDto.setValue(totalReview);
             }
 
             if (countDate == 1) {
@@ -305,24 +420,6 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         return jwtService.generateToken(UserPrincipal.create(accountRepository.findByEmail(email).get()));
     }
 
-    public List<LocalDate> getAllDatePreviousWeek(int week) {
-        List<LocalDate> localDateList = new ArrayList<>();
-        // Get the current date
-        LocalDate currentDate = LocalDate.now();
-        // Get the date of the previous week
-        LocalDate previousWeekDate = currentDate.minusWeeks(week);
-        // Get the start and end dates of the previous week
-        LocalDate previousWeekStartDate = previousWeekDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate previousWeekEndDate = previousWeekDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
-        log.info("Previous week start date: {}", previousWeekStartDate);
-        log.info("Previous week end date: {}", previousWeekEndDate);
-        while (!previousWeekStartDate.isAfter(previousWeekEndDate)) {
-            localDateList.add(previousWeekStartDate);
-            previousWeekStartDate = previousWeekStartDate.plusDays(1);
-        }
-        return localDateList;
-    }
-
     public List<Order> getAllOrdersNumberPreviousWeek(Account account, int week) {
         // Get the current date
         LocalDate currentDate = LocalDate.now();
@@ -332,19 +429,25 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
         // Get the start and end dates of the previous week
         LocalDate previousWeekStartDate = previousWeekDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDate previousWeekEndDate = previousWeekDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        LocalDate previousWeekEndDate = previousWeekDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).plusDays(1);
 
         //Get list Order of Shop Owner
-        List<Order> tmpOrders = orderRepository.findByShopOwner(account.getShopOwner());
-        List<Order> orders = tmpOrders.stream()
-                .filter(
-                        order ->
-                                (order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().equals(previousWeekStartDate)
-                                || order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().isAfter(previousWeekStartDate))
-                                && (order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().equals(previousWeekEndDate)
-                                || order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().isBefore(previousWeekEndDate))
-                )
-                .collect(Collectors.toList());
+//        LocalDate previousWeekEndDate = previousWeekDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+//        List<Order> tmpOrders = orderRepository.findByShopOwner(account.getShopOwner());
+//        List<Order> orders = tmpOrders.stream()
+//                .filter(
+//                        order ->
+//                                (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(previousWeekStartDate)
+//                                || order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().isAfter(previousWeekStartDate))
+//                                && (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(previousWeekEndDate)
+//                                || order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().isBefore(previousWeekEndDate))
+//                )
+//                .collect(Collectors.toList());
+
+        List<Order> orders = orderRepository.findByShopOwnerAndCreatedDateBetween(
+                account.getShopOwner(),
+                Date.from(previousWeekStartDate.atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                Date.from(previousWeekEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
         return orders;
     }
 
@@ -449,7 +552,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 log.info("order id {}", order.getId());
                 log.info("order.getCreatedDate() {}", order.getCreatedDate());
                 log.info("date {}", date);
-                if (order.getCreatedDate().toInstant().atZone(ZoneId.of("UTC")).toLocalDate().equals(date)) {
+                if (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(date)) {
                     log.info("order id {}", order.getId());
 
                     for (OrderDetail orderDetail : listOrderDetailOfProduct) {

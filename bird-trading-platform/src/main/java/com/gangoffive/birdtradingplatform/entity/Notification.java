@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.entity;
 
 import java.util.Date;
 
+import com.gangoffive.birdtradingplatform.enums.UserRole;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -14,13 +15,15 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Setter
 public class Notification {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "noti_id")
 	private Long id;
 	
-	@Column(name = "noti_text")
+	@Column(name = "noti_text",
+		columnDefinition = "text")
 	private String notiText;
 	
 	@CreationTimestamp
@@ -30,13 +33,12 @@ public class Notification {
 	@Column(name = "is_seen")
 	private boolean seen;
 
-	@Column(name = "is_shop_receive")
-	private boolean shopReceive;
+	@Column(name = "role")
+	@Enumerated(EnumType.STRING)
+	private UserRole role;
 
 	@ManyToOne
 	@JoinColumn(name = "receiver_id")
 	private Account account;
-
-
 	
 }

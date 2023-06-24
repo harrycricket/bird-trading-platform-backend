@@ -10,8 +10,8 @@ public class VersionController {
 
     @GetMapping("/")
     public String getDateRelease() {
-        String date = "06/06/2023 21h24";
-        String version = "0.0.9 SNAPSHOT";
-        return date + " - version " + version + " - COPYRIGHT @c GANGOFFIVE - BS2ND";
+        String date = "20/06/2023 19h25";
+        String version = "0.1.1 SNAPSHOT";
+        return date + " - Version " + version + " - COPYRIGHT © GANG_OF_FIVE - BS2ND";
     }
 }

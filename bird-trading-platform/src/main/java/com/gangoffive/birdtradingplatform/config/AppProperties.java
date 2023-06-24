@@ -19,6 +19,8 @@ public class AppProperties {
 
     private final Paypal paypal = new Paypal();
 
+    private final S3 s3 = new S3();
+
     public static final class Auth {
         private String secretKey;
         private Long tokenExpiration;
@@ -148,6 +150,10 @@ public class AppProperties {
         private String id;
         private String secret;
 
+        private String successUrl;
+
+        private String cancelUrl;
+
         public String getMode() {
             return mode;
         }
@@ -170,6 +176,34 @@ public class AppProperties {
 
         public void setSecret(String secret) {
             this.secret = secret;
+        }
+
+        public String getSuccessUrl() {
+            return successUrl;
+        }
+
+        public void setSuccessUrl(String successUrl) {
+            this.successUrl = successUrl;
+        }
+
+        public String getCancelUrl() {
+            return cancelUrl;
+        }
+
+        public void setCancelUrl(String cancelUrl) {
+            this.cancelUrl = cancelUrl;
+        }
+    }
+
+    public static final class S3 {
+        private String url;
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
         }
     }
 
@@ -195,5 +229,9 @@ public class AppProperties {
 
     public Paypal getPaypal() {
         return paypal;
+    }
+
+    public S3 getS3() {
+        return s3;
     }
 }

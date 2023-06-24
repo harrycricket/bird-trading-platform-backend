@@ -25,7 +25,7 @@ public class TypeController {
     private final TypeAccessoryService typeAccessoryService;
     private final TypeBirdService typeBirdService;
 
-    @GetMapping("/type-all")
+    @GetMapping("/types")
     public ResponseEntity<?> retrieveAllType () {
         List<TypeFood> typeFoods = typeFoodService.getAllTypeFood();
         List<TypeAccessory> typeAccessories = typeAccessoryService.getAllTypeAccessory();
@@ -34,19 +34,19 @@ public class TypeController {
         return ResponseEntity.ok(typeAllWrapper);
     }
 
-    @GetMapping("/type-birds")
+    @GetMapping("/types/birds")
     public ResponseEntity<?> retrieveTypeBird() {
         List<TypeBird> typeBirds = typeBirdService.getAllTypeBird();
         return ResponseEntity.ok(typeBirds);
     }
 
-    @GetMapping("/type-foods")
+    @GetMapping("/types/foods")
     public ResponseEntity<?> retrieveTypeFood() {
         List<TypeFood> typeFoods = typeFoodService.getAllTypeFood();
         return ResponseEntity.ok(typeFoods);
     }
 
-    @GetMapping("/type-accessories")
+    @GetMapping("/types/accessories")
     public ResponseEntity<?> retrieveTypeAccessory() {
         List<TypeAccessory> typeAccessories = typeAccessoryService.getAllTypeAccessory();
         return ResponseEntity.ok(typeAccessories);

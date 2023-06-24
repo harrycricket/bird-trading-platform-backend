@@ -8,6 +8,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,8 +21,10 @@ public class AccountController {
 
 
     @PutMapping("/users/update-profile")
-    public void updateProfile(@RequestBody AccountUpdateDto accountUpdateDto) {
-        accountService.updateAccount(accountUpdateDto);
+    public ResponseEntity<?> updateProfile(
+            @RequestParam(name = "image", required = false) MultipartFile multipartImage,
+            @RequestPart(name = "data") AccountUpdateDto accountUpdateDto) {
+        return accountService.updateAccount(accountUpdateDto, multipartImage);
     }
 
     @GetMapping("/users/verify/register")

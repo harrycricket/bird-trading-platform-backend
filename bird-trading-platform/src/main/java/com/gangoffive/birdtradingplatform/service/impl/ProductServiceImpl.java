@@ -1,11 +1,17 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.gangoffive.birdtradingplatform.api.response.ApiError;
+import com.gangoffive.birdtradingplatform.api.response.ApiResponse;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.Category;
+import com.gangoffive.birdtradingplatform.enums.ContentType;
 import com.gangoffive.birdtradingplatform.enums.ResponseCode;
+import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
 import com.gangoffive.birdtradingplatform.mapper.FoodMapper;
@@ -17,6 +23,7 @@ import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.util.MyUtils;
+import com.gangoffive.birdtradingplatform.util.S3Utils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import com.gangoffive.birdtradingplatform.wrapper.ProductDetailWrapper;
 import jakarta.transaction.Transactional;
@@ -28,7 +35,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,7 +49,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
-    private final ReviewRepository reviewRepository;
     private final BirdMapper birdMapper;
     private final FoodMapper foodMapper;
     private final AccessoryMapper accessoryMapper;
@@ -51,6 +61,10 @@ public class ProductServiceImpl implements ProductService {
     private final TypeAccessoryRepository typeAccessoryRepository;
     private final TypeFoodRepository typeFoodRepository;
     private final TypeBirdRepository typeBirdRepository;
+    private final AccountRepository accountRepository;
+    private final PromotionShopRepository promotionShopRepository;
+    private final TagRepository tagRepository;
+    private final AppProperties appProperties;
 
     @Override
     public List<ProductDto> retrieveAllProduct() {
@@ -378,7 +392,6 @@ public class ProductServiceImpl implements ProductService {
     public ResponseEntity<?> filter(ProductFilterDto filterDto) {
         PageNumberWraper<Long> productDtoPageNumberWraper = new PageNumberWraper<>();
         List<Long> filterProductIds = new ArrayList<>();
-        log.info("catelory ",filterDto.getCategory());
         if (filterDto.getCategory() == 1) {
             productDtoPageNumberWraper = this.getAllIdBirdByFilter(filterDto);
             log.info("bird ne");
@@ -420,10 +433,155 @@ public class ProductServiceImpl implements ProductService {
         result.setPageNumber(productDtoPageNumberWraper.getPageNumber());
         return ResponseEntity.ok(result);
     }
-    private ResponseEntity<?> addProduct(){
 
-        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
-                "Page number cannot less than 1");
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    @Override
+    public ResponseEntity<?> addNewProduct(List<MultipartFile> multipartImgList, MultipartFile multipartVideo, ProductShopOwnerDto productShopOwnerDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        Optional<Account> account = accountRepository.findByEmail("YamamotoEmi37415@gmail.com");
+        String originUrl = appProperties.getS3().getUrl();
+        String urlVideo = "";
+        List<String> urlImgList = new ArrayList<>();
+        if (account.get().getRole() == UserRole.SHOPOWNER) {
+            if (multipartImgList != null && !multipartImgList.isEmpty()) {
+                for (MultipartFile multipartFile : multipartImgList) {
+                    String contentType = multipartFile.getContentType();
+                    log.info("contentType: {}", contentType);
+                    String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
+                    newFilename = "image/" + newFilename;
+                    log.info("newFilename: {}", newFilename);
+                    urlImgList.add(originUrl + newFilename);
+                    try {
+                        S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
+                    } catch (Exception ex) {
+                        ErrorResponse errorResponse = ErrorResponse.builder()
+                                .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                                .errorMessage("Upload file fail")
+                                .build();
+                        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    }
+                }
+            }
+
+            if (multipartVideo != null && !multipartVideo.isEmpty()) {
+                String contentType = multipartVideo.getContentType();
+                String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
+                newFilename = "video/" + newFilename;
+                log.info("FileName video: {}", newFilename);
+                urlVideo = originUrl + newFilename;
+                try {
+                    S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
+                } catch (Exception ex) {
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .errorMessage("Upload file fail")
+                            .build();
+                    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                }
+            }
+
+            String imgUrl = urlImgList.stream()
+                    .collect(Collectors.joining(","));
+
+            log.info("productShopOwnerDto.toString() {}", productShopOwnerDto.toString());
+            if (productShopOwnerDto.getCategoryId() == 1) {
+                Bird bird = new Bird();
+                bird.setName(productShopOwnerDto.getName());
+                bird.setPrice(productShopOwnerDto.getPrice());
+                bird.setDescription(productShopOwnerDto.getDescription());
+                bird.setQuantity(productShopOwnerDto.getQuantity());
+                bird.setImgUrl(imgUrl);
+                bird.setVideoUrl(urlVideo);
+                bird.setTypeBird(typeBirdRepository.findById(productShopOwnerDto.getTypeId()).get());
+                bird.setAge(productShopOwnerDto.getFeature().getAge());
+                bird.setGender(productShopOwnerDto.getFeature().getGender());
+                bird.setColor(productShopOwnerDto.getFeature().getColor());
+                bird.setShopOwner(account.get().getShopOwner());
+                Bird saveBird = productRepository.save(bird);
+                productSummaryService.updateCategory(saveBird);
+                if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
+                    List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
+                    promotionShops.stream().forEach(promotionShop -> {
+                        promotionShop.addProduct(bird);
+                        promotionShopRepository.save(promotionShop);
+                    });
+                }
+                if (productShopOwnerDto.getTagId() != null && !productShopOwnerDto.getTagId().isEmpty()) {
+                    List<Tag> tagPresentInList = tagRepository.findByIdIn(productShopOwnerDto.getTagId());
+                    tagPresentInList.stream().forEach(tag -> {
+                        tag.addBirds(bird);
+                        tagRepository.save(tag);
+                    });
+                }
+                productRepository.save(bird);
+            } else if (productShopOwnerDto.getCategoryId() == 2) {
+                Food food = new Food();
+                food.setName(productShopOwnerDto.getName());
+                food.setPrice(productShopOwnerDto.getPrice());
+                food.setDescription(productShopOwnerDto.getDescription());
+                food.setQuantity(productShopOwnerDto.getQuantity());
+                food.setImgUrl(imgUrl);
+                food.setVideoUrl(urlVideo);
+                food.setTypeFood(typeFoodRepository.findById(productShopOwnerDto.getTypeId()).get());
+                food.setWeight(productShopOwnerDto.getFeature().getWeight());
+                food.setShopOwner(account.get().getShopOwner());
+                Food saveFood = productRepository.save(food);
+                productSummaryService.updateCategory(saveFood);
+                if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
+                    List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
+                    promotionShops.stream().forEach(promotionShop -> {
+                        promotionShop.addProduct(food);
+                        promotionShopRepository.save(promotionShop);
+                    });
+                }
+                if (productShopOwnerDto.getTagId() != null && !productShopOwnerDto.getTagId().isEmpty()) {
+                    List<Tag> tagPresentInList = tagRepository.findByIdIn(productShopOwnerDto.getTagId());
+                    tagPresentInList.stream().forEach(tag -> {
+                        tag.addFoods(food);
+                        tagRepository.save(tag);
+                    });
+                }
+                productRepository.save(food);
+            } else if (productShopOwnerDto.getCategoryId() == 3) {
+                Accessory accessory = new Accessory();
+                accessory.setName(productShopOwnerDto.getName());
+                accessory.setPrice(productShopOwnerDto.getPrice());
+                accessory.setDescription(productShopOwnerDto.getDescription());
+                accessory.setQuantity(productShopOwnerDto.getQuantity());
+                accessory.setImgUrl(imgUrl);
+                accessory.setVideoUrl(urlVideo);
+                accessory.setTypeAccessory(typeAccessoryRepository.findById(productShopOwnerDto.getTypeId()).get());
+                accessory.setOrigin(productShopOwnerDto.getFeature().getOrigin());
+                accessory.setShopOwner(account.get().getShopOwner());
+                Accessory saveAccessory = productRepository.save(accessory);
+                productSummaryService.updateCategory(saveAccessory);
+                if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
+                    List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
+                    promotionShops.stream().forEach(promotionShop -> {
+                        promotionShop.addProduct(accessory);
+                        promotionShopRepository.save(promotionShop);
+                    });
+                }
+                if (productShopOwnerDto.getTagId() != null && !productShopOwnerDto.getTagId().isEmpty()) {
+                    List<Tag> tagPresentInList = tagRepository.findByIdIn(productShopOwnerDto.getTagId());
+                    tagPresentInList.stream().forEach(tag -> {
+                        tag.addAccessories(accessory);
+                        tagRepository.save(tag);
+                    });
+                }
+                productRepository.save(accessory);
+            }
+            SuccessResponse successResponse = SuccessResponse.builder()
+                    .successMessage("Add new product successfully.")
+                    .successCode(String.valueOf(HttpStatus.OK.value()))
+                    .build();
+            return new ResponseEntity<>(successResponse, HttpStatus.OK);
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                .errorMessage("Something went wrong!")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
 }
