@@ -21,7 +21,7 @@ import java.util.Map;
 public class PackageOrderController {
 
     private final PackageOrderService packageOrderService;
-    @RequestMapping(value = "/package-order", method = {RequestMethod.GET, RequestMethod.POST})
+    @PostMapping("/package-order")
     public ResponseEntity<?> getPackageOrder(
             @RequestBody PackageOrderRequestDto packageOrderRequestDto,
             @RequestParam(value = "paymentId", required = false) String paymentId,
