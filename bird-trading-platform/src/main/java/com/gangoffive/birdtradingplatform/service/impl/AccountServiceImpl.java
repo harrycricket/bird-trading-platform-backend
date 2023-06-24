@@ -81,8 +81,8 @@ public class AccountServiceImpl implements AccountService {
             address.setFullName(accountUpdateDto.getFullName());
             address.setPhone(accountUpdateDto.getPhoneNumber());
             address.setAddress(accountUpdateDto.getAddress());
-            addressRepository.save(address);
-            editAccount.get().setAddress(address);
+            Address saveAddress = addressRepository.save(address);
+            editAccount.get().setAddress(saveAddress);
         } else {
             log.info("editAccount.get().getAddress() {}", editAccount.get().getAddress().getAccount().getId());
             Address addressUpdate = editAccount.get().getAddress();
