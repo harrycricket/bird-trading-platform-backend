@@ -3,6 +3,7 @@ package com.gangoffive.birdtradingplatform.controller;
 import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
 import com.gangoffive.birdtradingplatform.dto.RegisterShopOwnerDto;
 import com.gangoffive.birdtradingplatform.service.AccountService;
+import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.CookieUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class AccountController {
 
     private final AccountService accountService;
-
+    private final ShopOwnerService shopOwnerService;
 
     @PutMapping("/update-profile")
     public ResponseEntity<?> updateProfile(
@@ -40,5 +41,10 @@ public class AccountController {
     public ResponseEntity<?> verifyResetPassword(HttpServletRequest request, HttpServletResponse response) {
         CookieUtils.deleteCookie(request, response, "refreshToken");
         return ResponseEntity.ok("Cookie deleted");
+    }
+
+    @GetMapping("/{userid}/shop")
+    public ResponseEntity<?>  getShopInfoById (@PathVariable long userid) {
+        return shopOwnerService.getShopInforByUserId (userid);
     }
 }
