@@ -269,7 +269,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 });
         log.info("----------------------------checkTotalShippingFee()----------------------------------");
         log.info("checkShippingFeeEachOrder {}", checkShippingFeeEachOrder);
-        log.info("totalShip[0] {}", totalShip[0]);
+        log.info("Math.round(totalShip[0] * 100.0) / 100.0) {}", Math.round(totalShip[0] * 100.0) / 100.0));
         log.info("packageOrder.getCartInfo().getTotal().getShippingTotal() {}", packageOrder.getCartInfo().getTotal().getShippingTotal());
         log.info("--------------------------------------------------------------");
         return checkShippingFeeEachOrder && (Math.round(totalShip[0] * 100.0) / 100.0) == packageOrder.getCartInfo().getTotal().getShippingTotal();
@@ -300,7 +300,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     }
 
     private boolean checkTotalPayment(TotalOrderDto totalOrderDto) {
-        double totalPayment = totalOrderDto.getSubTotal() + totalOrderDto.getShippingTotal() + totalOrderDto.getPromotionFee();
+        double totalPayment = totalOrderDto.getSubTotal() + totalOrderDto.getShippingTotal() - totalOrderDto.getPromotionFee();
         log.info("----------------------------checkTotalPayment()--------------------------------------------");
         log.info("totalOrderDto.getPaymentTotal() {}", totalOrderDto.getPaymentTotal());
         log.info("Math.round(totalPayment * 100.0) / 100.0 {}", Math.round(totalPayment * 100.0) / 100.0);
