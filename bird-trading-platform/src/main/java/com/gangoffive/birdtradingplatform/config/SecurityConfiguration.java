@@ -68,7 +68,7 @@ public class SecurityConfiguration {
             "/api/v1/info/**",
             "/api/v1/shop-info",
             "/api/v1/users/get-cookie",
-            "api/v1/package-order",
+//            "api/v1/package-order",
             "/api/v1/promotions",
             "/ws/**", // websockets
             "/api/v1/users/message/send",
@@ -119,6 +119,7 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/admin/**").hasAnyAuthority(ADMIN_DELETE.getPermission())
                                 .requestMatchers("/api/v1/admin/**").hasAnyRole(ADMIN.name())
 
+//                                .requestMatchers(HttpMethod.POST, "/api/v1/package-order").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.GET, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_READ.getPermission())
                                 .requestMatchers(HttpMethod.POST, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_UPDATE.getPermission())
