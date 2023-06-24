@@ -272,7 +272,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         log.info("totalShip[0] {}", totalShip[0]);
         log.info("packageOrder.getCartInfo().getTotal().getShippingTotal() {}", packageOrder.getCartInfo().getTotal().getShippingTotal());
         log.info("--------------------------------------------------------------");
-        return checkShippingFeeEachOrder && totalShip[0] == packageOrder.getCartInfo().getTotal().getShippingTotal();
+        return checkShippingFeeEachOrder && (Math.round(totalShip[0] * 100.0) / 100.0) == packageOrder.getCartInfo().getTotal().getShippingTotal();
     }
 
     private boolean checkTotalDiscount(PackageOrderRequestDto packageOrder) {
