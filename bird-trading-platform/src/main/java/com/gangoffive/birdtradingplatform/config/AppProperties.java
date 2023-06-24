@@ -21,6 +21,8 @@ public class AppProperties {
 
     private final S3 s3 = new S3();
 
+    private final Ship ship = new Ship();
+
     public static final class Auth {
         private String secretKey;
         private Long tokenExpiration;
@@ -207,6 +209,18 @@ public class AppProperties {
         }
     }
 
+    public static final class Ship {
+        private String url;
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+    }
+
     public Auth getAuth() {
         return auth;
     }
@@ -233,5 +247,9 @@ public class AppProperties {
 
     public S3 getS3() {
         return s3;
+    }
+
+    public Ship getShip() {
+        return ship;
     }
 }

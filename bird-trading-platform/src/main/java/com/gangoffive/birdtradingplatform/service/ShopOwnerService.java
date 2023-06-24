@@ -1,10 +1,13 @@
 package com.gangoffive.birdtradingplatform.service;
 
-import org.springframework.http.ResponseEntity;
-import com.gangoffive.birdtradingplatform.dto.*;
+
+import com.gangoffive.birdtradingplatform.dto.BarChartOneTypeDto;
+import com.gangoffive.birdtradingplatform.dto.DataBarChartDto;
+import com.gangoffive.birdtradingplatform.dto.LineChartDto;
+import com.gangoffive.birdtradingplatform.dto.PieChartDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Order;
-
+import org.springframework.http.ResponseEntity;
 
 import java.util.Date;
 import java.util.List;
@@ -32,7 +35,7 @@ public interface ShopOwnerService {
     List<BarChartOneTypeDto> dataBarChartEachTypeProduct(
             Account account, Class<?> productClass, boolean isCalcPrice, boolean isCalcQuantity, boolean isCalcReview, int week);
 
-    String redirectToShopOwner(String email);
+    ResponseEntity<?> redirectToShopOwner();
 
     ResponseEntity getShopInforByUserId();
 }

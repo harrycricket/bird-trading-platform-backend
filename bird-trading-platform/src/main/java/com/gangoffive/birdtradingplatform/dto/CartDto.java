@@ -4,14 +4,15 @@ import com.gangoffive.birdtradingplatform.enums.PaymentMethod;
 import lombok.*;
 
 import java.util.List;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 @ToString
-public class TransactionDto {
-    private double totalPrice;
-    private List<Long> promotionId;
+public class CartDto {
+    private List<ItemByShopDto> itemsByShop;
+    private List<Long> promotionIds;
     private PaymentMethod paymentMethod;
+    private TotalOrderDto total;
 }

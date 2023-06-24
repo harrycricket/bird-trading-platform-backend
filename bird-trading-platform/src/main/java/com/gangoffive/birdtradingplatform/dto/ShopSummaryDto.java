@@ -12,4 +12,5 @@ public class ShopSummaryDto {
     private ShopInfoDto shopInfoDto;
     private int totalProduct;
     private String rating;
+    private int totalProductOrder;
 }

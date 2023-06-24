@@ -3,13 +3,13 @@ package com.gangoffive.birdtradingplatform.service.impl;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
+import com.gangoffive.birdtradingplatform.entity.Order;
+import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.exception.AuthenticateException;
 import com.gangoffive.birdtradingplatform.mapper.AddressMapper;
 import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
-import com.gangoffive.birdtradingplatform.repository.AccountRepository;
-import com.gangoffive.birdtradingplatform.repository.ProductRepository;
-import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
+import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.InfoService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,6 +28,8 @@ public class InfoServiceImpl implements InfoService {
     private final ProductRepository productRepository;
     private final ShopOwnerRepository shopOwnerRepository;
     private final ShopOwnerMapper shopOwnerMapper;
+    private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
     private final JwtService jwtService;
 
     @Override
@@ -84,12 +87,16 @@ public class InfoServiceImpl implements InfoService {
     public ResponseEntity<?> getShopInfo(Long id) {
         Optional<ShopOwner> shopOwner = shopOwnerRepository.findById(id);
         if (shopOwner.isPresent()) {
+            List<Order> orders = orderRepository.findByShopOwner(shopOwner.get());
+            List<OrderDetail> orderDetails = orderDetailRepository.findOrderDetailByOrderIn(orders);
+            int totalProductOrder = orderDetails.stream().mapToInt(orderDetail -> orderDetail.getQuantity()).sum();
             ShopInfoDto shopInfoDto = shopOwnerMapper.modelToShopInfoDto(shopOwner.get());
             ShopSummaryDto shopSummaryDto = ShopSummaryDto.builder()
                     .shopInfoDto(shopInfoDto)
                     .totalProduct(productRepository.countAllByShopOwner_Id(id))
                     //rating lam sau
                     .rating("")
+                    .totalProductOrder(totalProductOrder)
                     .build();
             return ResponseEntity.ok(shopSummaryDto);
         }

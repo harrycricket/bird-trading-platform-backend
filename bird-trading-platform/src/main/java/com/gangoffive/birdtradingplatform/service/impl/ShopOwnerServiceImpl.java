@@ -2,10 +2,12 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.ColorChart;
 import com.gangoffive.birdtradingplatform.enums.ResponseCode;
+import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
@@ -18,12 +20,16 @@ import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
 import com.google.gson.*;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -259,9 +265,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartFoodPreviousOneWeekDtoList,
                 barChartBirdPreviousOneWeekDtoList,
                 barChartAccessoryPreviousOneWeekDtoList);
-        double totalOrderOfPreviousOneWeek = 0;
+        double totalReviewOfPreviousOneWeek = 0;
         for (BarChartDto barChartDto: barChartDtoPreviousOneWeekList) {
-            totalOrderOfPreviousOneWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
+            totalReviewOfPreviousOneWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
 
         List<BarChartDto> barChartDtoPreviousTwoWeekList;
@@ -276,20 +282,21 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartBirdDtoPreviousTwoWeekList,
                 barChartAccessoryDtoPreviousTwoWeekList
         );
-        double totalOrderOfPreviousTwoWeek = 0;
+        double totalReviewOfPreviousTwoWeek = 0;
         for (BarChartDto barChartDto: barChartDtoPreviousTwoWeekList) {
             log.info("barChartDto.getAccessories() {}", barChartDto.getAccessories());
             log.info("barChartDto.getBirds() {}", barChartDto.getBirds());
             log.info("barChartDto.getFoods() {}", barChartDto.getFoods());
-            totalOrderOfPreviousTwoWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
+            totalReviewOfPreviousTwoWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
-        log.info("totalOrderOfPreviousTwoWeek {}", totalOrderOfPreviousTwoWeek);
-        double percent = ((totalOrderOfPreviousOneWeek - totalOrderOfPreviousTwoWeek)
-                / (totalOrderOfPreviousTwoWeek + totalOrderOfPreviousOneWeek)) * 100;
+        log.info("totalReviewOfPreviousOneWeek {}", totalReviewOfPreviousOneWeek);
+        log.info("totalReviewOfPreviousTwoWeek {}", totalReviewOfPreviousTwoWeek);
+        double percent = ((totalReviewOfPreviousOneWeek - totalReviewOfPreviousTwoWeek)
+                / (totalReviewOfPreviousTwoWeek + totalReviewOfPreviousOneWeek)) * 100;
         DecimalFormat decimalFormat = new DecimalFormat("#.00");
-
+        log.info("percent {}", percent);
         String formattedPercent = decimalFormat.format(percent);
-        String formattedTotalReview = decimalFormat.format(totalOrderOfPreviousOneWeek);
+        String formattedTotalReview = decimalFormat.format(totalReviewOfPreviousOneWeek);
 
         DataBarChartDto dataBarChartDto = DataBarChartDto.builder()
                 .barChartDtoList(barChartDtoPreviousOneWeekList)
@@ -422,8 +429,24 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     }
 
     @Override
-    public String redirectToShopOwner(String email) {
-        return jwtService.generateToken(UserPrincipal.create(accountRepository.findByEmail(email).get()));
+    public ResponseEntity<?> redirectToShopOwner() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        Optional<Account> account = accountRepository.findByEmail(username);
+        if (account.get().getRole().equals(UserRole.SHOPOWNER)) {
+            String token = jwtService.generateToken(UserPrincipal.create(account.get()));
+            SuccessResponse successResponse = SuccessResponse.builder()
+                    .successCode(String.valueOf(HttpStatus.OK.value()))
+                    .successMessage("http://localhost:3001/get-token?token=" + token)
+                    .build();
+            return new ResponseEntity<>(successResponse, HttpStatus.BAD_REQUEST);
+        } else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                    .errorCode("You don't have permission to access.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @Override

@@ -76,13 +76,12 @@ public class AccountServiceImpl implements AccountService {
         }
         if (editAccount.get().getAddress() == null) {
             log.info("address null");
-            log.info("editAccount.get().getAddress() == null {}", editAccount.get().getAddress().toString());
             Address address = new Address();
             address.setFullName(accountUpdateDto.getFullName());
             address.setPhone(accountUpdateDto.getPhoneNumber());
             address.setAddress(accountUpdateDto.getAddress());
-            addressRepository.save(address);
-            editAccount.get().setAddress(address);
+            Address saveAddress = addressRepository.save(address);
+            editAccount.get().setAddress(saveAddress);
         } else {
             log.info("editAccount.get().getAddress() {}", editAccount.get().getAddress().getAccount().getId());
             Address addressUpdate = editAccount.get().getAddress();
