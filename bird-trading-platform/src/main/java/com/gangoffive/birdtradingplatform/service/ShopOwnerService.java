@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.service;
 
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.google.gson.JsonObject;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
@@ -37,7 +38,7 @@ public interface ShopOwnerService {
     List<BarChartOneTypeDto> dataBarChartEachTypeProduct(
             Account account, Class<?> productClass, boolean isCalcPrice, boolean isCalcQuantity, boolean isCalcReview, int week);
 
-    String redirectToShopOwner(String email);
+    ResponseEntity<?> redirectToShopOwner(HttpServletResponse response);
 
     ResponseEntity getShopInforByUserId(long userid);
 }

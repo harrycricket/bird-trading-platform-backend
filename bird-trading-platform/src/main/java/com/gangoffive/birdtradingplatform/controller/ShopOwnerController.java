@@ -116,19 +116,13 @@ public class ShopOwnerController {
     }
 
     @GetMapping("/redirect")
-    public void redirectToShopOwner(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        String token = shopOwnerService.redirectToShopOwner(username);
-        response.sendRedirect("https://admin.birdland2nd.store/get-token?token=" + token);
+    public ResponseEntity<?> redirectToShopOwner(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        return shopOwnerService.redirectToShopOwner(response);
     }
 
     @GetMapping("/redirect/local")
     public void redirectLocalToShopOwner(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        String token = shopOwnerService.redirectToShopOwner(username);
-        response.sendRedirect("http://localhost:3001/get-token?token=" + token);
+
     }
 
 }
