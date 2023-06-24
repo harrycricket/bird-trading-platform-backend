@@ -17,10 +17,9 @@ public class ProductShopDto <T> {
     private String name;
     private int category;
     private double price;
-    private List<PromotionShopDto> listDiscount;
+//    private List<PromotionShopDto> listDiscount;
     private int quantity;
     private T  type ;
-    private List<Tag> listTag;
     private boolean status;
     private double totalOrders;
     private double star;

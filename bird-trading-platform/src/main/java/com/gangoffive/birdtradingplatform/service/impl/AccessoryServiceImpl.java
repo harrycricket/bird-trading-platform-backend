@@ -4,12 +4,17 @@ import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
+import com.gangoffive.birdtradingplatform.dto.ProductShopDto;
 import com.gangoffive.birdtradingplatform.entity.Accessory;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.entity.Product;
+import com.gangoffive.birdtradingplatform.entity.ShopOwner;
+import com.gangoffive.birdtradingplatform.enums.ResponseCode;
+import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.AccessoryMapper;
 import com.gangoffive.birdtradingplatform.repository.AccessoryRepository;
+import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.TagRepository;
 import com.gangoffive.birdtradingplatform.service.AccessoryService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
@@ -21,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,6 +41,7 @@ public class AccessoryServiceImpl implements AccessoryService {
     private final AccessoryMapper accessoryMapper;
     private final ProductService productService;
     private final ProductSummaryService productSummaryService;
+    private final AccountRepository accountRepository;
 
     @Override
     public List<AccessoryDto> retrieveAllAccessory() {
@@ -53,7 +60,7 @@ public class AccessoryServiceImpl implements AccessoryService {
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
 
-            Optional<Page<Product>> pageAble = accessoryRepository.findByShopOwner_Id(shopId, pageRequest);
+            Optional<Page<Product>> pageAble = accessoryRepository.findByShopOwner_IdAndDeletedIsFalse(shopId, pageRequest);
             if (pageAble.isPresent()) {
                 List<ProductDto> list = pageAble.get().stream()
                         .map(productService::ProductToDto)
@@ -116,6 +123,46 @@ public class AccessoryServiceImpl implements AccessoryService {
         if (lists != null) {
             List<AccessoryDto> listDto = lists.stream().map(accessory -> (AccessoryDto) productService.ProductToDto(accessory)).toList();
             return listDto;
+        }
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<?> getAllAccessoryByShop(int pageNumber) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
+        var account = accountRepository.findByEmail(email);
+        if(account.isPresent()) {
+            ShopOwner shopOwner = account.get().getShopOwner();
+            if(shopOwner != null) {
+                long shopId = shopOwner.getId();
+                if(pageNumber > 0){
+                    pageNumber--;
+                }
+                PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
+                var listBird = accessoryRepository.findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(shopId, pageRequest);
+                if(listBird.isPresent()) {
+                    List<ProductShopDto> listAccessoryShopDto = listBird.get().stream().map(bird ->  this.accessoryToProductDto(bird)).toList();
+                    PageNumberWraper resutl = new PageNumberWraper();
+                    resutl.setLists(listAccessoryShopDto);
+                    resutl.setTotalProduct(listBird.get().getTotalElements());
+                    resutl.setPageNumber(listBird.get().getTotalPages());
+                    return ResponseEntity.ok(resutl);
+                }
+            }else {
+                var error = ErrorResponse.builder().errorCode(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getCode()+"")
+                        .errorMessage(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getMessage()).build();
+                return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+            }
+        }else {
+            throw new CustomRuntimeException("400", "Some thing went wrong");
+        }
+        return null;
+    }
+
+    private ProductShopDto accessoryToProductDto(Product bird) {
+        if(bird != null) {
+            return productService.productToProductShopDto(bird);
         }
         return null;
     }

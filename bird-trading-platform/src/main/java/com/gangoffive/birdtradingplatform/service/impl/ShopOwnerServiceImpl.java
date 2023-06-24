@@ -16,7 +16,6 @@ import com.gangoffive.birdtradingplatform.repository.OrderRepository;
 import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.ChannelService;
-import com.gangoffive.birdtradingplatform.service.InfoService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
@@ -451,15 +450,24 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     }
 
     @Override
-    public ResponseEntity getShopInforByUserId(long userid) {
-        var shopInfo = shopOwnerRepository.findByAccount_Id(userid);
-        if(shopInfo.isPresent()){
-            ShopInfoDto shopOwnerDto = shopOwnerMapper.modelToShopInfoDto(shopInfo.get());
-            return ResponseEntity.ok(shopOwnerDto);
-        } else {
-            return ResponseEntity.ok(ErrorResponse.builder().errorCode(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getCode()+"")
-                    .errorMessage(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getMessage()).build());
+    public ResponseEntity<?> getShopInforByUserId() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("emaoil {}", email);
+        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
+        var account = accountRepository.findByEmail(email);
+        if(account.isPresent()) {
+            var shopInfo = account.get().getShopOwner();
+            if (shopInfo != null) {
+                ShopInfoDto shopOwnerDto = shopOwnerMapper.modelToShopInfoDto(shopInfo);
+                return ResponseEntity.ok(shopOwnerDto);
+            } else {
+                return ResponseEntity.ok(ErrorResponse.builder().errorCode(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getCode() + "")
+                        .errorMessage(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getMessage()).build());
+            }
+        }else {
+            throw new CustomRuntimeException("400", "Some thing went worng");
         }
+
     }
 
     public List<Order> getAllOrdersNumberPreviousWeek(Account account, int week) {

@@ -15,7 +15,6 @@ public interface ProductSummaryService {
     int updateTotalQuantityOrder(Product product);
     String updateCategory(Product product);
     boolean apply(Product product);
-
     List<Long> getIdTopBird();
 
     List<Long> getIdTopAccessories();

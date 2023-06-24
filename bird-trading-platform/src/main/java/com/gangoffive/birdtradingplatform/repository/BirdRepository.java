@@ -49,5 +49,7 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
                         double lowestPrice, double highestPrice, Pageable pageable);
 
     Page<Bird> findAllByDeletedFalseAndQuantityGreaterThan(int quantity, Pageable pageable);
-    Optional<Page<Product>> findByShopOwner_Id(long id, Pageable pageable);
+    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalse(long id, Pageable pageable);
+
+    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(long id, Pageable pageable);
 }

@@ -1,9 +1,6 @@
 package com.gangoffive.birdtradingplatform.service;
 
-import com.gangoffive.birdtradingplatform.dto.BirdDto;
-import com.gangoffive.birdtradingplatform.dto.ProductDto;
-import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
-import com.gangoffive.birdtradingplatform.dto.ProductShopOwnerDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.entity.PromotionShop;
@@ -37,11 +34,12 @@ public interface ProductService {
     ResponseEntity<?> retrieveProductByShopId(long shopId, int pageNumber);
 
     //ForSO it mean For Shop Owner
-    //nhớ sửa này ko cần truyền vô shop id, authentication
-    ResponseEntity<?> retrieveProductByShopIdForSO(long shopId, int pageNumber);
+    ResponseEntity<?> retrieveProductByShopIdForSO(int pageNumber);
     ResponseEntity<?> filter(ProductFilterDto filterDto);
 
     ResponseEntity<?> addNewProduct(List<MultipartFile> multipartImgList, MultipartFile multipartVideo, ProductShopOwnerDto productShopOwnerDto);
+
+    ProductShopDto productToProductShopDto(Product product);
 
 }
 

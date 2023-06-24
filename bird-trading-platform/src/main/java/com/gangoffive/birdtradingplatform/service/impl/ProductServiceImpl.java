@@ -215,7 +215,7 @@ public class ProductServiceImpl implements ProductService {
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
 
-            Optional<Page<Product>> pageAble = productRepository.findByShopOwner_Id(shopId, pageRequest);
+            Optional<Page<Product>> pageAble = productRepository.findByShopOwner_IdAndDeletedIsFalse(shopId, pageRequest);
             if (pageAble.isPresent()) {
                 List<ProductDto> list = pageAble.get().stream()
                         .map(this::ProductToDto)
@@ -234,33 +234,37 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ResponseEntity<?> retrieveProductByShopIdForSO(long shopId, int pageNumber) {
-        if (pageNumber > 0) {
-            --pageNumber;
-        }
-        PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
-                Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
+    public ResponseEntity<?> retrieveProductByShopIdForSO(int pageNumber) {
+        String email = "YamamotoEmi37415@gmail.com";
+        var account = accountRepository.findByEmail(email);
+        if(account.isPresent()) {
+            long shopId = account.get().getId();
+            if (pageNumber > 0) {
+                --pageNumber;
+            }
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                    Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
+            Optional<Page<Product>> pageAble = productRepository.findByShopOwner_IdAndDeletedIsFalse(shopId, pageRequest);
 
-        Optional<Page<Product>> pageAble = productRepository.findByShopOwner_Id(shopId, pageRequest);
-        if (pageAble.isPresent()) {
-            List<ProductShopDto> result = pageAble.get().stream().map(this::productToProductShopDto).toList();
-            PageNumberWraper<ProductShopDto> pageNumberWraper = new PageNumberWraper<>();
-            pageNumberWraper.setPageNumber(pageAble.get().getTotalPages());
-            pageNumberWraper.setLists(result);
-            return ResponseEntity.ok(pageNumberWraper);
+            if (pageAble.isPresent()) {
+                List<ProductShopDto> result = pageAble.get().stream().map(this::productToProductShopDto).toList();
+                PageNumberWraper<ProductShopDto> pageNumberWraper = new PageNumberWraper<>();
+                pageNumberWraper.setPageNumber(pageAble.get().getTotalPages());
+                pageNumberWraper.setLists(result);
+                return ResponseEntity.ok(pageNumberWraper);
+            }
         }
         return new ResponseEntity<>(ErrorResponse.builder().errorMessage(ResponseCode.NOT_FOUND_THIS_PRODUCT_SHOP_ID.toString())
                 .errorCode(HttpStatus.NOT_FOUND.name()).build(), HttpStatus.NOT_FOUND);
     }
-
-    private ProductShopDto productToProductShopDto(Product product) {
+    @Override
+    public ProductShopDto productToProductShopDto(Product product) {
         if (product != null) {
             ProductShopDto productShopDto;
             if (product instanceof Bird) {
                 productShopDto = new ProductShopDto<TypeBird>();
                 productShopDto.setCategory(Category.getCategoryIdByName(new BirdDto().getClass().getSimpleName()));
                 productShopDto.setType(((Bird) product).getTypeBird());
-                productShopDto.setListTag(((Bird) product).getTags());
             } else if (product instanceof Food) {
                 productShopDto = new ProductShopDto<TypeFood>();
                 productShopDto.setCategory(Category.getCategoryIdByName(new FoodDto().getClass().getSimpleName()));
@@ -269,7 +273,6 @@ public class ProductServiceImpl implements ProductService {
                 productShopDto = new ProductShopDto<TypeAccessory>();
                 productShopDto.setCategory(Category.getCategoryIdByName(new AccessoryDto().getClass().getSimpleName()));
                 productShopDto.setType(((Accessory) product).getTypeAccessory());
-                productShopDto.setListTag(((Accessory) product).getTags());
             } else {
                 productShopDto = new ProductShopDto();
             }
@@ -287,7 +290,7 @@ public class ProductServiceImpl implements ProductService {
                 productShopDto.setTotalReviews(productSummary.get().getReviewTotal());
                 productShopDto.setStar(productSummary.get().getStar());
             }
-            productShopDto.setListDiscount(product.getPromotionShops().stream().map(promotionShopMapper::modelToDto).toList());
+//            productShopDto.setListDiscount(product.getPromotionShops().stream().map(promotionShopMapper::modelToDto).toList());
             return productShopDto;
         }
         return null;
@@ -517,6 +520,7 @@ public class ProductServiceImpl implements ProductService {
                 bird.setGender(productShopOwnerDto.getFeature().getGender());
                 bird.setColor(productShopOwnerDto.getFeature().getColor());
                 bird.setShopOwner(account.get().getShopOwner());
+                bird.setHidden(false);
                 Bird saveBird = productRepository.save(bird);
                 productSummaryService.updateCategory(saveBird);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
@@ -545,6 +549,7 @@ public class ProductServiceImpl implements ProductService {
                 food.setTypeFood(typeFoodRepository.findById(productShopOwnerDto.getTypeId()).get());
                 food.setWeight(productShopOwnerDto.getFeature().getWeight());
                 food.setShopOwner(account.get().getShopOwner());
+                food.setHidden(false);
                 Food saveFood = productRepository.save(food);
                 productSummaryService.updateCategory(saveFood);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
@@ -573,6 +578,7 @@ public class ProductServiceImpl implements ProductService {
                 accessory.setTypeAccessory(typeAccessoryRepository.findById(productShopOwnerDto.getTypeId()).get());
                 accessory.setOrigin(productShopOwnerDto.getFeature().getOrigin());
                 accessory.setShopOwner(account.get().getShopOwner());
+                accessory.setHidden(false);
                 Accessory saveAccessory = productRepository.save(accessory);
                 productSummaryService.updateCategory(saveAccessory);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {

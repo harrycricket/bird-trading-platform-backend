@@ -41,11 +41,6 @@ public class ShopOwnerController {
         return accountService.registerShopOwnerAccount(registerShopOwnerDto, multipartImage);
     }
 
-    @GetMapping("/products/{pageNumber}")
-    public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
-        return productService.retrieveProductByShopIdForSO(3, pageNumber);
-    }
-
     @GetMapping("/line-chart")
     public List<LineChartDto> getListLineChartDto() throws ParseException {
 //        return shopOwnerService.dataBumpChartByTypeProduct(accountRepository.findByEmail("YamamotoEmi37415@gmail.com").get(), Accessory.class);
@@ -118,6 +113,11 @@ public class ShopOwnerController {
     @GetMapping("/redirect")
     public ResponseEntity<?> redirectToShopOwner() {
         return shopOwnerService.redirectToShopOwner();
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?>  getShopInfoById () {
+        return shopOwnerService.getShopInforByUserId ();
     }
 
 }
