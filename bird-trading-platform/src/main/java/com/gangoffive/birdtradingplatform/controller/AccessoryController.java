@@ -52,4 +52,9 @@ public class AccessoryController {
     public void deleteAccessory(@PathVariable("id") Long id) {
         accessoryService.deleteAccessoryById(id);
     }
+
+    @GetMapping("/shop-owner/accessories/pages/{pageNumber}")
+    public ResponseEntity<?> getAllBirdOfShop (@PathVariable int pageNumber) {
+        return accessoryService.getAllAccessoryByShop(pageNumber);
+    }
 }

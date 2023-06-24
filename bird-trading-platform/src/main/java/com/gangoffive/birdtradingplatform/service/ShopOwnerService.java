@@ -1,11 +1,6 @@
 package com.gangoffive.birdtradingplatform.service;
 
-import com.gangoffive.birdtradingplatform.entity.Product;
-import com.google.gson.JsonObject;
 import org.springframework.http.ResponseEntity;
-import com.gangoffive.birdtradingplatform.dto.*;
-import com.gangoffive.birdtradingplatform.entity.Account;
-import com.gangoffive.birdtradingplatform.entity.Order;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Order;
@@ -39,5 +34,5 @@ public interface ShopOwnerService {
 
     String redirectToShopOwner(String email);
 
-    ResponseEntity getShopInforByUserId(long userid);
+    ResponseEntity getShopInforByUserId();
 }

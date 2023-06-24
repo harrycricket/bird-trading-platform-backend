@@ -43,8 +43,4 @@ public class AccountController {
         return ResponseEntity.ok("Cookie deleted");
     }
 
-    @GetMapping("/{userid}/shop")
-    public ResponseEntity<?>  getShopInfoById (@PathVariable long userid) {
-        return shopOwnerService.getShopInforByUserId (userid);
-    }
 }

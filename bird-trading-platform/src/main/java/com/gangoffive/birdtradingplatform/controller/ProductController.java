@@ -42,7 +42,6 @@ public class ProductController {
         return productService.retrieveProductByShopId(shopId, pageNumber);
     }
 
-
     @GetMapping("top-product")
     public ResponseEntity<?> retrieveTopProduct() {
         List<ProductDto> result = productService.retrieveTopProduct();
@@ -74,5 +73,18 @@ public class ProductController {
         log.info("dto {}", productFilterDto);
         return productService.filter(productFilterDto);
     }
+
+    @GetMapping("/bird/shop-owner/{pageNumber}")
+    public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
+        return productService.retrieveProductByShopIdForSO(pageNumber);
+    }
+//    @GetMapping("/bird/shop-owner/{pageNumber}")
+//    public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
+//        return productService.retrieveProductByShopIdForSO(pageNumber);
+//    }
+//    @GetMapping("/bird/shop-owner/{pageNumber}")
+//    public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
+//        return productService.retrieveProductByShopIdForSO(pageNumber);
+//    }
 
 }

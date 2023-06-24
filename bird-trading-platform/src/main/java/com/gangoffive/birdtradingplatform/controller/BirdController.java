@@ -53,4 +53,9 @@ public class BirdController {
     public void deleteBird(@PathVariable("id") Long id) {
         birdService.deleteBirdById(id);
     }
+
+    @GetMapping("/shop-owner/birds/pages/{pageNumber}")
+    public ResponseEntity<?> getAllBirdOfShop (@PathVariable int pageNumber) {
+        return birdService.getAllBirdByShop(pageNumber);
+    }
 }

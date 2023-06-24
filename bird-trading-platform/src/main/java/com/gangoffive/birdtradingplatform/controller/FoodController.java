@@ -54,4 +54,9 @@ public class FoodController {
     public void deleteFood(@PathVariable("id") Long id) {
         foodService.deleteFoodById(id);
     }
+
+    @GetMapping("/shop-owner/foods/pages/{pageNumber}")
+    public ResponseEntity<?> getFoodByShop (@PathVariable int pageNumber) {
+        return foodService.getFoodByShop(pageNumber);
+    }
 }
