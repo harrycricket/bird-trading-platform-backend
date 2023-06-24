@@ -97,8 +97,8 @@ app:
     mode: sandbox
     id: ${env.PAYPAL_ID}
     secret: ${env.PAYPAL_SECRET}
-    successUrl: http://localhost:3000/checkout?status=success
-    cancelUrl: http://localhost:3000/checkout
+    successUrl: https://www.birdland2nd.store/checkout?status=success
+    cancelUrl: https://www.birdland2nd.store/checkout
   S3:
     url: https://bird-trading-platform.s3.ap-southeast-1.amazonaws.com/
   Ship:
