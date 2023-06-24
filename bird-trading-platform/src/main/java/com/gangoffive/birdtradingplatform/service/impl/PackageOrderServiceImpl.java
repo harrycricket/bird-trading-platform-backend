@@ -6,9 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
-import com.gangoffive.birdtradingplatform.dto.PackageOrderRequestDto;
-import com.gangoffive.birdtradingplatform.dto.PaymentDto;
-import com.gangoffive.birdtradingplatform.dto.UserOrderDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.Currency;
 import com.gangoffive.birdtradingplatform.enums.*;
@@ -23,12 +21,12 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -59,34 +57,45 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 
 
     @Override
-    public ResponseEntity<?> packageOrder(PackageOrderRequestDto packageOrderRequestDto, String paymentId, String payerId) {
-        // Capture the start time
-        Instant startTime = Instant.now();
-        // Your existing code...
-//        log.info("checkPromotion(packageOrderRequestDto.getTransactionDto().getPromotionId()) {}", checkPromotion(packageOrderRequestDto.getTransactionDto().getPromotionId()));
-        log.info("checkListProduct(packageOrderRequestDto.getProductOrder()) {}", checkListProduct(packageOrderRequestDto.getProductOrder()));
-//        log.info("checkUserOrderDto(packageOrderRequestDto.getUserOrderDto()) {}", checkUserOrderDto(packageOrderRequestDto.getUserOrderDto()));
-        log.info("checkTotalPrice(packageOrderRequestDto) {}", checkTotalPrice(packageOrderRequestDto));
+    public ResponseEntity<?> packageOrder(PackageOrderRequestDto packageOrder, String paymentId, String payerId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        Optional<Account> account = accountRepository.findByEmail(username);
+        Map<Long, Integer> productWithQuantityMap = getAllProductWithQuantity(packageOrder.getCartInfo().getItemsByShop());
         if (paymentId != null && payerId != null) {
-            return handleSuccessPayment(packageOrderRequestDto, paymentId, payerId);
+            return handleSuccessPayment(packageOrder, productWithQuantityMap, account.get(), paymentId, payerId);
         }
+        log.info("-------------------------checkUserOrderDto(packageOrder.getUserInfo())-----------------------------------------------");
+        log.info("{}", checkUserOrderDto(packageOrder.getUserInfo()));
+        log.info("-------------------------checkListProduct(productWithQuantityMap)-----------------------------------------------");
+        log.info("{}", checkListProduct(productWithQuantityMap));
+        log.info("-------------------------checkPromotion(packageOrder, productWithQuantityMap)-----------------------------------------------");
+        log.info("{}", checkPromotion(packageOrder, productWithQuantityMap));
+        log.info("-------------------------checkTotalShopPrice(packageOrder.getCartInfo().getItemsByShop())-----------------------------------------------");
+        log.info("{}", checkTotalShopPrice(packageOrder.getCartInfo().getItemsByShop()));
+        log.info("-------------------------checkSubTotal(packageOrder.getCartInfo().getTotal().getSubTotal(), productWithQuantityMap)----------------------");
+        log.info("{}", checkSubTotal(packageOrder.getCartInfo().getTotal().getSubTotal(), productWithQuantityMap));
+        log.info("-------------------------checkTotalShippingFee(packageOrder)-----------------------------------------------");
+        log.info("{}", checkTotalShippingFee(packageOrder));
+        log.info("-------------------------checkTotalDiscount(packageOrder)-----------------------------------------------");
+        log.info("{}", checkTotalDiscount(packageOrder));
+        log.info("-------------------------checkTotalPayment(packageOrder.getCartInfo().getTotal())-----------------------------------------------");
+        log.info("{}", checkTotalPayment(packageOrder.getCartInfo().getTotal()));
         if (
-                checkPromotion(packageOrderRequestDto.getTransactionDto().getPromotionId())
-                        && checkListProduct(packageOrderRequestDto.getProductOrder())
-                        && checkUserOrderDto(packageOrderRequestDto.getUserOrderDto())
-                        && checkTotalPrice(packageOrderRequestDto)
+                checkUserOrderDto(packageOrder.getUserInfo())
+                        && checkListProduct(productWithQuantityMap)
+                        && checkPromotion(packageOrder, productWithQuantityMap)
+                        && checkTotalShopPrice(packageOrder.getCartInfo().getItemsByShop())
+                        && checkSubTotal(packageOrder.getCartInfo().getTotal().getSubTotal(), productWithQuantityMap)
+                        && checkTotalShippingFee(packageOrder)
+                        && checkTotalDiscount(packageOrder)
+                        && checkTotalPayment(packageOrder.getCartInfo().getTotal())
         ) {
-            PaymentMethod paymentMethod = packageOrderRequestDto.getTransactionDto().getPaymentMethod();
+            PaymentMethod paymentMethod = packageOrder.getCartInfo().getPaymentMethod();
             if (paymentMethod.equals(PaymentMethod.PAYPAL)) {
-                return handleInitialPayment(packageOrderRequestDto);
+                return handleInitialPayment(packageOrder, account.get());
             } else if (paymentMethod.equals(PaymentMethod.DELIVERY)) {
-                saveAll(packageOrderRequestDto, "");
-                // Capture the end time
-                Instant endTime = Instant.now();
-                // Calculate the duration
-                Duration duration = Duration.between(startTime, endTime);
-                long seconds = duration.getSeconds();
-                log.info("Total time: {} seconds", seconds);
+                saveAll(packageOrder, paymentId, account.get(), productWithQuantityMap);
                 SuccessResponse successResponse = SuccessResponse.builder()
                         .successCode(String.valueOf(HttpStatus.OK.value()))
                         .successMessage("Order successfully")
@@ -106,46 +115,10 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         }
     }
 
-    public boolean checkPromotion(List<Long> listPromotionId) {
-        if (listPromotionId == null || listPromotionId.isEmpty()) {
-            return true;
-        }
-        List<Promotion> listPromotion = promotionRepository.findAllById(listPromotionId);
-        if (listPromotion.size() != listPromotionId.size()) {
-            return false;
-        } else if (listPromotionId.size() > 2) {
-            return false;
-        }
-        int shipping = 0;
-        int discount = 0;
-        for (Promotion promotion : listPromotion) {
-            if (promotion.getType().equals(PromotionType.SHIPPING)) {
-                shipping++;
-            } else if (promotion.getType().equals(PromotionType.DISCOUNT)) {
-                discount++;
-            }
-        }
-        if (shipping > 1 || discount > 1) {
-            return false;
-        }
-
-        boolean hasValidPromotion = false;
-        // Assuming your database uses the UTC time zone
-        ZoneId databaseTimeZone = ZoneId.of("Asia/Bangkok");
-
-        LocalDateTime currentDate = new Date().toInstant().atZone(databaseTimeZone).toLocalDateTime();
-//        log.info("currentDate {}", currentDate);
-        for (Promotion promotion : listPromotion) {
-            if (promotion.getEndDate().toInstant().atZone(databaseTimeZone).toLocalDateTime().isAfter(currentDate)) {
-//                log.info("promotion.getEndDate() {}", promotion.getEndDate().toInstant().atZone(databaseTimeZone).toLocalDateTime());
-                hasValidPromotion = true;
-            } else {
-                hasValidPromotion = false;
-                break;
-            }
-        }
-        return hasValidPromotion;
-//        return listPromotion.stream().anyMatch(promotion -> promotion.getEndDate().after(new Date()));
+    public boolean checkUserOrderDto(UserOrderDto userOrderDto) {
+        return !(userOrderDto.getFullName() == null || userOrderDto.getFullName().isEmpty())
+                && !(userOrderDto.getPhoneNumber() == null || userOrderDto.getPhoneNumber().isEmpty())
+                && !(userOrderDto.getAddress() == null || userOrderDto.getAddress().isEmpty());
     }
 
     public boolean checkListProduct(Map<Long, Integer> productOrder) {
@@ -159,6 +132,9 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 //            }
 //        }
 //        return true;
+        if (productOrder == null || productOrder.isEmpty()) {
+            return false;
+        }
         return productOrder.keySet()
                 .stream()
                 .allMatch(
@@ -174,55 +150,177 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 );
     }
 
-    public boolean checkUserOrderDto(UserOrderDto userOrderDto) {
-        return !(userOrderDto.getName() == null || userOrderDto.getName().isEmpty())
-                && !(userOrderDto.getPhoneNumber() == null || userOrderDto.getPhoneNumber().isEmpty())
-                && !(userOrderDto.getAddress() == null || userOrderDto.getAddress().isEmpty())
-                && accountRepository.findByEmail(userOrderDto.getEmail()).isPresent();
-    }
-
-    private boolean checkTotalPrice(PackageOrderRequestDto packageOrderRequestDto) {
-        double totalPriceOfAllProduct = calculateTotalPriceOfAllProduct(packageOrderRequestDto.getProductOrder());
-        double totalPriceAfterAddVoucher = 0;
-        boolean hasShippingPromotion = false;
-        log.info("totalPriceOfAllProduct {}", totalPriceOfAllProduct);
-        if (packageOrderRequestDto.getTransactionDto().getPromotionId() == null || packageOrderRequestDto.getTransactionDto().getPromotionId().isEmpty()) {
-            log.info("Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100 / 100) {}", Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100.0) / 100.0);
-            log.info("packageOrderRequestDto.getTransactionDto().getTotalPrice() {}", packageOrderRequestDto.getTransactionDto().getTotalPrice());
-            return packageOrderRequestDto.getTransactionDto().getTotalPrice() == Math.round((totalPriceOfAllProduct + totalPriceOfAllProduct * 0.05) * 100.0) / 100.0;
+    //Check all condition can use promotion
+    public boolean checkPromotion(PackageOrderRequestDto packageOrder, Map<Long, Integer> productOrder) {
+        //Return true when don't have promotion
+        if (packageOrder.getCartInfo().getPromotionIds() == null || packageOrder.getCartInfo().getPromotionIds().isEmpty()) {
+            return true;
         }
-        List<Promotion> promotions = promotionRepository.findAllById(packageOrderRequestDto.getTransactionDto().getPromotionId());
-        for (Promotion promotion : promotions) {
-            if (promotion.getType().equals(PromotionType.SHIPPING)) {
-                totalPriceAfterAddVoucher = calculatePriceAfterAddVoucher(totalPriceOfAllProduct, promotions);
-                hasShippingPromotion = true;
-                break;
+
+        //Return false when don't have product
+        if (productOrder == null || productOrder.isEmpty()) {
+            return false;
+        }
+
+        //Check list promotion
+        List<Promotion> listPromotion = promotionRepository.findAllById(packageOrder.getCartInfo().getPromotionIds());
+        if (listPromotion.size() != packageOrder.getCartInfo().getPromotionIds().size()) {
+            return false;
+        }
+        if (listPromotion.size() > 2) {
+            return false;
+        }
+
+        //Check used promotion
+        boolean checkUsed = listPromotion.stream().allMatch(promotion -> promotion.getUsed() < promotion.getUsageLimit());
+        if (!checkUsed) {
+            return false;
+        }
+
+        //Check end date of promotion
+        ZoneId databaseTimeZone = ZoneId.of("Asia/Bangkok");
+        LocalDateTime currentDate = new Date().toInstant().atZone(databaseTimeZone).toLocalDateTime();
+        //log.info("currentDate {}", currentDate);
+        for (Promotion promotion : listPromotion) {
+            if (!promotion.getEndDate().toInstant().atZone(databaseTimeZone).toLocalDateTime().isAfter(currentDate)) {
+                return false;
             }
         }
-        if (!hasShippingPromotion) {
-            totalPriceAfterAddVoucher = calculatePriceAfterAddVoucher(totalPriceOfAllProduct, promotions) + totalPriceOfAllProduct * 0.05;
+        //Check have only one promotion of discount and one of shipping
+        int shipping = 0;
+        int discount = 0;
+        for (Promotion promotion : listPromotion) {
+            if (promotion.getType().equals(PromotionType.SHIPPING)) {
+                shipping++;
+            } else if (promotion.getType().equals(PromotionType.DISCOUNT)) {
+                discount++;
+            }
+        }
+        if (shipping > 1 || discount > 1) {
+            return false;
         }
 
-        log.info("totalPriceAfterAddVoucher {}", totalPriceAfterAddVoucher);
-        log.info("packageOrderRequestDto.getTransactionDto().getTotalPrice() {}", packageOrderRequestDto.getTransactionDto().getTotalPrice());
-        log.info("Math.round(totalPriceAfterAddVoucher * 100 / 100) {}", (Math.round(totalPriceAfterAddVoucher * 100.0) / 100.0));
-        return packageOrderRequestDto.getTransactionDto().getTotalPrice() == Math.round(totalPriceAfterAddVoucher * 100.0) / 100.0;
+        //Calculate total price of all product for check condition of promotion
+        double totalPriceOfAllProduct = calculateTotalPriceOfAllProduct(productOrder);
+        log.info("----------------------------------------------------------------------");
+        log.info("checkPromotion() totalPriceOfAllProduct: {}", totalPriceOfAllProduct);
+        //Check promotion can use with order
+        boolean checkConditionPrice = listPromotion.stream()
+                .allMatch(
+                        promotion -> totalPriceOfAllProduct >= promotion.getMinimumOrderValue()
+                );
+        if (!checkConditionPrice) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkTotalShopPrice(List<ItemByShopDto> itemsByShop) {
+        for (ItemByShopDto item: itemsByShop) {
+            Map<Long, Integer> productQuantityMap = item.getListItems();
+            if (item.getTotalShopPrice() != calculateTotalPriceOfAllProduct(productQuantityMap)) {
+                log.info("------------------------------checkTotalShopPrice()--------------------------------");
+                log.info("item.getTotalShopPrice() != calculateTotalPriceOfAllProduct(productQuantityMap)");
+                log.info("item.getTotalShopPrice() {}", item.getTotalShopPrice());
+                log.info("calculateTotalPriceOfAllProduct(productQuantityMap) {}", calculateTotalPriceOfAllProduct(productQuantityMap));
+                log.info("--------------------------------------------------------------");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean checkSubTotal(double subTotal, Map<Long, Integer> productOrder) {
+        if (productOrder == null || productOrder.isEmpty()) {
+            return false;
+        }
+        log.info("----------------------------checkSubTotal()----------------------------------");
+        log.info("item.getTotalShopPrice() != calculateTotalPriceOfAllProduct(productQuantityMap)");
+        log.info("subTotal {}", subTotal);
+        log.info("calculateTotalPriceOfAllProduct(productOrder) {}", calculateTotalPriceOfAllProduct(productOrder));
+        log.info("--------------------------------------------------------------");
+        return subTotal == calculateTotalPriceOfAllProduct(productOrder);
+    }
+
+    private boolean checkTotalShippingFee(PackageOrderRequestDto packageOrder) {
+        //Check when have promotion with type SHIPPING
+        if (packageOrder.getCartInfo().getPromotionIds() != null && !packageOrder.getCartInfo().getPromotionIds().isEmpty()) {
+            List<Promotion> promotions = findPromotions(packageOrder.getCartInfo().getPromotionIds());
+            for (Promotion promotion : promotions) {
+                if (promotion.getType().equals(PromotionType.SHIPPING) && packageOrder.getCartInfo().getTotal().getShippingTotal() == 0) {
+                    return true;
+                }
+            }
+        }
+
+        //Check shipping fee when don't have promotion
+        final double[] totalShip = {0};
+        //Check shipping fee each shop
+        boolean checkShippingFeeEachOrder = packageOrder.getCartInfo().getItemsByShop().stream()
+                .allMatch(item -> {
+                    try {
+                        double shippingFeeWithDistance = getShippingFeeByDistance(item.getDistance());
+                        totalShip[0] += shippingFeeWithDistance;
+                        return item.getShippingFee() == shippingFeeWithDistance;
+                    } catch (JsonProcessingException e) {
+                        return false;
+                    }
+                });
+        log.info("----------------------------checkTotalShippingFee()----------------------------------");
+        log.info("checkShippingFeeEachOrder {}", checkShippingFeeEachOrder);
+        log.info("totalShip[0] {}", totalShip[0]);
+        log.info("packageOrder.getCartInfo().getTotal().getShippingTotal() {}", packageOrder.getCartInfo().getTotal().getShippingTotal());
+        log.info("--------------------------------------------------------------");
+        return checkShippingFeeEachOrder && totalShip[0] == packageOrder.getCartInfo().getTotal().getShippingTotal();
+    }
+
+    private boolean checkTotalDiscount(PackageOrderRequestDto packageOrder) {
+        //Check when have promotion with type DISCOUNT
+        if (packageOrder.getCartInfo().getPromotionIds() != null && !packageOrder.getCartInfo().getPromotionIds().isEmpty()) {
+            List<Promotion> promotions = findPromotions(packageOrder.getCartInfo().getPromotionIds());
+            for (Promotion promotion : promotions) {
+                if (
+                        promotion.getType().equals(PromotionType.DISCOUNT)
+                                && packageOrder.getCartInfo().getTotal().getPromotionFee() == promotion.getDiscount()
+                ) {
+                    log.info("packageOrder.getCartInfo().getTotal().getPromotionFee() {}",  packageOrder.getCartInfo().getTotal().getPromotionFee());
+                    log.info("promotion.getDiscount()", promotion.getDiscount());
+                    return true;
+                }
+            }
+        }
+        if (packageOrder.getCartInfo().getTotal().getPromotionFee() == 0) {
+            log.info("Discount 0");
+            return true;
+        } else {
+            log.info("Discount false");
+            return false;
+        }
+    }
+
+    private boolean checkTotalPayment(TotalOrderDto totalOrderDto) {
+        double totalPayment = totalOrderDto.getSubTotal() + totalOrderDto.getShippingTotal() + totalOrderDto.getPromotionFee();
+        log.info("----------------------------checkTotalPayment()--------------------------------------------");
+        log.info("totalOrderDto.getPaymentTotal() {}", totalOrderDto.getPaymentTotal());
+        log.info("Math.round(totalPayment * 100.0) / 100.0 {}", Math.round(totalPayment * 100.0) / 100.0);
+        log.info("------------------------------------------------------------------------");
+        return totalOrderDto.getPaymentTotal() == Math.round(totalPayment * 100.0) / 100.0;
     }
 
     private double calculatePriceAfterAddVoucher(double totalPrice, List<Promotion> promotions) {
         return Math.round(
                 (
-                promotions.stream()
-                .mapToDouble(
-                        promotion -> {
-                            if (promotion.getType().equals(PromotionType.DISCOUNT)) {
-                                return promotion.getDiscount();
-                            } else if (promotion.getType().equals(PromotionType.SHIPPING)) {
-                                return 0;
-                            }
-                            return 0;
-                        })
-                .reduce(totalPrice, (subtotal, discount) -> subtotal - discount)
+                        promotions.stream()
+                                .mapToDouble(
+                                        promotion -> {
+                                            if (promotion.getType().equals(PromotionType.DISCOUNT)) {
+                                                return promotion.getDiscount();
+                                            } else if (promotion.getType().equals(PromotionType.SHIPPING)) {
+                                                return 0;
+                                            }
+                                            return 0;
+                                        })
+                                .reduce(totalPrice, (subtotal, discount) -> subtotal - discount)
                 ) * 100.0) / 100.0;
     }
 
@@ -233,105 +331,81 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                                 entry -> {
                                     Long productId = entry.getKey();
                                     Integer quantity = entry.getValue();
-                                    Optional<Product> productOptional = productRepository.findById(productId);
-                                    Product product = productOptional.get();
-                                    double saleOff = productService.CalculateSaleOff(product.getPromotionShops(), product.getPrice());
-                                    double discountPrice = productService.CalculateDiscountedPrice(product.getPrice(), saleOff);
-                                    return Math.round((discountPrice * quantity) * 100.0) / 100.0;
+                                    Optional<Product> product = productRepository.findById(productId);
+                                    double saleOff = productService.CalculateSaleOff(product.get().getPromotionShops(), product.get().getPrice());
+                                    double priceAfterDiscounted = productService.CalculateDiscountedPrice(product.get().getPrice(), saleOff);
+                                    return Math.round((priceAfterDiscounted * quantity) * 100.0) / 100.0;
                                 }
                         ).sum()
                 ) * 100.0
         ) / 100.0;
     }
 
-    private double calculateShippingFee(PackageOrderRequestDto packageOrderRequestDto) {
-        double totalPriceProduct = calculateTotalPriceOfAllProduct(packageOrderRequestDto.getProductOrder());
-        //5 % for shipping fee để tạm
-        double shippingFee = totalPriceProduct * 0.05;
-        return Math.round(shippingFee * 100.0) / 100.0;
-    }
-
-    private Account saveUserOrderDto(UserOrderDto userOrderDto) {
-        log.info("userOrderDto.toString(); {}", userOrderDto.toString());
-        Optional<Account> account = accountRepository.findByEmail(userOrderDto.getEmail());
-        if (account.isPresent()) {
-            log.info("true");
-        }
-        if (account.isPresent()) {
-            account.get().setFullName(userOrderDto.getName());
-            account.get().setPhoneNumber(userOrderDto.getPhoneNumber());
-            accountRepository.save(account.get());
-            return account.get();
-        }
-        return account.get();
-    }
-
     private PackageOrder savePackageOrder(
-            PackageOrderRequestDto packageOrderRequestDto, Account account,
-            Transaction transaction, double discount, double shippingFee
+            PackageOrderRequestDto packageOrderRequest, Account account, Transaction transaction
     ) {
-        log.info("packageOrderRequestDto {}", packageOrderRequestDto.toString());
-        log.info("transaction {}", transaction.toString());
-        log.info("discount {}", discount);
-        transactionRepository.save(transaction);
-        log.info("shippingFee {}", shippingFee);
         Address address = new Address();
-        address.setPhone(packageOrderRequestDto.getUserOrderDto().getPhoneNumber());
-        address.setFullName(packageOrderRequestDto.getUserOrderDto().getName());
-        address.setAddress(packageOrderRequestDto.getUserOrderDto().getAddress());
-        addressRepository.save(address);
+        address.setPhone(packageOrderRequest.getUserInfo().getPhoneNumber());
+        address.setFullName(packageOrderRequest.getUserInfo().getFullName());
+        address.setAddress(packageOrderRequest.getUserInfo().getAddress());
+        Address saveShippingAddress = addressRepository.save(address);
         PackageOrder packageOrder = PackageOrder.builder()
-                .totalPrice(packageOrderRequestDto.getTransactionDto().getTotalPrice())
-                .discount(discount)
-                .paymentMethod(packageOrderRequestDto.getTransactionDto().getPaymentMethod())
+                .totalPrice(packageOrderRequest.getCartInfo().getTotal().getPaymentTotal())
+                .discount(packageOrderRequest.getCartInfo().getTotal().getPromotionFee())
+                .paymentMethod(packageOrderRequest.getCartInfo().getPaymentMethod())
                 .account(account)
                 .transaction(transaction)
-                .shippingAddress(address)
+                .shippingAddress(saveShippingAddress)
                 .build();
         if (
-                packageOrderRequestDto.getTransactionDto().getPromotionId() != null
-                        && !packageOrderRequestDto.getTransactionDto().getPromotionId().isEmpty()
+                packageOrderRequest.getCartInfo().getPromotionIds() != null
+                        && !packageOrderRequest.getCartInfo().getPromotionIds().isEmpty()
         ) {
-            packageOrder.setPromotions(promotionRepository.findAllById(packageOrderRequestDto.getTransactionDto().getPromotionId()));
+            packageOrder.setPromotions(findPromotions(packageOrderRequest.getCartInfo().getPromotionIds()));
         }
-        packageOrderRepository.save(packageOrder);
-        return packageOrder;
+        PackageOrder savePackageOrder = packageOrderRepository.save(packageOrder);
+        return savePackageOrder;
     }
 
-    private List<Order> saveOrder(PackageOrder packageOrder, PackageOrderRequestDto packageOrderRequestDto) {
+    private List<Order> saveOrder(PackageOrder packageOrder, PackageOrderRequestDto packageOrderRequestDto, Map<Long, Integer> productOrder) {
         List<Order> orderList = new ArrayList<>();
-        List<Long> productListId = getListProductId(packageOrderRequestDto);
+        List<Long> productListId = getListProductId(productOrder);
+
         List<Product> products = productRepository.findAllById(productListId);
         products.stream().forEach(s -> log.info("pro {}", s.getId()));
-        List<ShopOwner> shops = getListShopOwners(products);
 
+        List<ShopOwner> shops = getListShopOwners(products);
         shops.stream().forEach(s -> log.info("shop {}", s.getId()));
 
-        Map<Long, Double> totalPriceByShop = products.stream()
-                .collect(
-                        Collectors.groupingBy(
-                                product -> product.getShopOwner().getId(),
-                                Collectors.summingDouble(
-                                        product -> {
-                                            double saleOff = productService.CalculateSaleOff(product.getPromotionShops(), product.getPrice());
-                                            double priceAfterDiscount = productService.CalculateDiscountedPrice(product.getPrice(), saleOff);
-                                            return priceAfterDiscount * packageOrderRequestDto.getProductOrder().get(product.getId());
-                                        }
-                                )
-                        )
-                );
+//        Map<Long, Double> totalPriceByShop = products.stream()
+//                .collect(
+//                        Collectors.groupingBy(
+//                                product -> product.getShopOwner().getId(),
+//                                Collectors.summingDouble(
+//                                        product -> {
+//                                            double saleOff = productService.CalculateSaleOff(product.getPromotionShops(), product.getPrice());
+//                                            double priceAfterDiscount = productService.CalculateDiscountedPrice(product.getPrice(), saleOff);
+//                                            return priceAfterDiscount * productOrder.get(product.getId());
+//                                        }
+//                                )
+//                        )
+//                );
+//
+//        totalPriceByShop.entrySet()
+//                .stream()
+//                .forEach(
+//                        price -> log.info("key {} value {}", price.getKey().toString(), price.getValue().toString())
+//                );
+//
+//        for (Long id : totalPriceByShop.keySet()) {
+//            totalPriceByShop.put(id, Math.round(totalPriceByShop.get(id) * 100.0) / 100.0);
+//        }
 
-        totalPriceByShop.entrySet()
-                .stream()
-                .forEach(
-                        price -> log.info("key {} value {}", price.getKey().toString(), price.getValue().toString())
-                );
-
-        for (Long id : totalPriceByShop.keySet()) {
-            totalPriceByShop.put(id, Math.round(totalPriceByShop.get(id) * 100.0) / 100.0);
-        }
-
+        List<ItemByShopDto> itemsByShop = packageOrderRequestDto.getCartInfo().getItemsByShop();
         shops.stream().forEach(shopOwner -> {
+            ItemByShopDto itemByShop = itemsByShop.stream()
+                    .filter(itemByShopDto -> itemByShopDto.getShopId().equals(shopOwner.getId()))
+                    .findFirst().get();
             List<PromotionShop> promotionShops = products.stream()
                     .filter(
                             product -> product.getShopOwner().equals(shopOwner)
@@ -339,21 +413,23 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     .flatMap(List::stream)
                     .collect(Collectors.toList());
             Order order = Order.builder()
-                    .packageOrder(packageOrder)
+                    .totalPrice(itemByShop.getTotalShopPrice())
+                    .shippingFee(itemByShop.getShippingFee())
                     .status(OrderStatus.PENDING)
-                    .shopOwner(shopOwner)
                     .promotionShops(promotionShops)
-                    .totalPrice(totalPriceByShop.get(shopOwner.getId()))
+                    .shopOwner(shopOwner)
+                    .packageOrder(packageOrder)
                     .build();
-            orderList.add(order);
-            orderRepository.save(order);
+            Order saveOrder = orderRepository.save(order);
+            orderList.add(saveOrder);
         });
         return orderList;
     }
 
-    private List<OrderDetail> saveOrderDetails(List<Order> orders, PackageOrderRequestDto packageOrderRequestDto) {
-        List<Long> productListId = getListProductId(packageOrderRequestDto);
+    private List<OrderDetail> saveOrderDetails(List<Order> orders, Map<Long, Integer> productOrder) {
+        List<Long> productListId = getListProductId(productOrder);
         List<Product> products = productRepository.findAllById(productListId);
+
         List<ShopOwner> shopOwners = getListShopOwners(products);
         List<OrderDetail> orderDetails = new ArrayList<>();
 //        for (Order order : orders) {
@@ -378,78 +454,52 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 //        }
 
         orders.stream()
-                .filter(order -> shopOwners.contains(order.getShopOwner()))
-                .forEach(order -> products.stream()
-                        .filter(product -> product.getShopOwner().equals(order.getShopOwner()))
-                        .forEach(product -> {
-                            int newQuantity = product.getQuantity() - packageOrderRequestDto.getProductOrder().get(product.getId());
-                            double saleOff = productService.CalculateSaleOff(product.getPromotionShops(), product.getPrice());
-                            double discountedPrice = productService.CalculateDiscountedPrice(product.getPrice(), saleOff);
-                            OrderDetail orderDetail = OrderDetail.builder()
-                                    .order(order)
-                                    .product(product)
-                                    .price(discountedPrice)
-                                    .quantity(packageOrderRequestDto.getProductOrder().get(product.getId()))
-                                    .build();
-                            orderDetails.add(orderDetail);
-                            product.setQuantity(newQuantity);
-                            productRepository.save(product);
-                            orderDetailRepository.save(orderDetail);
-                        })
+//                .filter(order -> shopOwners.contains(order.getShopOwner()))
+                .forEach(
+                        order -> products.stream()
+                                .filter(product -> product.getShopOwner().equals(order.getShopOwner()))
+                                .forEach(product -> {
+                                    int newQuantity = product.getQuantity() - productOrder.get(product.getId());
+                                    double saleOff = productService.CalculateSaleOff(product.getPromotionShops(), product.getPrice());
+                                    double discountedPrice = productService.CalculateDiscountedPrice(product.getPrice(), saleOff);
+                                    OrderDetail orderDetail = OrderDetail.builder()
+                                            .order(order)
+                                            .product(product)
+                                            .price(discountedPrice)
+                                            .quantity(productOrder.get(product.getId()))
+                                            .build();
+                                    product.setQuantity(newQuantity);
+                                    productRepository.save(product);
+                                    OrderDetail saveOrderDetail = orderDetailRepository.save(orderDetail);
+                                    orderDetails.add(saveOrderDetail);
+                                })
                 );
         return orderDetails;
     }
 
     @Transactional
-    public void saveAll(PackageOrderRequestDto packageOrderRequestDto, String paymentId) {
+    public void saveAll(PackageOrderRequestDto packageOrderRequestDto, String paymentId, Account account, Map<Long, Integer> productOrder) {
         Transaction transaction = Transaction.builder()
-                .amount(packageOrderRequestDto.getTransactionDto().getTotalPrice())
+                .amount(packageOrderRequestDto.getCartInfo().getTotal().getPaymentTotal())
                 .status(TransactionStatus.PROCESSING)
                 .build();
-        if (packageOrderRequestDto.getTransactionDto().getPaymentMethod().equals(PaymentMethod.PAYPAL)) {
+        if (packageOrderRequestDto.getCartInfo().getPaymentMethod().equals(PaymentMethod.PAYPAL)) {
             transaction.setPaypalId(paymentId);
-        }
-        if (packageOrderRequestDto.getTransactionDto().getPaymentMethod().equals(PaymentMethod.PAYPAL)) {
             transaction.setStatus(TransactionStatus.SUCCESS);
         }
-        Account account = saveUserOrderDto(packageOrderRequestDto.getUserOrderDto());
-        double shippingFee = 0;
-        double discount = 0;
-        if (
-                packageOrderRequestDto.getTransactionDto().getPromotionId() != null
-                        && !packageOrderRequestDto.getTransactionDto().getPromotionId().isEmpty()
-        ) {
-            List<Promotion> promotions = promotionRepository
-                    .findAllById(packageOrderRequestDto.getTransactionDto().getPromotionId());
-            boolean isFreeShip = promotions.stream().anyMatch(promotion -> promotion.getType().equals(PromotionType.SHIPPING));
-
-            for (Promotion promotion : promotions) {
-                if (promotion.getType().equals(PromotionType.SHIPPING)) {
-                    shippingFee = 0;
-                    log.info("go here");
-                } else if (promotion.getType().equals(PromotionType.DISCOUNT)) {
-                    discount = promotion.getDiscount();
-                    if (!isFreeShip) {
-                        shippingFee = calculateShippingFee(packageOrderRequestDto);
-                    }
-                }
-            }
-
-        } else {
-            shippingFee = calculateShippingFee(packageOrderRequestDto);
-        }
-        PackageOrder packageOrder = savePackageOrder(packageOrderRequestDto, account, transaction, discount, shippingFee);
-        List<Order> orders = saveOrder(packageOrder, packageOrderRequestDto);
-        saveOrderDetails(orders, packageOrderRequestDto);
+        Transaction saveTransaction = transactionRepository.save(transaction);
+        PackageOrder packageOrder = savePackageOrder(packageOrderRequestDto, account, saveTransaction);
+        List<Order> orders = saveOrder(packageOrder, packageOrderRequestDto, productOrder);
+        saveOrderDetails(orders, productOrder);
     }
 
-    private ResponseEntity<?> handleInitialPayment(PackageOrderRequestDto packageOrderRequestDto) {
+    private ResponseEntity<?> handleInitialPayment(PackageOrderRequestDto packageOrderRequestDto, Account account) {
         // Handle initial payment request
         try {
-            String description = packageOrderRequestDto.getUserOrderDto().getEmail()
-                    + " pay with paypal for " + packageOrderRequestDto.getTransactionDto().getTotalPrice();
+            String description = account.getEmail()
+                    + " pay with paypal for " + packageOrderRequestDto.getCartInfo().getTotal().getPaymentTotal();
             PaymentDto paymentDto = PaymentDto.builder()
-                    .total(packageOrderRequestDto.getTransactionDto().getTotalPrice())
+                    .total(packageOrderRequestDto.getCartInfo().getTotal().getPaymentTotal())
                     .currency(Currency.USD.toString())
                     .method(PaymentMethod.PAYPAL)
                     .intent(PaypalPaymentIntent.SALE)
@@ -477,7 +527,13 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return new ResponseEntity<>(error, HttpStatus.EXPECTATION_FAILED);
     }
 
-    private ResponseEntity<?> handleSuccessPayment(PackageOrderRequestDto packageOrderRequestDto, String paymentId, String payerId) {
+    private ResponseEntity<?> handleSuccessPayment(
+            PackageOrderRequestDto packageOrderRequestDto,
+            Map<Long, Integer> productOrder,
+            Account account,
+            String paymentId,
+            String payerId
+    ) {
         // Handle success payment
         try {
             Payment payment = paypalService.executePayment(paymentId, payerId);
@@ -490,7 +546,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                             "paymentId " + paymentId + " already exist.");
                     return new ResponseEntity<>(error, HttpStatus.EXPECTATION_FAILED);
                 } else {
-                    saveAll(packageOrderRequestDto, paymentId);
+                    saveAll(packageOrderRequestDto, paymentId, account, productOrder);
                 }
                 SuccessResponse successResponse = SuccessResponse.builder()
                         .successCode(String.valueOf(HttpStatus.OK.value()))
@@ -501,11 +557,31 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                         .body(successResponse);
             }
         } catch (PayPalRESTException e) {
-            System.out.println(e.getMessage());
+            ErrorResponse error = new ErrorResponse(String.valueOf(HttpStatus.EXPECTATION_FAILED.value()),
+                    "Payment with paypal failed.");
+            return new ResponseEntity<>(error, HttpStatus.EXPECTATION_FAILED);
         }
         ErrorResponse error = new ErrorResponse(String.valueOf(HttpStatus.EXPECTATION_FAILED.value()),
                 "Payment with paypal failed.");
         return new ResponseEntity<>(error, HttpStatus.EXPECTATION_FAILED);
+    }
+
+    private Map<Long, Integer> getAllProductWithQuantity(List<ItemByShopDto> itemsByShop) {
+        Map<Long, Integer> productQuantityMap = new HashMap<>();
+        if (itemsByShop != null && !itemsByShop.isEmpty()) {
+            for (ItemByShopDto item : itemsByShop) {
+                item.getListItems().entrySet()
+                        .forEach(
+                                entry -> {
+                                    productQuantityMap.put(entry.getKey(), entry.getValue());
+                                });
+            }
+        }
+        return productQuantityMap;
+    }
+
+    private List<Promotion> findPromotions(List<Long> idsPromotion) {
+        return promotionRepository.findAllById(idsPromotion);
     }
 
     private List<ShopOwner> getListShopOwners(List<Product> products) {
@@ -517,9 +593,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 .collect(Collectors.toList());
     }
 
-    private List<Long> getListProductId(PackageOrderRequestDto packageOrderRequestDto) {
-        return packageOrderRequestDto.getProductOrder()
-                .entrySet()
+    private List<Long> getListProductId(Map<Long, Integer> productOrder) {
+        return productOrder.entrySet()
                 .stream()
                 .map(
                         entry -> entry.getKey()
@@ -550,7 +625,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 
             // Parse the JSON response
             ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> jsonMap = objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
+            Map<String, Object> jsonMap = objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {
+            });
 
             // Access the 'shippingFee' field
             Double shippingFee = (Double) jsonMap.get("shippingFee");
