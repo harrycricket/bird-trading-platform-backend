@@ -10,7 +10,6 @@ import java.util.Map;
 @Setter
 @ToString
 public class PackageOrderRequestDto {
-    private UserOrderDto userOrderDto;
-    private TransactionDto transactionDto;
-    private Map<Long, Integer> productOrder;
+    private UserOrderDto userInfo;
+    private CartDto cartInfo;
 }

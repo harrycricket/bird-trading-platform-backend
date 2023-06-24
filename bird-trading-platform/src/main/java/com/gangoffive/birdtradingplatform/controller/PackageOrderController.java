@@ -27,7 +27,6 @@ public class PackageOrderController {
             @RequestParam(value = "paymentId", required = false) String paymentId,
             @RequestParam(value = "PayerID", required = false) String payerId
     ) {
-        packageOrderRequestDto.getProductOrder().entrySet().forEach(pro -> log.info("pro {}", pro.getKey()));
         return packageOrderService.packageOrder(packageOrderRequestDto, paymentId, payerId);
     }
 
