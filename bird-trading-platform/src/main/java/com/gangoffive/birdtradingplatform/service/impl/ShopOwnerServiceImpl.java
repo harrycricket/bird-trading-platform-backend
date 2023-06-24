@@ -206,9 +206,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartFoodPreviousOneWeekDtoList,
                 barChartBirdPreviousOneWeekDtoList,
                 barChartAccessoryPreviousOneWeekDtoList);
-        double totalOrderOfPreviousOneWeek = 0;
+        double totalReviewOfPreviousOneWeek = 0;
         for (BarChartDto barChartDto: barChartDtoPreviousOneWeekList) {
-            totalOrderOfPreviousOneWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
+            totalReviewOfPreviousOneWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
 
         List<BarChartDto> barChartDtoPreviousTwoWeekList;
@@ -223,20 +223,21 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartBirdDtoPreviousTwoWeekList,
                 barChartAccessoryDtoPreviousTwoWeekList
         );
-        double totalOrderOfPreviousTwoWeek = 0;
+        double totalReviewOfPreviousTwoWeek = 0;
         for (BarChartDto barChartDto: barChartDtoPreviousTwoWeekList) {
             log.info("barChartDto.getAccessories() {}", barChartDto.getAccessories());
             log.info("barChartDto.getBirds() {}", barChartDto.getBirds());
             log.info("barChartDto.getFoods() {}", barChartDto.getFoods());
-            totalOrderOfPreviousTwoWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
+            totalReviewOfPreviousTwoWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
-        log.info("totalOrderOfPreviousTwoWeek {}", totalOrderOfPreviousTwoWeek);
-        double percent = ((totalOrderOfPreviousOneWeek - totalOrderOfPreviousTwoWeek)
-                / (totalOrderOfPreviousTwoWeek + totalOrderOfPreviousOneWeek)) * 100;
+        log.info("totalReviewOfPreviousOneWeek {}", totalReviewOfPreviousOneWeek);
+        log.info("totalReviewOfPreviousTwoWeek {}", totalReviewOfPreviousTwoWeek);
+        double percent = ((totalReviewOfPreviousOneWeek - totalReviewOfPreviousTwoWeek)
+                / (totalReviewOfPreviousTwoWeek + totalReviewOfPreviousOneWeek)) * 100;
         DecimalFormat decimalFormat = new DecimalFormat("#.00");
-
+        log.info("percent {}", percent);
         String formattedPercent = decimalFormat.format(percent);
-        String formattedTotalPrice = decimalFormat.format(totalOrderOfPreviousOneWeek);
+        String formattedTotalPrice = decimalFormat.format(totalReviewOfPreviousOneWeek);
 
         DataBarChartDto dataBarChartDto = DataBarChartDto.builder()
                 .barChartDtoList(barChartDtoPreviousOneWeekList)
