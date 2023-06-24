@@ -76,7 +76,6 @@ public class AccountServiceImpl implements AccountService {
         }
         if (editAccount.get().getAddress() == null) {
             log.info("address null");
-            log.info("editAccount.get().getAddress() == null {}", editAccount.get().getAddress().toString());
             Address address = new Address();
             address.setFullName(accountUpdateDto.getFullName());
             address.setPhone(accountUpdateDto.getPhoneNumber());
