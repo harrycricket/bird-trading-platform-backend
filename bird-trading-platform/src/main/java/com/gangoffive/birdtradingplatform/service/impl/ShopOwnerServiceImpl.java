@@ -16,6 +16,7 @@ import com.gangoffive.birdtradingplatform.repository.OrderRepository;
 import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.ChannelService;
+import com.gangoffive.birdtradingplatform.service.InfoService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
@@ -29,6 +30,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -56,7 +58,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     @Override
     public List<String> listShopDto(List<Long> listShopId, long userId) {
         var listShop = shopOwnerRepository.findAllById(listShopId);
-        if (listShop != null && !listShop.isEmpty()) {
+        if(listShop != null && !listShop.isEmpty()) {
             List<String> list = listShop.stream().map(shop -> this.shopOwnerToDtoWithUnread(shop, userId)).toList();
             return list;
         }
@@ -66,18 +68,18 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     @Override
     public long getAccountIdByShopid(long shopId) {
         var shop = shopOwnerRepository.findById(shopId);
-        if (shop.isPresent()) {
+        if(shop.isPresent()) {
             Account acc = shop.get().getAccount();
             if (acc != null) {
                 return acc.getId();
             }
-        } else {
+        }else {
             throw new CustomRuntimeException("400", String.format("Cannot found shop with id : %d", shopId));
         }
         return 0;
     }
 
-    private String shopOwnerToDtoWithUnread(ShopOwner shopOwner, long userId) {
+    private String shopOwnerToDtoWithUnread (ShopOwner shopOwner, long userId) {
         ShopOwnerDto shopOwnerDto = shopOwnerMapper.modelToDto(shopOwner);
 //        String shopDtoJson = JsonUtil.INSTANCE.getJsonString(shopOwner);
         Gson gson = new GsonBuilder()
@@ -163,7 +165,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartAccessoryPreviousOneWeekDtoList
         );
         double totalPriceOfPreviousOneWeek = 0;
-        for (BarChartDto barChartDto : barChartDtoPreviousOneWeekList) {
+        for (BarChartDto barChartDto: barChartDtoPreviousOneWeekList) {
             totalPriceOfPreviousOneWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
 
@@ -180,7 +182,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartAccessoryDtoPreviousTwoWeekList
         );
         double totalPriceOfPreviousTwoWeek = 0;
-        for (BarChartDto barChartDto : barChartDtoPreviousTwoWeekList) {
+        for (BarChartDto barChartDto: barChartDtoPreviousTwoWeekList) {
             totalPriceOfPreviousTwoWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
         double percent = ((totalPriceOfPreviousOneWeek - totalPriceOfPreviousTwoWeek)
@@ -212,7 +214,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartBirdPreviousOneWeekDtoList,
                 barChartAccessoryPreviousOneWeekDtoList);
         double totalOrderOfPreviousOneWeek = 0;
-        for (BarChartDto barChartDto : barChartDtoPreviousOneWeekList) {
+        for (BarChartDto barChartDto: barChartDtoPreviousOneWeekList) {
             totalOrderOfPreviousOneWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
 
@@ -229,7 +231,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartAccessoryDtoPreviousTwoWeekList
         );
         double totalOrderOfPreviousTwoWeek = 0;
-        for (BarChartDto barChartDto : barChartDtoPreviousTwoWeekList) {
+        for (BarChartDto barChartDto: barChartDtoPreviousTwoWeekList) {
             log.info("barChartDto.getAccessories() {}", barChartDto.getAccessories());
             log.info("barChartDto.getBirds() {}", barChartDto.getBirds());
             log.info("barChartDto.getFoods() {}", barChartDto.getFoods());
@@ -250,7 +252,6 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 .build();
         return dataBarChartDto;
     }
-
     @Override
     public DataBarChartDto dataBarChartByReviewAllTypeProduct(String email) {
         Optional<Account> account = accountRepository.findByEmail(email);
@@ -266,7 +267,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartBirdPreviousOneWeekDtoList,
                 barChartAccessoryPreviousOneWeekDtoList);
         double totalReviewOfPreviousOneWeek = 0;
-        for (BarChartDto barChartDto : barChartDtoPreviousOneWeekList) {
+        for (BarChartDto barChartDto: barChartDtoPreviousOneWeekList) {
             totalReviewOfPreviousOneWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
 
@@ -283,7 +284,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartAccessoryDtoPreviousTwoWeekList
         );
         double totalReviewOfPreviousTwoWeek = 0;
-        for (BarChartDto barChartDto : barChartDtoPreviousTwoWeekList) {
+        for (BarChartDto barChartDto: barChartDtoPreviousTwoWeekList) {
             log.info("barChartDto.getAccessories() {}", barChartDto.getAccessories());
             log.info("barChartDto.getBirds() {}", barChartDto.getBirds());
             log.info("barChartDto.getFoods() {}", barChartDto.getFoods());
@@ -309,14 +310,14 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
     private double dataPieChartByTypeProduct(Account account, Class<?> productClass) {
         List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
-                dataBarChartEachTypeProduct(account, productClass, true, false, false, 1);
+                dataBarChartEachTypeProduct(account, productClass, true, false, false,  1);
         return barChartFoodPreviousOneWeekDtoList.stream().mapToDouble(BarChartOneTypeDto::getValue).sum();
     }
 
     private List<BarChartDto> getListBarChartDto(
-            List<BarChartOneTypeDto> barChartFoodDtoList,
-            List<BarChartOneTypeDto> barChartBirdDtoList,
-            List<BarChartOneTypeDto> barChartAccessoryDtoList
+                    List<BarChartOneTypeDto> barChartFoodDtoList,
+                    List<BarChartOneTypeDto> barChartBirdDtoList,
+                    List<BarChartOneTypeDto> barChartAccessoryDtoList
     ) {
         List<BarChartDto> barChartDtoList = new ArrayList<>();
         for (int i = 0; i < barChartFoodDtoList.size(); i++) {
@@ -437,7 +438,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             String token = jwtService.generateToken(UserPrincipal.create(account.get()));
             SuccessResponse successResponse = SuccessResponse.builder()
                     .successCode(String.valueOf(HttpStatus.OK.value()))
-                    .successMessage("Token: " + token)
+                    .successMessage("http://localhost:3001/get-token?token=" + token)
                     .build();
             return new ResponseEntity<>(successResponse, HttpStatus.BAD_REQUEST);
         } else {
@@ -452,11 +453,11 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     @Override
     public ResponseEntity getShopInforByUserId(long userid) {
         var shopInfo = shopOwnerRepository.findByAccount_Id(userid);
-        if (shopInfo.isPresent()) {
+        if(shopInfo.isPresent()){
             ShopInfoDto shopOwnerDto = shopOwnerMapper.modelToShopInfoDto(shopInfo.get());
             return ResponseEntity.ok(shopOwnerDto);
         } else {
-            return ResponseEntity.ok(ErrorResponse.builder().errorCode(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getCode() + "")
+            return ResponseEntity.ok(ErrorResponse.builder().errorCode(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getCode()+"")
                     .errorMessage(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getMessage()).build());
         }
     }
@@ -552,14 +553,14 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 //                        orderDetail -> orderDetail.getProduct() instanceof Food
                         orderDetail -> productClass.isInstance(orderDetail.getProduct())
                 ).toList();
-        log.info("size od Food {}", listOrderDetailOfProduct.size());
+        log.info("size od Food {}",listOrderDetailOfProduct.size());
         for (OrderDetail orderDetail : listOrderDetailOfProduct) {
             log.info("id od Food {}", orderDetail.getId());
         }
 
         //Get list Order of Food From orderDetailOfFoods
         List<Order> listOrderOfProduct = listOrderDetailOfProduct.stream().map(OrderDetail::getOrder).distinct().toList();
-        log.info("size o Food {}", listOrderOfProduct.size());
+        log.info("size o Food {}",listOrderOfProduct.size());
         for (Order order : listOrderOfProduct) {
             log.info("id o Food {}", order.getId());
         }
