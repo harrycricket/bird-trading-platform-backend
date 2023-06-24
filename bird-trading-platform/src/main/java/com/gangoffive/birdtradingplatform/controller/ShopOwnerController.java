@@ -116,13 +116,8 @@ public class ShopOwnerController {
     }
 
     @GetMapping("/redirect")
-    public ResponseEntity<?> redirectToShopOwner(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        return shopOwnerService.redirectToShopOwner(response);
-    }
-
-    @GetMapping("/redirect/local")
-    public void redirectLocalToShopOwner(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
+    public ResponseEntity<?> redirectToShopOwner() {
+        return shopOwnerService.redirectToShopOwner();
     }
 
 }

@@ -38,7 +38,7 @@ public interface ShopOwnerService {
     List<BarChartOneTypeDto> dataBarChartEachTypeProduct(
             Account account, Class<?> productClass, boolean isCalcPrice, boolean isCalcQuantity, boolean isCalcReview, int week);
 
-    ResponseEntity<?> redirectToShopOwner(HttpServletResponse response);
+    ResponseEntity<?> redirectToShopOwner();
 
     ResponseEntity getShopInforByUserId(long userid);
 }
