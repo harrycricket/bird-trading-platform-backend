@@ -1,9 +1,11 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.ColorChart;
+import com.gangoffive.birdtradingplatform.enums.ResponseCode;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
@@ -12,12 +14,14 @@ import com.gangoffive.birdtradingplatform.repository.OrderRepository;
 import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.ChannelService;
+import com.gangoffive.birdtradingplatform.service.InfoService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
 import com.google.gson.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
@@ -43,6 +47,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final JwtService jwtService;
+
     @Override
     public List<String> listShopDto(List<Long> listShopId, long userId) {
         var listShop = shopOwnerRepository.findAllById(listShopId);
@@ -419,6 +424,18 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     @Override
     public String redirectToShopOwner(String email) {
         return jwtService.generateToken(UserPrincipal.create(accountRepository.findByEmail(email).get()));
+    }
+
+    @Override
+    public ResponseEntity getShopInforByUserId(long userid) {
+        var shopInfo = shopOwnerRepository.findByAccount_Id(userid);
+        if(shopInfo.isPresent()){
+            ShopInfoDto shopOwnerDto = shopOwnerMapper.modelToShopInfoDto(shopInfo.get());
+            return ResponseEntity.ok(shopOwnerDto);
+        } else {
+            return ResponseEntity.ok(ErrorResponse.builder().errorCode(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getCode()+"")
+                    .errorMessage(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getMessage()).build());
+        }
     }
 
     public List<Order> getAllOrdersNumberPreviousWeek(Account account, int week) {

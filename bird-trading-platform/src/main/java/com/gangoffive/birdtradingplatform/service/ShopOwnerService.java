@@ -38,4 +38,6 @@ public interface ShopOwnerService {
             Account account, Class<?> productClass, boolean isCalcPrice, boolean isCalcQuantity, boolean isCalcReview, int week);
 
     String redirectToShopOwner(String email);
+
+    ResponseEntity getShopInforByUserId(long userid);
 }
