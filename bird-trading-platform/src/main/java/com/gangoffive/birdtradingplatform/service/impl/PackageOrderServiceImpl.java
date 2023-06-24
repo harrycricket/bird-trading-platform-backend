@@ -60,6 +60,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     public ResponseEntity<?> packageOrder(PackageOrderRequestDto packageOrder, String paymentId, String payerId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
+        log.info("username: {}", username);
         Optional<Account> account = accountRepository.findByEmail(username);
         Map<Long, Integer> productWithQuantityMap = getAllProductWithQuantity(packageOrder.getCartInfo().getItemsByShop());
         if (paymentId != null && payerId != null) {
