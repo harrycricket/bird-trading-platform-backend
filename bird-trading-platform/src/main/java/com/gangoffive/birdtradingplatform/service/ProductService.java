@@ -42,5 +42,6 @@ public interface ProductService {
 
     ProductShopDto productToProductShopDto(Product product);
 
+    ResponseEntity<?> updateListProductStatus(ProductStatusShopChangeDto productStatusShopChangeDto);
 }
 

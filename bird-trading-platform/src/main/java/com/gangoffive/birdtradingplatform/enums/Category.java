@@ -58,7 +58,7 @@ public enum Category {
             result = lists.stream().filter(item -> item.getCategoryId()==id)
                     .map(item -> item.getCategoryName()).findFirst().get();
         }catch (Exception e) {
-            throw new CustomRuntimeException(HttpStatus.NOT_FOUND.name(), "Not found this catagory");
+            throw new CustomRuntimeException(HttpStatus.NOT_FOUND.name(), "Not found this category");
         }
         return result;
     }
