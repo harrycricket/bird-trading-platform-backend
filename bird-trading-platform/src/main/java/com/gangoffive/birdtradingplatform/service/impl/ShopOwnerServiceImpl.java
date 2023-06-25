@@ -439,7 +439,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                     .successCode(String.valueOf(HttpStatus.OK.value()))
                     .successMessage("http://localhost:3001/get-token?token=" + token)
                     .build();
-            return new ResponseEntity<>(successResponse, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(successResponse, HttpStatus.OK);
         } else {
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))

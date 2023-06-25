@@ -49,7 +49,6 @@ public class SecurityConfiguration {
             "/auth/**",
             "/oauth2/**",
             "/error",
-            "/user/me",
             "/api/v1/users/register",
             "/api/v1/users/authenticate",
             "/api/v1/users/reset-password",
