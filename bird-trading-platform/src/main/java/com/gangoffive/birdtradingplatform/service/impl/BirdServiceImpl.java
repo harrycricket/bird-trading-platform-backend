@@ -133,7 +133,7 @@ public class BirdServiceImpl implements BirdService {
     public ResponseEntity<?> getAllBirdByShop(int pageNumber) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         log.info("emaoil {}", email);
-        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
+//        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
         var account = accountRepository.findByEmail(email);
         if(account.isPresent()) {
             ShopOwner shopOwner = account.get().getShopOwner();

@@ -453,7 +453,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     public ResponseEntity<?> getShopInforByUserId() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         log.info("emaoil {}", email);
-        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
+//        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
         var account = accountRepository.findByEmail(email);
         if(account.isPresent()) {
             var shopInfo = account.get().getShopOwner();

@@ -125,7 +125,7 @@ public class FoodServiceImpl implements FoodService {
     @Override
     public ResponseEntity<?> getFoodByShop(int pageNumber) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
+//        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
         var account = accountRepository.findByEmail(email);
         if(account.isPresent()) {
             ShopOwner shopOwner = account.get().getShopOwner();

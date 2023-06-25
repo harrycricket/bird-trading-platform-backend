@@ -130,7 +130,7 @@ public class AccessoryServiceImpl implements AccessoryService {
     @Override
     public ResponseEntity<?> getAllAccessoryByShop(int pageNumber) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
+//        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
         var account = accountRepository.findByEmail(email);
         if(account.isPresent()) {
             ShopOwner shopOwner = account.get().getShopOwner();
