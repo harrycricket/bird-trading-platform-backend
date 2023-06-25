@@ -15,14 +15,14 @@ import io.swagger.v3.oas.annotations.servers.Server;
                 contact = @Contact(
                         name = "BirdTradingSystem",
                         email = "birdtradingsystem@gmail.com",
-                        url = "https://birdtradingsystem.com"
+                        url = "https://birdland2nd.store/"
                 ),
                 description = "OpenApi documentation for Bird Trading System",
                 title = "OpenApi specification - Bird trading system",
                 version = "1.0",
                 license = @License(
                         name = "Licence 1",
-                        url = "https://birdtradingsystem.com"
+                        url = "https://birdland2nd.store/"
                 ),
                 termsOfService = "Terms of service"
         ),
@@ -33,7 +33,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
                 ),
                 @Server(
                         description = "PROD ENV",
-                        url = "https://birdtradingsystem.com"
+                        url = "https://thongtienthienphuot.shop"
                 )
         },
         security = {

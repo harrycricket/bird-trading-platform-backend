@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.dto.TagDto;
 import com.gangoffive.birdtradingplatform.entity.Tag;
 import com.gangoffive.birdtradingplatform.repository.TagRepository;
 import com.gangoffive.birdtradingplatform.service.TagService;
@@ -37,10 +38,10 @@ public class TagServiceImpl implements TagService {
         Tag newTag = new Tag();
         newTag.setName(name);
         Tag save = tagRepository.save(newTag);
-        SuccessResponse successResponse = SuccessResponse.builder()
-                .successCode(String.valueOf(HttpStatus.OK.value()))
-                .successMessage("Id: " + save.getId())
+        TagDto tagDto = TagDto.builder()
+                .id(save.getId())
+                .name(save.getName())
                 .build();
-        return new ResponseEntity<>(successResponse, HttpStatus.OK);
+        return new ResponseEntity<>(tagDto, HttpStatus.OK);
     }
 }
