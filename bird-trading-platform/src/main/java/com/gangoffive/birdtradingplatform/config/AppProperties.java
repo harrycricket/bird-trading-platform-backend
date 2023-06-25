@@ -23,6 +23,8 @@ public class AppProperties {
 
     private final Ship ship = new Ship();
 
+    private final ShopOwner shopOwner = new ShopOwner();
+
     public static final class Auth {
         private String secretKey;
         private Long tokenExpiration;
@@ -221,6 +223,18 @@ public class AppProperties {
         }
     }
 
+    public static final class ShopOwner {
+        private String url;
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+    }
+
     public Auth getAuth() {
         return auth;
     }
@@ -251,5 +265,9 @@ public class AppProperties {
 
     public Ship getShip() {
         return ship;
+    }
+
+    public ShopOwner getShopOwner() {
+        return shopOwner;
     }
 }

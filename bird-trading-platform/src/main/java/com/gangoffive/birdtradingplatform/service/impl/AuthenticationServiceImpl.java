@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
+import com.gangoffive.birdtradingplatform.entity.Address;
 import com.gangoffive.birdtradingplatform.entity.VerifyToken;
 import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.AuthProvider;
@@ -18,6 +19,7 @@ import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.AuthenticationService;
 import com.gangoffive.birdtradingplatform.service.EmailService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
+import com.gangoffive.birdtradingplatform.util.MyUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -79,14 +81,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 acc.setProvider(AuthProvider.local);
 
                 //sending mail to verify
-                String verificationCode = UUID.randomUUID().toString();
-                String verificationLink = appProperties.getEmail().getVerifyLink() + "register?token=" + verificationCode;
-                log.info("verify link {}", verificationLink);
+                int verificationCode = MyUtils.generateSixRandomNumber();
+//                String verificationLink = appProperties.getEmail().getVerifyLink() + "register?token=" + verificationCode;
+//                log.info("verify link {}", verificationLink);
                 String emailSubject = "Account Verification";
                 StringBuffer emailContent = new StringBuffer();
-                emailContent.append("Dear User,\n");
-                emailContent.append("Thank you for registering an account with our service. Please use the following verification code to activate your account:\n");
-                emailContent.append("Verification: " + verificationLink +"\n");
+                emailContent.append("Dear " + acc.getFullName() + ",\n");
+                emailContent.append("Thank you for registering an account with our service. Please use the code to activate your account.\n");
+                emailContent.append("Verification code: " + verificationCode +"\n");
                 emailContent.append("This link will expire after 10 minutes.\n");
                 emailContent.append("If you did not create an account or have any questions, please contact our support team.\n");
                 emailContent.append("Best regards,\n");
@@ -168,20 +170,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public String resetPassword(String email) {
         Optional<Account> account = accountRepository.findByEmail(email);
         if (account.isPresent()) {
-            String randomToken = UUID.randomUUID().toString();
+            int randomToken = MyUtils.generateSixRandomNumber();
             VerifyToken verifyToken = new VerifyToken();
             verifyToken.setToken(randomToken);
             verifyToken.setExpired(new Date(System.currentTimeMillis() + expiration));
             verifyToken.setRevoked(false);
             verifyToken.setAccount(account.get());
             verifyTokenRepository.save(verifyToken);
-            String linkVerify = appProperties.getEmail().getVerifyLink() + "resetpassword?token=" + randomToken;
             StringBuffer emailContent = new StringBuffer();
-            emailContent.append("Dear User,\n");
-            emailContent.append("We received a request to reset your account password. Please click on the following link to proceed with the password reset process:\n");
-            emailContent.append("Reset Password: " + linkVerify + "\n");
-            emailContent.append("This link will expire after 10 minutes.\n");
-            emailContent.append("If you did not initiate this request or have any questions, please contact our support team.\n");
+            emailContent.append("Dear " + account.get().getFullName() + ",\n");
+            emailContent.append("We received a request to reset your account password. Please use the code to reset your password.\n");
+            emailContent.append("Code for reset password: " + randomToken + "\n");
+            emailContent.append("This code will expire after 10 minutes.\n");
+            emailContent.append("If you did not initiate this code or have any questions, please contact our support team.\n");
             emailContent.append("Best regards,\n");
             emailContent.append("BirdStore2ND\n");
             emailService.sendSimpleEmail(email, emailContent.toString(), emailSubject);
@@ -217,7 +218,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .fullName(account.getFullName())
                 .phoneNumber(account.getPhoneNumber())
                 .imgUrl(account.getImgUrl())
-                .address(Optional.ofNullable(account.getAddress().getAddress()).orElse(""))
+                .address(Optional.ofNullable(account.getAddress()).map(Address::getAddress).orElse(""))
                 .build();
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
         log.info("refreshTokenCookie: {}", refreshTokenCookie.getValue());

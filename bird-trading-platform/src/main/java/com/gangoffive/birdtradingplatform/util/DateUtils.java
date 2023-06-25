@@ -12,7 +12,7 @@ import java.util.List;
 @Slf4j
 public class DateUtils {
     public static String formatLocalDateToString(LocalDate date) {
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yy");
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd/MM");
         return date.format(outputFormatter);
     }
 
