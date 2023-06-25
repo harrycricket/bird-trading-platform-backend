@@ -7,8 +7,10 @@ import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.Category;
+import com.gangoffive.birdtradingplatform.enums.ProductUpdateStatus;
 import com.gangoffive.birdtradingplatform.enums.ResponseCode;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
+import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.*;
 import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.ProductService;
@@ -17,6 +19,7 @@ import com.gangoffive.birdtradingplatform.util.MyUtils;
 import com.gangoffive.birdtradingplatform.util.S3Utils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import com.gangoffive.birdtradingplatform.wrapper.ProductDetailWrapper;
+import com.google.gson.JsonObject;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -294,6 +297,24 @@ public class ProductServiceImpl implements ProductService {
             return productShopDto;
         }
         return null;
+    }
+
+    @Override
+    public ResponseEntity<?> updateListProductStatus(ProductStatusShopChangeDto productStatusShopChangeDto) {
+        ProductUpdateStatus product = ProductUpdateStatus.getProductUpdateStatusEnum(productStatusShopChangeDto.getStatus());
+        try{
+            int numberStatusChange = productRepository.updateListProductStatus(product.isDelete(),
+                    product.isHidden(),
+                    productStatusShopChangeDto.getIds());
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("numberProductChange", numberStatusChange);
+            jsonObject.addProperty("message", ResponseCode.UPDATE_LIST_PRODUCT_STATUS_SUCCESS.getMessage());
+            return ResponseEntity.ok(jsonObject.toString());
+        }catch (Exception e) {
+//            return new ResponseEntity<>(ErrorResponse.builder().errorCode(ResponseCode.UPDATE_LIST_PRODUCT_STATUS_FAIL.getCode()+"")
+//                    .errorMessage(ResponseCode.UPDATE_LIST_PRODUCT_STATUS_FAIL.getMessage()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ResponseCode.UPDATE_LIST_PRODUCT_STATUS_FAIL.toString(), HttpStatus.BAD_REQUEST);
+        }
     }
 
 

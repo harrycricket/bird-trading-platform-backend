@@ -1,10 +1,12 @@
 package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.Product;
+import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -22,4 +24,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByIdWithCondition(long id);
 
     Integer countAllByShopOwner_Id(Long id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE Product p SET p.deleted = ?1, p.hidden = ?2 WHERE p.id in ?3")
+    int updateListProductStatus (boolean delete, boolean hidden, List<Long> ids);
 }

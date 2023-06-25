@@ -16,7 +16,10 @@ public enum ResponseCode {
     //Shop owner
     NOT_FOUND_LIST_SHOP_BY_LIST_ID(31, "Cannot found shop with that list shop id"),
     THIS_ACCOUNT_NOT_HAVE_SHOP(32, "This account hasn't created shop."),
-    NOT_FOUND_THIS_PRODUCT_SHOP_ID(22, "Cannot found this product with shop id!"),
+    NOT_FOUND_THIS_PRODUCT_SHOP_ID(33, "Cannot found this product with shop id!"),
+    UPDATE_LIST_PRODUCT_STATUS_SUCCESS(34, "Update successfully"),
+
+    UPDATE_LIST_PRODUCT_STATUS_FAIL(35, "Update Fail"),
 
     //Promotion shop
     NOT_FOUND_THIS_SHOP_ID(31, "Cannot found promotion shop with this id!"),
@@ -43,8 +46,8 @@ public enum ResponseCode {
     @Override
     public String toString() {
         return "{" +
-                "code=" + code +
-                ", message='" + message + '\'' +
+                "code:" + code +
+                ", message:'" + message + '\'' +
                 '}';
     }
 }
