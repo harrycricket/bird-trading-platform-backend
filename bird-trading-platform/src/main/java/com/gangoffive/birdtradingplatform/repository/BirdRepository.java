@@ -49,6 +49,25 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
                         double lowestPrice, double highestPrice, Pageable pageable);
 
     Page<Bird> findAllByDeletedFalseAndQuantityGreaterThan(int quantity, Pageable pageable);
+    Optional<Page<Product>> findByShopOwner_Id(long id, Pageable pageable);
+    @Query(value = "SELECT b.product_id " +
+            "FROM `bird-trading-platform`.tbl_bird b " +
+            "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
+            "ON b.product_id = ps.product_id " +
+            "WHERE b.shop_id = ?1 " +
+            "And b.name LIKE %?2% " +
+            "AND b.type_id IN ?3 " +
+            "AND ps.star >= ?4 " +
+            "AND b.price >= ?5 " +
+            "AND b.price <= ?6 " +
+            "AND b.is_deleted = 0 " +
+            "AND b.quantity > 0 "
+            ,
+            nativeQuery = true)
+    Page<Long> idFilterShop(Long idShop, String name, List<Long> listType, double star,
+                        double lowestPrice, double highestPrice, Pageable pageable);
+
+
     Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalse(long id, Pageable pageable);
 
     Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(long id, Pageable pageable);

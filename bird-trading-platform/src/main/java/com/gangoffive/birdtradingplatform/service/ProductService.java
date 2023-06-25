@@ -38,6 +38,7 @@ public interface ProductService {
     ResponseEntity<?> filter(ProductFilterDto filterDto);
 
     ResponseEntity<?> addNewProduct(List<MultipartFile> multipartImgList, MultipartFile multipartVideo, ProductShopOwnerDto productShopOwnerDto);
+    public ResponseEntity<?> filterByShop(ShopFilterDto shopFilterDto);
 
     ProductShopDto productToProductShopDto(Product product);
 

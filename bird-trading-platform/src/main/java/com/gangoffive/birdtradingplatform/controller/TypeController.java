@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/shop-owner")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 @Slf4j
 public class TypeController {
