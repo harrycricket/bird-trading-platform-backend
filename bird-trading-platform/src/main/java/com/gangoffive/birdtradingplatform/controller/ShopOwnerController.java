@@ -42,25 +42,13 @@ public class ShopOwnerController {
     }
 
     @GetMapping("/line-chart")
-    public List<LineChartDto> getListLineChartDto() throws ParseException {
-//        return shopOwnerService.dataBumpChartByTypeProduct(accountRepository.findByEmail("YamamotoEmi37415@gmail.com").get(), Accessory.class);
-//        String pattern = "MM-dd-yyyy";
-//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-//        simpleDateFormat.format(new Date("2023-06-14"));
-
-        String sDate1 = "7/06/2023";
-        Date date1 = new SimpleDateFormat("dd/MM/yyyy").parse(sDate1);
-
-        return shopOwnerService.getDataLineChart("YamamotoEmi37415@gmail.com", date1);
-//        List<PieChartDto> dataPieChart = shopOwnerService.getDataPieChart("YamamotoEmi37415@gmail.com");
-//        for (PieChartDto pie : dataPieChart) {
-//            log.info("pie {}", pie);
-//        }
+    public List<LineChartDto> getListLineChartDto(@RequestParam(required = false) String date) {
+        return shopOwnerService.getDataLineChart(date, 7);
     }
 
     @GetMapping("/pie-chart")
     public List<PieChartDto> getListPieChartDto() {
-        List<PieChartDto> dataPieChart = shopOwnerService.getDataPieChart("YamamotoEmi37415@gmail.com");
+        List<PieChartDto> dataPieChart = shopOwnerService.getDataPieChart();
         for (PieChartDto pie : dataPieChart) {
             log.info("pie {}", pie);
         }
@@ -69,24 +57,17 @@ public class ShopOwnerController {
 
     @GetMapping("/bar-chart/price")
     public DataBarChartDto getListBarChartPriceDto() {
-//        List<Order> allOrdersPreviousWeek = shopOwnerService.getAllOrdersPreviousWeek(accountRepository.findByEmail("YamamotoEmi37415@gmail.com").get());
-//        for (Order order: allOrdersPreviousWeek) {
-//            log.info("order id{}", order.getId());
-//        }
-//        for (LocalDate date : shopOwnerService.getAllDatePreviousWeek()) {
-//            log.info("date id{}", date);
-//        }
-        return shopOwnerService.dataBarChartByPriceAllTypeProduct("YamamotoEmi37415@gmail.com");
+        return shopOwnerService.dataBarChartByPriceAllTypeProduct();
     }
 
     @GetMapping("/bar-chart/order")
     public DataBarChartDto getListBarChartOrderDto() {
-        return shopOwnerService.dataBarChartByOrderAllTypeProduct("YamamotoEmi37415@gmail.com");
+        return shopOwnerService.dataBarChartByOrderAllTypeProduct();
     }
 
     @GetMapping("/bar-chart/review")
     public DataBarChartDto getListBarChartReviewDto() {
-        return shopOwnerService.dataBarChartByReviewAllTypeProduct("YamamotoEmi37415@gmail.com");
+        return shopOwnerService.dataBarChartByReviewAllTypeProduct();
     }
 
     @GetMapping("/tags")

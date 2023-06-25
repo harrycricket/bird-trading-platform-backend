@@ -461,7 +461,7 @@ public class ProductServiceImpl implements ProductService {
     public ResponseEntity<?> addNewProduct(List<MultipartFile> multipartImgList, MultipartFile multipartVideo, ProductShopOwnerDto productShopOwnerDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        Optional<Account> account = accountRepository.findByEmail("YamamotoEmi37415@gmail.com");
+        Optional<Account> account = accountRepository.findByEmail(username);
         String originUrl = appProperties.getS3().getUrl();
         String urlVideo = "";
         List<String> urlImgList = new ArrayList<>();

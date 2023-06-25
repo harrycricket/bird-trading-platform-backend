@@ -20,15 +20,15 @@ public interface ShopOwnerService {
 
     long getAccountIdByShopid(long shopId);
 
-    List<LineChartDto> getDataLineChart(String email, Date dateFrom);
+    List<LineChartDto> getDataLineChart(String dateFrom, int date);
 
-    List<PieChartDto> getDataPieChart(String email);
+    List<PieChartDto> getDataPieChart();
 
-    DataBarChartDto dataBarChartByPriceAllTypeProduct(String email);
+    DataBarChartDto dataBarChartByPriceAllTypeProduct();
 
-    DataBarChartDto dataBarChartByOrderAllTypeProduct(String email);
+    DataBarChartDto dataBarChartByOrderAllTypeProduct();
 
-    DataBarChartDto dataBarChartByReviewAllTypeProduct(String email);
+    DataBarChartDto dataBarChartByReviewAllTypeProduct();
 
     List<Order> getAllOrdersNumberPreviousWeek(Account account, int week);
 

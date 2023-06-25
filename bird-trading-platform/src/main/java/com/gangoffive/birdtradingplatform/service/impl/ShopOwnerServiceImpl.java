@@ -3,6 +3,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.ColorChart;
@@ -31,6 +32,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -53,7 +56,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final JwtService jwtService;
-
+    private final AppProperties appProperties;
     @Override
     public List<String> listShopDto(List<Long> listShopId, long userId) {
         var listShop = shopOwnerRepository.findAllById(listShopId);
@@ -78,7 +81,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         return 0;
     }
 
-    private String shopOwnerToDtoWithUnread (ShopOwner shopOwner, long userId) {
+    private String shopOwnerToDtoWithUnread(ShopOwner shopOwner, long userId) {
         ShopOwnerDto shopOwnerDto = shopOwnerMapper.modelToDto(shopOwner);
 //        String shopDtoJson = JsonUtil.INSTANCE.getJsonString(shopOwner);
         Gson gson = new GsonBuilder()
@@ -98,29 +101,51 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     }
 
     @Override
-    public List<LineChartDto> getDataLineChart(String email, Date dateFrom) {
+    public List<LineChartDto> getDataLineChart(String dateFrom, int date) {
+        Date newDateFrom;
+        if (dateFrom == null || dateFrom.isEmpty()) {
+            // Get the current date
+            LocalDate currentDate = LocalDate.now();
+
+            // Get the date of the previous week
+            LocalDate previousWeekDate = currentDate.minusDays(7);
+
+            // Get the start and end dates of the previous week
+            newDateFrom = Date.from(previousWeekDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        } else {
+            try {
+                newDateFrom = new SimpleDateFormat("dd/MM/yyyy").parse(dateFrom);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         List<LineChartDto> lineChartDtoList = new ArrayList<>();
         LineChartDto lineChartDtoOfBird = LineChartDto.builder()
                 .id(Bird.class.getSimpleName())
-                .data(dataLineChartByTypeProduct(account.get(), Bird.class, dateFrom))
+                .data(dataLineChartByTypeProduct(account.get(), Bird.class, newDateFrom))
                 .build();
         lineChartDtoList.add(lineChartDtoOfBird);
         LineChartDto lineChartDtoOfAccessory = LineChartDto.builder()
                 .id(Accessory.class.getSimpleName())
-                .data(dataLineChartByTypeProduct(account.get(), Accessory.class, dateFrom))
+                .data(dataLineChartByTypeProduct(account.get(), Accessory.class, newDateFrom))
                 .build();
         lineChartDtoList.add(lineChartDtoOfAccessory);
         LineChartDto lineChartDtoOfFood = LineChartDto.builder()
                 .id(Food.class.getSimpleName())
-                .data(dataLineChartByTypeProduct(account.get(), Food.class, dateFrom))
+                .data(dataLineChartByTypeProduct(account.get(), Food.class, newDateFrom))
                 .build();
         lineChartDtoList.add(lineChartDtoOfFood);
         return lineChartDtoList;
     }
 
     @Override
-    public List<PieChartDto> getDataPieChart(String email) {
+    public List<PieChartDto> getDataPieChart() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         List<PieChartDto> pieChartDtoList = new ArrayList<>();
         PieChartDto pieChartDtoOfBird = PieChartDto.builder()
@@ -149,7 +174,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
 
     @Override
-    public DataBarChartDto dataBarChartByPriceAllTypeProduct(String email) {
+    public DataBarChartDto dataBarChartByPriceAllTypeProduct() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         List<BarChartDto> barChartDtoPreviousOneWeekList;
         List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
@@ -199,7 +226,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     }
 
     @Override
-    public DataBarChartDto dataBarChartByOrderAllTypeProduct(String email) {
+    public DataBarChartDto dataBarChartByOrderAllTypeProduct() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         List<BarChartDto> barChartDtoPreviousOneWeekList;
         List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
@@ -252,7 +281,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         return dataBarChartDto;
     }
     @Override
-    public DataBarChartDto dataBarChartByReviewAllTypeProduct(String email) {
+    public DataBarChartDto dataBarChartByReviewAllTypeProduct() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         List<BarChartDto> barChartDtoPreviousOneWeekList;
         List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
@@ -437,7 +468,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             String token = jwtService.generateToken(UserPrincipal.create(account.get()));
             SuccessResponse successResponse = SuccessResponse.builder()
                     .successCode(String.valueOf(HttpStatus.OK.value()))
-                    .successMessage("http://localhost:3001/get-token?token=" + token)
+                    .successMessage(appProperties.getShopOwner().getUrl() + token)
                     .build();
             return new ResponseEntity<>(successResponse, HttpStatus.OK);
         } else {
