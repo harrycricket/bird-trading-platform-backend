@@ -217,7 +217,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .fullName(account.getFullName())
                 .phoneNumber(account.getPhoneNumber())
                 .imgUrl(account.getImgUrl())
-                .address(account.getAddress().getAddress())
+                .address(Optional.ofNullable(account.getAddress().getAddress()).orElse(""))
                 .build();
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
         log.info("refreshTokenCookie: {}", refreshTokenCookie.getValue());
