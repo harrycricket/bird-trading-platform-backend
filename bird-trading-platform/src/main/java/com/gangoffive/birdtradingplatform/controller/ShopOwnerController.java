@@ -76,8 +76,8 @@ public class ShopOwnerController {
     }
 
     @PostMapping("/tag")
-    public ResponseEntity<?> addNewTag(@RequestBody String name) {
-        return tagService.addNewTag(name);
+    public ResponseEntity<?> addNewTag(@RequestBody Object name) {
+        return tagService.addNewTag((String) name);
     }
 
     @PostMapping("/products")
