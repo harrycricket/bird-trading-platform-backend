@@ -468,7 +468,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             String token = jwtService.generateToken(UserPrincipal.create(account.get()));
             SuccessResponse successResponse = SuccessResponse.builder()
                     .successCode(String.valueOf(HttpStatus.OK.value()))
-                    .successMessage(appProperties.getShopOwner().getUrl() + token)
+                    .successMessage("get-token?token=" + token)
                     .build();
             return new ResponseEntity<>(successResponse, HttpStatus.OK);
         } else {
