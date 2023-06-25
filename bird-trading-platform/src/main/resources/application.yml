@@ -1,11 +1,8 @@
 spring:
   datasource:
-    url: ${env.DATABASE_LOCAL_URL}
-    username: ${env.DATABASE_LOCAL_USERNAME}
-    password: ${env.DATABASE_LOCAL_PASSWORD}
-#    url: ${env.DATABASE_URL}
-#    username: ${env.DATABASE_USERNAME}
-#    password: ${env.DATABASE_PASSWORD}
+    url: ${env.DATABASE_URL}
+    username: ${env.DATABASE_USERNAME}
+    password: ${env.DATABASE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate.ddl-auto: update
@@ -104,4 +101,6 @@ app:
     cancelUrl: https://www.birdland2nd.store/checkout
   S3:
     url: https://bird-trading-platform.s3.ap-southeast-1.amazonaws.com/
+  Ship:
+    url: https://gofship.shop/api/v1/shipping-fee
 

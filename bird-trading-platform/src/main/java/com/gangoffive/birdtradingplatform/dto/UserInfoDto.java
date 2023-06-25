@@ -15,5 +15,5 @@ public class UserInfoDto {
     private String fullName;
     private String phoneNumber;
     private String imgUrl;
-    private AddressDto address;
+    private String address;
 }

@@ -6,6 +6,7 @@
 package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.Accessory;
+import com.gangoffive.birdtradingplatform.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,7 +20,7 @@ import java.util.Optional;
 public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
     Optional<List<Accessory>> findByNameLike(String name);
     @Query(value = "SELECT product_id FROM `bird-trading-platform`.tbl_accessory where type_id=?;", nativeQuery =true)
-    List<Long> findType(Long idtype);
+    List<Long> findType(Long typeId);
     @Query(value = "SELECT type_id FROM `bird-trading-platform`.tbl_accessory;", nativeQuery = true)
     List<Long> allIdType();
 
@@ -31,8 +32,27 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "And a.type_id in (?2) " +
             "And ps.star >= ?3 " +
             "And a.price >= ?4 " +
-            "And a.price <= ?5", nativeQuery = true)
+            "And a.price <= ?5 " +
+            "And a.is_deleted = 0 " +
+            "And a.quantity > 0 ", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
-                        double lowestPrice, double hightPrice, Pageable pageable);
+                        double lowestPrice, double highestPrice, Pageable pageable);
 
+    Page<Accessory> findAllByQuantityGreaterThanAndDeletedFalse(int quantity, Pageable pageable);
+
+    Optional<Page<Product>> findByShopOwner_Id(long id, Pageable pageable);
+    @Query(value = "SELECT a.product_id " +
+            "FROM `bird-trading-platform`.tbl_accessory a " +
+            "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
+            "ON a.product_id = ps.product_id " +
+            "where a.shop_id = ?1 " +
+            "And a.name LIKE %?2% " +
+            "And a.type_id in (?3) " +
+            "And ps.star >= ?4 " +
+            "And a.price >= ?5 " +
+            "And a.price <= ?6 " +
+            "And a.is_deleted = 0 " +
+            "And a.quantity > 0 ", nativeQuery = true)
+    Page<Long> idFilterShop(Long idshop, String name, List<Long> listTypeId, double star,
+                        double lowestPrice, double highestPrice, Pageable pageable);
 }

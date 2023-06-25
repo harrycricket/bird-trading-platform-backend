@@ -66,6 +66,7 @@ public class SecurityConfiguration {
             "/api/v1/foods/**",
             "/api/v1/product/add-new",
             "/api/v1/info/**",
+            "/api/v1/shop-info",
             "/api/v1/users/get-cookie",
             "api/v1/package-order",
             "/api/v1/promotions",
@@ -77,6 +78,7 @@ public class SecurityConfiguration {
             "/api/v1/shop-owner/type-all", // Remember delete just for testing
             "/api/v1/shop-owner/product", // Remember delete just for testing
             "api/v1/shop-owner/**",
+            "api/v1/shop-owner",
             "api/v1/admin",
 //            "/favicon.ico",
 //            "/**/*.png",
@@ -96,7 +98,8 @@ public class SecurityConfiguration {
             "/swagger-ui/**",
             "/webjars/**",
             "/swagger-ui.html",
-            "/api/v1/products/filter"
+            "/api/v1/products/filter",
+            "/api/v1/products/filtershop"
     };
 
     @Bean

@@ -108,7 +108,7 @@ public class KafkaMessageConsumer {
         //save message
         messageService.saveMessage(messTemp);
         //mask all other message to read;
-        messageService.maskAllSeen(userID,channel.getId());
+        messageService.maskAllSeen(senderId,channel.getId());
         log.info(String.format("Message like %s",message.toString()));
     }
 
@@ -120,6 +120,7 @@ public class KafkaMessageConsumer {
     @Async
     void sendNotificationPrivate (NotificationDto notification) {
         Notification noti = notificationMapper.dtoToModel(notification);
+        notification.setId(System.currentTimeMillis());
         log.info("Here is noti after mapper {}", noti);
         //check send to shop or account
         Account acc = new Account();
@@ -135,7 +136,7 @@ public class KafkaMessageConsumer {
         } else {
             throw new CustomRuntimeException("400","Receive name not correct!");
         }
-        messagingTemplate.convertAndSend(destination, noti);
+        messagingTemplate.convertAndSend(destination, notification);
 
         //save notification
         notificationService.saveNotify(noti);

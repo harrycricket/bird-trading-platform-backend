@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
 import com.gangoffive.birdtradingplatform.dto.ProductShopOwnerDto;
+import com.gangoffive.birdtradingplatform.dto.ShopFilterDto;
 import com.gangoffive.birdtradingplatform.enums.ContentType;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
@@ -20,24 +21,30 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
 @Slf4j
 public class ProductController {
     private final ProductService productService;
     private final ProductRepository productRepository;
 
-    @GetMapping("products")
+    @GetMapping()
     public List<ProductDto> retrieveAllProduct() {
         return productService.retrieveAllProduct();
     }
 
-    @GetMapping("products/pages/{pageNumber}")
+    @GetMapping("pages/{pageNumber}")
     public ResponseEntity<?> retrieveProductByPageNumber(@PathVariable int pageNumber) {
-        return productService.retrieveProductByPagenumber(pageNumber);
+        return productService.retrieveProductByPageNumber(pageNumber);
     }
 
-    @GetMapping("products/top-product")
+    @GetMapping("by-shop-id")
+    public ResponseEntity retrieveAllProduct(@RequestParam int pageNumber, @RequestParam Long shopId) {
+        return productService.retrieveProductByShopId(shopId, pageNumber);
+    }
+
+
+    @GetMapping("top-product")
     public ResponseEntity<?> retrieveTopProduct() {
         List<ProductDto> result = productService.retrieveTopProduct();
         if(result == null){
@@ -48,25 +55,29 @@ public class ProductController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("products/search")
+    @GetMapping("search")
     public List<ProductDto> findProductByName(@RequestParam String name) {
         return productService.findProductByName(name);
     }
 
-    @GetMapping("products/{id}")
+    @GetMapping("{id}")
     public ResponseEntity<?> findProductById(@PathVariable Long id) {
         return productService.retrieveProductById(id);
     }
 
-    @GetMapping("products/id")
+    @GetMapping("id")
     public ResponseEntity<?> findProductByListId(@RequestParam("id") long[] ids ) {
         return productService.retrieveProductByListId(ids);
     }
 
-    @GetMapping("products/filter")
+    @GetMapping("filter")
     public ResponseEntity<?> filter(ProductFilterDto productFilterDto){
         log.info("dto {}", productFilterDto);
         return productService.filter(productFilterDto);
     }
-
+    @GetMapping("filter-shop")
+    public ResponseEntity<?> filterByShop(ShopFilterDto shopFilterDto){
+        log.info("dto {}", shopFilterDto);
+        return productService.filterByShop(shopFilterDto);
+    }
 }

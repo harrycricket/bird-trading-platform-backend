@@ -1,5 +1,8 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
@@ -19,9 +22,10 @@ import com.paypal.base.rest.PayPalRESTException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -59,7 +63,6 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         // Capture the start time
         Instant startTime = Instant.now();
         // Your existing code...
-
 //        log.info("checkPromotion(packageOrderRequestDto.getTransactionDto().getPromotionId()) {}", checkPromotion(packageOrderRequestDto.getTransactionDto().getPromotionId()));
         log.info("checkListProduct(packageOrderRequestDto.getProductOrder()) {}", checkListProduct(packageOrderRequestDto.getProductOrder()));
 //        log.info("checkUserOrderDto(packageOrderRequestDto.getUserOrderDto()) {}", checkUserOrderDto(packageOrderRequestDto.getUserOrderDto()));
@@ -174,10 +177,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     public boolean checkUserOrderDto(UserOrderDto userOrderDto) {
         return !(userOrderDto.getName() == null || userOrderDto.getName().isEmpty())
                 && !(userOrderDto.getPhoneNumber() == null || userOrderDto.getPhoneNumber().isEmpty())
-                && !(userOrderDto.getStreet() == null || userOrderDto.getStreet().isEmpty())
-                && !(userOrderDto.getWard() == null || userOrderDto.getWard().isEmpty())
-                && !(userOrderDto.getDistrict() == null || userOrderDto.getDistrict().isEmpty())
-                && !(userOrderDto.getCity() == null || userOrderDto.getCity().isEmpty())
+                && !(userOrderDto.getAddress() == null || userOrderDto.getAddress().isEmpty())
                 && accountRepository.findByEmail(userOrderDto.getEmail()).isPresent();
     }
 
@@ -277,15 +277,12 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         log.info("shippingFee {}", shippingFee);
         Address address = new Address();
         address.setPhone(packageOrderRequestDto.getUserOrderDto().getPhoneNumber());
-        address.setStreet(packageOrderRequestDto.getUserOrderDto().getStreet());
-        address.setWard(packageOrderRequestDto.getUserOrderDto().getWard());
-        address.setDistrict(packageOrderRequestDto.getUserOrderDto().getDistrict());
-        address.setCity(packageOrderRequestDto.getUserOrderDto().getCity());
+        address.setFullName(packageOrderRequestDto.getUserOrderDto().getName());
+        address.setAddress(packageOrderRequestDto.getUserOrderDto().getAddress());
         addressRepository.save(address);
         PackageOrder packageOrder = PackageOrder.builder()
                 .totalPrice(packageOrderRequestDto.getTransactionDto().getTotalPrice())
                 .discount(discount)
-                .shippingFee(shippingFee)
                 .paymentMethod(packageOrderRequestDto.getTransactionDto().getPaymentMethod())
                 .account(account)
                 .transaction(transaction)
@@ -343,7 +340,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     .collect(Collectors.toList());
             Order order = Order.builder()
                     .packageOrder(packageOrder)
-                    .status(OrderStatus.PROCESSING)
+                    .status(OrderStatus.PENDING)
                     .shopOwner(shopOwner)
                     .promotionShops(promotionShops)
                     .totalPrice(totalPriceByShop.get(shopOwner.getId()))
@@ -528,5 +525,38 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                         entry -> entry.getKey()
                 )
                 .collect(Collectors.toList());
+    }
+
+    private double getShippingFeeByDistance(double distance) throws JsonProcessingException {
+        RestTemplate restTemplate = new RestTemplate();
+        String apiUrl = appProperties.getShip().getUrl();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(apiUrl)
+                .queryParam("distance", distance);
+
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                builder.toUriString(),
+                HttpMethod.GET,
+                entity,
+                String.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            String responseBody = response.getBody();
+
+            // Parse the JSON response
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object> jsonMap = objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
+
+            // Access the 'shippingFee' field
+            Double shippingFee = (Double) jsonMap.get("shippingFee");
+            return shippingFee;
+        } else {
+            throw new RuntimeException();
+        }
     }
 }

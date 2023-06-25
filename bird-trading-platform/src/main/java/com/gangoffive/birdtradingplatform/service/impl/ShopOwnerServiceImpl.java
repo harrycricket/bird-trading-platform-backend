@@ -47,7 +47,8 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     public List<String> listShopDto(List<Long> listShopId, long userId) {
         var listShop = shopOwnerRepository.findAllById(listShopId);
         if(listShop != null && !listShop.isEmpty()) {
-            return listShop.stream().map(shop -> this.shopOwnerToDtoWithUnread(shop, userId)).toList();
+            List<String> list = listShop.stream().map(shop -> this.shopOwnerToDtoWithUnread(shop, userId)).toList();
+            return list;
         }
         return null;
     }

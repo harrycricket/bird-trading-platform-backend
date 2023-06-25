@@ -29,6 +29,8 @@ public class Order {
     @Enumerated(value = EnumType.STRING)
     private OrderStatus status;
 
+    @Column(name = "shipping_fee")
+    private double shippingFee;
 
     @Column(name = "created_date")
     @CreationTimestamp
@@ -51,6 +53,12 @@ public class Order {
             foreignKey = @ForeignKey(name = "FK_ORDER_PACKAGE_ORDER")
     )
     private PackageOrder packageOrder;
+
+    @OneToOne
+    @JoinColumn(name = "refund_transaction_id"
+            , foreignKey = @ForeignKey(name = "FK_ORDER_TRANSACTION")
+    )
+    private Transaction transaction;
 
     @OneToMany(mappedBy = "order")
     private List<OrderDetail> orderDetails;

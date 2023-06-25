@@ -88,10 +88,10 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
                         .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
         var listsProductSummary = productSummaryRepository.
-                findByCategory(new Bird().getClass().getSimpleName(), page);
+                findByCategoryAndProductQuantityGreaterThanAndDeletedFalse(new Bird().getClass().getSimpleName(), 0,page);
         if (listsProductSummary.isPresent()) {
             List<Long> listIdTopBird = listsProductSummary.get().stream()
-                    .map(productSummary -> productSummary.getProduct().getId()).toList();
+                    .map(proSum -> proSum.getProduct().getId()).toList();
             return listIdTopBird;
         }
 
@@ -104,10 +104,10 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
                         .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
         var listsProductSummary = productSummaryRepository.
-                findByCategory(new Accessory().getClass().getSimpleName(), page);
+                findByCategoryAndProductQuantityGreaterThanAndDeletedFalse(new Accessory().getClass().getSimpleName(), 0,page);
         if (listsProductSummary.isPresent()) {
             List<Long> listIdTopAccessories = listsProductSummary.get().stream()
-                    .map(productSummary -> productSummary.getProduct().getId()).toList();
+                    .map(proSum -> proSum.getProduct().getId()).toList();
             return listIdTopAccessories;
         }
         return null;
@@ -119,13 +119,10 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
                         .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
         var listsProductSummary = productSummaryRepository.
-                findByCategory(new Food().getClass().getSimpleName(), page);
+                findByCategoryAndProductQuantityGreaterThanAndDeletedFalse(new Food().getClass().getSimpleName(), 0,page);
         if (listsProductSummary.isPresent()) {
             List<Long> listIdTopFood = listsProductSummary.get().stream()
-                    .map(productSummary -> Optional.ofNullable(productSummary.getProduct())
-                            .map(Product::getId)
-                            .orElse(-1L)) // Provide a default value (-1L in this example) if the product is null
-                    .collect(Collectors.toList());
+                    .map(proSum -> proSum.getProduct().getId()).toList();
             return listIdTopFood;
         }
 

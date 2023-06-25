@@ -10,7 +10,9 @@ import java.util.Date;
 @NoArgsConstructor
 @ToString
 public class NotificationDto {
+    private long id;
     private String notiText;
+    private String name;
     private boolean isSeen;
     private String role;
     private Date notiDate;
