@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.AccountDto;
 import com.gangoffive.birdtradingplatform.dto.AuthenticationRequestDto;
+import com.gangoffive.birdtradingplatform.dto.ResetPasswordDto;
 import com.gangoffive.birdtradingplatform.service.AuthenticationService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,9 +32,9 @@ public class AuthenticationController {
         return authenticationService.authenticate(request, response);
     }
 
-    @GetMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestParam String email) {
-        return ResponseEntity.ok(authenticationService.resetPassword(email));
+    @PutMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDto resetPasswordDto) {
+        return authenticationService.resetPassword(resetPasswordDto);
     }
 
     @GetMapping("/get-cookie")

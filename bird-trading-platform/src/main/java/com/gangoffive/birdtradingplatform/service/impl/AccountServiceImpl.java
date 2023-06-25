@@ -164,7 +164,8 @@ public class AccountServiceImpl implements AccountService {
         log.info("token {}", verifyRequest.getCode());
         Optional<Account> account = accountRepository.findByEmail(verifyRequest.getEmail());
         if (!account.isPresent()) {
-            ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.NOT_FOUND.toString())
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(HttpStatus.NOT_FOUND.toString())
                     .errorMessage("Not correct email.").build();
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
@@ -175,8 +176,10 @@ public class AccountServiceImpl implements AccountService {
                 Date expireDate = tokenRepo.get().getExpired();
                 Date timeNow = new Date();
                 if (timeNow.after(expireDate)) {
-                    ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.BAD_REQUEST.toString())
-                            .errorMessage("This code has already expired. Please regenerate the code to continue the verification").build();
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(HttpStatus.BAD_REQUEST.toString())
+                            .errorMessage("This code has already expired. Please regenerate the code to continue the verification")
+                            .build();
                     return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
                 }
                 if (!isResetPassword) {
@@ -184,16 +187,23 @@ public class AccountServiceImpl implements AccountService {
                     accountRepository.save(account.get());
                 }
                 tokenRepo.get().setRevoked(true);
-                verifyTokenRepository.save(tokenRepo.get());
+                VerifyToken saveVerifyToken = verifyTokenRepository.save(tokenRepo.get());
+                SuccessResponse successResponse = SuccessResponse.builder()
+                        .successCode(String.valueOf(HttpStatus.OK.value()))
+                        .successMessage("Verification of the account was successful. Id: " + saveVerifyToken.getId())
+                        .build();
 
-                return ResponseEntity.ok(new ApiResponse(LocalDateTime.now(), "Verification of the account was successful!"));
+                return new ResponseEntity<>(successResponse, HttpStatus.OK);
             }
-            ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.BAD_REQUEST.toString())
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(HttpStatus.BAD_REQUEST.toString())
                     .errorMessage("This verify code has already used!").build();
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
-        ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.NOT_FOUND.toString())
-                .errorMessage("Not found code. Code not true").build();
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(HttpStatus.NOT_FOUND.toString())
+                .errorMessage("Not found code. Code not true")
+                .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
