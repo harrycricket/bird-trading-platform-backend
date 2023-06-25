@@ -78,12 +78,4 @@ public class ProductController {
     public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
         return productService.retrieveProductByShopIdForSO(pageNumber);
     }
-//    @GetMapping("/bird/shop-owner/{pageNumber}")
-//    public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
-//        return productService.retrieveProductByShopIdForSO(pageNumber);
-//    }
-//    @GetMapping("/bird/shop-owner/{pageNumber}")
-//    public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
-//        return productService.retrieveProductByShopIdForSO(pageNumber);
-//    }
 }
