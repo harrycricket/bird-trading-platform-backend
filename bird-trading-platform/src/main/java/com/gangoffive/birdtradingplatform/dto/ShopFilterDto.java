@@ -2,16 +2,17 @@ package com.gangoffive.birdtradingplatform.dto;
 
 import com.gangoffive.birdtradingplatform.enums.SortPriceDirection;
 import lombok.*;
-import org.springframework.stereotype.Controller;
 
 import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class ProductFilterDto {
-    private int category ;
+public class ShopFilterDto {
+    private Long shopId;
+    private int categoryId;
     private List<Long> listTypeId;
     private String name;
     private SortPriceDirection sortPrice;

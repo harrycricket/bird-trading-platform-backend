@@ -73,6 +73,8 @@ public class SecurityConfiguration {
             "/api/v1/users/message/send",
             "/api/v1/users/{userid}/get-channel", // config get channel must to delete
             "/api/v1//users/{userid}/get-messages", // must delete to
+            "/api/v1/types",
+            "/api/v1/types/**",
 //            "/api/v1/shop-owner/promotion-shop", // Remember delete just for testing
 //            "/api/v1/shop-owner/type-all", // Remember delete just for testing
 //            "/api/v1/shop-owner/product", // Remember delete just for testing
@@ -96,8 +98,7 @@ public class SecurityConfiguration {
             "/configuration/security",
             "/swagger-ui/**",
             "/webjars/**",
-            "/swagger-ui.html",
-            "/api/v1/products/filter"
+            "/swagger-ui.html"
     };
 
     @Bean

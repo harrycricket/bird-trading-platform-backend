@@ -3,21 +3,16 @@ package com.gangoffive.birdtradingplatform.controller;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
-import com.gangoffive.birdtradingplatform.dto.ProductShopOwnerDto;
-import com.gangoffive.birdtradingplatform.enums.ContentType;
+import com.gangoffive.birdtradingplatform.dto.ShopFilterDto;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
-import com.gangoffive.birdtradingplatform.util.S3Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -73,18 +68,14 @@ public class ProductController {
         log.info("dto {}", productFilterDto);
         return productService.filter(productFilterDto);
     }
+    @GetMapping("filter-shop")
+    public ResponseEntity<?> filterByShop(ShopFilterDto shopFilterDto){
+        log.info("dto {}", shopFilterDto);
+        return productService.filterByShop(shopFilterDto);
+    }
 
     @GetMapping("/bird/shop-owner/{pageNumber}")
     public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
         return productService.retrieveProductByShopIdForSO(pageNumber);
     }
-//    @GetMapping("/bird/shop-owner/{pageNumber}")
-//    public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
-//        return productService.retrieveProductByShopIdForSO(pageNumber);
-//    }
-//    @GetMapping("/bird/shop-owner/{pageNumber}")
-//    public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
-//        return productService.retrieveProductByShopIdForSO(pageNumber);
-//    }
-
 }

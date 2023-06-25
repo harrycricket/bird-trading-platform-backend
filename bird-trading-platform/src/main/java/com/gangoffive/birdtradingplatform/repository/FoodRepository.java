@@ -41,6 +41,22 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
                         double lowestPrice, double hightPrice, Pageable pageable);
     Page<Food> findAllByQuantityGreaterThanAndDeletedFalse(int quantity, Pageable pageable);
 
+    Optional<Page<Product>> findByShopOwner_Id(long id, Pageable pageable);
+    @Query(value = "SELECT f.product_id " +
+            "FROM `bird-trading-platform`.tbl_food f " +
+            "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
+            "ON f.product_id = ps.product_id " +
+            "WHERE f.shop_id = ?1 " +
+            "AND f.name LIKE %?2% " +
+            "AND f.type_id IN (?3) " +
+            "AND ps.star >= ?4 " +
+            "AND f.price >= ?5 " +
+            "AND f.price <= ?6 " +
+            "AND f.is_deleted = 0 " +
+            "AND f.quantity > 0 ",
+            nativeQuery = true)
+    Page<Long> idFilterShop(Long idShop, String name, List<Long> listTypeId, double star,
+                        double lowestPrice, double highestPrice, Pageable pageable);
     Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalse(long id, Pageable pageable);
 
     Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(long shopId, PageRequest pageRequest);
