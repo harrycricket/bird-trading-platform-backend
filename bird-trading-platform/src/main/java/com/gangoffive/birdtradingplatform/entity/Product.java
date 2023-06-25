@@ -60,6 +60,9 @@ public abstract class Product {
             columnDefinition = "TEXT")
     protected String videoUrl;
 
+    @Column(name = "hidden")
+    protected boolean hidden;
+
     @Column(name = "is_deleted")
     protected boolean deleted;
 
@@ -188,6 +191,14 @@ public abstract class Product {
 
     public void setProductSummary(ProductSummary productSummary) {
         this.productSummary = productSummary;
+    }
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
     }
 
     @Override

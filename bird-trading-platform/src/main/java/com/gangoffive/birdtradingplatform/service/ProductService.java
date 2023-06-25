@@ -34,12 +34,13 @@ public interface ProductService {
     ResponseEntity<?> retrieveProductByShopId(long shopId, int pageNumber);
 
     //ForSO it mean For Shop Owner
-    //nhớ sửa này ko cần truyền vô shop id, authentication
-    ResponseEntity<?> retrieveProductByShopIdForSO(long shopId, int pageNumber);
+    ResponseEntity<?> retrieveProductByShopIdForSO(int pageNumber);
     ResponseEntity<?> filter(ProductFilterDto filterDto);
 
     ResponseEntity<?> addNewProduct(List<MultipartFile> multipartImgList, MultipartFile multipartVideo, ProductShopOwnerDto productShopOwnerDto);
     public ResponseEntity<?> filterByShop(ShopFilterDto shopFilterDto);
+
+    ProductShopDto productToProductShopDto(Product product);
 
 }
 

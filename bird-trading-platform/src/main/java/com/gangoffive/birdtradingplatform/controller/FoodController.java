@@ -42,16 +42,21 @@ public class FoodController {
         return foodService.findTopFood();
     }
 
-    @PostMapping("/shopowner/foods/update/{id}")
-    @PreAuthorize("hasAnyAuthority('shopowner:update')")
-    public void updateFood(@RequestParam FoodDto foodDto) {
-        foodService.updateFood(foodDto);
-    }
+//    @PostMapping("/shopowner/foods/update/{id}")
+//    @PreAuthorize("hasAnyAuthority('shopowner:update')")
+//    public void updateFood(@RequestParam FoodDto foodDto) {
+//        foodService.updateFood(foodDto);
+//    }
+//
+//    @DeleteMapping("/shopowner/foods/delete/{id}")
+//    @RolesAllowed("SHOPOWNER")
+//    @PreAuthorize("hasAnyAuthority('shopowner:delete')")
+//    public void deleteFood(@PathVariable("id") Long id) {
+//        foodService.deleteFoodById(id);
+//    }
 
-    @DeleteMapping("/shopowner/foods/delete/{id}")
-    @RolesAllowed("SHOPOWNER")
-    @PreAuthorize("hasAnyAuthority('shopowner:delete')")
-    public void deleteFood(@PathVariable("id") Long id) {
-        foodService.deleteFoodById(id);
+    @GetMapping("/shop-owner/foods/pages/{pageNumber}")
+    public ResponseEntity<?> getFoodByShop (@PathVariable int pageNumber) {
+        return foodService.getFoodByShop(pageNumber);
     }
 }

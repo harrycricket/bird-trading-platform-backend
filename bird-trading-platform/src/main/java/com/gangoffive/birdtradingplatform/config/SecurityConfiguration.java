@@ -49,7 +49,6 @@ public class SecurityConfiguration {
             "/auth/**",
             "/oauth2/**",
             "/error",
-            "/user/me",
             "/api/v1/users/register",
             "/api/v1/users/authenticate",
             "/api/v1/users/reset-password",
@@ -68,18 +67,20 @@ public class SecurityConfiguration {
             "/api/v1/info/**",
             "/api/v1/shop-info",
             "/api/v1/users/get-cookie",
-            "api/v1/package-order",
+//            "api/v1/package-order",
             "/api/v1/promotions",
             "/ws/**", // websockets
             "/api/v1/users/message/send",
             "/api/v1/users/{userid}/get-channel", // config get channel must to delete
             "/api/v1//users/{userid}/get-messages", // must delete to
-            "/api/v1/shop-owner/promotion-shop", // Remember delete just for testing
-            "/api/v1/shop-owner/type-all", // Remember delete just for testing
-            "/api/v1/shop-owner/product", // Remember delete just for testing
-            "api/v1/shop-owner/**",
-            "api/v1/shop-owner",
+//            "/api/v1/shop-owner/promotion-shop", // Remember delete just for testing
+//            "/api/v1/shop-owner/type-all", // Remember delete just for testing
+//            "/api/v1/shop-owner/product", // Remember delete just for testing
+//            "api/v1/shop-owner/**",
+//            "api/v1/shop-owner",
             "api/v1/admin",
+            "/api/v1/products/filter",
+            "/api/v1/products/filtershop",
 //            "/favicon.ico",
 //            "/**/*.png",
 //            "/**/*.gif",
@@ -97,9 +98,7 @@ public class SecurityConfiguration {
             "/configuration/security",
             "/swagger-ui/**",
             "/webjars/**",
-            "/swagger-ui.html",
-            "/api/v1/products/filter",
-            "/api/v1/products/filtershop"
+            "/swagger-ui.html"
     };
 
     @Bean
@@ -120,6 +119,7 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/admin/**").hasAnyAuthority(ADMIN_DELETE.getPermission())
                                 .requestMatchers("/api/v1/admin/**").hasAnyRole(ADMIN.name())
 
+//                                .requestMatchers(HttpMethod.POST, "/api/v1/package-order").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.GET, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_READ.getPermission())
                                 .requestMatchers(HttpMethod.POST, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_UPDATE.getPermission())

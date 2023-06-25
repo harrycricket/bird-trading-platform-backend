@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.dto;
 
 import com.gangoffive.birdtradingplatform.enums.Gender;
+import com.gangoffive.birdtradingplatform.enums.UserRole;
 import lombok.*;
 
 import java.util.List;
@@ -17,7 +18,6 @@ public class ProductShopOwnerDto {
     private String description;
     private List<Long> promotionShopId;
     private Long typeId;
-
     private List<Long> tagId;
     private Long categoryId;
     private FeatureDto feature;

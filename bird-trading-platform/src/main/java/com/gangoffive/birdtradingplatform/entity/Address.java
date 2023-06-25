@@ -23,14 +23,10 @@ public class Address {
 	@Column(name = "full_name")
 	private String fullName;
 
-	@Column(name = "phone"
-			,nullable = false
-	)
+	@Column(name = "phone")
 	private String phone;
 	
-	@Column(name = "address"
-			,nullable = false
-	)
+	@Column(name = "address")
 	private String address;
 
 	@Column(name = "last_updated")

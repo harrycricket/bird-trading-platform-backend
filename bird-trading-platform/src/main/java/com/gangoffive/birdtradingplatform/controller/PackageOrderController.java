@@ -21,13 +21,12 @@ import java.util.Map;
 public class PackageOrderController {
 
     private final PackageOrderService packageOrderService;
-    @RequestMapping(value = "/package-order", method = {RequestMethod.GET, RequestMethod.POST})
+    @PostMapping("/package-order")
     public ResponseEntity<?> getPackageOrder(
             @RequestBody PackageOrderRequestDto packageOrderRequestDto,
             @RequestParam(value = "paymentId", required = false) String paymentId,
             @RequestParam(value = "PayerID", required = false) String payerId
     ) {
-        packageOrderRequestDto.getProductOrder().entrySet().forEach(pro -> log.info("pro {}", pro.getKey()));
         return packageOrderService.packageOrder(packageOrderRequestDto, paymentId, payerId);
     }
 

@@ -64,7 +64,11 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
             "AND b.quantity > 0 "
             ,
             nativeQuery = true)
-    Page<Long> idFilterShop(Long Shopid, String name, List<Long> listType, double star,
+    Page<Long> idFilterShop(Long idShop, String name, List<Long> listType, double star,
                         double lowestPrice, double highestPrice, Pageable pageable);
 
+
+    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalse(long id, Pageable pageable);
+
+    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(long id, Pageable pageable);
 }

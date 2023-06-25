@@ -103,4 +103,6 @@ app:
     url: https://bird-trading-platform.s3.ap-southeast-1.amazonaws.com/
   Ship:
     url: https://gofship.shop/api/v1/shipping-fee
+  ShopOwner:
+    url: http://localhost:3001/get-token?token=
 

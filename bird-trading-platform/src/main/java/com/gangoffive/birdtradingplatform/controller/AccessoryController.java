@@ -41,15 +41,20 @@ public class AccessoryController {
         return accessoryService.findTopAccessories();
     }
 
-    @PostMapping("/shopowner/accessories/update/{id}")
-    public void updateAccessory(@RequestParam AccessoryDto accessoryDto) {
-        accessoryService.updateAccessory(accessoryDto);
-    }
+//    @PostMapping("/shopowner/accessories/update/{id}")
+//    public void updateAccessory(@RequestParam AccessoryDto accessoryDto) {
+//        accessoryService.updateAccessory(accessoryDto);
+//    }
+//
+//    @DeleteMapping("/shopowner/accessories/delete/{id}")
+//    @RolesAllowed("SHOPOWNER")
+//    @PreAuthorize("hasAnyAuthority('shopowner:delete')")
+//    public void deleteAccessory(@PathVariable("id") Long id) {
+//        accessoryService.deleteAccessoryById(id);
+//    }
 
-    @DeleteMapping("/shopowner/accessories/delete/{id}")
-    @RolesAllowed("SHOPOWNER")
-    @PreAuthorize("hasAnyAuthority('shopowner:delete')")
-    public void deleteAccessory(@PathVariable("id") Long id) {
-        accessoryService.deleteAccessoryById(id);
+    @GetMapping("/shop-owner/accessories/pages/{pageNumber}")
+    public ResponseEntity<?> getAllBirdOfShop (@PathVariable int pageNumber) {
+        return accessoryService.getAllAccessoryByShop(pageNumber);
     }
 }

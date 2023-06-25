@@ -28,7 +28,7 @@ public class VerifyToken {
 	@Column(name = "token"
 			,nullable = false
 			)
-	private String token;
+	private int token;
 	
 	@Column(name = "expired"
 			,nullable = false

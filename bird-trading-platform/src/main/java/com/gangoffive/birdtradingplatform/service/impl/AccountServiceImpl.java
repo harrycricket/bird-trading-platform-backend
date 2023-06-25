@@ -7,10 +7,8 @@ import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
 import com.gangoffive.birdtradingplatform.dto.RegisterShopOwnerDto;
 import com.gangoffive.birdtradingplatform.dto.UserInfoDto;
-import com.gangoffive.birdtradingplatform.entity.Account;
-import com.gangoffive.birdtradingplatform.entity.Address;
-import com.gangoffive.birdtradingplatform.entity.Channel;
-import com.gangoffive.birdtradingplatform.entity.ShopOwner;
+import com.gangoffive.birdtradingplatform.dto.VerifyRequestDto;
+import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
@@ -76,13 +74,12 @@ public class AccountServiceImpl implements AccountService {
         }
         if (editAccount.get().getAddress() == null) {
             log.info("address null");
-            log.info("editAccount.get().getAddress() == null {}", editAccount.get().getAddress().toString());
             Address address = new Address();
             address.setFullName(accountUpdateDto.getFullName());
             address.setPhone(accountUpdateDto.getPhoneNumber());
             address.setAddress(accountUpdateDto.getAddress());
-            addressRepository.save(address);
-            editAccount.get().setAddress(address);
+            Address saveAddress = addressRepository.save(address);
+            editAccount.get().setAddress(saveAddress);
         } else {
             log.info("editAccount.get().getAddress() {}", editAccount.get().getAddress().getAccount().getId());
             Address addressUpdate = editAccount.get().getAddress();
@@ -163,22 +160,28 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public ResponseEntity<?> verifyToken(String token, boolean isResetPassword) {
-        log.info("token {}", token);
-        var tokenRepo = verifyTokenRepository.findByToken(token);
+    public ResponseEntity<?> verifyToken(VerifyRequestDto verifyRequest, boolean isResetPassword) {
+        log.info("token {}", verifyRequest.getCode());
+        Optional<Account> account = accountRepository.findByEmail(verifyRequest.getEmail());
+        if (!account.isPresent()) {
+            ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.NOT_FOUND.toString())
+                    .errorMessage("Not correct email.").build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+
+        var tokenRepo = verifyTokenRepository.findByTokenAndAccount_Id(verifyRequest.getCode(), account.get().getId());
         if (tokenRepo.isPresent()) {
             if (!tokenRepo.get().isRevoked()) {
                 Date expireDate = tokenRepo.get().getExpired();
                 Date timeNow = new Date();
                 if (timeNow.after(expireDate)) {
                     ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.BAD_REQUEST.toString())
-                            .errorMessage("This link has already expired. Please regenerate the link to continue the verification").build();
+                            .errorMessage("This code has already expired. Please regenerate the code to continue the verification").build();
                     return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
                 }
                 if (!isResetPassword) {
-                    var account = tokenRepo.get().getAccount();
-                    account.setStatus(AccountStatus.VERIFY);
-                    accountRepository.save(account);
+                    account.get().setStatus(AccountStatus.VERIFY);
+                    accountRepository.save(account.get());
                 }
                 tokenRepo.get().setRevoked(true);
                 verifyTokenRepository.save(tokenRepo.get());
@@ -186,11 +189,11 @@ public class AccountServiceImpl implements AccountService {
                 return ResponseEntity.ok(new ApiResponse(LocalDateTime.now(), "Verification of the account was successful!"));
             }
             ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.BAD_REQUEST.toString())
-                    .errorMessage("This verify link has already used!").build();
+                    .errorMessage("This verify code has already used!").build();
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
         ErrorResponse errorResponse = new ErrorResponse().builder().errorCode(HttpStatus.NOT_FOUND.toString())
-                .errorMessage("Not found token. Link not true").build();
+                .errorMessage("Not found code. Code not true").build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 

@@ -42,15 +42,20 @@ public class BirdController {
         return birdService.findTopBirdProduct();
     }
 
-    @PostMapping("/shopowner/birds/update/{id}")
-    public void updateBird(@RequestParam BirdDto birdDto) {
-        birdService.updateBird(birdDto);
-    }
+//    @PostMapping("/shopowner/birds/update/{id}")
+//    public void updateBird(@RequestParam BirdDto birdDto) {
+//        birdService.updateBird(birdDto);
+//    }
+//
+//    @DeleteMapping("/shopowner/birds/delete/{id}")
+//    @RolesAllowed("SHOPOWNER")
+//    @PreAuthorize("hasAnyAuthority('shopowner:delete')")
+//    public void deleteBird(@PathVariable("id") Long id) {
+//        birdService.deleteBirdById(id);
+//    }
 
-    @DeleteMapping("/shopowner/birds/delete/{id}")
-    @RolesAllowed("SHOPOWNER")
-    @PreAuthorize("hasAnyAuthority('shopowner:delete')")
-    public void deleteBird(@PathVariable("id") Long id) {
-        birdService.deleteBirdById(id);
+    @GetMapping("/shop-owner/birds/pages/{pageNumber}")
+    public ResponseEntity<?> getAllBirdOfShop (@PathVariable int pageNumber) {
+        return birdService.getAllBirdByShop(pageNumber);
     }
 }

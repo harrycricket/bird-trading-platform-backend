@@ -20,4 +20,6 @@ public interface FoodService {
     void deleteFoodById(Long id);
 
     List<FoodDto> findTopFood();
+
+    ResponseEntity<?> getFoodByShop(int pageNumber);
 }

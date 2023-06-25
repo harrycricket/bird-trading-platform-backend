@@ -1,9 +1,14 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.ColorChart;
+import com.gangoffive.birdtradingplatform.enums.ResponseCode;
+import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
@@ -16,11 +21,19 @@ import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
 import com.google.gson.*;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -43,6 +56,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final JwtService jwtService;
+    private final AppProperties appProperties;
     @Override
     public List<String> listShopDto(List<Long> listShopId, long userId) {
         var listShop = shopOwnerRepository.findAllById(listShopId);
@@ -67,7 +81,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         return 0;
     }
 
-    private String shopOwnerToDtoWithUnread (ShopOwner shopOwner, long userId) {
+    private String shopOwnerToDtoWithUnread(ShopOwner shopOwner, long userId) {
         ShopOwnerDto shopOwnerDto = shopOwnerMapper.modelToDto(shopOwner);
 //        String shopDtoJson = JsonUtil.INSTANCE.getJsonString(shopOwner);
         Gson gson = new GsonBuilder()
@@ -87,29 +101,51 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     }
 
     @Override
-    public List<LineChartDto> getDataLineChart(String email, Date dateFrom) {
+    public List<LineChartDto> getDataLineChart(String dateFrom, int date) {
+        Date newDateFrom;
+        if (dateFrom == null || dateFrom.isEmpty()) {
+            // Get the current date
+            LocalDate currentDate = LocalDate.now();
+
+            // Get the date of the previous week
+            LocalDate previousWeekDate = currentDate.minusDays(7);
+
+            // Get the start and end dates of the previous week
+            newDateFrom = Date.from(previousWeekDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        } else {
+            try {
+                newDateFrom = new SimpleDateFormat("dd/MM/yyyy").parse(dateFrom);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         List<LineChartDto> lineChartDtoList = new ArrayList<>();
         LineChartDto lineChartDtoOfBird = LineChartDto.builder()
                 .id(Bird.class.getSimpleName())
-                .data(dataLineChartByTypeProduct(account.get(), Bird.class, dateFrom))
+                .data(dataLineChartByTypeProduct(account.get(), Bird.class, newDateFrom))
                 .build();
         lineChartDtoList.add(lineChartDtoOfBird);
         LineChartDto lineChartDtoOfAccessory = LineChartDto.builder()
                 .id(Accessory.class.getSimpleName())
-                .data(dataLineChartByTypeProduct(account.get(), Accessory.class, dateFrom))
+                .data(dataLineChartByTypeProduct(account.get(), Accessory.class, newDateFrom))
                 .build();
         lineChartDtoList.add(lineChartDtoOfAccessory);
         LineChartDto lineChartDtoOfFood = LineChartDto.builder()
                 .id(Food.class.getSimpleName())
-                .data(dataLineChartByTypeProduct(account.get(), Food.class, dateFrom))
+                .data(dataLineChartByTypeProduct(account.get(), Food.class, newDateFrom))
                 .build();
         lineChartDtoList.add(lineChartDtoOfFood);
         return lineChartDtoList;
     }
 
     @Override
-    public List<PieChartDto> getDataPieChart(String email) {
+    public List<PieChartDto> getDataPieChart() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         List<PieChartDto> pieChartDtoList = new ArrayList<>();
         PieChartDto pieChartDtoOfBird = PieChartDto.builder()
@@ -138,7 +174,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
 
     @Override
-    public DataBarChartDto dataBarChartByPriceAllTypeProduct(String email) {
+    public DataBarChartDto dataBarChartByPriceAllTypeProduct() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         List<BarChartDto> barChartDtoPreviousOneWeekList;
         List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
@@ -188,7 +226,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     }
 
     @Override
-    public DataBarChartDto dataBarChartByOrderAllTypeProduct(String email) {
+    public DataBarChartDto dataBarChartByOrderAllTypeProduct() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         List<BarChartDto> barChartDtoPreviousOneWeekList;
         List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
@@ -241,7 +281,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         return dataBarChartDto;
     }
     @Override
-    public DataBarChartDto dataBarChartByReviewAllTypeProduct(String email) {
+    public DataBarChartDto dataBarChartByReviewAllTypeProduct() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         List<BarChartDto> barChartDtoPreviousOneWeekList;
         List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
@@ -254,9 +296,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartFoodPreviousOneWeekDtoList,
                 barChartBirdPreviousOneWeekDtoList,
                 barChartAccessoryPreviousOneWeekDtoList);
-        double totalOrderOfPreviousOneWeek = 0;
+        double totalReviewOfPreviousOneWeek = 0;
         for (BarChartDto barChartDto: barChartDtoPreviousOneWeekList) {
-            totalOrderOfPreviousOneWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
+            totalReviewOfPreviousOneWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
 
         List<BarChartDto> barChartDtoPreviousTwoWeekList;
@@ -271,20 +313,21 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartBirdDtoPreviousTwoWeekList,
                 barChartAccessoryDtoPreviousTwoWeekList
         );
-        double totalOrderOfPreviousTwoWeek = 0;
+        double totalReviewOfPreviousTwoWeek = 0;
         for (BarChartDto barChartDto: barChartDtoPreviousTwoWeekList) {
             log.info("barChartDto.getAccessories() {}", barChartDto.getAccessories());
             log.info("barChartDto.getBirds() {}", barChartDto.getBirds());
             log.info("barChartDto.getFoods() {}", barChartDto.getFoods());
-            totalOrderOfPreviousTwoWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
+            totalReviewOfPreviousTwoWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
-        log.info("totalOrderOfPreviousTwoWeek {}", totalOrderOfPreviousTwoWeek);
-        double percent = ((totalOrderOfPreviousOneWeek - totalOrderOfPreviousTwoWeek)
-                / (totalOrderOfPreviousTwoWeek + totalOrderOfPreviousOneWeek)) * 100;
+        log.info("totalReviewOfPreviousOneWeek {}", totalReviewOfPreviousOneWeek);
+        log.info("totalReviewOfPreviousTwoWeek {}", totalReviewOfPreviousTwoWeek);
+        double percent = ((totalReviewOfPreviousOneWeek - totalReviewOfPreviousTwoWeek)
+                / (totalReviewOfPreviousTwoWeek + totalReviewOfPreviousOneWeek)) * 100;
         DecimalFormat decimalFormat = new DecimalFormat("#.00");
-
+        log.info("percent {}", percent);
         String formattedPercent = decimalFormat.format(percent);
-        String formattedTotalReview = decimalFormat.format(totalOrderOfPreviousOneWeek);
+        String formattedTotalReview = decimalFormat.format(totalReviewOfPreviousOneWeek);
 
         DataBarChartDto dataBarChartDto = DataBarChartDto.builder()
                 .barChartDtoList(barChartDtoPreviousOneWeekList)
@@ -417,8 +460,45 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     }
 
     @Override
-    public String redirectToShopOwner(String email) {
-        return jwtService.generateToken(UserPrincipal.create(accountRepository.findByEmail(email).get()));
+    public ResponseEntity<?> redirectToShopOwner() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        Optional<Account> account = accountRepository.findByEmail(username);
+        if (account.get().getRole().equals(UserRole.SHOPOWNER)) {
+            String token = jwtService.generateToken(UserPrincipal.create(account.get()));
+            SuccessResponse successResponse = SuccessResponse.builder()
+                    .successCode(String.valueOf(HttpStatus.OK.value()))
+                    .successMessage("get-token?token=" + token)
+                    .build();
+            return new ResponseEntity<>(successResponse, HttpStatus.OK);
+        } else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                    .errorMessage("You don't have permission to access.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getShopInforByUserId() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("email {}", email);
+//        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
+        var account = accountRepository.findByEmail(email);
+        if(account.isPresent()) {
+            var shopInfo = account.get().getShopOwner();
+            if (shopInfo != null) {
+                ShopInfoDto shopOwnerDto = shopOwnerMapper.modelToShopInfoDto(shopInfo);
+                return ResponseEntity.ok(shopOwnerDto);
+            } else {
+                return ResponseEntity.ok(ErrorResponse.builder().errorCode(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getCode() + "")
+                        .errorMessage(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getMessage()).build());
+            }
+        }else {
+            throw new CustomRuntimeException("400", "Some thing went wrong");
+        }
+
     }
 
     public List<Order> getAllOrdersNumberPreviousWeek(Account account, int week) {

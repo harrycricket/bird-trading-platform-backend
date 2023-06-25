@@ -8,8 +8,7 @@ import lombok.*;
 @Setter
 @ToString
 public class UserOrderDto {
-    private String email;
-    private String name;
+    private String fullName;
     private String phoneNumber;
     private String address;
 }

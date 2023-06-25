@@ -1,15 +1,13 @@
 package com.gangoffive.birdtradingplatform.service;
 
-import com.gangoffive.birdtradingplatform.entity.Product;
-import com.google.gson.JsonObject;
-import org.springframework.http.ResponseEntity;
-import com.gangoffive.birdtradingplatform.dto.*;
-import com.gangoffive.birdtradingplatform.entity.Account;
-import com.gangoffive.birdtradingplatform.entity.Order;
-import com.gangoffive.birdtradingplatform.dto.*;
-import com.gangoffive.birdtradingplatform.entity.Account;
-import com.gangoffive.birdtradingplatform.entity.Order;
 
+import com.gangoffive.birdtradingplatform.dto.BarChartOneTypeDto;
+import com.gangoffive.birdtradingplatform.dto.DataBarChartDto;
+import com.gangoffive.birdtradingplatform.dto.LineChartDto;
+import com.gangoffive.birdtradingplatform.dto.PieChartDto;
+import com.gangoffive.birdtradingplatform.entity.Account;
+import com.gangoffive.birdtradingplatform.entity.Order;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Date;
 import java.util.List;
@@ -22,20 +20,22 @@ public interface ShopOwnerService {
 
     long getAccountIdByShopid(long shopId);
 
-    List<LineChartDto> getDataLineChart(String email, Date dateFrom);
+    List<LineChartDto> getDataLineChart(String dateFrom, int date);
 
-    List<PieChartDto> getDataPieChart(String email);
+    List<PieChartDto> getDataPieChart();
 
-    DataBarChartDto dataBarChartByPriceAllTypeProduct(String email);
+    DataBarChartDto dataBarChartByPriceAllTypeProduct();
 
-    DataBarChartDto dataBarChartByOrderAllTypeProduct(String email);
+    DataBarChartDto dataBarChartByOrderAllTypeProduct();
 
-    DataBarChartDto dataBarChartByReviewAllTypeProduct(String email);
+    DataBarChartDto dataBarChartByReviewAllTypeProduct();
 
     List<Order> getAllOrdersNumberPreviousWeek(Account account, int week);
 
     List<BarChartOneTypeDto> dataBarChartEachTypeProduct(
             Account account, Class<?> productClass, boolean isCalcPrice, boolean isCalcQuantity, boolean isCalcReview, int week);
 
-    String redirectToShopOwner(String email);
+    ResponseEntity<?> redirectToShopOwner();
+
+    ResponseEntity getShopInforByUserId();
 }

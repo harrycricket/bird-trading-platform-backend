@@ -8,6 +8,7 @@ package com.gangoffive.birdtradingplatform.repository;
 import com.gangoffive.birdtradingplatform.entity.Accessory;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -41,6 +42,7 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
     Page<Accessory> findAllByQuantityGreaterThanAndDeletedFalse(int quantity, Pageable pageable);
 
     Optional<Page<Product>> findByShopOwner_Id(long id, Pageable pageable);
+
     @Query(value = "SELECT a.product_id " +
             "FROM `bird-trading-platform`.tbl_accessory a " +
             "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
@@ -53,6 +55,10 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "And a.price <= ?6 " +
             "And a.is_deleted = 0 " +
             "And a.quantity > 0 ", nativeQuery = true)
-    Page<Long> idFilterShop(Long idshop, String name, List<Long> listTypeId, double star,
+    Page<Long> idFilterShop(Long idShop, String name, List<Long> listTypeId, double star,
                         double lowestPrice, double highestPrice, Pageable pageable);
+    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalse(long id, Pageable pageable);
+
+    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(long shopId, PageRequest pageRequest);
+
 }

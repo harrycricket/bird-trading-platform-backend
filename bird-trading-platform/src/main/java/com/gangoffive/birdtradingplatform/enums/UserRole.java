@@ -12,12 +12,18 @@ import static com.gangoffive.birdtradingplatform.enums.Permission.*;
 @RequiredArgsConstructor
 
 public enum UserRole {
-	ADMIN(
+	USER (
 			Set.of(
-					ADMIN_READ,
-					ADMIN_CREATE,
-					ADMIN_UPDATE,
-					ADMIN_DELETE
+					USER_READ,
+					USER_CREATE,
+					USER_UPDATE,
+					USER_DELETE
+			)
+	),
+	SHOPSTAFF (
+			Set.of(
+					SHOPSTAFF_READ,
+					SHOPSTAFF_UPDATE
 			)
 	),
 	SHOPOWNER (
@@ -32,18 +38,12 @@ public enum UserRole {
 					USER_DELETE
 			)
 	),
-	SHOPSTAFF (
+	ADMIN(
 			Set.of(
-					SHOPSTAFF_READ,
-					SHOPSTAFF_UPDATE
-			)
-	),
-	USER (
-			Set.of(
-					USER_READ,
-					USER_CREATE,
-					USER_UPDATE,
-					USER_DELETE
+					ADMIN_READ,
+					ADMIN_CREATE,
+					ADMIN_UPDATE,
+					ADMIN_DELETE
 			)
 	);
 	@Getter

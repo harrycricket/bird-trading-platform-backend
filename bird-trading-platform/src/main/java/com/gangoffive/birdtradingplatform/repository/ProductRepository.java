@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<List<Product>> findByNameLike(String name);
 
-    Optional<Page<Product>> findByShopOwner_Id(long id, Pageable pageable);
+    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalse(long id, Pageable pageable);
 
     @Query(value = "SELECT p FROM Product p where p.quantity > 0 and p.id = ?1")
     Optional<Product> findByIdWithCondition(long id);

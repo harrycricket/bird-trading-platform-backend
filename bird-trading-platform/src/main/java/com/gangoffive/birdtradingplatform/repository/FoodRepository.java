@@ -8,6 +8,7 @@ package com.gangoffive.birdtradingplatform.repository;
 import com.gangoffive.birdtradingplatform.entity.Food;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -54,6 +55,9 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             "AND f.is_deleted = 0 " +
             "AND f.quantity > 0 ",
             nativeQuery = true)
-    Page<Long> idFilterShop(Long idshop, String name, List<Long> listTypeId, double star,
-                        double lowestPrice, double hightPrice, Pageable pageable);
+    Page<Long> idFilterShop(Long idShop, String name, List<Long> listTypeId, double star,
+                        double lowestPrice, double highestPrice, Pageable pageable);
+    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalse(long id, Pageable pageable);
+
+    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(long shopId, PageRequest pageRequest);
 }

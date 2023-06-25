@@ -1,8 +1,9 @@
 package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
-import com.gangoffive.birdtradingplatform.dto.RegisterShopOwnerDto;
+import com.gangoffive.birdtradingplatform.dto.VerifyRequestDto;
 import com.gangoffive.birdtradingplatform.service.AccountService;
+import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.CookieUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class AccountController {
 
     private final AccountService accountService;
-
+    private final ShopOwnerService shopOwnerService;
 
     @PutMapping("/update-profile")
     public ResponseEntity<?> updateProfile(
@@ -27,13 +28,13 @@ public class AccountController {
     }
 
     @GetMapping("/verify/register")
-    public ResponseEntity<?> verifyAccountRegister(@RequestParam String token) {
-        return accountService.verifyToken(token, false);
+    public ResponseEntity<?> verifyAccountRegister(VerifyRequestDto verifyRequest) {
+        return accountService.verifyToken(verifyRequest, false);
     }
 
     @GetMapping("/verify/reset-password")
-    public ResponseEntity<?> verifyResetPassword(@RequestParam String token) {
-        return accountService.verifyToken(token, true);
+    public ResponseEntity<?> verifyResetPassword(VerifyRequestDto verifyRequest) {
+        return accountService.verifyToken(verifyRequest, true);
     }
 
     @GetMapping("/logout")
@@ -41,4 +42,5 @@ public class AccountController {
         CookieUtils.deleteCookie(request, response, "refreshToken");
         return ResponseEntity.ok("Cookie deleted");
     }
+
 }
