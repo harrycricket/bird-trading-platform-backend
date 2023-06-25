@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.dto;
 
+import com.gangoffive.birdtradingplatform.enums.UserRole;
 import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,4 +16,5 @@ public class ShopInfoDto {
     private String coverImgUrl;
     private Long createdDate;
     private AddressDto address;
+    private int role;
 }
