@@ -7,7 +7,6 @@ import com.gangoffive.birdtradingplatform.entity.Order;
 import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.exception.AuthenticateException;
-import com.gangoffive.birdtradingplatform.mapper.AddressMapper;
 import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
 import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
@@ -46,19 +45,9 @@ public class InfoServiceImpl implements InfoService {
         if (!jwtService.isTokenExpired(token)) {
             Optional<Account> account = accountRepository.findByEmail(email);
             UserPrincipal userPrincipal = UserPrincipal.create(account.get());
-            String refreshToken = account.get().getRefreshToken();
-            if (refreshToken != null) {
-                if (jwtService.isTokenExpired(refreshToken)) {
-                    refreshToken = jwtService.generateRefreshToken(userPrincipal);
-                    account.get().setRefreshToken(refreshToken);
-                    accountRepository.save(account.get());
-                }
-            } else {
-                refreshToken = jwtService.generateRefreshToken(userPrincipal);
-                account.get().setRefreshToken(refreshToken);
-                accountRepository.save(account.get());
-            }
-
+            String refreshToken = jwtService.generateRefreshToken(userPrincipal);
+            account.get().setRefreshToken(refreshToken);
+            accountRepository.save(account.get());
             TokenDto tokenDto = TokenDto.builder()
                     .accessToken(token)
                     .refreshToken(refreshToken)

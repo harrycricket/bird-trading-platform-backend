@@ -443,7 +443,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         } else {
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                    .errorCode("You don't have permission to access.")
+                    .errorMessage("You don't have permission to access.")
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
@@ -452,7 +452,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     @Override
     public ResponseEntity<?> getShopInforByUserId() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        log.info("emaoil {}", email);
+        log.info("email {}", email);
 //        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
         var account = accountRepository.findByEmail(email);
         if(account.isPresent()) {
@@ -465,7 +465,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                         .errorMessage(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getMessage()).build());
             }
         }else {
-            throw new CustomRuntimeException("400", "Some thing went worng");
+            throw new CustomRuntimeException("400", "Some thing went wrong");
         }
 
     }
