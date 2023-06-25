@@ -104,5 +104,5 @@ app:
   Ship:
     url: https://gofship.shop/api/v1/shipping-fee
   ShopOwner:
-    url: https://admin.birdland2nd.store/get-token?token=
+    url: http://localhost:3001/get-token?token=
 
