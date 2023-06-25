@@ -1,10 +1,7 @@
 package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
-import com.gangoffive.birdtradingplatform.dto.ProductDto;
-import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
-import com.gangoffive.birdtradingplatform.dto.ProductStatusShopChangeDto;
-import com.gangoffive.birdtradingplatform.dto.ShopFilterDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
@@ -13,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -79,6 +77,16 @@ public class ProductController {
     @GetMapping("/products/birds/shop-owner/{pageNumber}")
     public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
         return productService.retrieveProductByShopIdForSO(pageNumber);
+    }
+
+    @PostMapping("/shop-owner/products")
+    public ResponseEntity<?> addNewProduct(
+            @RequestParam("image") List<MultipartFile> multipartFiles,
+            @RequestParam(name = "video", required = false) MultipartFile multipartVideo,
+            @RequestPart(name = "data") ProductShopOwnerDto productShopOwnerDto
+    ) {
+        log.info("productShopOwnerDto {}", productShopOwnerDto);
+        return productService.addNewProduct(multipartFiles, multipartVideo, productShopOwnerDto);
     }
 
     @PutMapping("/shop-owner/products/status")
