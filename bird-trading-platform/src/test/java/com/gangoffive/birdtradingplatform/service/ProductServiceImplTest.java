@@ -7,17 +7,22 @@ import com.gangoffive.birdtradingplatform.service.impl.ProductServiceImpl;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@ExtendWith(SpringExtension.class)
 @Slf4j
 public class ProductServiceImplTest {
     @Autowired
@@ -45,9 +50,9 @@ public class ProductServiceImplTest {
 //
 //    @Test
 //    public void TestSaleOffPercent(){
-////        List<Double> list = Arrays.asList(10.0,5.0,2.0);
-////        double percent = productService.CalculateSaleOff(list, 100);
-////        assertEquals(0.16,percent);
+//        List<Double> list = Arrays.asList(10.0,5.0,2.0);
+//        double percent = productService.CalculateSaleOff(list, 100);
+//        assertEquals(0.16,percent);
 //    }
 
 //    @Test
@@ -63,4 +68,10 @@ public class ProductServiceImplTest {
 //        double result = productService.CalculateDiscountedPrice(100, 0.145);
 //        assertEquals(85.5,result);
 //    }
+
+    @Test
+    public void testCalulate () {
+        int result = 1 + 1;
+        assertEquals(2, result);
+    }
 }
