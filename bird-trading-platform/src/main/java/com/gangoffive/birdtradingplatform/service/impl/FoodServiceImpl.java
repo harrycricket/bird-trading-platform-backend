@@ -135,7 +135,7 @@ public class FoodServiceImpl implements FoodService {
                     pageNumber--;
                 }
                 PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
-                var listBird = foodRepository.findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(shopId, pageRequest);
+                var listBird = foodRepository.findByShopOwner_IdAndHiddenIsFalse(shopId, pageRequest);
                 if(listBird.isPresent()) {
                     List<ProductShopDto> listFoodShopDto = listBird.get().stream().map(bird ->  this.foodToProductDto(bird)).toList();
                     PageNumberWraper resutl = new PageNumberWraper();

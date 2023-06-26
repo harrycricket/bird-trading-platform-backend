@@ -70,5 +70,5 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
 
     Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalse(long id, Pageable pageable);
 
-    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(long id, Pageable pageable);
+    Optional<Page<Product>> findByShopOwner_IdAndHiddenIsFalse(long id, Pageable pageable);
 }
