@@ -9,6 +9,7 @@ import lombok.*;
 @ToString
 @Builder
 public class ShopInfoDto {
+    private long id;
     private String shopName;
     private String shopPhone;
     private String description;

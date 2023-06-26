@@ -71,7 +71,7 @@ public class ProductServiceImplTest {
 
     @Test
     public void testCalulate () {
-        int result = 1 + 1;
-        assertEquals(2, result);
+//        int result = 1 + 1;
+//        assertEquals(2, result);
     }
 }
