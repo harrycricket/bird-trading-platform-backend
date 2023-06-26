@@ -18,6 +18,7 @@ public interface MessageMapper {
     @Mapping(target = "content", source = "messageText")
     @Mapping(target = "date", source = "timestamp")
     @Mapping(target = "userID", source = "account.id")
+    @Mapping(target = "shopID", source = "account.shopOwner.id")
     @Mapping(target = "status", expression = "java(mapEnumToString(message.getStatus()))" )
     @Mapping(target = "id", source = "id")
     MessageDto modelToDto (Message message);
