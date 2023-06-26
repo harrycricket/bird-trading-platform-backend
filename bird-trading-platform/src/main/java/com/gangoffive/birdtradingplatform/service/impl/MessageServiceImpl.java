@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -58,8 +59,9 @@ public class MessageServiceImpl implements MessageService {
             PageNumberWraper pageNumberWraper = new PageNumberWraper();
             List<MessageDto> result  = listMessage.getContent().stream()
                     .map(message -> this.messageToDto(message, id)).toList();
-            Collections.reverse(result);
-            pageNumberWraper.setLists(result);
+            List<MessageDto> reversedList = new ArrayList<>(result);
+            Collections.reverse(reversedList);
+            pageNumberWraper.setLists(reversedList);
             pageNumberWraper.setPageNumber(listMessage.getTotalPages());
             return ResponseEntity.ok(pageNumberWraper);
         }
