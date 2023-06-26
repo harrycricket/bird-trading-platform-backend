@@ -501,6 +501,17 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
     }
 
+    @Override
+    public long getShopIdByEmail(String email) {
+        var acc = accountRepository.findByEmail(email);
+        if(acc.isPresent()) {
+            if(acc.get().getShopOwner() != null) {
+                return acc.get().getShopOwner().getId();
+            }
+        }
+        return 0;
+    }
+
     public List<Order> getAllOrdersNumberPreviousWeek(Account account, int week) {
         // Get the current date
         LocalDate currentDate = LocalDate.now();

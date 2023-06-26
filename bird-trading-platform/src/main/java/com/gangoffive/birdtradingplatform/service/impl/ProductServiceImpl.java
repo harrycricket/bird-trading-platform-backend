@@ -15,6 +15,7 @@ import com.gangoffive.birdtradingplatform.mapper.*;
 import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
+import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.MyUtils;
 import com.gangoffive.birdtradingplatform.util.S3Utils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
@@ -61,7 +62,7 @@ public class ProductServiceImpl implements ProductService {
     private final TagRepository tagRepository;
     private final AppProperties appProperties;
     private final ShopOwnerMapper shopOwnerMapper;
-
+    private final ShopOwnerService shopOwnerService;
     @Override
     public List<ProductDto> retrieveAllProduct() {
         List<ProductDto> lists = productRepository.findAll().stream()
@@ -314,6 +315,32 @@ public class ProductServiceImpl implements ProductService {
 //            return new ResponseEntity<>(ErrorResponse.builder().errorCode(ResponseCode.UPDATE_LIST_PRODUCT_STATUS_FAIL.getCode()+"")
 //                    .errorMessage(ResponseCode.UPDATE_LIST_PRODUCT_STATUS_FAIL.getMessage()), HttpStatus.BAD_REQUEST);
             return new ResponseEntity<>(ResponseCode.UPDATE_LIST_PRODUCT_STATUS_FAIL.toString(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> updateListProductQuantity(List<ProductQuantityShopChangeDto> listProductChange) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        long shopId = shopOwnerService.getShopIdByEmail(email);
+        int result = 0;
+        ArrayList<Long> failId = new ArrayList<>();
+        for(ProductQuantityShopChangeDto product : listProductChange) {
+            if (product.getQuantity() >= 0) {
+                result++;
+                productRepository.updateListProductQuantity(product.getQuantity(), product.getId(), shopId);
+            }else {
+                failId.add(product.getId());
+            }
+        }
+        if(failId.size() == 0) {
+            return ResponseEntity.ok("Update success");
+        }else{
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("errorCode", "400");
+            jsonObject.addProperty("message", "Update " + failId.size() + " fail");
+            jsonObject.addProperty("listId", failId.toString());
+            return new ResponseEntity<>(jsonObject.toString(), HttpStatus.BAD_REQUEST);
+
         }
     }
 

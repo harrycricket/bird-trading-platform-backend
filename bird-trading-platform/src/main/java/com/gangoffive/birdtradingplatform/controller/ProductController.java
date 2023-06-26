@@ -1,10 +1,7 @@
 package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
-import com.gangoffive.birdtradingplatform.dto.ProductDto;
-import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
-import com.gangoffive.birdtradingplatform.dto.ProductStatusShopChangeDto;
-import com.gangoffive.birdtradingplatform.dto.ShopFilterDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
@@ -86,4 +83,8 @@ public class ProductController {
         return productService.updateListProductStatus(productStatusShopChangeDto);
     }
 
+    @PutMapping("/shop-owner/products/quantity")
+    public ResponseEntity<?> updateListProductQuantity(@RequestBody List<ProductQuantityShopChangeDto> listProductChange) {
+        return productService.updateListProductQuantity(listProductChange);
+    }
 }
