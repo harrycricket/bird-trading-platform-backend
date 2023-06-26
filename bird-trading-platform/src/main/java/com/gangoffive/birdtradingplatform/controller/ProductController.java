@@ -94,4 +94,8 @@ public class ProductController {
         return productService.updateListProductStatus(productStatusShopChangeDto);
     }
 
+    @PutMapping("/shop-owner/products/quantity")
+    public ResponseEntity<?> updateListProductQuantity(@RequestBody List<ProductQuantityShopChangeDto> listProductChange) {
+        return productService.updateListProductQuantity(listProductChange);
+    }
 }

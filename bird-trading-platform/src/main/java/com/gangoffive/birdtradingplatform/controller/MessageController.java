@@ -73,4 +73,11 @@ public class MessageController {
     public String getUserInChannel(@PathVariable long shopId) {
         return messageService.getListUserInChannel();
     }
+
+    @GetMapping("/shop-owner/{shopId}/messages")
+    public ResponseEntity<?> getMessage (@PathVariable long shopId, @RequestParam("userid") long userId,
+                                         @RequestParam("pagenumber") int pageNumber) {
+        long channelID = channelService.getAndSaveChannel(userId, shopId).getId();
+        return messageService.getListMessageByChannelId(channelID ,pageNumber , userId);
+    }
 }

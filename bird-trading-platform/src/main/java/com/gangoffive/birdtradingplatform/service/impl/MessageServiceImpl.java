@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -51,12 +52,14 @@ public class MessageServiceImpl implements MessageService {
             --pageNumber;
         }
         PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_MESSAGE_SIZE,
-                Sort.by(Sort.Direction.ASC, "timestamp"));
+                Sort.by(Sort.Direction.DESC, "timestamp"));
         var listMessage = messageRepository.findByChannel_Id(channelId, pageRequest);
         if(listMessage != null) {
             PageNumberWraper pageNumberWraper = new PageNumberWraper();
-            pageNumberWraper.setLists(listMessage.getContent().stream()
-                    .map(message -> this.messageToDto(message, id)).toList());
+            List<MessageDto> result  = listMessage.getContent().stream()
+                    .map(message -> this.messageToDto(message, id)).toList();
+            Collections.reverse(result);
+            pageNumberWraper.setLists(result);
             pageNumberWraper.setPageNumber(listMessage.getTotalPages());
             return ResponseEntity.ok(pageNumberWraper);
         }
