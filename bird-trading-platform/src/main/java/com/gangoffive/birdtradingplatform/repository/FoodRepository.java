@@ -59,5 +59,5 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
                         double lowestPrice, double highestPrice, Pageable pageable);
     Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalse(long id, Pageable pageable);
 
-    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(long shopId, PageRequest pageRequest);
+    Optional<Page<Product>> findByShopOwner_IdAndHiddenIsFalse(long shopId, PageRequest pageRequest);
 }

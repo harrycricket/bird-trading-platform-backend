@@ -140,7 +140,7 @@ public class AccessoryServiceImpl implements AccessoryService {
                     pageNumber--;
                 }
                 PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
-                var listBird = accessoryRepository.findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(shopId, pageRequest);
+                var listBird = accessoryRepository.findByShopOwner_IdAndHiddenIsFalse(shopId, pageRequest);
                 if(listBird.isPresent()) {
                     List<ProductShopDto> listAccessoryShopDto = listBird.get().stream().map(bird ->  this.accessoryToProductDto(bird)).toList();
                     PageNumberWraper resutl = new PageNumberWraper();

@@ -143,7 +143,7 @@ public class BirdServiceImpl implements BirdService {
                     pageNumber--;
                 }
                 PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
-                var listBird = birdRepository.findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(shopId, pageRequest);
+                var listBird = birdRepository.findByShopOwner_IdAndHiddenIsFalse(shopId, pageRequest);
                 if(listBird.isPresent()) {
                     List<ProductShopDto> listBirdShopDto = listBird.get().stream().map(bird ->  this.birdToProductDto(bird)).toList();
                     PageNumberWraper resutl = new PageNumberWraper();

@@ -38,4 +38,6 @@ public interface ShopOwnerService {
     ResponseEntity<?> redirectToShopOwner();
 
     ResponseEntity getShopInforByUserId();
+
+    long getShopIdByEmail(String email);
 }

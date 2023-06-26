@@ -29,4 +29,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Transactional
     @Query(value = "UPDATE Product p SET p.deleted = ?1, p.hidden = ?2 WHERE p.id in ?3")
     int updateListProductStatus (boolean delete, boolean hidden, List<Long> ids);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE Product p SET p.quantity = ?1 WHERE p.id = ?2 AND p.shopOwner.id = ?3 AND p.hidden = false ")
+    int updateListProductQuantity(Integer quantity, Long id, Long shopId);
 }
