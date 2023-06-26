@@ -15,6 +15,7 @@ public interface ShopOwnerMapper {
     ShopOwnerDto modelToDto (ShopOwner shopOwner);
 
 
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "address.id", source = "address.id")
     @Mapping(target = "address.address", source = "address.address")
     @Mapping(target = "createdDate", source = "createdDate.time")
