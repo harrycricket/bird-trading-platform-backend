@@ -53,7 +53,7 @@ public class MessageController {
     }
 
     @GetMapping("/users/{userid}/channels")
-    public String getShop (@PathVariable long userid) {
+    public String getShopInChannel (@PathVariable long userid) {
         List<Long> listShopId = accountService.getAllChanelByUserId(userid);
         List<String> result = shopOwnerService.listShopDto(listShopId, userid);
         if(result != null ){
@@ -67,5 +67,10 @@ public class MessageController {
     public ResponseEntity<?> getMessage (@PathVariable long userid, @RequestParam long shopId) {
         long channelID = channelService.getAndSaveChannel(userid, shopId).getId();
         return messageService.getListMessageByChannelId(channelID,1, userid);
+    }
+
+    @GetMapping("/shop-owner/{shopId}/channels")
+    public String getUserInChannel(@PathVariable long shopId) {
+        return messageService.getListUserInChannel();
     }
 }
