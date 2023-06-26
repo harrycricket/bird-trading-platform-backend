@@ -47,6 +47,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public ResponseEntity<?> updateAccount(AccountUpdateDto accountUpdateDto, MultipartFile multipartImage) {
+        //remember fix when authentication
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        String email = authentication.getName();
         String originUrl = appProperties.getS3().getUrl();
         String urlImage = "";
         if (multipartImage != null && !multipartImage.isEmpty()) {

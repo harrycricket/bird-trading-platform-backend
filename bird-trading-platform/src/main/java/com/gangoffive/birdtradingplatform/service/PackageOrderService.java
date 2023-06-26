@@ -14,4 +14,6 @@ public interface PackageOrderService {
     boolean checkPromotion(PackageOrderRequestDto packageOrder, Map<Long, Integer> productOrder);
     boolean checkListProduct(Map<Long, Integer> productOrder);
     boolean checkUserOrderDto(UserOrderDto userOrder);
+
+    ResponseEntity<?> viewAllPackageOrderByAccountId(int pageNumber);
 }

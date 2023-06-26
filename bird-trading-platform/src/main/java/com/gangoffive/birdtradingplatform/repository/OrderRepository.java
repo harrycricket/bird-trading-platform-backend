@@ -14,4 +14,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByShopOwnerAndCreatedDateBetween(ShopOwner shopOwner, Date dateFrom, Date dateTo);
     List<Order> findAllByCreatedDateBetween(Date dateFrom, Date dateTo);
+
+    List<Order> findAllByPackageOrder_Id(Long id);
 }

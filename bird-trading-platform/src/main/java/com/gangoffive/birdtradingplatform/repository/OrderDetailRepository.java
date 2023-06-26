@@ -16,4 +16,6 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     Optional<Integer> findTotalQuantityByPId(Long productId);
 
     List<OrderDetail> findOrderDetailByOrderIn(List<Order> orders);
+
+
 }
