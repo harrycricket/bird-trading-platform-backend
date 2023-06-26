@@ -69,9 +69,9 @@ public class ProductServiceImplTest {
 //        assertEquals(85.5,result);
 //    }
 
-    @Test
-    public void testCalulate () {
-//        int result = 1 + 1;
-//        assertEquals(2, result);
-    }
+//    @Test
+//    public void testCalulate () {
+////        int result = 1 + 1;
+////        assertEquals(2, result);
+//    }
 }
