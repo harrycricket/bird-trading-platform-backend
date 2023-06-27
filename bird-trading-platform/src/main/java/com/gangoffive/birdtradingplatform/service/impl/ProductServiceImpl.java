@@ -124,7 +124,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public double CalculateSaleOff(List<PromotionShop> listPromotion, double price) {
-        return this.CalculateSaleOff(listPromotion, price);
+        return promotionPriceService.CalculateSaleOff(listPromotion, price);
     }
 
 
