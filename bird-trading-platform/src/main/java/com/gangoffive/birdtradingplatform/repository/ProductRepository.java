@@ -33,4 +33,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Transactional
     @Query(value = "UPDATE Product p SET p.quantity = ?1 WHERE p.id = ?2 AND p.shopOwner.id = ?3 AND p.status = 'ACTIVE' ")
     int updateListProductQuantity(Integer quantity, Long id, Long shopId);
+
+    List<Product> findByStatusIn(List<ProductStatus> productStatuses);
 }
