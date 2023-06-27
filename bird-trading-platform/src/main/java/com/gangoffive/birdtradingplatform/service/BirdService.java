@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.service;
 
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
+import com.gangoffive.birdtradingplatform.dto.ProductShopOwnerFilterDto;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -21,4 +22,6 @@ public interface BirdService {
     List<BirdDto> findTopBirdProduct();
 
     ResponseEntity<?> getAllBirdByShop(int pageNumber);
+
+    ResponseEntity<?> filterAllBirdByShop(ProductShopOwnerFilterDto productFilter, int pageNumber);
 }

@@ -1,9 +1,12 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
-import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
-import com.gangoffive.birdtradingplatform.dto.*;
-import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.dto.BirdDto;
+import com.gangoffive.birdtradingplatform.dto.ProductDto;
+import com.gangoffive.birdtradingplatform.dto.ProductShopDto;
+import com.gangoffive.birdtradingplatform.dto.ProductShopOwnerFilterDto;
+import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.enums.ResponseCode;
@@ -18,7 +21,6 @@ import com.gangoffive.birdtradingplatform.service.BirdService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
-import com.google.gson.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -45,12 +47,13 @@ public class BirdServiceImpl implements BirdService {
     private final ProductSummaryRepository productSummaryRepository;
     private final AccountRepository accountRepository;
     private AuthenticationService authenticationService;
+
     @Override
     public List<BirdDto> retrieveAllBird() {
         List<BirdDto> birds = birdRepository
                 .findAll()
                 .stream()
-                .map(bird -> (BirdDto)productService.ProductToDto(bird))
+                .map(bird -> (BirdDto) productService.ProductToDto(bird))
                 .collect(Collectors.toList());
         return birds;
     }
@@ -88,7 +91,7 @@ public class BirdServiceImpl implements BirdService {
             Page<Bird> pageAble = birdRepository.findAllByDeletedFalseAndQuantityGreaterThan(0, pageRequest);
             List<BirdDto> birds = pageAble.getContent()
                     .stream()
-                    .map(bird -> (BirdDto)productService.ProductToDto(bird))
+                    .map(bird -> (BirdDto) productService.ProductToDto(bird))
                     .collect(Collectors.toList());
             PageNumberWraper<BirdDto> result = new PageNumberWraper<>(birds, pageAble.getTotalPages());
             return ResponseEntity.ok(result);
@@ -104,7 +107,7 @@ public class BirdServiceImpl implements BirdService {
                 .findByNameLike("%" + name + "%")
                 .get()
                 .stream()
-                .map(bird -> (BirdDto)productService.ProductToDto(bird))
+                .map(bird -> (BirdDto) productService.ProductToDto(bird))
                 .collect(Collectors.toList());
         return birds;
     }
@@ -122,8 +125,8 @@ public class BirdServiceImpl implements BirdService {
     @Override
     public List<BirdDto> findTopBirdProduct() {
         List<Bird> listBirds = birdRepository.findAllById(productSummaryService.getIdTopBird());
-        if(listBirds != null) {
-            List<BirdDto> birdDtos = listBirds.stream().map(bird -> (BirdDto)productService.ProductToDto(bird)).toList();
+        if (listBirds != null) {
+            List<BirdDto> birdDtos = listBirds.stream().map(bird -> (BirdDto) productService.ProductToDto(bird)).toList();
             return birdDtos;
         }
         return null;
@@ -132,39 +135,44 @@ public class BirdServiceImpl implements BirdService {
     @Override
     public ResponseEntity<?> getAllBirdByShop(int pageNumber) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        log.info("emaoil {}", email);
+        log.info("email {}", email);
 //        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
         var account = accountRepository.findByEmail(email);
-        if(account.isPresent()) {
+        if (account.isPresent()) {
             ShopOwner shopOwner = account.get().getShopOwner();
-            if(shopOwner != null) {
+            if (shopOwner != null) {
                 long shopId = shopOwner.getId();
-                if(pageNumber > 0){
+                if (pageNumber > 0) {
                     pageNumber--;
                 }
                 PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
                 var listBird = birdRepository.findByShopOwner_IdAndHiddenIsFalse(shopId, pageRequest);
-                if(listBird.isPresent()) {
-                    List<ProductShopDto> listBirdShopDto = listBird.get().stream().map(bird ->  this.birdToProductDto(bird)).toList();
-                    PageNumberWraper resutl = new PageNumberWraper();
-                    resutl.setLists(listBirdShopDto);
-                    resutl.setTotalProduct(listBird.get().getTotalElements());
-                    resutl.setPageNumber(listBird.get().getTotalPages());
-                    return ResponseEntity.ok(resutl);
+                if (listBird.isPresent()) {
+                    List<ProductShopDto> listBirdShopDto = listBird.get().stream().map(bird -> this.birdToProductDto(bird)).toList();
+                    PageNumberWraper result = new PageNumberWraper();
+                    result.setLists(listBirdShopDto);
+                    result.setTotalProduct(listBird.get().getTotalElements());
+                    result.setPageNumber(listBird.get().getTotalPages());
+                    return ResponseEntity.ok(result);
                 }
-            }else {
-                var error = ErrorResponse.builder().errorCode(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getCode()+"")
+            } else {
+                var error = ErrorResponse.builder().errorCode(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getCode() + "")
                         .errorMessage(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getMessage()).build();
                 return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
             }
-        }else {
+        } else {
             throw new CustomRuntimeException("400", "Some thing went wrong");
         }
         return null;
     }
 
+    @Override
+    public ResponseEntity<?> filterAllBirdByShop(ProductShopOwnerFilterDto productFilter, int pageNumber) {
+        return null;
+    }
+
     private ProductShopDto birdToProductDto(Product bird) {
-        if(bird != null) {
+        if (bird != null) {
             return productService.productToProductShopDto(bird);
         }
         return null;

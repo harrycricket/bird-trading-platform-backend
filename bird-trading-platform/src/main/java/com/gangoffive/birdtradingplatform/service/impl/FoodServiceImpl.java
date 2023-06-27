@@ -1,13 +1,11 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
-import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
 import com.gangoffive.birdtradingplatform.dto.FoodDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.dto.ProductShopDto;
-import com.gangoffive.birdtradingplatform.entity.Accessory;
 import com.gangoffive.birdtradingplatform.entity.Food;
-import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.enums.ResponseCode;
@@ -42,6 +40,7 @@ public class FoodServiceImpl implements FoodService {
     private final ProductService productService;
     private final ProductSummaryService productSummaryService;
     private final AccountRepository accountRepository;
+
     @Override
     public List<FoodDto> retrieveAllFood() {
         List<FoodDto> lists = foodRepository.findAll().stream()
@@ -115,7 +114,7 @@ public class FoodServiceImpl implements FoodService {
     @Override
     public List<FoodDto> findTopFood() {
         List<Food> lists = foodRepository.findAllById(productSummaryService.getIdTopFood());
-        if(lists != null) {
+        if (lists != null) {
             List<FoodDto> listDto = lists.stream().map(food -> (FoodDto) productService.ProductToDto(food)).toList();
             return listDto;
         }
@@ -127,36 +126,36 @@ public class FoodServiceImpl implements FoodService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 //        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
         var account = accountRepository.findByEmail(email);
-        if(account.isPresent()) {
+        if (account.isPresent()) {
             ShopOwner shopOwner = account.get().getShopOwner();
-            if(shopOwner != null) {
+            if (shopOwner != null) {
                 long shopId = shopOwner.getId();
-                if(pageNumber > 0){
+                if (pageNumber > 0) {
                     pageNumber--;
                 }
                 PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
                 var listBird = foodRepository.findByShopOwner_IdAndHiddenIsFalse(shopId, pageRequest);
-                if(listBird.isPresent()) {
-                    List<ProductShopDto> listFoodShopDto = listBird.get().stream().map(bird ->  this.foodToProductDto(bird)).toList();
-                    PageNumberWraper resutl = new PageNumberWraper();
-                    resutl.setLists(listFoodShopDto);
-                    resutl.setTotalProduct(listBird.get().getTotalElements());
-                    resutl.setPageNumber(listBird.get().getTotalPages());
-                    return ResponseEntity.ok(resutl);
+                if (listBird.isPresent()) {
+                    List<ProductShopDto> listFoodShopDto = listBird.get().stream().map(bird -> this.foodToProductDto(bird)).toList();
+                    PageNumberWraper result = new PageNumberWraper();
+                    result.setLists(listFoodShopDto);
+                    result.setTotalProduct(listBird.get().getTotalElements());
+                    result.setPageNumber(listBird.get().getTotalPages());
+                    return ResponseEntity.ok(result);
                 }
-            }else {
-                var error = ErrorResponse.builder().errorCode(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getCode()+"")
+            } else {
+                var error = ErrorResponse.builder().errorCode(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getCode() + "")
                         .errorMessage(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getMessage()).build();
                 return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
             }
-        }else {
+        } else {
             throw new CustomRuntimeException("400", "Some thing went wrong");
         }
         return null;
     }
 
     private ProductShopDto foodToProductDto(Product bird) {
-        if(bird != null) {
+        if (bird != null) {
             return productService.productToProductShopDto(bird);
         }
         return null;

@@ -71,4 +71,10 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
     Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalse(long id, Pageable pageable);
 
     Optional<Page<Product>> findByShopOwner_IdAndHiddenIsFalse(long id, Pageable pageable);
+
+    @Query(value = "SELECT * FROM `bird-trading-platform`.tbl_bird b \n" +
+            "WHERE b.shop_id = ?1 AND b.product_id = ?2 \n" +
+            "AND b.name LIKE %?3% AND b.type_id = ?4 \n" +
+            "AND b.price >= ?5", nativeQuery = true)
+    Page<Long> filterProductShopOwner(long shopId, long productId, String productName, long typeId, double lowestPrice, Pageable pageable);
 }
