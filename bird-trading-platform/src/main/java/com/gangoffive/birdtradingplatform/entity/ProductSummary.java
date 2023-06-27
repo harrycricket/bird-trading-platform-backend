@@ -28,6 +28,9 @@ public class ProductSummary {
     @Column(name = "category")
     private String category;
 
+    @Column(name = "discounted_price")
+    private double discountedPrice;
+
     @Column(name = "total_quantity_order")
     private double totalQuantityOrder;
 

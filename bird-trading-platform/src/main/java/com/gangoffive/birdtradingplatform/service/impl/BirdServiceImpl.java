@@ -2,20 +2,16 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.dto.ProductShopDto;
 import com.gangoffive.birdtradingplatform.dto.ProductShopOwnerFilterDto;
-import com.gangoffive.birdtradingplatform.entity.Bird;
-import com.gangoffive.birdtradingplatform.entity.Product;
-import com.gangoffive.birdtradingplatform.entity.ShopOwner;
+import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.ResponseCode;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.BirdMapper;
-import com.gangoffive.birdtradingplatform.repository.AccountRepository;
-import com.gangoffive.birdtradingplatform.repository.BirdRepository;
-import com.gangoffive.birdtradingplatform.repository.ProductSummaryRepository;
-import com.gangoffive.birdtradingplatform.repository.TagRepository;
+import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.AuthenticationService;
 import com.gangoffive.birdtradingplatform.service.BirdService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
@@ -46,6 +42,7 @@ public class BirdServiceImpl implements BirdService {
     private final ProductSummaryService productSummaryService;
     private final ProductSummaryRepository productSummaryRepository;
     private final AccountRepository accountRepository;
+    private final TypeBirdRepository typeBirdRepository;
     private AuthenticationService authenticationService;
 
     @Override
@@ -65,7 +62,8 @@ public class BirdServiceImpl implements BirdService {
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
 
-            Optional<Page<Product>> pageAble = birdRepository.findByShopOwner_IdAndDeletedIsFalse(shopId, pageRequest);
+            Optional<Page<Product>> pageAble = birdRepository.findByShopOwner_IdAndStatusIn(shopId,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest);
             if (pageAble.isPresent()) {
                 List<ProductDto> list = pageAble.get().stream()
                         .map(productService::ProductToDto)
@@ -88,7 +86,8 @@ public class BirdServiceImpl implements BirdService {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
-            Page<Bird> pageAble = birdRepository.findAllByDeletedFalseAndQuantityGreaterThan(0, pageRequest);
+            Page<Bird> pageAble = birdRepository.findAllByQuantityGreaterThanAndStatusIn(0,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest);
             List<BirdDto> birds = pageAble.getContent()
                     .stream()
                     .map(bird -> (BirdDto) productService.ProductToDto(bird))
@@ -146,7 +145,8 @@ public class BirdServiceImpl implements BirdService {
                     pageNumber--;
                 }
                 PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
-                var listBird = birdRepository.findByShopOwner_IdAndHiddenIsFalse(shopId, pageRequest);
+                var listBird = birdRepository.findByShopOwner_IdAndStatusIn(shopId,
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
                 if (listBird.isPresent()) {
                     List<ProductShopDto> listBirdShopDto = listBird.get().stream().map(bird -> this.birdToProductDto(bird)).toList();
                     PageNumberWraper result = new PageNumberWraper();
@@ -167,8 +167,224 @@ public class BirdServiceImpl implements BirdService {
     }
 
     @Override
-    public ResponseEntity<?> filterAllBirdByShop(ProductShopOwnerFilterDto productFilter, int pageNumber) {
-        return null;
+    public ResponseEntity<?> filterAllBirdByShop(ProductShopOwnerFilterDto productFilter) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Account> account = accountRepository.findByEmail(email);
+        Long shopId = account.get().getShopOwner().getId();
+        log.info("productFilter.getPageNumber() {}", productFilter.getPageNumber());
+        if (productFilter.getPageNumber() > 0) {
+            int pageNumber = productFilter.getPageNumber() - 1;
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
+            PageRequest pageRequestWithSort = null;
+            if (productFilter.getSortDirection() != null) {
+                if (productFilter.getSortDirection().getSortDirection().name() == Sort.Direction.ASC.name()) {
+                    pageRequestWithSort = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                            Sort.by(Sort.Direction.ASC, productFilter.getSortDirection().getSortColumn()));
+                } else {
+                    pageRequestWithSort = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                            Sort.by(Sort.Direction.DESC, productFilter.getSortDirection().getSortColumn()));
+                }
+            }
+
+            if (productFilter.getProductSearchInfo().getProductId() != null) {
+                Optional<Page<Bird>> birds = birdRepository.findByIdAndShopOwner_IdAndStatusIn(
+                        productFilter.getProductSearchInfo().getProductId(), shopId,
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest
+                );
+
+                if (birds.isPresent()) {
+                    List<ProductShopDto> listBirdShopDto = birds.get().stream().map(productService::productToProductShopDto).toList();
+                    PageNumberWraper result = new PageNumberWraper<>(listBirdShopDto, birds.get().getTotalPages(), birds.get().getTotalElements());
+                    return ResponseEntity.ok(result);
+                }
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Not found this id.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            } else if (
+                    productFilter.getProductSearchInfo().getProductName() != null
+                            && productFilter.getSortDirection() == null
+            ) {
+                String nameLike = "%" + productFilter.getProductSearchInfo().getProductName() + "%";
+                Optional<Page<Bird>> birds = birdRepository.findAllByNameLikeAndShopOwner_IdAndStatusIn(
+                        nameLike, shopId, ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest
+                );
+
+                if (birds.isPresent()) {
+                    List<ProductShopDto> listBirdShopDto = birds.get().stream().map(productService::productToProductShopDto).toList();
+                    PageNumberWraper result = new PageNumberWraper<>(listBirdShopDto, birds.get().getTotalPages(), birds.get().getTotalElements());
+                    return ResponseEntity.ok(result);
+                }
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Not found this name.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            } else if (
+                    productFilter.getProductSearchInfo().getProductName() != null
+            ) {
+                String nameLike = "%" + productFilter.getProductSearchInfo().getProductName() + "%";
+                Optional<Page<Bird>> birds = birdRepository.findAllByNameLikeAndShopOwner_IdAndStatusIn(
+                                nameLike, shopId, ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequestWithSort
+                );
+
+                if (birds.isPresent()) {
+                    List<ProductShopDto> listBirdShopDto = birds.get().stream().map(productService::productToProductShopDto).toList();
+                    PageNumberWraper result = new PageNumberWraper<>(listBirdShopDto, birds.get().getTotalPages(), birds.get().getTotalElements());
+                    return ResponseEntity.ok(result);
+                }
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Not found this name.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            } else if (
+                    productFilter.getProductSearchInfo().getTypeName() != null
+                            && productFilter.getSortDirection() == null
+            ) {
+                List<TypeBird> typeBirdIds = typeBirdRepository.findAllByNameLike("%" + productFilter.getProductSearchInfo().getTypeName() + "%");
+                Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndTypeBird_IdInAndStatusIn(
+                        shopId, typeBirdIds.stream().map(TypeBird::getId).collect(Collectors.toList()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest
+                );
+                if (birds.isPresent()) {
+                    List<ProductShopDto> listBirdShopDto = birds.get().stream().map(productService::productToProductShopDto).toList();
+                    PageNumberWraper result = new PageNumberWraper<>(listBirdShopDto, birds.get().getTotalPages(), birds.get().getTotalElements());
+                    return ResponseEntity.ok(result);
+                }
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Not found this type name.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            } else if (
+                    productFilter.getProductSearchInfo().getTypeName() != null
+            ) {
+                List<TypeBird> typeBirdIds = typeBirdRepository.findAllByNameLike("%" + productFilter.getProductSearchInfo().getTypeName() + "%");
+                Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndTypeBird_IdInAndStatusIn(
+                        shopId, typeBirdIds.stream().map(TypeBird::getId).collect(Collectors.toList()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequestWithSort
+                );
+                if (birds.isPresent()) {
+                    List<ProductShopDto> listBirdShopDto = birds.get().stream().map(productService::productToProductShopDto).toList();
+                    PageNumberWraper result = new PageNumberWraper<>(listBirdShopDto, birds.get().getTotalPages(), birds.get().getTotalElements());
+                    return ResponseEntity.ok(result);
+                }
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Not found this type name.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            } else if (
+                    productFilter.getProductSearchInfo().getLowestPrice() != null
+                            && productFilter.getSortDirection() == null
+            ) {
+                Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndPriceGreaterThanEqualAndStatusIn(
+                        shopId, productFilter.getProductSearchInfo().getLowestPrice(),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest
+                );
+                if (birds.isPresent()) {
+                    List<ProductShopDto> listBirdShopDto = birds.get().stream().map(productService::productToProductShopDto).toList();
+                    PageNumberWraper result = new PageNumberWraper<>(listBirdShopDto, birds.get().getTotalPages(), birds.get().getTotalElements());
+                    return ResponseEntity.ok(result);
+                }
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Do not have product greater than this price.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            } else if (productFilter.getProductSearchInfo().getLowestPrice() != null) {
+                Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndPriceGreaterThanEqualAndStatusIn(
+                        shopId, productFilter.getProductSearchInfo().getLowestPrice(),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequestWithSort
+                );
+                if (birds.isPresent()) {
+                    List<ProductShopDto> listBirdShopDto = birds.get().stream().map(productService::productToProductShopDto).toList();
+                    PageNumberWraper result = new PageNumberWraper<>(listBirdShopDto, birds.get().getTotalPages(), birds.get().getTotalElements());
+                    return ResponseEntity.ok(result);
+                }
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Do not have product greater than this price.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            }  else if (
+                    productFilter.getProductSearchInfo().getLowestPriceOfDiscountedPrice() != null
+                            && productFilter.getSortDirection() == null
+            ) {
+                Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
+                        shopId, productFilter.getProductSearchInfo().getLowestPriceOfDiscountedPrice(),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest
+                );
+                if (birds.isPresent()) {
+                    List<ProductShopDto> listBirdShopDto = birds.get().stream().map(productService::productToProductShopDto).toList();
+                    PageNumberWraper result = new PageNumberWraper<>(listBirdShopDto, birds.get().getTotalPages(), birds.get().getTotalElements());
+                    return ResponseEntity.ok(result);
+                }
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Do not have product greater than this price.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            } else if (productFilter.getProductSearchInfo().getLowestPriceOfDiscountedPrice() != null) {
+                Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
+                        shopId, productFilter.getProductSearchInfo().getLowestPriceOfDiscountedPrice(),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequestWithSort
+                );
+                if (birds.isPresent()) {
+                    List<ProductShopDto> listBirdShopDto = birds.get().stream().map(productService::productToProductShopDto).toList();
+                    PageNumberWraper result = new PageNumberWraper<>(listBirdShopDto, birds.get().getTotalPages(), birds.get().getTotalElements());
+                    return ResponseEntity.ok(result);
+                }
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Do not have product greater than this discounted price.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            } else if (
+                    productFilter.getProductSearchInfo().getProductStatus() != null
+                            && productFilter.getSortDirection() == null
+            ) {
+                Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndStatus(
+                        shopId, productFilter.getProductSearchInfo().getProductStatus(), pageRequest
+                );
+                if (birds.isPresent()) {
+                    List<ProductShopDto> listBirdShopDto = birds.get().stream().map(productService::productToProductShopDto).toList();
+                    PageNumberWraper result = new PageNumberWraper<>(listBirdShopDto, birds.get().getTotalPages(), birds.get().getTotalElements());
+                    return ResponseEntity.ok(result);
+                }
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Do not have product have this status.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            } else if (productFilter.getProductSearchInfo().getProductStatus() != null) {
+                Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndStatus(
+                        shopId, productFilter.getProductSearchInfo().getProductStatus(), pageRequestWithSort
+                );
+                if (birds.isPresent()) {
+                    List<ProductShopDto> listBirdShopDto = birds.get().stream().map(productService::productToProductShopDto).toList();
+                    PageNumberWraper result = new PageNumberWraper<>(listBirdShopDto, birds.get().getTotalPages(), birds.get().getTotalElements());
+                    return ResponseEntity.ok(result);
+                }
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Do not have product have this status.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            } else {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .errorMessage("Product filter is null.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                    "Page number cannot less than 1");
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
     }
 
     private ProductShopDto birdToProductDto(Product bird) {

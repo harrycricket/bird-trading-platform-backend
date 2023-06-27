@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.dto.FoodDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.dto.ProductShopDto;
@@ -56,7 +57,8 @@ public class FoodServiceImpl implements FoodService {
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
 
-            Optional<Page<Product>> pageAble = foodRepository.findByShopOwner_IdAndDeletedIsFalse(shopId, pageRequest);
+            Optional<Page<Product>> pageAble = foodRepository.findByShopOwner_IdAndStatusIn(shopId,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest);
             if (pageAble.isPresent()) {
                 List<ProductDto> list = pageAble.get().stream()
                         .map(productService::ProductToDto)
@@ -79,7 +81,8 @@ public class FoodServiceImpl implements FoodService {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest page = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
-            Page<Food> pageAble = foodRepository.findAllByQuantityGreaterThanAndDeletedFalse(0, page);
+            Page<Food> pageAble = foodRepository.findAllByQuantityGreaterThanAndStatusIn(0,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, page);
             List<FoodDto> lists = pageAble.getContent().stream()
                     .map(food -> (FoodDto) productService.ProductToDto(food)).
                     collect(Collectors.toList());
@@ -134,7 +137,8 @@ public class FoodServiceImpl implements FoodService {
                     pageNumber--;
                 }
                 PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
-                var listBird = foodRepository.findByShopOwner_IdAndHiddenIsFalse(shopId, pageRequest);
+                var listBird = foodRepository.findByShopOwner_IdAndStatusIn(shopId,
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
                 if (listBird.isPresent()) {
                     List<ProductShopDto> listFoodShopDto = listBird.get().stream().map(bird -> this.foodToProductDto(bird)).toList();
                     PageNumberWraper result = new PageNumberWraper();

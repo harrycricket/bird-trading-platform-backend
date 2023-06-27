@@ -23,5 +23,5 @@ public interface BirdService {
 
     ResponseEntity<?> getAllBirdByShop(int pageNumber);
 
-    ResponseEntity<?> filterAllBirdByShop(ProductShopOwnerFilterDto productFilter, int pageNumber);
+    ResponseEntity<?> filterAllBirdByShop(ProductShopOwnerFilterDto productFilter);
 }

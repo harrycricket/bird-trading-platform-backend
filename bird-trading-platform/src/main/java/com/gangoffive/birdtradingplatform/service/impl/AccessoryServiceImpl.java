@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.dto.ProductShopDto;
@@ -58,7 +59,7 @@ public class AccessoryServiceImpl implements AccessoryService {
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
 
-            Optional<Page<Product>> pageAble = accessoryRepository.findByShopOwner_IdAndDeletedIsFalse(shopId, pageRequest);
+            Optional<Page<Product>> pageAble = accessoryRepository.findByShopOwner_IdAndStatusIn(shopId,ProductStatusConstant.LIST_STATUS_GET_FOR_USER ,pageRequest);
             if (pageAble.isPresent()) {
                 List<ProductDto> list = pageAble.get().stream()
                         .map(productService::ProductToDto)
@@ -81,7 +82,8 @@ public class AccessoryServiceImpl implements AccessoryService {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
-            Page<Accessory> pageAble = accessoryRepository.findAllByQuantityGreaterThanAndDeletedFalse(0, pageRequest);
+            Page<Accessory> pageAble = accessoryRepository.findAllByQuantityGreaterThanAndStatusIn(0,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest);
             List<AccessoryDto> accessories = pageAble.getContent()
                     .stream()
                     .map(accessory -> (AccessoryDto) productService.ProductToDto(accessory))
@@ -97,7 +99,9 @@ public class AccessoryServiceImpl implements AccessoryService {
     @Override
     public List<AccessoryDto> findAccessoryByName(String name) {
         List<AccessoryDto> accessories = accessoryRepository
-                .findByNameLike("%" + name + "%")
+                .findByNameLikeAndStatusInAndQuantityGreaterThanEqual("%" + name + "%",
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_USER,
+                        ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER)
                 .get()
                 .stream()
                 .map(accessory -> (AccessoryDto) productService.ProductToDto(accessory))
@@ -138,9 +142,10 @@ public class AccessoryServiceImpl implements AccessoryService {
                     pageNumber--;
                 }
                 PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
-                var listBird = accessoryRepository.findByShopOwner_IdAndHiddenIsFalse(shopId, pageRequest);
-                if (listBird.isPresent()) {
-                    List<ProductShopDto> listAccessoryShopDto = listBird.get().stream().map(bird -> this.accessoryToProductDto(bird)).toList();
+                var listBird = accessoryRepository.findByShopOwner_IdAndStatusIn(shopId,
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
+                if(listBird.isPresent()) {
+                    List<ProductShopDto> listAccessoryShopDto = listBird.get().stream().map(bird ->  this.accessoryToProductDto(bird)).toList();
                     PageNumberWraper result = new PageNumberWraper();
                     result.setLists(listAccessoryShopDto);
                     result.setTotalProduct(listBird.get().getTotalElements());

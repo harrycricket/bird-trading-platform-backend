@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.Product;
+import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -18,20 +19,18 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<List<Product>> findByNameLike(String name);
 
-    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalse(long id, Pageable pageable);
+    Optional<Page<Product>> findByShopOwner_IdAndStatusIn(long id,List<ProductStatus> productStatuses ,Pageable pageable);
 
-    @Query(value = "SELECT p FROM Product p where p.quantity > 0 and p.id = ?1")
-    Optional<Product> findByIdWithCondition(long id);
+    Integer countAllByShopOwner_IdAndStatusIn(Long id, List<ProductStatus> productStatuses);
 
-    Integer countAllByShopOwner_Id(Long id);
+    Optional<List<Product>> findByIdInAndQuantityGreaterThanAndStatusIn(List<Long> ids, int quantity, List<ProductStatus> productStatuses);
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE Product p SET p.status = ?1 WHERE p.id in ?2")
+    int updateListProductStatus (ProductStatus productStatus, List<Long> ids);
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE Product p SET p.deleted = ?1, p.hidden = ?2 WHERE p.id in ?3")
-    int updateListProductStatus (boolean delete, boolean hidden, List<Long> ids);
-
-    @Modifying
-    @Transactional
-    @Query(value = "UPDATE Product p SET p.quantity = ?1 WHERE p.id = ?2 AND p.shopOwner.id = ?3 AND p.hidden = false ")
+    @Query(value = "UPDATE Product p SET p.quantity = ?1 WHERE p.id = ?2 AND p.shopOwner.id = ?3 AND p.status = 'ACTIVE' ")
     int updateListProductQuantity(Integer quantity, Long id, Long shopId);
 }

@@ -3,13 +3,11 @@ package com.gangoffive.birdtradingplatform.service.impl;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
-import com.gangoffive.birdtradingplatform.enums.Category;
-import com.gangoffive.birdtradingplatform.enums.ProductUpdateStatus;
-import com.gangoffive.birdtradingplatform.enums.ResponseCode;
-import com.gangoffive.birdtradingplatform.enums.UserRole;
+import com.gangoffive.birdtradingplatform.enums.*;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.*;
 import com.gangoffive.birdtradingplatform.repository.*;
@@ -152,19 +150,22 @@ public class ProductServiceImpl implements ProductService {
     public ResponseEntity<?> retrieveProductById(Long id) {
         Optional<Product> product = productRepository.findById(id);
         if (product.isPresent()) {
-            ProductSummary productSummary = productSummaryRepository.findByProductId(id).get();
-            ProductDto productDto = this.ProductToDto(product.get());
+            var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(id, ProductStatusConstant.LIST_STATUS_GET_FOR_USER);
+            if(productSummary.isPresent()){
+                ProductDto productDto = this.ProductToDto(product.get());
 
-            List<String> listImages = MyUtils.toLists(product.get().getImgUrl(), ",");
-            int numberSold = (int) productSummary.getTotalQuantityOrder();
-            int numberReview = productSummary.getReviewTotal();
+                List<String> listImages = MyUtils.toLists(product.get().getImgUrl(), ",");
+                int numberSold = (int) productSummary.get().getTotalQuantityOrder();
+                int numberReview = productSummary.get().getReviewTotal();
 
-            ProductDetailWrapper productDetailWrapper = ProductDetailWrapper.builder()
-                    .product(productDto)
-                    .listImages(listImages)
-                    .numberSold(numberSold)
-                    .numberReview(numberReview).build();
-            return ResponseEntity.ok(productDetailWrapper);
+                ProductDetailWrapper productDetailWrapper = ProductDetailWrapper.builder()
+                        .product(productDto)
+                        .listImages(listImages)
+                        .numberSold(numberSold)
+                        .numberReview(numberReview).build();
+                return ResponseEntity.ok(productDetailWrapper);
+            }
+
         }
         return new ResponseEntity<>(ResponseCode.NOT_FOUND_THIS_ID.toString(), HttpStatus.NOT_FOUND);
     }
@@ -205,9 +206,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ResponseEntity<?> retrieveProductByListId(long[] ids) {
-        List<Product> lists = productRepository.findAllById(Arrays.stream(ids).boxed().toList());
-        if (lists != null) {
-            return ResponseEntity.ok(lists.stream().map(this::productToProductCart).toList());
+        var lists = productRepository.findByIdInAndQuantityGreaterThanAndStatusIn(Arrays.stream(ids).boxed().toList(),
+                ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER, ProductStatusConstant.LIST_STATUS_GET_FOR_USER);
+        if (lists.isPresent()) {
+            return ResponseEntity.ok(lists.get().stream().map(this::productToProductCart).toList());
         }
         return new ResponseEntity<>(ResponseCode.NOT_FOUND_THIS_LIST_ID.toString(), HttpStatus.NOT_FOUND);
     }
@@ -219,7 +221,8 @@ public class ProductServiceImpl implements ProductService {
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
 
-            Optional<Page<Product>> pageAble = productRepository.findByShopOwner_IdAndDeletedIsFalse(shopId, pageRequest);
+            Optional<Page<Product>> pageAble = productRepository.findByShopOwner_IdAndStatusIn(shopId,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER,pageRequest);
             if (pageAble.isPresent()) {
                 List<ProductDto> list = pageAble.get().stream()
                         .map(this::ProductToDto)
@@ -248,7 +251,8 @@ public class ProductServiceImpl implements ProductService {
             }
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
-            Optional<Page<Product>> pageAble = productRepository.findByShopOwner_IdAndDeletedIsFalse(shopId, pageRequest);
+            Optional<Page<Product>> pageAble = productRepository.findByShopOwner_IdAndStatusIn(shopId,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER ,pageRequest);
 
             if (pageAble.isPresent()) {
                 List<ProductShopDto> result = pageAble.get().stream().map(this::productToProductShopDto).toList();
@@ -283,12 +287,13 @@ public class ProductServiceImpl implements ProductService {
             productShopDto.setId(product.getId());
             productShopDto.setName(product.getName());
             productShopDto.setPrice(product.getPrice());
+            productShopDto.setDiscountedPrice(CalculateDiscountedPrice(product.getPrice(), CalculateSaleOff(product.getPromotionShops(), product.getPrice())));
             productShopDto.setQuantity(product.getQuantity());
-            productShopDto.setStatus(product.isDeleted());
+            productShopDto.setStatus(product.getStatus().name());
             productShopDto.setCreateDate(product.getCreatedDate().getTime());
             productShopDto.setLastUpdate(product.getLastUpDated().getTime());
             //get product summary to take total order total review star
-            var productSummary = productSummaryRepository.findByProductId(product.getId());
+            var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER);
             if (productSummary.isPresent()) {
                 productShopDto.setTotalOrders(productSummary.get().getTotalQuantityOrder());
                 productShopDto.setTotalReviews(productSummary.get().getReviewTotal());
@@ -304,8 +309,7 @@ public class ProductServiceImpl implements ProductService {
     public ResponseEntity<?> updateListProductStatus(ProductStatusShopChangeDto productStatusShopChangeDto) {
         ProductUpdateStatus product = ProductUpdateStatus.getProductUpdateStatusEnum(productStatusShopChangeDto.getStatus());
         try{
-            int numberStatusChange = productRepository.updateListProductStatus(product.isDelete(),
-                    product.isHidden(),
+            int numberStatusChange = productRepository.updateListProductStatus(product.getProductStatus(),
                     productStatusShopChangeDto.getIds());
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("numberProductChange", numberStatusChange);
@@ -553,7 +557,7 @@ public class ProductServiceImpl implements ProductService {
                 bird.setGender(productShopOwnerDto.getFeature().getGender());
                 bird.setColor(productShopOwnerDto.getFeature().getColor());
                 bird.setShopOwner(account.get().getShopOwner());
-                bird.setHidden(false);
+                bird.setStatus(ProductStatus.ACTIVE);
                 Bird saveBird = productRepository.save(bird);
                 productSummaryService.updateCategory(saveBird);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
@@ -582,7 +586,7 @@ public class ProductServiceImpl implements ProductService {
                 food.setTypeFood(typeFoodRepository.findById(productShopOwnerDto.getTypeId()).get());
                 food.setWeight(productShopOwnerDto.getFeature().getWeight());
                 food.setShopOwner(account.get().getShopOwner());
-                food.setHidden(false);
+                food.setStatus(ProductStatus.ACTIVE);
                 Food saveFood = productRepository.save(food);
                 productSummaryService.updateCategory(saveFood);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
@@ -611,7 +615,7 @@ public class ProductServiceImpl implements ProductService {
                 accessory.setTypeAccessory(typeAccessoryRepository.findById(productShopOwnerDto.getTypeId()).get());
                 accessory.setOrigin(productShopOwnerDto.getFeature().getOrigin());
                 accessory.setShopOwner(account.get().getShopOwner());
-                accessory.setHidden(false);
+                accessory.setStatus(ProductStatus.ACTIVE);
                 Accessory saveAccessory = productRepository.save(accessory);
                 productSummaryService.updateCategory(saveAccessory);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {

@@ -74,10 +74,6 @@ public class ProductController {
         return productService.filterByShop(shopFilterDto);
     }
 
-    @GetMapping("/products/birds/shop-owner/{pageNumber}")
-    public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
-        return productService.retrieveProductByShopIdForSO(pageNumber);
-    }
 
     @PostMapping("/shop-owner/products")
     public ResponseEntity<?> addNewProduct(

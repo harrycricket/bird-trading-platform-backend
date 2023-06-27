@@ -1,6 +1,8 @@
 package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
+import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
+import com.gangoffive.birdtradingplatform.dto.ProductShopOwnerFilterDto;
 import com.gangoffive.birdtradingplatform.service.BirdService;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;
@@ -57,5 +59,10 @@ public class BirdController {
     @GetMapping("/shop-owner/birds/pages/{pageNumber}")
     public ResponseEntity<?> getAllBirdOfShop (@PathVariable int pageNumber) {
         return birdService.getAllBirdByShop(pageNumber);
+    }
+
+    @PostMapping("/shop-owner/birds")
+    public ResponseEntity<?> getAllBirdOfShop (@RequestBody ProductShopOwnerFilterDto productShopOwnerFilter) {
+        return birdService.filterAllBirdByShop(productShopOwnerFilter);
     }
 }
