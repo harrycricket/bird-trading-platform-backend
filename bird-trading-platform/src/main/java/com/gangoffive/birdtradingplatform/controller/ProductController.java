@@ -73,10 +73,6 @@ public class ProductController {
         return productService.filterByShop(shopFilterDto);
     }
 
-    @GetMapping("/products/birds/shop-owner/{pageNumber}")
-    public ResponseEntity retrieveAllProduct(@PathVariable int pageNumber) {
-        return productService.retrieveProductByShopIdForSO(pageNumber);
-    }
 
     @PutMapping("/shop-owner/products/status")
     public ResponseEntity<?> updateListProductStatus(@RequestBody ProductStatusShopChangeDto productStatusShopChangeDto) {

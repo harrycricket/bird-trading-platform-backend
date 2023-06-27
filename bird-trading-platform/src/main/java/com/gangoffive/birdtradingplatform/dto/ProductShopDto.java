@@ -20,7 +20,7 @@ public class ProductShopDto <T> {
 //    private List<PromotionShopDto> listDiscount;
     private int quantity;
     private T  type ;
-    private boolean status;
+    private String status;
     private double totalOrders;
     private double star;
     private int totalReviews;

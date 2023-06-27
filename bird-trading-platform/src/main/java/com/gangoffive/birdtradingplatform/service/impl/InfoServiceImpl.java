@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Order;
@@ -82,7 +83,7 @@ public class InfoServiceImpl implements InfoService {
             ShopInfoDto shopInfoDto = shopOwnerMapper.modelToShopInfoDto(shopOwner.get());
             ShopSummaryDto shopSummaryDto = ShopSummaryDto.builder()
                     .shopInfoDto(shopInfoDto)
-                    .totalProduct(productRepository.countAllByShopOwner_Id(id))
+                    .totalProduct(productRepository.countAllByShopOwner_IdAndStatusIn(id, ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER))
                     //rating lam sau
                     .rating("")
                     .totalProductOrder(totalProductOrder)
