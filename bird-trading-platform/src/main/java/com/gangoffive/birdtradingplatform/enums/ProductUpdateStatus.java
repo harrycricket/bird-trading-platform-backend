@@ -11,7 +11,8 @@ import java.util.List;
 public enum ProductUpdateStatus {
     DELETE(-1, ProductStatus.DELETE),
     INACTIVE (0, ProductStatus.INACTIVE),
-    ACTIVE(1, ProductStatus.ACTIVE);
+    ACTIVE(1, ProductStatus.ACTIVE),
+    BAN(-2, ProductStatus.BAN);
     private int status;
 
     private ProductStatus productStatus;

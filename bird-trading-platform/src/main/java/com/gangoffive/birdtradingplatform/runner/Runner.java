@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.runner;
 
+import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
@@ -24,13 +25,14 @@ public class Runner implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-//        List<Product> lists = productRepository.findAll();
-//        log.info("list {}", lists.size());
-//        for(Product pro : lists) {
-//            productSummaryService.apply(pro);
-//        }
-//
-//        log.info("done");
+        List<Product> lists = productRepository.findAll();
+        log.info("here is list {}", lists.size());
+        log.info("list {}", lists.size());
+        for(Product pro : lists) {
+            productSummaryService.apply(pro);
+        }
+
+        log.info("done");
     }
 
 }

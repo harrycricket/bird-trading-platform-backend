@@ -4,7 +4,7 @@ public enum ProductStatus {
     DELETE(-1, "Delete"),
     INACTIVE(0, "Inactive"),
     ACTIVE(1, "Active"),
-    BAN(2, "Ban by admin");
+    BAN(-2, "Ban by admin");
     private int statusCode;
     private String description;
 

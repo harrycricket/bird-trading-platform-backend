@@ -13,6 +13,7 @@ import com.gangoffive.birdtradingplatform.mapper.*;
 import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
+import com.gangoffive.birdtradingplatform.service.PromotionPriceService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.MyUtils;
 import com.gangoffive.birdtradingplatform.util.S3Utils;
@@ -61,6 +62,7 @@ public class ProductServiceImpl implements ProductService {
     private final AppProperties appProperties;
     private final ShopOwnerMapper shopOwnerMapper;
     private final ShopOwnerService shopOwnerService;
+    private final PromotionPriceService promotionPriceService;
     @Override
     public List<ProductDto> retrieveAllProduct() {
         List<ProductDto> lists = productRepository.findAll().stream()
@@ -122,17 +124,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public double CalculateSaleOff(List<PromotionShop> listPromotion, double price) {
-        if (listPromotion != null && listPromotion.size() != 0) {
-            List<Integer> saleOff = listPromotion.stream().map(s -> (Integer) s.getDiscountRate()).collect(Collectors.toList());
-            double priceDiscount = price;
-            for (double sale : saleOff) {
-                priceDiscount = priceDiscount - priceDiscount * sale / 100;
-            }
-            double percentDiscount = Math.round(((price - priceDiscount) / price) * 100.0) / 100.0;
-
-            return percentDiscount;
-        }
-        return 0.0;
+        return promotionPriceService.CalculateSaleOff(listPromotion, price);
     }
 
 
@@ -172,7 +164,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public double CalculateDiscountedPrice(double price, double saleOff) {
-        return Math.round((price - (price * saleOff)) * 100.0) / 100.0;
+        return promotionPriceService.CalculateDiscountedPrice(price, saleOff);
     }
 
     @Override
@@ -289,7 +281,7 @@ public class ProductServiceImpl implements ProductService {
             productShopDto.setPrice(product.getPrice());
             productShopDto.setDiscountedPrice(CalculateDiscountedPrice(product.getPrice(), CalculateSaleOff(product.getPromotionShops(), product.getPrice())));
             productShopDto.setQuantity(product.getQuantity());
-            productShopDto.setStatus(product.getStatus().name());
+            productShopDto.setStatus(product.getStatus().getStatusCode());
             productShopDto.setCreateDate(product.getCreatedDate().getTime());
             productShopDto.setLastUpdate(product.getLastUpDated().getTime());
             //get product summary to take total order total review star
