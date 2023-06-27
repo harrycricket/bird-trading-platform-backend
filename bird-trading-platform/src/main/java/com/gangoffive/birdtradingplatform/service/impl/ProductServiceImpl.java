@@ -280,7 +280,7 @@ public class ProductServiceImpl implements ProductService {
             productShopDto.setName(product.getName());
             productShopDto.setPrice(product.getPrice());
             productShopDto.setQuantity(product.getQuantity());
-            productShopDto.setStatus(product.getStatus().name());
+            productShopDto.setStatus(product.getStatus().getStatusCode());
             productShopDto.setCreateDate(product.getCreatedDate().getTime());
             productShopDto.setLastUpdate(product.getLastUpDated().getTime());
             //get product summary to take total order total review star
