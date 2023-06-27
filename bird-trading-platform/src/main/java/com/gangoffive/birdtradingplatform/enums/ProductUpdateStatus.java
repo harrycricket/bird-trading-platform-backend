@@ -9,28 +9,24 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum ProductUpdateStatus {
-    DELETE(-1, true, true),
-    INACTIVE (0, true, false),
-    ACTIVE(1, false, false);
+    DELETE(-1, ProductStatus.DELETE),
+    INACTIVE (0, ProductStatus.INACTIVE),
+    ACTIVE(1, ProductStatus.ACTIVE);
     private int status;
-    private boolean delete;
-    private boolean hidden;
 
-    ProductUpdateStatus(int status, boolean delete, boolean hidden) {
+    private ProductStatus productStatus;
+
+    ProductUpdateStatus(int status, ProductStatus productStatus) {
         this.status = status;
-        this.delete = delete;
-        this.hidden = hidden;
+        this.productStatus = productStatus;
     }
 
     public int getStatus() {
         return status;
     }
 
-    public boolean isDelete() {
-        return delete;
-    }
-    public boolean isHidden() {
-        return hidden;
+    public ProductStatus getProductStatus() {
+        return productStatus;
     }
 
     public static ProductUpdateStatus getProductUpdateStatusEnum (int status) {

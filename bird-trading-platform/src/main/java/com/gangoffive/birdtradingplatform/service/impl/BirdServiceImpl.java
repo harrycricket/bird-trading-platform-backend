@@ -1,9 +1,12 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
-import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
-import com.gangoffive.birdtradingplatform.dto.*;
-import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
+import com.gangoffive.birdtradingplatform.dto.BirdDto;
+import com.gangoffive.birdtradingplatform.dto.ProductDto;
+import com.gangoffive.birdtradingplatform.dto.ProductShopDto;
+import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.enums.ResponseCode;
@@ -18,7 +21,6 @@ import com.gangoffive.birdtradingplatform.service.BirdService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
-import com.google.gson.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -62,7 +64,8 @@ public class BirdServiceImpl implements BirdService {
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
 
-            Optional<Page<Product>> pageAble = birdRepository.findByShopOwner_IdAndDeletedIsFalse(shopId, pageRequest);
+            Optional<Page<Product>> pageAble = birdRepository.findByShopOwner_IdAndStatusIn(shopId,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest);
             if (pageAble.isPresent()) {
                 List<ProductDto> list = pageAble.get().stream()
                         .map(productService::ProductToDto)
@@ -85,7 +88,8 @@ public class BirdServiceImpl implements BirdService {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
-            Page<Bird> pageAble = birdRepository.findAllByDeletedFalseAndQuantityGreaterThan(0, pageRequest);
+            Page<Bird> pageAble = birdRepository.findAllByQuantityGreaterThanAndStatusIn(0,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest);
             List<BirdDto> birds = pageAble.getContent()
                     .stream()
                     .map(bird -> (BirdDto)productService.ProductToDto(bird))
@@ -143,7 +147,8 @@ public class BirdServiceImpl implements BirdService {
                     pageNumber--;
                 }
                 PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
-                var listBird = birdRepository.findByShopOwner_IdAndHiddenIsFalse(shopId, pageRequest);
+                var listBird = birdRepository.findByShopOwner_IdAndStatusIn(shopId,
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
                 if(listBird.isPresent()) {
                     List<ProductShopDto> listBirdShopDto = listBird.get().stream().map(bird ->  this.birdToProductDto(bird)).toList();
                     PageNumberWraper resutl = new PageNumberWraper();
