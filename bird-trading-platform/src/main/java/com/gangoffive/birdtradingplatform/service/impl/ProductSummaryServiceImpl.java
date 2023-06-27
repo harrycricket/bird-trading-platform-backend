@@ -8,6 +8,7 @@ import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
+import com.gangoffive.birdtradingplatform.service.PromotionPriceService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
     private final BirdRepository birdRepository;
     private final FoodRepository foodRepository;
     private final AccessoryRepository accessoryRepository;
+    private final PromotionPriceService promotionPriceService;
 
     public double updateProductStar(Product product) {
         double star = this.CalculationRating(product.getOrderDetails());
@@ -74,12 +76,22 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
         return category;
     }
 
+    public double discountedPrice(Product product) {
+        double discountedPrice = Optional.ofNullable(promotionPriceService.getDiscountedPrice(product)).orElse(0.0);
+        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
+        productSummary.setDiscountedPrice(discountedPrice);
+        productSummary.setProduct(product);
+        productSummaryRepository.save(productSummary);
+        return discountedPrice;
+    }
+
     @Transactional
     public boolean apply(Product product) {
         this.updateReviewTotal(product);
         this.updateProductStar(product);
         this.updateTotalQuantityOrder(product);
         this.updateCategory(product);
+        this.discountedPrice(product);
         return true;
     }
 
