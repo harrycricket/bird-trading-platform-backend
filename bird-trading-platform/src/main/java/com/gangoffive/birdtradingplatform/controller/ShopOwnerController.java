@@ -38,6 +38,7 @@ public class ShopOwnerController {
     public ResponseEntity<?> registerShopOwnerAccount(
             @RequestParam(name = "image") MultipartFile multipartImage,
             @RequestPart(name = "data") RegisterShopOwnerDto registerShopOwnerDto) {
+        
         return accountService.registerShopOwnerAccount(registerShopOwnerDto, multipartImage);
     }
 
