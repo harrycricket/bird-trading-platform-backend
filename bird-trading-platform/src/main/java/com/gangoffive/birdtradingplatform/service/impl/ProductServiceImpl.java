@@ -355,6 +355,7 @@ public class ProductServiceImpl implements ProductService {
                     && !productFilter.getSortDirection().getSort().isEmpty()
                     && !productFilter.getSortDirection().getField().isEmpty()
             ) {
+                log.info("go pageRequestWithSort---------------------");
                 if (!SortColumn.checkField(productFilter.getSortDirection().getField())) {
                     ErrorResponse errorResponse = ErrorResponse.builder()
                             .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -362,9 +363,13 @@ public class ProductServiceImpl implements ProductService {
                             .build();
                     return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
                 }
-                if (productFilter.getSortDirection().getSort().toUpperCase() == Sort.Direction.ASC.name()) {
+//                if (productFilter.getSortDirection().getSort().equals(""))
+                log.info("productFilter.getSortDirection().getSort().toUpperCase() {}", productFilter.getSortDirection().getSort().toUpperCase());
+                log.info("Sort.Direction.ASC.name() {}", Sort.Direction.ASC.name());
+                if (productFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.ASC.name())) {
+                    log.info("asc---------------------");
                     pageRequestWithSort = getPageRequest(productFilter, pageNumber, Sort.Direction.ASC);
-                } else if (productFilter.getSortDirection().getSort().toUpperCase() == Sort.Direction.DESC.name()) {
+                } else if (productFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.DESC.name())) {
                     pageRequestWithSort = getPageRequest(productFilter, pageNumber, Sort.Direction.DESC);
                 }
             }
@@ -619,40 +624,59 @@ public class ProductServiceImpl implements ProductService {
     private static PageRequest getPageRequest(ProductShopOwnerFilterDto productFilter, int pageNumber, Sort.Direction sortDirection) {
         PageRequest pageRequestWithSort = null;
         if (productFilter.getCategory() == 1) {
-            if (productFilter.getSortDirection().getField() == SortColumn.TYPE_BIRD.getField()) {
+            if (productFilter.getSortDirection().getField().equals(SortColumn.TYPE_BIRD.getField())) {
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
                         PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
                         Sort.by(sortDirection,
                                 SortColumn.TYPE_BIRD.getColumn())
                         );
+            } else {
+                log.info("go here page 1");
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        Sort.by(sortDirection,
+                                SortColumn.getColumnByField(productFilter.getSortDirection().getField())
+                        )
+                );
             }
         } else if (productFilter.getCategory() == 2) {
-            if (productFilter.getSortDirection().getField() == SortColumn.TYPE_FOOD.getField()) {
+            if (productFilter.getSortDirection().getField().equals(SortColumn.TYPE_FOOD.getField())) {
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
                         PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
                         Sort.by(sortDirection,
                                 SortColumn.TYPE_FOOD.getColumn())
                 );
+            } else {
+                log.info("go here page 2");
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        Sort.by(sortDirection,
+                                SortColumn.getColumnByField(productFilter.getSortDirection().getField())
+                        )
+                );
             }
         } else if (productFilter.getCategory() == 3) {
-            if (productFilter.getSortDirection().getField() == SortColumn.TYPE_ACCESSORY.getField()) {
+            if (productFilter.getSortDirection().getField().equals(SortColumn.TYPE_ACCESSORY.getField())) {
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
                         PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
                         Sort.by(sortDirection,
                                 SortColumn.TYPE_ACCESSORY.getColumn())
                 );
+            } else {
+                log.info("go here page 3");
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        Sort.by(sortDirection,
+                                SortColumn.getColumnByField(productFilter.getSortDirection().getField())
+                        )
+                );
             }
-        } else {
-            pageRequestWithSort = PageRequest.of(
-                    pageNumber,
-                    PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
-                    Sort.by(sortDirection,
-                            SortColumn.getColumnByField(productFilter.getSortDirection().getField())
-                    )
-            );
         }
         return pageRequestWithSort;
     }
