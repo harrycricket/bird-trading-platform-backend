@@ -31,8 +31,8 @@ public class Runner implements CommandLineRunner {
 //        for(Product pro : lists) {
 //            productSummaryService.apply(pro);
 //        }
-
         log.info("done");
+
     }
 
 }

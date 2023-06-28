@@ -30,8 +30,8 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             "AND ps.star >= ?3 " +
             "AND f.price >= ?4 " +
             "AND f.price <= ?5 " +
-            "And a.status = 'ACTIVE' " +
-            "And a.quantity > 0 ", nativeQuery = true)
+            "And f.status = 'ACTIVE' " +
+            "And f.quantity > 0 ", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
                         double lowestPrice, double hightPrice, Pageable pageable);
 
