@@ -78,6 +78,7 @@ jobs:
            uses: actions/checkout@v3
          - name: "Create env file"
            run: |
+              mkdir ./files 
               echo "${{ secrets.INVENTORY_KAFKA_SERVER }}" > ./inventory-kafka
               echo "${{ secrets.PEM }}" > ./ansible-hosts-v2.pem
               echo "${{ secrets.DOCKER_COMPOSE_FILE}}" > ./files/docker-compose.yml
