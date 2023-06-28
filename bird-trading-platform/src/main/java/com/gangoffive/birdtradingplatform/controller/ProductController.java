@@ -102,10 +102,4 @@ public class ProductController {
         log.info("{}", productShopOwnerFilter.toString());
         return productService.filterAllProductByShopOwner(productShopOwnerFilter);
     }
-
-    public static void main(String[] args) {
-        String data = "{\"category\":1,\"productSearchInfo\":{\"field\":\"\",\"value\":\"\",\"operator\":\"\"},\"sortDirection\":{\"field\":\"\",\"sort\":\"\"},\"pageNumber\":1}";
-        ProductShopOwnerFilterDto productShopOwnerFilter = JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class);
-        log.info("{}", productShopOwnerFilter.toString());
-    }
 }

@@ -13,7 +13,6 @@ public enum FieldTable {
     TYPE("type"),
     PRICE("price"),
     DISCOUNTED_PRICE("discountedPrice"),
-    QUANTITY("quantity"),
     STATUS("status");
     private String field;
 }
