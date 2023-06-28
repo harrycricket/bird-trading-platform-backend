@@ -11,17 +11,13 @@ import com.gangoffive.birdtradingplatform.enums.ResponseCode;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
-import com.gangoffive.birdtradingplatform.repository.AccountRepository;
-import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
-import com.gangoffive.birdtradingplatform.repository.OrderRepository;
-import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
+import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
 import com.google.gson.*;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -30,7 +26,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -57,10 +52,12 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final OrderDetailRepository orderDetailRepository;
     private final JwtService jwtService;
     private final AppProperties appProperties;
+    private final ShopStaffRepository shopStaffRepository;
+
     @Override
     public List<String> listShopDto(List<Long> listShopId, long userId) {
         var listShop = shopOwnerRepository.findAllById(listShopId);
-        if(listShop != null && !listShop.isEmpty()) {
+        if (listShop != null && !listShop.isEmpty()) {
             List<String> list = listShop.stream().map(shop -> this.shopOwnerToDtoWithUnread(shop, userId)).toList();
             return list;
         }
@@ -70,12 +67,12 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     @Override
     public long getAccountIdByShopid(long shopId) {
         var shop = shopOwnerRepository.findById(shopId);
-        if(shop.isPresent()) {
+        if (shop.isPresent()) {
             Account acc = shop.get().getAccount();
             if (acc != null) {
                 return acc.getId();
             }
-        }else {
+        } else {
             throw new CustomRuntimeException("400", String.format("Cannot found shop with id : %d", shopId));
         }
         return 0;
@@ -191,7 +188,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartAccessoryPreviousOneWeekDtoList
         );
         double totalPriceOfPreviousOneWeek = 0;
-        for (BarChartDto barChartDto: barChartDtoPreviousOneWeekList) {
+        for (BarChartDto barChartDto : barChartDtoPreviousOneWeekList) {
             totalPriceOfPreviousOneWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
 
@@ -208,7 +205,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartAccessoryDtoPreviousTwoWeekList
         );
         double totalPriceOfPreviousTwoWeek = 0;
-        for (BarChartDto barChartDto: barChartDtoPreviousTwoWeekList) {
+        for (BarChartDto barChartDto : barChartDtoPreviousTwoWeekList) {
             totalPriceOfPreviousTwoWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
         double percent = ((totalPriceOfPreviousOneWeek - totalPriceOfPreviousTwoWeek)
@@ -242,7 +239,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartBirdPreviousOneWeekDtoList,
                 barChartAccessoryPreviousOneWeekDtoList);
         double totalOrderOfPreviousOneWeek = 0;
-        for (BarChartDto barChartDto: barChartDtoPreviousOneWeekList) {
+        for (BarChartDto barChartDto : barChartDtoPreviousOneWeekList) {
             totalOrderOfPreviousOneWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
 
@@ -259,7 +256,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartAccessoryDtoPreviousTwoWeekList
         );
         double totalOrderOfPreviousTwoWeek = 0;
-        for (BarChartDto barChartDto: barChartDtoPreviousTwoWeekList) {
+        for (BarChartDto barChartDto : barChartDtoPreviousTwoWeekList) {
             log.info("barChartDto.getAccessories() {}", barChartDto.getAccessories());
             log.info("barChartDto.getBirds() {}", barChartDto.getBirds());
             log.info("barChartDto.getFoods() {}", barChartDto.getFoods());
@@ -280,6 +277,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 .build();
         return dataBarChartDto;
     }
+
     @Override
     public DataBarChartDto dataBarChartByReviewAllTypeProduct() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -297,7 +295,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartBirdPreviousOneWeekDtoList,
                 barChartAccessoryPreviousOneWeekDtoList);
         double totalReviewOfPreviousOneWeek = 0;
-        for (BarChartDto barChartDto: barChartDtoPreviousOneWeekList) {
+        for (BarChartDto barChartDto : barChartDtoPreviousOneWeekList) {
             totalReviewOfPreviousOneWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
 
@@ -314,7 +312,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 barChartAccessoryDtoPreviousTwoWeekList
         );
         double totalReviewOfPreviousTwoWeek = 0;
-        for (BarChartDto barChartDto: barChartDtoPreviousTwoWeekList) {
+        for (BarChartDto barChartDto : barChartDtoPreviousTwoWeekList) {
             log.info("barChartDto.getAccessories() {}", barChartDto.getAccessories());
             log.info("barChartDto.getBirds() {}", barChartDto.getBirds());
             log.info("barChartDto.getFoods() {}", barChartDto.getFoods());
@@ -340,14 +338,14 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
     private double dataPieChartByTypeProduct(Account account, Class<?> productClass) {
         List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
-                dataBarChartEachTypeProduct(account, productClass, true, false, false,  1);
+                dataBarChartEachTypeProduct(account, productClass, true, false, false, 1);
         return barChartFoodPreviousOneWeekDtoList.stream().mapToDouble(BarChartOneTypeDto::getValue).sum();
     }
 
     private List<BarChartDto> getListBarChartDto(
-                    List<BarChartOneTypeDto> barChartFoodDtoList,
-                    List<BarChartOneTypeDto> barChartBirdDtoList,
-                    List<BarChartOneTypeDto> barChartAccessoryDtoList
+            List<BarChartOneTypeDto> barChartFoodDtoList,
+            List<BarChartOneTypeDto> barChartBirdDtoList,
+            List<BarChartOneTypeDto> barChartAccessoryDtoList
     ) {
         List<BarChartDto> barChartDtoList = new ArrayList<>();
         for (int i = 0; i < barChartFoodDtoList.size(); i++) {
@@ -486,7 +484,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         log.info("email {}", email);
 //        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
         var account = accountRepository.findByEmail(email);
-        if(account.isPresent()) {
+        if (account.isPresent()) {
             var shopInfo = account.get().getShopOwner();
             if (shopInfo != null) {
                 ShopInfoDto shopOwnerDto = shopOwnerMapper.modelToShopInfoDto(shopInfo);
@@ -495,7 +493,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 return ResponseEntity.ok(ErrorResponse.builder().errorCode(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getCode() + "")
                         .errorMessage(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getMessage()).build());
             }
-        }else {
+        } else {
             throw new CustomRuntimeException("400", "Some thing went wrong");
         }
 
@@ -504,13 +502,14 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     @Override
     public long getShopIdByEmail(String email) {
         var acc = accountRepository.findByEmail(email);
-        if(acc.isPresent()) {
-            if(acc.get().getShopOwner() != null) {
+        if (acc.isPresent()) {
+            if (acc.get().getShopOwner() != null) {
                 return acc.get().getShopOwner().getId();
             }
         }
         return 0;
     }
+
 
     public List<Order> getAllOrdersNumberPreviousWeek(Account account, int week) {
         // Get the current date
@@ -603,14 +602,14 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 //                        orderDetail -> orderDetail.getProduct() instanceof Food
                         orderDetail -> productClass.isInstance(orderDetail.getProduct())
                 ).toList();
-        log.info("size od Food {}",listOrderDetailOfProduct.size());
+        log.info("size od Food {}", listOrderDetailOfProduct.size());
         for (OrderDetail orderDetail : listOrderDetailOfProduct) {
             log.info("id od Food {}", orderDetail.getId());
         }
 
         //Get list Order of Food From orderDetailOfFoods
         List<Order> listOrderOfProduct = listOrderDetailOfProduct.stream().map(OrderDetail::getOrder).distinct().toList();
-        log.info("size o Food {}",listOrderOfProduct.size());
+        log.info("size o Food {}", listOrderOfProduct.size());
         for (Order order : listOrderOfProduct) {
             log.info("id o Food {}", order.getId());
         }
@@ -669,6 +668,52 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             log.info("dataLineChartDto {}", dataLineChartDto);
         }
         return dataLineChartDtoListOfProduct;
+    }
+
+    @Override
+    public ResponseEntity<?> createAccountStaff(CreateAccountSaffDto createAccountSaffDto) {
+        if (createAccountSaffDto.getConfirmPassword().equals(createAccountSaffDto.getPassword())) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            Optional<Account> accountShop = accountRepository.findByEmail(email);
+            ShopOwner shopOwner = accountShop.get().getShopOwner();
+            if (shopOwner != null){
+                Optional<ShopStaff> accountStaff = shopStaffRepository.findByUserName(createAccountSaffDto.getUserName());
+                if (!accountStaff.isPresent()) {
+                    ShopStaff shopStaff = ShopStaff.builder()
+                            .userName(createAccountSaffDto.getUserName())
+                            .password(createAccountSaffDto.getPassword())
+                            .shopOwner(shopOwner)
+                            .build();
+                    ShopStaff saveShopStaff = shopStaffRepository.save(shopStaff);
+                    SuccessResponse successResponse = SuccessResponse.builder()
+                            .successCode(String.valueOf(HttpStatus.CREATED.value()))
+                            .successMessage("Create shop staff successfully.")
+                            .build();
+                    return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
+                } else {
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.CONFLICT))
+                            .errorMessage("Username already exists.")
+                            .build();
+                    return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+                }
+            }else {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.CONFLICT))
+                        .errorMessage("Shop is not exists.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+            }
+
+        } else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST))
+                    .errorMessage("confirm password does not match")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
     }
 
 }
