@@ -50,8 +50,8 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             "AND f.name LIKE %?2% " +
             "AND f.type_id IN (?3) " +
             "AND ps.star >= ?4 " +
-            "AND f.price >= ?5 " +
-            "AND f.price <= ?6 " +
+            "AND ps.discounted_price >= ?5 " +
+            "AND ps.discounted_price <= ?6 " +
             "AND f.is_deleted = 0 " +
             "AND f.quantity > 0 ",
             nativeQuery = true)
