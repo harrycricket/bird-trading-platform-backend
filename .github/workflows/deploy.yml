@@ -88,8 +88,8 @@ jobs:
          - name: Run playbook
            uses: dawidd6/action-ansible-playbook@v2
            with:
-              playbook: update_docker.yml
-              directory: ./ansible/
+              playbook: run_kafka_docker.yml
+              directory: ./ansible-kafka/
               options: |
                  --inventory inventory-kafka
    run_ansible_backend:
