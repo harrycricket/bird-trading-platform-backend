@@ -6,18 +6,18 @@ public enum ProductStatus {
     ACTIVE(1, "Active"),
     BAN(-2, "Ban by admin");
     private int statusCode;
-    private String decription;
+    private String description;
 
-    ProductStatus(int statusCode, String decription) {
+    ProductStatus(int statusCode, String description) {
         this.statusCode = statusCode;
-        this.decription = decription;
+        this.description = description;
     }
 
     public int getStatusCode() {
         return statusCode;
     }
 
-    public String getDecription() {
-        return decription;
+    public String getDescription() {
+        return description;
     }
 }

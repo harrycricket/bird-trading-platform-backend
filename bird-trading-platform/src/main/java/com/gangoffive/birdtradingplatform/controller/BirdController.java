@@ -1,6 +1,8 @@
 package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
+import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
+import com.gangoffive.birdtradingplatform.dto.ProductShopOwnerFilterDto;
 import com.gangoffive.birdtradingplatform.service.BirdService;
 import jakarta.annotation.security.RolesAllowed;
 import lombok.RequiredArgsConstructor;

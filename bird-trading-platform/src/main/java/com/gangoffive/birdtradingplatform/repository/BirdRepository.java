@@ -6,28 +6,26 @@
 package com.gangoffive.birdtradingplatform.repository;
 
 /**
- *
  * @author Admins
  */
 
-import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
 import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.enums.ProductStatus;
+import com.gangoffive.birdtradingplatform.enums.SortDirection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface BirdRepository extends JpaRepository<Bird, Long> {
     Optional<List<Bird>> findByNameLike(String name);
+
     @Query(value = "SELECT b.product_id " +
             "FROM `bird-trading-platform`.tbl_bird b " +
             "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
@@ -43,7 +41,9 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
                         double lowestPrice, double highestPrice, Pageable pageable);
 
     Page<Bird> findAllByQuantityGreaterThanAndStatusIn(int quantity, List<ProductStatus> productStatuses, Pageable pageable);
+
     Optional<Page<Product>> findByShopOwner_Id(long id, Pageable pageable);
+
     @Query(value = "SELECT b.product_id " +
             "FROM `bird-trading-platform`.tbl_bird b " +
             "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
@@ -59,8 +59,32 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
             ,
             nativeQuery = true)
     Page<Long> idFilterShop(Long idShop, String name, List<Long> listType, double star,
-                        double lowestPrice, double highestPrice, Pageable pageable);
-
+                            double lowestPrice, double highestPrice, Pageable pageable);
 
     Optional<Page<Product>> findByShopOwner_IdAndStatusIn(long id, List<ProductStatus> productStatuses, Pageable pageable);
+
+    Optional<Page<Bird>> findByIdAndShopOwner_IdAndStatusIn(
+            Long birdId, Long shopId, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
+    Optional<Page<Bird>> findAllByNameLikeAndShopOwner_IdAndStatusIn(
+            String name, Long shopId, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
+    Optional<Page<Bird>> findAllByShopOwner_IdAndTypeBird_IdInAndStatusIn(
+            Long shopOwnerId, List<Long> typeBirdIds, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
+
+    Optional<Page<Bird>> findAllByShopOwner_IdAndPriceGreaterThanEqualAndStatusIn(
+            Long shopOwnerId, double price, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
+    Optional<Page<Bird>> findAllByShopOwner_IdAndProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
+            Long shopOwnerId, double discountedPrice, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
+    Optional<Page<Bird>> findAllByShopOwner_IdAndStatus(
+            Long shopOwnerId, ProductStatus productStatus, Pageable pageable
+    );
 }
