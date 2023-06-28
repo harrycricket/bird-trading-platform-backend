@@ -55,6 +55,10 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
 
     Optional<Page<Product>> findByShopOwner_IdAndStatusIn(long id, List<ProductStatus> productStatuses, Pageable pageable);
 
+    Optional<Page<Food>> findAllByShopOwner_IdAndStatusIn(
+            Long shopId, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
     Optional<Page<Food>> findByIdAndShopOwner_IdAndStatusIn(
             Long foodId, Long shopId, List<ProductStatus> productStatuses, Pageable pageable
     );

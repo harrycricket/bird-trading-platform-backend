@@ -351,7 +351,10 @@ public class ProductServiceImpl implements ProductService {
             int pageNumber = productFilter.getPageNumber() - 1;
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
             PageRequest pageRequestWithSort = null;
-            if (productFilter.getSortDirection() != null) {
+            if (productFilter.getSortDirection() != null
+                    && !productFilter.getSortDirection().getSort().isEmpty()
+                    && !productFilter.getSortDirection().getField().isEmpty()
+            ) {
                 if (!SortColumn.checkField(productFilter.getSortDirection().getField())) {
                     ErrorResponse errorResponse = ErrorResponse.builder()
                             .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -359,24 +362,32 @@ public class ProductServiceImpl implements ProductService {
                             .build();
                     return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
                 }
-                if (productFilter.getSortDirection().getSort().name() == Sort.Direction.ASC.name()) {
-                    pageRequestWithSort = PageRequest.of(
-                            pageNumber,
-                            PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
-                            Sort.by(Sort.Direction.ASC,
-                                    SortColumn.getColumnByField(productFilter.getSortDirection().getField())
-                            )
-                    );
-                } else {
-                    pageRequestWithSort = PageRequest.of(
-                            pageNumber,
-                            PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
-                            Sort.by(Sort.Direction.DESC,
-                                    SortColumn.getColumnByField(productFilter.getSortDirection().getField())
-                            )
-                    );
+                if (productFilter.getSortDirection().getSort().toUpperCase() == Sort.Direction.ASC.name()) {
+                    pageRequestWithSort = getPageRequest(productFilter, pageNumber, Sort.Direction.ASC);
+                } else if (productFilter.getSortDirection().getSort().toUpperCase() == Sort.Direction.DESC.name()) {
+                    pageRequestWithSort = getPageRequest(productFilter, pageNumber, Sort.Direction.DESC);
                 }
             }
+
+//            {"category":1,"productSearchInfo":{"field":"","value":"","operator":""},"sortDirection":{"field":"","sort":""},"pageNumber":1}
+            if (
+                    productFilter.getProductSearchInfo().getField().isEmpty()
+                    && productFilter.getProductSearchInfo().getValue().isEmpty()
+                    && productFilter.getProductSearchInfo().getOperator().isEmpty()
+                    && productFilter.getSortDirection().getField().isEmpty()
+                    && productFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequest);
+            } else if (
+                    productFilter.getProductSearchInfo().getField().isEmpty()
+                            && productFilter.getProductSearchInfo().getValue().isEmpty()
+                            && productFilter.getProductSearchInfo().getOperator().isEmpty()
+                            && !productFilter.getSortDirection().getField().isEmpty()
+                            && !productFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequestWithSort);
+            }
+
 
             if (
                     productFilter.getProductSearchInfo().getField().equals(FieldTable.ID.getField())
@@ -527,6 +538,123 @@ public class ProductServiceImpl implements ProductService {
                     "Page number cannot less than 1");
             return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private ResponseEntity<?> filterAllProductAllFieldEmpty(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {
+        if (productFilter.getCategory() == 1) {
+            Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndStatusIn(
+                    shopId,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                    pageRequest
+            );
+
+            if (birds.isPresent()) {
+                List<ProductShopDto> listBirdShopDto = birds.get().stream().map(this::productToProductShopDto).toList();
+                PageNumberWraper result = new PageNumberWraper<>(
+                        listBirdShopDto,
+                        birds.get().getTotalPages(),
+                        birds.get().getTotalElements()
+                );
+                return ResponseEntity.ok(result);
+            } else {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Not found bird.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            }
+        } else if (productFilter.getCategory() == 2) {
+            Optional<Page<Food>> foods = foodRepository.findAllByShopOwner_IdAndStatusIn(
+                    shopId,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                    pageRequest
+            );
+
+            if (foods.isPresent()) {
+                List<ProductShopDto> listFoodShopDto = foods.get().stream().map(this::productToProductShopDto).toList();
+                PageNumberWraper result = new PageNumberWraper<>(
+                        listFoodShopDto,
+                        foods.get().getTotalPages(),
+                        foods.get().getTotalElements()
+                );
+                return ResponseEntity.ok(result);
+            } else {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Not found food.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            }
+        } else if (productFilter.getCategory() == 3) {
+            Optional<Page<Accessory>> accessories = accessoryRepository.findAllByShopOwner_IdAndStatusIn(
+                    shopId,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                    pageRequest
+            );
+
+            if (accessories.isPresent()) {
+                List<ProductShopDto> listAccessoryShopDto = accessories.get().stream().map(this::productToProductShopDto).toList();
+                PageNumberWraper result = new PageNumberWraper<>(
+                        listAccessoryShopDto,
+                        accessories.get().getTotalPages(),
+                        accessories.get().getTotalElements()
+                );
+                return ResponseEntity.ok(result);
+            } else {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                        .errorMessage("Not found accessory.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            }
+        } else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                    .errorMessage("Not found this category.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    private static PageRequest getPageRequest(ProductShopOwnerFilterDto productFilter, int pageNumber, Sort.Direction sortDirection) {
+        PageRequest pageRequestWithSort = null;
+        if (productFilter.getCategory() == 1) {
+            if (productFilter.getSortDirection().getField() == SortColumn.TYPE_BIRD.getField()) {
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        Sort.by(sortDirection,
+                                SortColumn.TYPE_BIRD.getColumn())
+                        );
+            }
+        } else if (productFilter.getCategory() == 2) {
+            if (productFilter.getSortDirection().getField() == SortColumn.TYPE_FOOD.getField()) {
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        Sort.by(sortDirection,
+                                SortColumn.TYPE_FOOD.getColumn())
+                );
+            }
+        } else if (productFilter.getCategory() == 3) {
+            if (productFilter.getSortDirection().getField() == SortColumn.TYPE_ACCESSORY.getField()) {
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        Sort.by(sortDirection,
+                                SortColumn.TYPE_ACCESSORY.getColumn())
+                );
+            }
+        } else {
+            pageRequestWithSort = PageRequest.of(
+                    pageNumber,
+                    PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                    Sort.by(sortDirection,
+                            SortColumn.getColumnByField(productFilter.getSortDirection().getField())
+                    )
+            );
+        }
+        return pageRequestWithSort;
     }
 
     private ResponseEntity<?> filterProductByStatusEqual(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {

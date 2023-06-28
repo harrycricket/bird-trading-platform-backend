@@ -5,6 +5,7 @@ import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
+import com.gangoffive.birdtradingplatform.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -96,7 +97,15 @@ public class ProductController {
     }
 
     @GetMapping("/shop-owner/products")
-    public ResponseEntity<?> getAllBirdOfShop (ProductShopOwnerFilterDto productShopOwnerFilter) {
+    public ResponseEntity<?> getAllBirdOfShop (@RequestParam String data) {
+        ProductShopOwnerFilterDto productShopOwnerFilter = JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class);
+        log.info("{}", productShopOwnerFilter.toString());
         return productService.filterAllProductByShopOwner(productShopOwnerFilter);
+    }
+
+    public static void main(String[] args) {
+        String data = "{\"category\":1,\"productSearchInfo\":{\"field\":\"\",\"value\":\"\",\"operator\":\"\"},\"sortDirection\":{\"field\":\"\",\"sort\":\"\"},\"pageNumber\":1}";
+        ProductShopOwnerFilterDto productShopOwnerFilter = JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class);
+        log.info("{}", productShopOwnerFilter.toString());
     }
 }

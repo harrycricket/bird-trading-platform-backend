@@ -1,7 +1,5 @@
 package com.gangoffive.birdtradingplatform.dto;
 
-import com.gangoffive.birdtradingplatform.enums.SortColumn;
-import com.gangoffive.birdtradingplatform.enums.SortDirection;
 import lombok.*;
 
 @NoArgsConstructor
@@ -11,5 +9,5 @@ import lombok.*;
 @ToString
 public class SortDirectionDto {
     private String field;
-    private SortDirection sort;
+    private String sort;
 }
