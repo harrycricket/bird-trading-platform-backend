@@ -12,15 +12,15 @@ public class PageNumberWraper<T> {
 
     private int pageNumber;
 
-    private long totalProduct;
+    private long totalElement;
 
     public PageNumberWraper() {
     }
 
-    public PageNumberWraper(List<T> lists, int pageNumber, long totalProduct) {
+    public PageNumberWraper(List<T> lists, int pageNumber, long totalElement) {
         this.lists = lists;
         this.pageNumber = pageNumber;
-        this.totalProduct = totalProduct;
+        this.totalElement = totalElement;
     }
 
     public PageNumberWraper(List<T> lists, int pageNumber) {
