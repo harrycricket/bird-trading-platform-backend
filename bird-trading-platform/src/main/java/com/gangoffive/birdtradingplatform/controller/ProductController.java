@@ -96,7 +96,7 @@ public class ProductController {
     }
 
     @GetMapping("/shop-owner/products")
-    public ResponseEntity<?> getAllBirdOfShop (@RequestBody ProductShopOwnerFilterDto productShopOwnerFilter) {
+    public ResponseEntity<?> getAllBirdOfShop (ProductShopOwnerFilterDto productShopOwnerFilter) {
         return productService.filterAllProductByShopOwner(productShopOwnerFilter);
     }
 }
