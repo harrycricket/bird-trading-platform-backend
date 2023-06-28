@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.TypeAccessory;
+import com.gangoffive.birdtradingplatform.entity.TypeBird;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -10,4 +11,6 @@ public interface TypeAccessoryRepository extends JpaRepository<TypeAccessory, Lo
 
     @Query(value = "Select type_a_id from `bird-trading-platform`.tbl_type_accessory", nativeQuery = true)
     List<Long> findAllId();
+
+    List<TypeAccessory> findAllByNameLike(String typeName);
 }

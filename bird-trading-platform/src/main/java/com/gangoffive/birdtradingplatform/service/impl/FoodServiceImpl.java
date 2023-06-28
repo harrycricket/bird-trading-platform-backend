@@ -141,11 +141,11 @@ public class FoodServiceImpl implements FoodService {
                         ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
                 if (listBird.isPresent()) {
                     List<ProductShopDto> listFoodShopDto = listBird.get().stream().map(bird -> this.foodToProductDto(bird)).toList();
-                    PageNumberWraper resutl = new PageNumberWraper();
-                    resutl.setLists(listFoodShopDto);
-                    resutl.setTotalProduct(listBird.get().getTotalElements());
-                    resutl.setPageNumber(listBird.get().getTotalPages());
-                    return ResponseEntity.ok(resutl);
+                    PageNumberWraper result = new PageNumberWraper();
+                    result.setLists(listFoodShopDto);
+                    result.setTotalProduct(listBird.get().getTotalElements());
+                    result.setPageNumber(listBird.get().getTotalPages());
+                    return ResponseEntity.ok(result);
                 }
             } else {
                 var error = ErrorResponse.builder().errorCode(ResponseCode.THIS_ACCOUNT_NOT_HAVE_SHOP.getCode() + "")

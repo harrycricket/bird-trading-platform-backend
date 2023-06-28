@@ -1,0 +1,24 @@
+- name: Update Docker Container
+  hosts: all
+  become: yes
+  become_user: root
+  become_method: sudo
+
+  tasks:
+    - name: Creates directory
+      file:
+        path: /kafka
+        state: directory
+
+    - name: copy Docker Compose files
+      become: true
+      copy:
+        src: files/docker-compose.yml
+        dest: /kafka/docker-compose.yml
+   
+    - name: deploy Docker Compose stack
+      community.docker.docker_compose:
+        project_src: /kafka
+        files:
+        - docker-compose.yml
+      ignore_errors: true

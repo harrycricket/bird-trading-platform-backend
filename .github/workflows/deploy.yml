@@ -1,11 +1,11 @@
 name: Deploy to ECR
 on:
    pull_request:
-       types: [closed]
-       branches:
-          - "main"
-          - "release/**"
-          - "dev/**"
+      types: [closed]
+      branches:
+         - "main"
+         - "release/**"
+         - "dev/**"
    workflow_dispatch:
 jobs:
    update_images:
@@ -18,53 +18,83 @@ jobs:
          run:
             working-directory: ./bird-trading-platform/
       steps:
-         -  name: Checkout repo
-            uses: actions/checkout@v3
+         - name: Checkout repo
+           uses: actions/checkout@v3
 
-         -  name: cd TOWORKSPACE
-            run: echo $(ls -a)
-         -  uses: actions/checkout@v3
-         -  name: Set up JDK 18
-            uses: actions/setup-java@v3
-            with:
-               java-version: '18'
-               distribution: 'temurin'
-         -  name: cd INDIRECT
-            run: |
-               echo $(pwd)
-               echo $(ls -a)
+         - name: cd TOWORKSPACE
+           run: echo $(ls -a)
+         - uses: actions/checkout@v3
+         - name: Set up JDK 18
+           uses: actions/setup-java@v3
+           with:
+              java-version: "18"
+              distribution: "temurin"
+         - name: cd INDIRECT
+           run: |
+              echo $(pwd)
+              echo $(ls -a)
 
-         -  name: Build with Maven
-            run: mvn install
-         -  name: 'Create env file'
-            run: |
-               echo "${{ secrets.ENV }}" > ./src/main/resources/.env
-               echo $(pwd)
-               echo $(ls -la "./src/main/resources/")
-               echo $( "./src/main/resources/.env")
-         -  name: Build with Maven
-            run: mvn --batch-mode --update-snapshots package
+         - name: Build with Maven
+           run: mvn install
+         - name: "Create env file"
+           run: |
+              echo "${{ secrets.ENV }}" > ./src/main/resources/.env
+              echo $(pwd)
+              echo $(ls -la "./src/main/resources/")
+              echo $( "./src/main/resources/.env")
+         - name: Build with Maven
+           run: mvn --batch-mode --update-snapshots package
 
-         -  name: Configure AWS credentials
-            uses: aws-actions/configure-aws-credentials@v2
-            with:
-               role-to-assume: arn:aws:iam::198729665721:role/authgit
-               aws-region: ap-southeast-1
+         - name: Configure AWS credentials
+           uses: aws-actions/configure-aws-credentials@v2
+           with:
+              role-to-assume: arn:aws:iam::198729665721:role/authgit
+              aws-region: ap-southeast-1
 
-         -  name: Login to Amazon ECR Private
-            id: login-ecr
-            uses: aws-actions/amazon-ecr-login@v1
-    
-         -  name: Build, tag, and push docker image to Amazon ECR
-            env:
+         - name: Login to Amazon ECR Private
+           id: login-ecr
+           uses: aws-actions/amazon-ecr-login@v1
+
+         - name: Build, tag, and push docker image to Amazon ECR
+           env:
               REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-              REPOSITORY:  bird-trading-platform
+              REPOSITORY: bird-trading-platform
               IMAGE_TAG: ${{ github.sha }}
-            run: |
+           run: |
               docker build -t $REGISTRY/$REPOSITORY:latest .
               docker push $REGISTRY/$REPOSITORY:latest
-   run_ansible:
+   run_ansible_kafka:
       needs: update_images
+      name: runkafka
+      runs-on: ubuntu-latest
+      permissions:
+         id-token: write
+         contents: write
+      defaults:
+         run:
+            working-directory: ./ansible-kafka/
+      steps:
+         - name: Checkout repo
+           uses: actions/checkout@v3
+         - name: "Create env file"
+           run: |
+              mkdir ./files 
+              echo "${{ secrets.INVENTORY_KAFKA_SERVER }}" > ./inventory-kafka
+              echo "${{ secrets.PEM }}" > ./ansible-hosts-v2.pem
+              echo "${{ secrets.DOCKER_COMPOSE_FILE}}" > ./files/docker-compose.yml
+         - name: "Create env file"
+           run: |
+              sudo chmod 400 ./ansible-hosts-v2.pem
+         -  name: Run playbook
+            uses: dawidd6/action-ansible-playbook@v2
+            with:
+              playbook: run_kafka_docker.yml
+              directory: ./ansible-kafka/
+              options: |
+                 --inventory inventory-kafka
+            continue-on-error: true
+   run_ansible_backend:
+      needs: run_ansible_kafka
       name: update-docker-container
       runs-on: ubuntu-latest
       permissions:
@@ -74,24 +104,24 @@ jobs:
          run:
             working-directory: ./ansible/
       steps:
-         -  name: Checkout repo
-            uses: actions/checkout@v3
-         -  name: 'Create env file'
-            run: |
-               echo "${{ secrets.INVENTORY }}" > ./inventory
-               echo "${{ secrets.AWS_CREDENTIAL }}" > ./aws-credentials.j2
-               echo "${{ secrets.PEM }}" > ./ansible-hosts-v2.pem
-               echo $(pwd)
-               echo $(ls -la "./")
-               echo $( "./src/main/resources/.env")
+         - name: Checkout repo
+           uses: actions/checkout@v3
+         - name: "Create env file"
+           run: |
+              echo "${{ secrets.INVENTORY }}" > ./inventory
+              echo "${{ secrets.AWS_CREDENTIAL }}" > ./aws-credentials.j2
+              echo "${{ secrets.PEM }}" > ./ansible-hosts-v2.pem
+              echo $(pwd)
+              echo $(ls -la "./")
+              echo $( "./src/main/resources/.env")
 
-         -  name: 'Create env file'
-            run: |
-               sudo chmod 400 ./ansible-hosts-v2.pem
-         -  name: Run playbook
-            uses: dawidd6/action-ansible-playbook@v2
-            with:
-               playbook: update_docker.yml
-               directory: ./ansible/
-               options: |
-                  --inventory inventory
+         - name: "Create env file"
+           run: |
+              sudo chmod 400 ./ansible-hosts-v2.pem
+         - name: Run playbook
+           uses: dawidd6/action-ansible-playbook@v2
+           with:
+              playbook: update_docker.yml
+              directory: ./ansible/
+              options: |
+                 --inventory inventory

@@ -9,4 +9,6 @@ import java.util.List;
 public interface TypeBirdRepository extends JpaRepository<TypeBird, Long> {
     @Query(value = "Select type_f_id from `bird-trading-platform`.tbl_type_food", nativeQuery = true)
     List<Long> findAllId();
+
+    List<TypeBird> findAllByNameLike(String typeName);
 }

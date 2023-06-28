@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.repository;
 
+import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import jakarta.transaction.Transactional;
