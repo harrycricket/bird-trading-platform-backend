@@ -682,12 +682,18 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ResponseEntity<?> filterProductByStatusEqual(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {
+        List<ProductStatus> productStatus;
+        if (Integer.parseInt(productFilter.getProductSearchInfo().getValue()) == 9) {
+             productStatus = ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER;
+        } else {
+             productStatus = Arrays.asList(ProductUpdateStatus.getProductUpdateStatusEnum(
+                     Integer.parseInt(productFilter.getProductSearchInfo().getValue())
+             ).getProductStatus());
+        }
         if (productFilter.getCategory() == 1) {
-            Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndStatus(
+            Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndStatusIn(
                     shopId,
-                    ProductUpdateStatus.getProductUpdateStatusEnum(
-                            Integer.parseInt(productFilter.getProductSearchInfo().getValue())
-                    ).getProductStatus(),
+                    productStatus,
                     pageRequest
             );
             if (birds.isPresent()) {
@@ -707,11 +713,9 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else if (productFilter.getCategory() == 2) {
-            Optional<Page<Food>> foods = foodRepository.findAllByShopOwner_IdAndStatus(
+            Optional<Page<Food>> foods = foodRepository.findAllByShopOwner_IdAndStatusIn(
                     shopId,
-                    ProductUpdateStatus.getProductUpdateStatusEnum(
-                            Integer.parseInt(productFilter.getProductSearchInfo().getValue())
-                    ).getProductStatus(),
+                    productStatus,
                     pageRequest
             );
             if (foods.isPresent()) {
@@ -731,11 +735,9 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else if (productFilter.getCategory() == 3) {
-            Optional<Page<Accessory>> accessories = accessoryRepository.findAllByShopOwner_IdAndStatus(
+            Optional<Page<Accessory>> accessories = accessoryRepository.findAllByShopOwner_IdAndStatusIn(
                     shopId,
-                    ProductUpdateStatus.getProductUpdateStatusEnum(
-                            Integer.parseInt(productFilter.getProductSearchInfo().getValue())
-                    ).getProductStatus(),
+                    productStatus,
                     pageRequest
             );
             if (accessories.isPresent()) {
