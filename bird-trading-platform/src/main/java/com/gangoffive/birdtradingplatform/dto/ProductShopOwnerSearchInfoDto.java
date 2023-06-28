@@ -12,4 +12,5 @@ public class ProductShopOwnerSearchInfoDto {
     private String field;
     private String value;
     private String operator;
+    private Long id;
 }
