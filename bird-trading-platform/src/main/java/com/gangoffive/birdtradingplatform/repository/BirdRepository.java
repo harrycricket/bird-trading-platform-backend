@@ -32,8 +32,8 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
             "WHERE b.name LIKE %?1% " +
             "AND b.type_id IN ?2 " +
             "AND ps.star >= ?3 " +
-            "AND b.price >= ?4 " +
-            "AND b.price <= ?5 " +
+            "AND ps.discounted_price >= ?4 " +
+            "AND ps.discounted_price <= ?5 " +
             "And b.status = 'ACTIVE' " +
             "And b.quantity > 0 ", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listType, double star,
@@ -51,8 +51,8 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
             "And b.name LIKE %?2% " +
             "AND b.type_id IN ?3 " +
             "AND ps.star >= ?4 " +
-            "AND b.price >= ?5 " +
-            "AND b.price <= ?6 " +
+            "AND ps.discounted_price >= ?5 " +
+            "AND ps.discounted_price <= ?6 " +
             "AND b.is_deleted = 0 " +
             "AND b.quantity > 0 "
             ,
