@@ -28,8 +28,8 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "where a.name LIKE %?1% " +
             "And a.type_id in (?2) " +
             "And ps.star >= ?3 " +
-            "And a.price >= ?4 " +
-            "And a.price <= ?5 " +
+            "And ps.discounted_price >= ?4 " +
+            "And ps.discounted_price <= ?5 " +
             "And a.status = 'ACTIVE' " +
             "And a.quantity > 0 ", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
@@ -47,9 +47,11 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "And a.name LIKE %?2% " +
             "And a.type_id in (?3) " +
             "And ps.star >= ?4 " +
-            "And a.price >= ?5 " +
-            "And a.price <= ?6 " +
+            "And ps.discounted_price >= ?5 " +
+            "And ps.discounted_price <= ?6 " +
+            "And a.quantity > 0 " +
             "And a.status = 'ACTIVE' ", nativeQuery = true)
+
     Page<Long> idFilterShop(Long idShop, String name, List<Long> listTypeId, double star,
                             double lowestPrice, double highestPrice, Pageable pageable);
 

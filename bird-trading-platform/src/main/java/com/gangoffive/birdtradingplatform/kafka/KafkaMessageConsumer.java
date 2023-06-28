@@ -88,6 +88,7 @@ public class KafkaMessageConsumer {
             if(senderId == accountShopId) {
                 throw new CustomRuntimeException("400", "You cannot send message for your shop!");
             }
+            message.setShopID(-1);
             destination = String.format("/chatroom/%d/shop",receiveId);
         } else {
             throw new CustomRuntimeException("400","Sender name not correct!");

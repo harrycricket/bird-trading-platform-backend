@@ -32,6 +32,7 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             "AND f.price <= ?5 " +
             "And f.status = 'ACTIVE' " +
             "And f.quantity > 0 ", nativeQuery = true)
+
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
                         double lowestPrice, double hightPrice, Pageable pageable);
 
@@ -47,8 +48,9 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             "AND f.name LIKE %?2% " +
             "AND f.type_id IN (?3) " +
             "AND ps.star >= ?4 " +
-            "AND f.price >= ?5 " +
-            "AND f.price <= ?6 " +
+            "AND d >= ?5 " +
+            "AND ps.discounted_price <= ?6 " +
+            "AND f.quantity > 0 " +
             "And f.status = 'ACTIVE' ", nativeQuery = true)
     Page<Long> idFilterShop(Long idShop, String name, List<Long> listTypeId, double star,
                             double lowestPrice, double highestPrice, Pageable pageable);

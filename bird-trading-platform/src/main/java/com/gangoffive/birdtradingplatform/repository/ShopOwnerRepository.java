@@ -11,5 +11,4 @@ import java.util.Optional;
 public interface ShopOwnerRepository extends JpaRepository<ShopOwner, Long>{
 
     Optional<ShopOwner> findByAccount_Id(long id);
-
 }
