@@ -15,9 +15,10 @@
       copy:
         src: files/docker-compose.yml
         dest: /kafka/docker-compose.yml
-
+   
     - name: deploy Docker Compose stack
       community.docker.docker_compose:
         project_src: /kafka
         files:
         - docker-compose.yml
+      ignore_errors: true
