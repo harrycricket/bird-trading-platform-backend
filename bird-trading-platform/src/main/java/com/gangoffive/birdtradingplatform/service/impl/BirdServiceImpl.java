@@ -151,7 +151,7 @@ public class BirdServiceImpl implements BirdService {
                     List<ProductShopDto> listBirdShopDto = listBird.get().stream().map(bird -> this.birdToProductDto(bird)).toList();
                     PageNumberWraper result = new PageNumberWraper();
                     result.setLists(listBirdShopDto);
-                    result.setTotalProduct(listBird.get().getTotalElements());
+                    result.setTotalElement(listBird.get().getTotalElements());
                     result.setPageNumber(listBird.get().getTotalPages());
                     return ResponseEntity.ok(result);
                 }
