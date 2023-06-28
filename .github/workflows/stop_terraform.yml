@@ -1,12 +1,12 @@
 ---
-   name: Terraform Cloud Apply Run
+   name: Terraform Cloud Destroy Run
    
    on:
      workflow_dispatch:
    env:
      TF_CLOUD_ORGANIZATION: "thientryhard"
      TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
-     TF_WORKSPACE: "example-workspace"
+     TF_WORKSPACE: "bird-trading-platform"
      TF_LOG: DEBUG
 
    
