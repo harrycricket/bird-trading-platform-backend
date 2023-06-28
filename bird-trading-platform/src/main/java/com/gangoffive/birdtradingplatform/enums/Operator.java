@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public enum Operator {
-    EQUAL("Equal"),
-    GREATER_THAN_OR_EQUAL("GreaterThanOrEqual"),
-    LIKE("Like");
+    EQUAL("="),
+    GREATER_THAN_OR_EQUAL(">="),
+    CONTAIN("Contain");
     private String operator;
 }

@@ -406,7 +406,7 @@ public class ProductServiceImpl implements ProductService {
                             && productFilter.getProductSearchInfo().getValue() != null
                             && productFilter.getSortDirection() == null
             ) {
-                if (productFilter.getProductSearchInfo().getOperator().equals(Operator.LIKE.getOperator())) {
+                if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByNameLike(productFilter, shopId, pageRequest);
                 }
                 ErrorResponse errorResponse = ErrorResponse.builder()
@@ -418,7 +418,7 @@ public class ProductServiceImpl implements ProductService {
                     productFilter.getProductSearchInfo().getField().equals(FieldTable.NAME.getField())
                             && productFilter.getProductSearchInfo().getValue() != null
             ) {
-                if (productFilter.getProductSearchInfo().getOperator().equals(Operator.LIKE.getOperator())) {
+                if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByNameLike(productFilter, shopId, pageRequestWithSort);
                 }
                 ErrorResponse errorResponse = ErrorResponse.builder()
@@ -431,7 +431,7 @@ public class ProductServiceImpl implements ProductService {
                             && productFilter.getProductSearchInfo().getValue() != null
                             && productFilter.getSortDirection() == null
             ) {
-                if (productFilter.getProductSearchInfo().getOperator().equals(Operator.LIKE.getOperator())) {
+                if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByTypeNameLike(productFilter, shopId, pageRequest);
                 }
                 ErrorResponse errorResponse = ErrorResponse.builder()
@@ -443,7 +443,7 @@ public class ProductServiceImpl implements ProductService {
                     productFilter.getProductSearchInfo().getField().equals(FieldTable.TYPE.getField())
                             && productFilter.getProductSearchInfo().getValue() != null
             ) {
-                if (productFilter.getProductSearchInfo().getOperator().equals(Operator.LIKE.getOperator())) {
+                if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByTypeNameLike(productFilter, shopId, pageRequestWithSort);
                 }
                 ErrorResponse errorResponse = ErrorResponse.builder()
