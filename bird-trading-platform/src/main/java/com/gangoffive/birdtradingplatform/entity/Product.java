@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.entity;
 
+import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -60,11 +61,9 @@ public abstract class Product {
             columnDefinition = "TEXT")
     protected String videoUrl;
 
-    @Column(name = "hidden")
-    protected boolean hidden;
-
-    @Column(name = "is_deleted")
-    protected boolean deleted;
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    protected ProductStatus status;
 
     @OneToMany(mappedBy = "product")
     private List<OrderDetail> orderDetails;
@@ -153,12 +152,12 @@ public abstract class Product {
         this.videoUrl = videoUrl;
     }
 
-    public boolean isDeleted() {
-        return deleted;
+    public ProductStatus getStatus() {
+        return status;
     }
 
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
+    public void setStatus(ProductStatus status) {
+        this.status = status;
     }
 
     public ShopOwner getShopOwner() {
@@ -191,14 +190,6 @@ public abstract class Product {
 
     public void setProductSummary(ProductSummary productSummary) {
         this.productSummary = productSummary;
-    }
-
-    public boolean isHidden() {
-        return hidden;
-    }
-
-    public void setHidden(boolean hidden) {
-        this.hidden = hidden;
     }
 
     @Override

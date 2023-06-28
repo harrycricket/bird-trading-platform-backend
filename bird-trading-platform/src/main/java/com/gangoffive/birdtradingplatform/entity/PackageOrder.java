@@ -67,7 +67,14 @@ public class PackageOrder {
     )
     private List<Promotion> promotions;
 
+    @OneToMany(mappedBy = "packageOrder")
+    private List<Order> orders;
+
     public void addPromotion(Promotion promotion) {
         this.promotions.add(promotion);
+    }
+
+    public void addOrder(Order order) {
+        this.orders.add(order);
     }
 }

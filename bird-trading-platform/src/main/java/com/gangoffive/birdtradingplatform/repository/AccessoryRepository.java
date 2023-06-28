@@ -5,8 +5,10 @@
  */
 package com.gangoffive.birdtradingplatform.repository;
 
+import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.entity.Accessory;
 import com.gangoffive.birdtradingplatform.entity.Product;
+import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,12 +21,7 @@ import java.util.Optional;
 
 @Repository
 public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
-    Optional<List<Accessory>> findByNameLike(String name);
-    @Query(value = "SELECT product_id FROM `bird-trading-platform`.tbl_accessory where type_id=?;", nativeQuery =true)
-    List<Long> findType(Long typeId);
-    @Query(value = "SELECT type_id FROM `bird-trading-platform`.tbl_accessory;", nativeQuery = true)
-    List<Long> allIdType();
-
+    Optional<List<Accessory>> findByNameLikeAndStatusInAndQuantityGreaterThanEqual(String name, List<ProductStatus> productStatuses, int quantity);
     @Query(value = "SELECT a.product_id " +
             "FROM `bird-trading-platform`.tbl_accessory a " +
             "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
@@ -34,12 +31,12 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "And ps.star >= ?3 " +
             "And ps.discounted_price >= ?4 " +
             "And ps.discounted_price <= ?5 " +
-            "And a.is_deleted = 0 " +
+            "And a.status = 'ACTIVE' " +
             "And a.quantity > 0 ", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
                         double lowestPrice, double highestPrice, Pageable pageable);
 
-    Page<Accessory> findAllByQuantityGreaterThanAndDeletedFalse(int quantity, Pageable pageable);
+    Page<Accessory> findAllByQuantityGreaterThanAndStatusIn(int quantity, List<ProductStatus> productStatuses, Pageable pageable);
 
     Optional<Page<Product>> findByShopOwner_Id(long id, Pageable pageable);
 
@@ -53,12 +50,11 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "And ps.star >= ?4 " +
             "And ps.discounted_price >= ?5 " +
             "And ps.discounted_price <= ?6 " +
-            "And a.is_deleted = 0 " +
-            "And a.quantity > 0 ", nativeQuery = true)
+            "And a.quantity > 0 " +
+            "And a.status = 'ACTIVE' ", nativeQuery = true)
+
     Page<Long> idFilterShop(Long idShop, String name, List<Long> listTypeId, double star,
                         double lowestPrice, double highestPrice, Pageable pageable);
-    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalse(long id, Pageable pageable);
-
-    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(long shopId, PageRequest pageRequest);
+    Optional<Page<Product>> findByShopOwner_IdAndStatusIn(long id, List<ProductStatus> productStatuses, Pageable pageable);
 
 }

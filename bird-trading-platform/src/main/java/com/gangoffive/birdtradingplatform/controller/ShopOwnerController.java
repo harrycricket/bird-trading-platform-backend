@@ -29,15 +29,14 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ShopOwnerController {
-    private final ProductService productService;
     private final ShopOwnerService shopOwnerService;
     private final AccountService accountService;
-    private final TagService tagService;
 
     @PostMapping()
     public ResponseEntity<?> registerShopOwnerAccount(
             @RequestParam(name = "image") MultipartFile multipartImage,
             @RequestPart(name = "data") RegisterShopOwnerDto registerShopOwnerDto) {
+
         return accountService.registerShopOwnerAccount(registerShopOwnerDto, multipartImage);
     }
 
@@ -68,27 +67,6 @@ public class ShopOwnerController {
     @GetMapping("/bar-chart/review")
     public DataBarChartDto getListBarChartReviewDto() {
         return shopOwnerService.dataBarChartByReviewAllTypeProduct();
-    }
-
-    @GetMapping("/tags")
-    public List<Tag> getAllTags() {
-        return tagService.getAllTags();
-    }
-
-    @PostMapping("/tag")
-    public ResponseEntity<?> addNewTag(@RequestParam String name) {
-        return tagService.addNewTag(name);
-    }
-
-    @PostMapping("/products")
-    public ResponseEntity<?> addNewProduct(
-            @RequestParam("image") List<MultipartFile> multipartFiles,
-            @RequestParam(name = "video", required = false) MultipartFile multipartVideo,
-//            @RequestParam("data") MultipartFile data,
-            @RequestPart(name = "data") ProductShopOwnerDto productShopOwnerDto
-    ) {
-        log.info("productShopOwnerDto {}", productShopOwnerDto);
-        return productService.addNewProduct(multipartFiles, multipartVideo, productShopOwnerDto);
     }
 
     @GetMapping("/redirect")

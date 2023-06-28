@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
@@ -81,21 +82,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 acc.setProvider(AuthProvider.local);
 
                 //sending mail to verify
-                int verificationCode = MyUtils.generateSixRandomNumber();
+                int randomToken = MyUtils.generateSixRandomNumber();
 //                String verificationLink = appProperties.getEmail().getVerifyLink() + "register?token=" + verificationCode;
 //                log.info("verify link {}", verificationLink);
                 String emailSubject = "Account Verification";
-                StringBuffer emailContent = new StringBuffer();
+                StringBuilder emailContent = new StringBuilder();
                 emailContent.append("Dear " + acc.getFullName() + ",\n");
                 emailContent.append("Thank you for registering an account with our service. Please use the code to activate your account.\n");
-                emailContent.append("Verification code: " + verificationCode +"\n");
+                emailContent.append("Verification code: " + randomToken +"\n");
                 emailContent.append("This link will expire after 10 minutes.\n");
                 emailContent.append("If you did not create an account or have any questions, please contact our support team.\n");
                 emailContent.append("Best regards,\n");
                 emailContent.append("BirdStore2ND\n");
 
                 VerifyToken verifyToken = new VerifyToken();
-                verifyToken.setToken(verificationCode);
+                verifyToken.setToken(randomToken);
                 verifyToken.setAccount(acc);
                 verifyToken.setRevoked(false);
                 verifyToken.setExpired(new Date(System.currentTimeMillis() + expiration));
@@ -167,28 +168,63 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public String resetPassword(String email) {
-        Optional<Account> account = accountRepository.findByEmail(email);
+    public ResponseEntity<?> resetPassword(ResetPasswordDto resetPasswordDto) {
+        Optional<Account> account = accountRepository.findByEmail(resetPasswordDto.getEmail());
         if (account.isPresent()) {
-            int randomToken = MyUtils.generateSixRandomNumber();
-            VerifyToken verifyToken = new VerifyToken();
-            verifyToken.setToken(randomToken);
-            verifyToken.setExpired(new Date(System.currentTimeMillis() + expiration));
-            verifyToken.setRevoked(false);
-            verifyToken.setAccount(account.get());
-            verifyTokenRepository.save(verifyToken);
-            StringBuffer emailContent = new StringBuffer();
-            emailContent.append("Dear " + account.get().getFullName() + ",\n");
-            emailContent.append("We received a request to reset your account password. Please use the code to reset your password.\n");
-            emailContent.append("Code for reset password: " + randomToken + "\n");
-            emailContent.append("This code will expire after 10 minutes.\n");
-            emailContent.append("If you did not initiate this code or have any questions, please contact our support team.\n");
-            emailContent.append("Best regards,\n");
-            emailContent.append("BirdStore2ND\n");
-            emailService.sendSimpleEmail(email, emailContent.toString(), emailSubject);
-            return MailSenderStatus.MAIL_SENT.name();
+            if (
+                    resetPasswordDto.getEmail() != null
+                            && resetPasswordDto.getVerifyId() == null
+                            && resetPasswordDto.getCode() == null
+                            && resetPasswordDto.getNewPassword() == null
+            ) {
+                int randomToken = MyUtils.generateSixRandomNumber();
+                VerifyToken verifyToken = new VerifyToken();
+                verifyToken.setToken(randomToken);
+                verifyToken.setExpired(new Date(System.currentTimeMillis() + expiration));
+                verifyToken.setRevoked(false);
+                verifyToken.setAccount(account.get());
+                verifyTokenRepository.save(verifyToken);
+                String emailContent = "Dear " + account.get().getFullName() + ",\n" +
+                        "We received a request to reset your account password. Please use the code to reset your password.\n" +
+                        "Code for reset password: " + randomToken + "\n" +
+                        "This code will expire after 10 minutes.\n" +
+                        "If you did not initiate this code or have any questions, please contact our support team.\n" +
+                        "Best regards,\n" +
+                        "BirdStore2ND\n";
+                emailService.sendSimpleEmail(resetPasswordDto.getEmail(), emailContent, emailSubject);
+                SuccessResponse successResponse = SuccessResponse.builder()
+                        .successCode(String.valueOf(HttpStatus.OK.value()))
+                        .successMessage(MailSenderStatus.MAIL_SENT.name())
+                        .build();
+                return new ResponseEntity<>(successResponse, HttpStatus.OK);
+            } else {
+                Optional<VerifyToken> verifyToken = verifyTokenRepository.findByIdAndTokenAndAccount_IdAndRevokedIsTrue(
+                        resetPasswordDto.getVerifyId(),
+                        resetPasswordDto.getCode(),
+                        account.get().getId()
+                );
+                if (verifyToken.isPresent() && verifyToken.get().getExpired().before(new Date())) {
+                    account.get().setPassword(passwordEncoder.encode(resetPasswordDto.getNewPassword()));
+                    accountRepository.save(account.get());
+                    SuccessResponse successResponse = SuccessResponse.builder()
+                            .successCode(String.valueOf(HttpStatus.OK.value()))
+                            .successMessage("Reset password successfully.")
+                            .build();
+                    return new ResponseEntity<>(successResponse, HttpStatus.OK);
+                } else {
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .errorMessage("Something went wrong went reset password with your information.")
+                            .build();
+                    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                }
+            }
         } else {
-            return MailSenderStatus.MAIL_NOT_FOUND.name();
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                    .errorMessage(MailSenderStatus.MAIL_NOT_FOUND.name())
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         }
     }
 

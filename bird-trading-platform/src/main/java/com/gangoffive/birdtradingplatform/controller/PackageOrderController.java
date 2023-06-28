@@ -30,8 +30,8 @@ public class PackageOrderController {
         return packageOrderService.packageOrder(packageOrderRequestDto, paymentId, payerId);
     }
 
-    @RequestMapping("/view-all-package-order")
-    public ResponseEntity<?> viewAllPackageOrder() {
-        return ResponseEntity.ok("");
+    @GetMapping("/package-order/view-all-package-order")
+    public ResponseEntity<?> viewAllPackageOrder(@RequestParam int pageNumber) {
+        return packageOrderService.viewAllPackageOrderByAccountId(pageNumber);
     }
 }

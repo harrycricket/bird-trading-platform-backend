@@ -13,6 +13,7 @@ package com.gangoffive.birdtradingplatform.repository;
 import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
 import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.entity.Product;
+import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,12 +28,6 @@ import java.util.Optional;
 @Repository
 public interface BirdRepository extends JpaRepository<Bird, Long> {
     Optional<List<Bird>> findByNameLike(String name);
-    @Query(value = "SELECT product_id FROM `bird-trading-platform`.tbl_bird Where type_id= ?;", nativeQuery =true)
-    List<Long> findType(Long typeId);
-
-    @Query(value = "SELECT type_id FROM `bird-trading-platform`.tbl_bird;", nativeQuery = true)
-    List<Long> allIdType();
-
     @Query(value = "SELECT b.product_id " +
             "FROM `bird-trading-platform`.tbl_bird b " +
             "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
@@ -42,13 +37,12 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
             "AND ps.star >= ?3 " +
             "AND ps.discounted_price >= ?4 " +
             "AND ps.discounted_price <= ?5 " +
-            "AND b.is_deleted = 0 " +
-            "AND b.quantity > 0 ",
-            nativeQuery = true)
+            "And b.status = 'ACTIVE' " +
+            "And b.quantity > 0 ", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listType, double star,
                         double lowestPrice, double highestPrice, Pageable pageable);
 
-    Page<Bird> findAllByDeletedFalseAndQuantityGreaterThan(int quantity, Pageable pageable);
+    Page<Bird> findAllByQuantityGreaterThanAndStatusIn(int quantity, List<ProductStatus> productStatuses, Pageable pageable);
     Optional<Page<Product>> findByShopOwner_Id(long id, Pageable pageable);
     @Query(value = "SELECT b.product_id " +
             "FROM `bird-trading-platform`.tbl_bird b " +
@@ -68,7 +62,5 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
                         double lowestPrice, double highestPrice, Pageable pageable);
 
 
-    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalse(long id, Pageable pageable);
-
-    Optional<Page<Product>> findByShopOwner_IdAndDeletedIsFalseAndHiddenIsFalse(long id, Pageable pageable);
+    Optional<Page<Product>> findByShopOwner_IdAndStatusIn(long id, List<ProductStatus> productStatuses, Pageable pageable);
 }

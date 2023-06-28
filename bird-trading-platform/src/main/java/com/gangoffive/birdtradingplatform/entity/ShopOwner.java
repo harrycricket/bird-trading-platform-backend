@@ -77,6 +77,9 @@ public class ShopOwner {
 	@OneToMany(mappedBy = "shopOwner")
 	private List<PromotionShop> promotionShopList;
 
+	@OneToMany(mappedBy = "shopOwner")
+	private List<Channel> channels;
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -123,5 +126,13 @@ public class ShopOwner {
 
 	public void setPromotionShopList(PromotionShop promotionShopList) {
 		this.promotionShopList.add(promotionShopList);
+	}
+
+	public List<Channel> getChannels() {
+		return channels;
+	}
+
+	public void setChannels(List<Channel> channels) {
+		this.channels = channels;
 	}
 }

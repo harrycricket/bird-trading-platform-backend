@@ -31,6 +31,9 @@ public class ProductSummary {
     @Column(name = "total_quantity_order")
     private double totalQuantityOrder;
 
+    @Column(name = "discounted_price")
+    private double discountedPrice;
+
     @Column(name = "is_deleted")
     private boolean deleted;
 }

@@ -1,12 +1,14 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
+import com.gangoffive.birdtradingplatform.service.PromotionPriceService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,10 +34,11 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
     private final BirdRepository birdRepository;
     private final FoodRepository foodRepository;
     private final AccessoryRepository accessoryRepository;
+    private final PromotionPriceService promotionPriceService;
 
     public double updateProductStar(Product product) {
         double star = this.CalculationRating(product.getOrderDetails());
-        var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
+        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
         productSummary.setStar(star);
         productSummary.setProduct(product);
         productSummaryRepository.save(productSummary);
@@ -48,7 +51,7 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
                 .stream()
                 .map(reviewId -> reviewId.getId()).collect(Collectors.toList());
         int reviewTotal = reviewRepository.findAllByOrderDetailIdIn(orderDetailIds).get().size();
-        var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
+        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
         productSummary.setReviewTotal(reviewTotal);
         productSummary.setProduct(product);
         productSummaryRepository.save(productSummary);
@@ -57,7 +60,7 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
 
     public int updateTotalQuantityOrder(Product product) {
         int totalQuantity = orderDetailRepository.findTotalQuantityByPId(product.getId()).orElse(0);
-        var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
+        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
         productSummary.setTotalQuantityOrder(totalQuantity);
         productSummary.setProduct(product);
         productSummaryRepository.save(productSummary);
@@ -66,11 +69,20 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
 
     public String updateCategory(Product product) {
         String category = product.getClass().getSimpleName();
-        var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
+        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
         productSummary.setCategory(category);
         productSummary.setProduct(product);
         productSummaryRepository.save(productSummary);
         return category;
+    }
+
+    public double discountedPrice(Product product) {
+        double discountedPrice = Optional.ofNullable(promotionPriceService.getDiscountedPrice(product)).orElse(0.0);
+        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
+        productSummary.setDiscountedPrice(discountedPrice);
+        productSummary.setProduct(product);
+        productSummaryRepository.save(productSummary);
+        return discountedPrice;
     }
 
     @Transactional
@@ -79,6 +91,7 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
         this.updateProductStar(product);
         this.updateTotalQuantityOrder(product);
         this.updateCategory(product);
+        this.discountedPrice(product);
         return true;
     }
 
@@ -88,7 +101,8 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
                         .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
         var listsProductSummary = productSummaryRepository.
-                findByCategoryAndProductQuantityGreaterThanAndDeletedFalse(new Bird().getClass().getSimpleName(), 0,page);
+                findByCategoryAndProductQuantityGreaterThanAndDeletedFalseAndProductStatusIn(new Bird().getClass().getSimpleName(),
+                        ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER,ProductStatusConstant.LIST_STATUS_GET_FOR_USER ,page);
         if (listsProductSummary.isPresent()) {
             List<Long> listIdTopBird = listsProductSummary.get().stream()
                     .map(proSum -> proSum.getProduct().getId()).toList();
@@ -104,7 +118,8 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
                         .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
         var listsProductSummary = productSummaryRepository.
-                findByCategoryAndProductQuantityGreaterThanAndDeletedFalse(new Accessory().getClass().getSimpleName(), 0,page);
+                findByCategoryAndProductQuantityGreaterThanAndDeletedFalseAndProductStatusIn(new Accessory().getClass().getSimpleName(),
+                        ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER,ProductStatusConstant.LIST_STATUS_GET_FOR_USER ,page);
         if (listsProductSummary.isPresent()) {
             List<Long> listIdTopAccessories = listsProductSummary.get().stream()
                     .map(proSum -> proSum.getProduct().getId()).toList();
@@ -119,7 +134,8 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
                         .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
         var listsProductSummary = productSummaryRepository.
-                findByCategoryAndProductQuantityGreaterThanAndDeletedFalse(new Food().getClass().getSimpleName(), 0,page);
+                findByCategoryAndProductQuantityGreaterThanAndDeletedFalseAndProductStatusIn(new Food().getClass().getSimpleName(),
+                        ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER,ProductStatusConstant.LIST_STATUS_GET_FOR_USER ,page);
         if (listsProductSummary.isPresent()) {
             List<Long> listIdTopFood = listsProductSummary.get().stream()
                     .map(proSum -> proSum.getProduct().getId()).toList();

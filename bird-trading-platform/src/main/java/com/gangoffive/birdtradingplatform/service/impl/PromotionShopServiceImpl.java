@@ -32,9 +32,7 @@ public class PromotionShopServiceImpl implements PromotionShopService {
     public ResponseEntity<?> retrieveAllPromotionShop() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        log.info("username retrieveAllPromotionShop {}", username);
-//        Optional<Account> account = accountRepository.findByEmail(username);
-        Optional<Account> account = accountRepository.findByEmail("YamamotoEmi37415@gmail.com");
+        Optional<Account> account = accountRepository.findByEmail(username);
         var promotionShopList = promotionShopRepository.findByShopOwner_Id(account.get().getShopOwner().getId());
         if(promotionShopList.isPresent()){
             List<PromotionShopDto> result = promotionShopList.get().stream()

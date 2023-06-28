@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
@@ -14,12 +15,16 @@ import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.PackageOrderService;
 import com.gangoffive.birdtradingplatform.service.PaypalService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,6 +36,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 @Service
 @RequiredArgsConstructor
@@ -47,14 +53,6 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     private final AddressRepository addressRepository;
     private final OrderRepository orderRepository;
     private final PaypalService paypalService;
-    //check totalPrice
-    //check and save userOrderDto to DB
-    //check paymentMethod
-    // if Paypal
-    // // PaypalPayDto
-    // if cod
-    // response ok -> redirect to page Order list
-
 
     @Override
     public ResponseEntity<?> packageOrder(PackageOrderRequestDto packageOrder, String paymentId, String payerId) {
@@ -113,6 +111,48 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     "Something went wrong");
             log.info("here");
             return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> viewAllPackageOrderByAccountId(int pageNumber) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Optional<Account> account = accountRepository.findByEmail(email);
+        log.info("account id {}", account.get().getId());
+        if (account.isPresent()) {
+            if (pageNumber > 0) {
+                pageNumber = pageNumber - 1;
+                PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE,
+                        Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastedUpdate"));
+                Optional<Page<PackageOrder>> pageAble = packageOrderRepository.findAllByAccount(account.get(), pageRequest);
+                pageAble.get().stream().forEach(packageOrder -> log.info("pack {}", packageOrder.getId()));
+                if (pageAble.isPresent()) {
+                    List<PackageOrderDto> packageOrderDtoList = pageAble.get().stream()
+                            .map(this::packageOrderToPackageOrderDto)
+                            .toList();
+                    PageNumberWraper<PackageOrderDto> pageNumberWraper = new PageNumberWraper<>(packageOrderDtoList, pageAble.get().getTotalPages());
+                    return ResponseEntity.ok(pageNumberWraper);
+                } else {
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                            .errorMessage("Not found package order in this account.")
+                            .build();
+                    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                }
+            } else {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .errorMessage("Page number cannot less than 1.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                    .errorMessage("Not found this account.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -635,5 +675,22 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         } else {
             throw new RuntimeException();
         }
+    }
+
+    private PackageOrderDto packageOrderToPackageOrderDto(PackageOrder packageOrder) {
+        List<Order> orders = packageOrder.getOrders();
+        double totalPriceProduct = orders.stream().mapToDouble(Order::getTotalPrice).sum();
+        double shippingFee = orders.stream().mapToDouble(Order::getShippingFee).sum();
+        return PackageOrderDto.builder()
+                .id(packageOrder.getId())
+                .createdDate(packageOrder.getCreatedDate())
+                .lastedUpdate(packageOrder.getLastedUpdate())
+                .paymentMethod(packageOrder.getPaymentMethod())
+                .address(packageOrder.getShippingAddress().getAddress())
+                .totalPriceProduct(Math.round(totalPriceProduct * 100.0) / 100.0)
+                .shippingFee(Math.round(shippingFee * 100.0) / 100.0)
+                .discount(packageOrder.getDiscount())
+                .totalPayment(packageOrder.getTotalPrice())
+                .build();
     }
 }

@@ -1,3 +1,4 @@
+[![Deploy to ECR](https://github.com/kidhood/bird-trading-platform-backend/actions/workflows/deploy.yml/badge.svg)](https://github.com/kidhood/bird-trading-platform-backend/actions/workflows/deploy.yml)
 
 # Backend Bird Trading Project
 

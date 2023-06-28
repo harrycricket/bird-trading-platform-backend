@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.dto;
 
+import com.gangoffive.birdtradingplatform.enums.SortPriceDirection;
 import lombok.*;
 
 import java.util.List;
@@ -10,11 +11,11 @@ import java.util.List;
 @NoArgsConstructor
 @ToString
 public class ShopFilterDto {
-    private Long idShop;
-    private int category ;
+    private Long shopId;
+    private int categoryId;
     private List<Long> listTypeId;
     private String name;
-    private String sortPrice;
+    private SortPriceDirection sortPrice;
     private double star ;
     private double highestPrice;
     private double lowestPrice;
