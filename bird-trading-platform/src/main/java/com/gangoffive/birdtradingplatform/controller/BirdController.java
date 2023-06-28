@@ -60,9 +60,4 @@ public class BirdController {
     public ResponseEntity<?> getAllBirdOfShop (@PathVariable int pageNumber) {
         return birdService.getAllBirdByShop(pageNumber);
     }
-
-    @PostMapping("/shop-owner/birds")
-    public ResponseEntity<?> getAllBirdOfShop (@RequestBody ProductShopOwnerFilterDto productShopOwnerFilter) {
-        return birdService.filterAllBirdByShop(productShopOwnerFilter);
-    }
 }

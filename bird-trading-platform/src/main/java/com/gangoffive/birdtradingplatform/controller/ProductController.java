@@ -94,4 +94,9 @@ public class ProductController {
     public ResponseEntity<?> updateListProductQuantity(@RequestBody List<ProductQuantityShopChangeDto> listProductChange) {
         return productService.updateListProductQuantity(listProductChange);
     }
+
+    @PostMapping("/shop-owner/products/filter")
+    public ResponseEntity<?> getAllBirdOfShop (@RequestBody ProductShopOwnerFilterDto productShopOwnerFilter) {
+        return productService.filterAllProductByShopOwner(productShopOwnerFilter);
+    }
 }
