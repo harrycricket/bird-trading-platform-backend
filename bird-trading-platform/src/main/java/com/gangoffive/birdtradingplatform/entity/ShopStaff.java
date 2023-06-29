@@ -1,10 +1,8 @@
 package com.gangoffive.birdtradingplatform.entity;
 
+import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -13,17 +11,25 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ShopStaff {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "staff_id")
 	private Long id;
 
-	@Column(name = "user_name")
+	@Column(name = "user_name",
+	nullable = false)
 	private String userName;
 
-	@Column(name = "password")
+	@Column(name = "password",
+	nullable = false)
 	private String password;
+
+	@Column(name = "status",
+	nullable = false)
+	@Enumerated(EnumType.STRING)
+	private AccountStatus status;
 
 	@ManyToOne
 	@JoinColumn(name = "shop_id"

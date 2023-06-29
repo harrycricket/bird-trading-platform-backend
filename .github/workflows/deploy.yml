@@ -85,13 +85,14 @@ jobs:
          - name: "Create env file"
            run: |
               sudo chmod 400 ./ansible-hosts-v2.pem
-         - name: Run playbook
-           uses: dawidd6/action-ansible-playbook@v2
-           with:
+         -  name: Run playbook
+            uses: dawidd6/action-ansible-playbook@v2
+            with:
               playbook: run_kafka_docker.yml
               directory: ./ansible-kafka/
               options: |
                  --inventory inventory-kafka
+            continue-on-error: true
    run_ansible_backend:
       needs: run_ansible_kafka
       name: update-docker-container
