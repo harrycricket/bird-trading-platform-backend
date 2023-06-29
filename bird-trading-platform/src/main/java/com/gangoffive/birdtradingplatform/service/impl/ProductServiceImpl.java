@@ -18,7 +18,10 @@ import com.gangoffive.birdtradingplatform.util.MyUtils;
 import com.gangoffive.birdtradingplatform.util.S3Utils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import com.gangoffive.birdtradingplatform.wrapper.ProductDetailWrapper;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -382,10 +385,10 @@ public class ProductServiceImpl implements ProductService {
 //            {"category":1,"productSearchInfo":{"field":"","value":"","operator":""},"sortDirection":{"field":"","sort":""},"pageNumber":1}
             if (
                     productFilter.getProductSearchInfo().getField().isEmpty()
-                    && productFilter.getProductSearchInfo().getValue().isEmpty()
-                    && productFilter.getProductSearchInfo().getOperator().isEmpty()
-                    && productFilter.getSortDirection().getField().isEmpty()
-                    && productFilter.getSortDirection().getSort().isEmpty()
+                            && productFilter.getProductSearchInfo().getValue().isEmpty()
+                            && productFilter.getProductSearchInfo().getOperator().isEmpty()
+                            && productFilter.getSortDirection().getField().isEmpty()
+                            && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 log.info("all no");
                 return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequest);
@@ -530,7 +533,7 @@ public class ProductServiceImpl implements ProductService {
                 ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, shopId);
 
         int category = 0;
-        if(product.isPresent()) {
+        if (product.isPresent()) {
             JsonObject json = new JsonObject();
             // Create a Gson instance
             Gson gson = new Gson();
@@ -549,7 +552,6 @@ public class ProductServiceImpl implements ProductService {
             // salesForm
             JsonObject salesFormData = new JsonObject();
 
-
             Product pro = null;
             TypeDto typeDto = new TypeDto();
             List<TagDto> tagDtos = new ArrayList<>();
@@ -559,7 +561,7 @@ public class ProductServiceImpl implements ProductService {
                 tagDtos = ((Bird) product.get()).getTags().stream().map(tagMapper::modelToDto).toList();
             } else if (product.get() instanceof Food) {
                 category = Category.getCategoryIdByName(new FoodDto().getClass().getSimpleName());
-                typeDto = typeMapper.modelToDto( ((Food) product.get()).getTypeFood());
+                typeDto = typeMapper.modelToDto(((Food) product.get()).getTypeFood());
                 tagDtos = ((Food) product.get()).getTags().stream().map(tagMapper::modelToDto).toList();
             } else if (product.get() instanceof Accessory) {
                 category = Category.getCategoryIdByName(new AccessoryDto().getClass().getSimpleName());
@@ -570,9 +572,9 @@ public class ProductServiceImpl implements ProductService {
             basicFormData.addProperty("category", category);
             detailsFormData.addProperty("description", product.get().getDescription());
             //set type object
-            String jsonType = gson.toJson(typeDto);
-            JsonObject type = JsonParser.parseString(jsonType).getAsJsonObject();
-            detailsFormData.add("type", type);
+//            String jsonType = gson.toJson(typeDto);
+//            JsonObject type = JsonParser.parseString(jsonType).getAsJsonObject();
+            detailsFormData.addProperty("type", product.get().getId());
             String jsonTag = gson.toJson(tagDtos);
             JsonArray jsonArrayTag = JsonParser.parseString(jsonTag).getAsJsonArray();
             detailsFormData.add("tag", jsonArrayTag);
@@ -592,21 +594,30 @@ public class ProductServiceImpl implements ProductService {
             json.add("detailsForm", detailsFormData);
             json.add("salesForm", salesFormData);
 
+            //images
+            List<String> images = Arrays.stream(product.get().getImgUrl().split(",")).toList();
+            String listImages = gson.toJson(images);
+            JsonArray imageArray = JsonParser.parseString(listImages).getAsJsonArray();
+            json.add("listImages", imageArray);
+            json.addProperty("video", product.get().getVideoUrl());
+
             String jsonString = json.toString();
             return ResponseEntity.ok(jsonString);
+        } else {
+            return new ResponseEntity<>((ErrorResponse.builder().errorCode("400")
+                    .errorMessage("Not found this product!").build()), HttpStatus.BAD_REQUEST);
         }
-        return null;
     }
 
-    private <T extends Product> JsonObject getFeatureBaseOnInstance(T product){
+    private <T extends Product> JsonObject getFeatureBaseOnInstance(T product) {
         JsonObject feature = new JsonObject();
-        if(product instanceof Bird){
+        if (product instanceof Bird) {
             feature.addProperty("age", ((Bird) product).getAge());
             feature.addProperty("gender", ((Bird) product).getGender().name());
             feature.addProperty("color", ((Bird) product).getColor());
-        }else if(product instanceof Accessory){
+        } else if (product instanceof Accessory) {
             feature.addProperty("origin", ((Accessory) product).getOrigin());
-        }else if(product instanceof  Food) {
+        } else if (product instanceof Food) {
             feature.addProperty("weight", ((Food) product).getWeight());
         }
         return feature;
@@ -674,8 +685,9 @@ public class ProductServiceImpl implements ProductService {
                         pageNumber,
                         PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                         Sort.by(sortDirection,
+
                                 SortProductColumn.TYPE_BIRD.getColumn())
-                        );
+                );
             } else {
                 log.info("go here page 1");
                 pageRequestWithSort = PageRequest.of(
@@ -729,11 +741,11 @@ public class ProductServiceImpl implements ProductService {
     private ResponseEntity<?> filterProductByStatusEqual(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {
         List<ProductStatus> productStatuses;
         if (Integer.parseInt(productFilter.getProductSearchInfo().getValue()) == 9) {
-             productStatuses = ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER;
-        } else {
-             productStatuses = Arrays.asList(ProductUpdateStatus.getProductUpdateStatusEnum(
-                     Integer.parseInt(productFilter.getProductSearchInfo().getValue())
-             ).getProductStatus());
+            productStatuses = ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER;
+        } else{
+            productStatuses = Arrays.asList(ProductUpdateStatus.getProductUpdateStatusEnum(
+                    Integer.parseInt(productFilter.getProductSearchInfo().getValue())
+            ).getProductStatus());
         }
         if (productFilter.getCategory() == 1) {
             Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndStatusIn(
