@@ -2,10 +2,12 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.dto.ChangeStatusListIdDto;
 import com.gangoffive.birdtradingplatform.dto.OrderDto;
 import com.gangoffive.birdtradingplatform.dto.OrderShopOwnerDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Order;
+import com.gangoffive.birdtradingplatform.enums.OrderStatus;
 import com.gangoffive.birdtradingplatform.mapper.PromotionShopMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderRepository;
@@ -62,6 +64,22 @@ public class OrderServiceImpl implements OrderService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         }
+    }
+
+    @Override
+    public ResponseEntity<?> updateStatusOfListOrder(ChangeStatusListIdDto changeStatusListIdDto) {
+        if(changeStatusListIdDto != null) {
+            OrderStatus status = OrderStatus.getOrderStatusBaseOnStatusCode(changeStatusListIdDto.getStatus());
+            int result = orderRepository.updateStatusOfListId(status, changeStatusListIdDto.getIds());
+            if(result == changeStatusListIdDto.getIds().size()) {
+                return ResponseEntity.ok("Update success");
+            }else {
+                int numberUpdateFail = result = changeStatusListIdDto.getIds().size();
+                return new ResponseEntity<>(ErrorResponse.builder().errorMessage("400")
+                        .errorMessage(String.format("Update fail %d orders", numberUpdateFail)).build(), HttpStatus.BAD_REQUEST);
+            }
+        }
+        return null;
     }
 
     private OrderDto orderToOrderDto(Order order) {

@@ -298,11 +298,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ResponseEntity<?> updateListProductStatus(ProductStatusShopChangeDto productStatusShopChangeDto) {
-        ProductUpdateStatus product = ProductUpdateStatus.getProductUpdateStatusEnum(productStatusShopChangeDto.getStatus());
+    public ResponseEntity<?> updateListProductStatus(ChangeStatusListIdDto changeStatusListIdDto) {
+        ProductUpdateStatus product = ProductUpdateStatus.getProductUpdateStatusEnum(changeStatusListIdDto.getStatus());
         try {
             int numberStatusChange = productRepository.updateListProductStatus(product.getProductStatus(),
-                    productStatusShopChangeDto.getIds());
+                    changeStatusListIdDto.getIds());
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("numberProductChange", numberStatusChange);
             jsonObject.addProperty("message", ResponseCode.UPDATE_LIST_PRODUCT_STATUS_SUCCESS.getMessage());
