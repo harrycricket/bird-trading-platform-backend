@@ -574,7 +574,7 @@ public class ProductServiceImpl implements ProductService {
             //set type object
 //            String jsonType = gson.toJson(typeDto);
 //            JsonObject type = JsonParser.parseString(jsonType).getAsJsonObject();
-            detailsFormData.addProperty("type", product.get().getId());
+            detailsFormData.addProperty("type", typeDto.getId());
             String jsonTag = gson.toJson(tagDtos);
             JsonArray jsonArrayTag = JsonParser.parseString(jsonTag).getAsJsonArray();
             detailsFormData.add("tag", jsonArrayTag);
