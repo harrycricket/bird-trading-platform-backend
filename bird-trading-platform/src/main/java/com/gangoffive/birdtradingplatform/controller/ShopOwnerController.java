@@ -70,4 +70,6 @@ public class ShopOwnerController {
     public ResponseEntity<?> createAccountStaff(@RequestBody CreateAccountSaffDto createAccountSaffDto){
         return shopOwnerService.createAccountStaff(createAccountSaffDto);
     }
+    @GetMapping("/list-staff")
+    public ResponseEntity<?> getShopStaff(){return shopOwnerService.getShopStaff();}
 }
