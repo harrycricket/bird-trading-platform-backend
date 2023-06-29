@@ -1,15 +1,46 @@
 package com.gangoffive.birdtradingplatform.enums;
 
+import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
+import org.springframework.http.HttpStatus;
+
+import java.util.Arrays;
+import java.util.List;
+
 public enum OrderStatus {
-    PENDING,
-    PROCESSING,
-    SHIPPED,
-    SHIPPING,
-    DELIVERED,
-	CANCELLED,
-    REFUNDED
+    PENDING(0, "The order has been placed but not yet processed"),
+    PROCESSING(1, "The order is being prepared for shipment"),
+    SHIPPED(2, "The order has been shipped or handed over to the shipping carrier"),
+    SHIPPING(3, ""),
+    DELIVERED(4, "The order has been successfully delivered to the customer"),
+	CANCELLED(-1, "The order has been cancelled, either by the customer or by the system"),
+    REFUNDED(-2, "The order has been refunded, indicating a reversal of payment");
+    private int statusCode;
+    private String description;
+
+    OrderStatus(int statusCode, String description) {
+        this.statusCode = statusCode;
+        this.description = description;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public static OrderStatus getOrderStatusBaseOnStatusCode (int statusCode) {
+        List<OrderStatus> listStatus = Arrays.asList(OrderStatus.values());
+        try {
+            OrderStatus result = listStatus.stream().filter(sta -> sta.getStatusCode() == statusCode).findFirst().get();
+            return result;
+        }catch (Exception e) {
+            throw new CustomRuntimeException(HttpStatus.NOT_FOUND.name(), "Not found this status");
+        }
+    }
 }
-//Pending: The order has been placed but not yet processed.
+//        Pending: The order has been placed but not yet processed.
 //        Processing: The order is being prepared for shipment.
 //        Shipped: The order has been shipped or handed over to the shipping carrier.
 //        In Transit: The order is in transit and on its way to the customer.

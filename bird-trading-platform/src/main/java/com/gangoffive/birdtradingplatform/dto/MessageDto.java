@@ -17,4 +17,5 @@ public class MessageDto {
     private String content;
     private Date date;
     private String status;
+    private String userAvatar;
 }

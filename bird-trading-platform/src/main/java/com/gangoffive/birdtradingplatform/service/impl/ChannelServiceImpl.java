@@ -52,4 +52,16 @@ public class ChannelServiceImpl implements ChannelService {
         }
         return 0;
     }
+
+    @Override
+    public int getMessageUnreadByUserAndShopForShopOwner(long userId, long shopId) {
+        var channel = channelRepository.findChannelByAccount_IdAndShopOwner_Id(userId, shopId);
+        if(channel.isPresent()){
+            long channelId = channel.get().getId();
+            int unread = messageRepository.countByIdAndListIn(channelId, Arrays.asList(MessageStatus.SENT.name(),
+                    MessageStatus.DELIVERED.name()), shopId);
+            return unread;
+        }
+        return 0;
+    }
 }

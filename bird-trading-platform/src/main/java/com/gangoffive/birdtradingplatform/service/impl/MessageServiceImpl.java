@@ -48,7 +48,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public ResponseEntity<?> getListMessageByChannelId(long channelId, int pageNumber, long id) {
+    public ResponseEntity<?> getListMessageByChannelId(long channelId, int pageNumber, long id, boolean isShop) {
         if(pageNumber > 0){
             --pageNumber;
         }
@@ -57,8 +57,15 @@ public class MessageServiceImpl implements MessageService {
         var listMessage = messageRepository.findByChannel_Id(channelId, pageRequest);
         if(listMessage != null) {
             PageNumberWraper pageNumberWraper = new PageNumberWraper();
-            List<MessageDto> result  = listMessage.getContent().stream()
-                    .map(message -> this.messageToDto(message, id)).toList();
+            List<MessageDto> result;
+            if(isShop) {
+                result = listMessage.getContent().stream()
+                        .map(message -> this.messageToDto(message, id)).toList();
+            }else{
+                result = listMessage.getContent().stream()
+                        .map(message -> this.messageToDto(message, id)).toList();
+            }
+
             List<MessageDto> reversedList = new ArrayList<>(result);
             Collections.reverse(reversedList);
             pageNumberWraper.setLists(reversedList);
@@ -113,7 +120,7 @@ public class MessageServiceImpl implements MessageService {
             long channelId = channel.getId();
             String userAvatar = channel.getAccount().getImgUrl();
             String name = channel.getAccount().getFullName();
-            int unread  = channelService.getMessageUnreadByUserAndShop(userId, shopId);
+            int unread  = channelService.getMessageUnreadByUserAndShopForShopOwner(userId, shopId);
             //create an json object
             JsonObject result = new JsonObject();
             result.addProperty("userId", userId);
