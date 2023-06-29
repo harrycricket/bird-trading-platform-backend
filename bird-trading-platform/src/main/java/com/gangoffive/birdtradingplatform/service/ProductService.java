@@ -4,12 +4,10 @@ import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.entity.PromotionShop;
-import com.google.gson.JsonObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Objects;
 
 public interface ProductService {
     List<ProductDto> retrieveAllProduct();
@@ -42,10 +40,12 @@ public interface ProductService {
 
     ProductShopDto productToProductShopDto(Product product);
 
-    ResponseEntity<?> updateListProductStatus(ProductStatusShopChangeDto productStatusShopChangeDto);
+    ResponseEntity<?> updateListProductStatus(ChangeStatusListIdDto changeStatusListIdDto);
 
     ResponseEntity<?> updateListProductQuantity(List<ProductQuantityShopChangeDto> listProductChange);
 
     ResponseEntity<?> filterAllProductByShopOwner(ProductShopOwnerFilterDto productFilter);
+
+    ResponseEntity<?> getProductDetailForShop(long productId);
 }
 

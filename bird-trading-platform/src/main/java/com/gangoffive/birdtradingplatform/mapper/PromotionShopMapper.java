@@ -16,11 +16,4 @@ public interface PromotionShopMapper {
     PromotionShopDto modelToDto (PromotionShop promotionShop);
 
 //    PromotionShop dtoToModel (PromotionShopDto  promotionShopDto);
-
-    default Long toMillis(Date date) {
-        if (date != null) {
-            return date.getTime();
-        }
-        return null;
-    }
 }

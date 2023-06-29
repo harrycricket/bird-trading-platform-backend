@@ -66,7 +66,7 @@ public class MessageController {
     @GetMapping("/users/{userid}/messages")
     public ResponseEntity<?> getMessage (@PathVariable long userid, @RequestParam long shopId) {
         long channelID = channelService.getAndSaveChannel(userid, shopId).getId();
-        return messageService.getListMessageByChannelId(channelID,1, userid);
+        return messageService.getListMessageByChannelId(channelID,1, userid, false);
     }
 
     @GetMapping("/shop-owner/{shopId}/channels")
@@ -78,6 +78,6 @@ public class MessageController {
     public ResponseEntity<?> getMessage (@PathVariable long shopId, @RequestParam("userid") long userId,
                                          @RequestParam("pagenumber") int pageNumber) {
         long channelID = channelService.getAndSaveChannel(userId, shopId).getId();
-        return messageService.getListMessageByChannelId(channelID ,pageNumber , userId);
+        return messageService.getListMessageByChannelId(channelID ,pageNumber , shopId, true);
     }
 }

@@ -38,7 +38,8 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
 
     public double updateProductStar(Product product) {
         double star = this.CalculationRating(product.getOrderDetails());
-        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
+//        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
+        var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
         productSummary.setStar(star);
         productSummary.setProduct(product);
         productSummaryRepository.save(productSummary);
@@ -51,7 +52,8 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
                 .stream()
                 .map(reviewId -> reviewId.getId()).collect(Collectors.toList());
         int reviewTotal = reviewRepository.findAllByOrderDetailIdIn(orderDetailIds).get().size();
-        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
+//        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
+        var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
         productSummary.setReviewTotal(reviewTotal);
         productSummary.setProduct(product);
         productSummaryRepository.save(productSummary);
@@ -60,7 +62,8 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
 
     public int updateTotalQuantityOrder(Product product) {
         int totalQuantity = orderDetailRepository.findTotalQuantityByPId(product.getId()).orElse(0);
-        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
+//        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
+        var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
         productSummary.setTotalQuantityOrder(totalQuantity);
         productSummary.setProduct(product);
         productSummaryRepository.save(productSummary);
@@ -69,7 +72,8 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
 
     public String updateCategory(Product product) {
         String category = product.getClass().getSimpleName();
-        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
+//        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
+        var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
         productSummary.setCategory(category);
         productSummary.setProduct(product);
         productSummaryRepository.save(productSummary);
@@ -78,7 +82,8 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
 
     public double discountedPrice(Product product) {
         double discountedPrice = Optional.ofNullable(promotionPriceService.getDiscountedPrice(product)).orElse(0.0);
-        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
+//        var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER).orElse(new ProductSummary());
+        var productSummary = productSummaryRepository.findByProductId(product.getId()).orElse(new ProductSummary());
         productSummary.setDiscountedPrice(discountedPrice);
         productSummary.setProduct(product);
         productSummaryRepository.save(productSummary);

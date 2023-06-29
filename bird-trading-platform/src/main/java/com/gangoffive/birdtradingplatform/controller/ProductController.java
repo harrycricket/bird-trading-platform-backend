@@ -2,7 +2,6 @@ package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.dto.*;
-import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
@@ -87,8 +86,8 @@ public class ProductController {
     }
 
     @PutMapping("/shop-owner/products/status")
-    public ResponseEntity<?> updateListProductStatus(@RequestBody ProductStatusShopChangeDto productStatusShopChangeDto) {
-        return productService.updateListProductStatus(productStatusShopChangeDto);
+    public ResponseEntity<?> updateListProductStatus(@RequestBody ChangeStatusListIdDto changeStatusListIdDto) {
+        return productService.updateListProductStatus(changeStatusListIdDto);
     }
 
     @PutMapping("/shop-owner/products/quantity")
@@ -101,5 +100,10 @@ public class ProductController {
         ProductShopOwnerFilterDto productShopOwnerFilter = JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class);
         log.info("{}", productShopOwnerFilter.toString());
         return productService.filterAllProductByShopOwner(productShopOwnerFilter);
+    }
+
+    @GetMapping("/shop-owner/products/{productId}")
+    public ResponseEntity<?> getProductDetailForShop(@PathVariable long productId) {
+        return productService.getProductDetailForShop(productId);
     }
 }

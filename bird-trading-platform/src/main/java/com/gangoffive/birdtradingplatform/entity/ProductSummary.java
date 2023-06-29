@@ -6,7 +6,7 @@ import org.hibernate.annotations.Where;
 
 @Entity(name = "tblProduct_Summary")
 @Data
-@Where(clause = "is_deleted = false")
+//@Where(clause = "is_deleted = false")
 public class ProductSummary {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

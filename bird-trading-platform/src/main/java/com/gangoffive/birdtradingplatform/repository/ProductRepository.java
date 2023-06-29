@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,4 +37,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     int updateListProductQuantity(Integer quantity, Long id, Long shopId);
 
     List<Product> findByStatusIn(List<ProductStatus> productStatuses);
+
+    Optional<Product> findByIdAndStatusInAndShopOwner_Id (long productId, List<ProductStatus> productStatuses, long shopId);
 }

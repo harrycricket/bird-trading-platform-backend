@@ -54,7 +54,7 @@ public class FoodServiceImpl implements FoodService {
     public ResponseEntity<?> retrieveFoodsByShopId(Long shopId, int pageNumber) {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
-            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
 
             Optional<Page<Product>> pageAble = foodRepository.findByShopOwner_IdAndStatusIn(shopId,
@@ -136,14 +136,14 @@ public class FoodServiceImpl implements FoodService {
                 if (pageNumber > 0) {
                     pageNumber--;
                 }
-                PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
+                PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
                 var listBird = foodRepository.findByShopOwner_IdAndStatusIn(shopId,
                         ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
                 if (listBird.isPresent()) {
                     List<ProductShopDto> listFoodShopDto = listBird.get().stream().map(bird -> this.foodToProductDto(bird)).toList();
                     PageNumberWraper result = new PageNumberWraper();
                     result.setLists(listFoodShopDto);
-                    result.setTotalProduct(listBird.get().getTotalElements());
+                    result.setTotalElement(listBird.get().getTotalElements());
                     result.setPageNumber(listBird.get().getTotalPages());
                     return ResponseEntity.ok(result);
                 }
