@@ -45,5 +45,7 @@ public interface ProductService {
     ResponseEntity<?> updateListProductQuantity(List<ProductQuantityShopChangeDto> listProductChange);
 
     ResponseEntity<?> filterAllProductByShopOwner(ProductShopOwnerFilterDto productFilter);
+
+    ResponseEntity<?> getProductDetailForShop(long productId);
 }
 
