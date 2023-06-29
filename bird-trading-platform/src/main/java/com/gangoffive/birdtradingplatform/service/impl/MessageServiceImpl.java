@@ -57,10 +57,14 @@ public class MessageServiceImpl implements MessageService {
         var listMessage = messageRepository.findByChannel_Id(channelId, pageRequest);
         if(listMessage != null) {
             PageNumberWraper pageNumberWraper = new PageNumberWraper();
-            List<MessageDto> result;
+            List<MessageDto> result = new ArrayList<>();
             if(isShop) {
-                result = listMessage.getContent().stream()
-                        .map(message -> this.messageToDto(message, id)).toList();
+                var shopOwner = shopOwnerRepository.findById(id);
+                if(shopOwner.isPresent()) {
+                    long accountId = shopOwner.get().getAccount().getId();
+                    result = listMessage.getContent().stream()
+                            .map(message -> this.messageToDto(message, accountId)).toList();
+                }
             }else{
                 result = listMessage.getContent().stream()
                         .map(message -> this.messageToDto(message, id)).toList();
