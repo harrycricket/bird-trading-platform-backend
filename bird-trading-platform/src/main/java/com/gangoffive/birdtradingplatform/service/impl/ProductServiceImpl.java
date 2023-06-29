@@ -1483,7 +1483,7 @@ public class ProductServiceImpl implements ProductService {
         PageNumberWraper<ProductDto> result = new PageNumberWraper<>();
         result.setLists(listdtos);
         result.setPageNumber(productDtoPageNumberWraper.getPageNumber());
-        result.setTotalProduct(productDtoPageNumberWraper.getTotalProduct());
+        result.setTotalElement(productDtoPageNumberWraper.getTotalElement());
         return ResponseEntity.ok(result);
     }
 
@@ -1548,7 +1548,7 @@ public class ProductServiceImpl implements ProductService {
             PageNumberWraper<Long> productDtoPageNumberWraper = new PageNumberWraper<>();
             productDtoPageNumberWraper.setLists(page.getContent());
             productDtoPageNumberWraper.setPageNumber(page.getTotalPages());
-            productDtoPageNumberWraper.setTotalProduct(page.getTotalElements());
+            productDtoPageNumberWraper.setTotalElement(page.getTotalElements());
             return productDtoPageNumberWraper;
         }
         return null;

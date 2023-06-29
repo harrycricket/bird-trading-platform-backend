@@ -143,7 +143,7 @@ public class FoodServiceImpl implements FoodService {
                     List<ProductShopDto> listFoodShopDto = listBird.get().stream().map(bird -> this.foodToProductDto(bird)).toList();
                     PageNumberWraper result = new PageNumberWraper();
                     result.setLists(listFoodShopDto);
-                    result.setTotalProduct(listBird.get().getTotalElements());
+                    result.setTotalElement(listBird.get().getTotalElements());
                     result.setPageNumber(listBird.get().getTotalPages());
                     return ResponseEntity.ok(result);
                 }

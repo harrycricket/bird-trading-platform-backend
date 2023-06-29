@@ -203,7 +203,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         resetPasswordDto.getCode(),
                         account.get().getId()
                 );
+                log.info("verifyToken.isPresent() {}", verifyToken.isPresent());
+                log.info("verifyToken.get().getExpired().before(new Date()) {}", verifyToken.get().getExpired().before(new Date()));
                 if (verifyToken.isPresent() && verifyToken.get().getExpired().after(new Date())) {
+
                     account.get().setPassword(passwordEncoder.encode(resetPasswordDto.getNewPassword()));
                     accountRepository.save(account.get());
                     SuccessResponse successResponse = SuccessResponse.builder()
