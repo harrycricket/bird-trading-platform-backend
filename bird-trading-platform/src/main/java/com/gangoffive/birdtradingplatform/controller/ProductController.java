@@ -101,4 +101,9 @@ public class ProductController {
         log.info("{}", productShopOwnerFilter.toString());
         return productService.filterAllProductByShopOwner(productShopOwnerFilter);
     }
+
+    @GetMapping("/shop-owner/products/{productId}")
+    public ResponseEntity<?> getProductDetailForShop(@PathVariable long productId) {
+        return productService.getProductDetailForShop(productId);
+    }
 }

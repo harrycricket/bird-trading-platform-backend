@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Channel;
 import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.enums.MessageStatus;
+import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.ChannelRepository;
 import com.gangoffive.birdtradingplatform.repository.MessageRepository;
 import com.gangoffive.birdtradingplatform.service.ChannelService;
@@ -21,6 +22,7 @@ import java.util.Arrays;
 public class ChannelServiceImpl implements ChannelService {
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
+    private final AccountRepository accountRepository;
     @Override
     public Channel getAndSaveChannel(long userId, long shopId) {
         var channel = channelRepository.findChannelByAccount_IdAndShopOwner_Id(userId, shopId);
@@ -57,10 +59,14 @@ public class ChannelServiceImpl implements ChannelService {
     public int getMessageUnreadByUserAndShopForShopOwner(long userId, long shopId) {
         var channel = channelRepository.findChannelByAccount_IdAndShopOwner_Id(userId, shopId);
         if(channel.isPresent()){
-            long channelId = channel.get().getId();
-            int unread = messageRepository.countByIdAndListIn(channelId, Arrays.asList(MessageStatus.SENT.name(),
-                    MessageStatus.DELIVERED.name()), shopId);
-            return unread;
+            var accountShop = accountRepository.findByShopOwner_Id(shopId);
+            if(accountShop.isPresent()) {
+                long channelId = channel.get().getId();
+                long accountShopID = accountShop.get().getId();
+                int unread = messageRepository.countByIdAndListIn(channelId, Arrays.asList(MessageStatus.SENT.name(),
+                        MessageStatus.DELIVERED.name()), accountShopID);
+                return unread;
+            }
         }
         return 0;
     }

@@ -18,7 +18,7 @@ import com.gangoffive.birdtradingplatform.util.MyUtils;
 import com.gangoffive.birdtradingplatform.util.S3Utils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import com.gangoffive.birdtradingplatform.wrapper.ProductDetailWrapper;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +61,9 @@ public class ProductServiceImpl implements ProductService {
     private final ShopOwnerMapper shopOwnerMapper;
     private final ShopOwnerService shopOwnerService;
     private final PromotionPriceService promotionPriceService;
+    private final ShopOwnerRepository shopOwnerRepository;
+    private final TypeMapper typeMapper;
+    private final TagMapper tagMapper;
 
     @Override
     public List<ProductDto> retrieveAllProduct() {
@@ -544,6 +547,98 @@ public class ProductServiceImpl implements ProductService {
             return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @Override
+    public ResponseEntity<?> getProductDetailForShop(long productId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        long shopId = shopOwnerService.getShopIdByEmail(email);
+        var product = productRepository.findByIdAndStatusInAndShopOwner_Id(productId,
+                ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, shopId);
+
+        int category = 0;
+        if(product.isPresent()) {
+            JsonObject json = new JsonObject();
+            // Create a Gson instance
+            Gson gson = new Gson();
+
+            // basicForm
+            JsonObject basicFormData = new JsonObject();
+            basicFormData.addProperty("id", product.get().getId());
+            basicFormData.addProperty("name", product.get().getName());
+
+            // feature
+            JsonObject feature = new JsonObject();
+
+            // detailsForm
+            JsonObject detailsFormData = new JsonObject();
+
+            // salesForm
+            JsonObject salesFormData = new JsonObject();
+
+
+            Product pro = null;
+            TypeDto typeDto = new TypeDto();
+            List<TagDto> tagDtos = new ArrayList<>();
+            if (product.get() instanceof Bird) {
+                category = Category.getCategoryIdByName(new BirdDto().getClass().getSimpleName());
+                typeDto = typeMapper.modelToDto(((Bird) product.get()).getTypeBird());
+                tagDtos = ((Bird) product.get()).getTags().stream().map(tagMapper::modelToDto).toList();
+            } else if (product.get() instanceof Food) {
+                category = Category.getCategoryIdByName(new FoodDto().getClass().getSimpleName());
+                typeDto = typeMapper.modelToDto( ((Food) product.get()).getTypeFood());
+                tagDtos = ((Food) product.get()).getTags().stream().map(tagMapper::modelToDto).toList();
+            } else if (product.get() instanceof Accessory) {
+                category = Category.getCategoryIdByName(new AccessoryDto().getClass().getSimpleName());
+                typeDto = typeMapper.modelToDto(((Accessory) product.get()).getTypeAccessory());
+                tagDtos = ((Accessory) product.get()).getTags().stream().map(tagMapper::modelToDto).toList();
+            }
+
+            basicFormData.addProperty("category", category);
+            detailsFormData.addProperty("description", product.get().getDescription());
+            //set type object
+            String jsonType = gson.toJson(typeDto);
+            JsonObject type = JsonParser.parseString(jsonType).getAsJsonObject();
+            detailsFormData.add("type", type);
+            String jsonTag = gson.toJson(tagDtos);
+            JsonArray jsonArrayTag = JsonParser.parseString(jsonTag).getAsJsonArray();
+            detailsFormData.add("tag", jsonArrayTag);
+
+            salesFormData.addProperty("price", product.get().getPrice());
+            salesFormData.addProperty("quantity", product.get().getQuantity());
+
+            //set list promotion
+            List<PromotionShopDto> listPromotion = product.get().getPromotionShops().stream()
+                    .map(promotionShopMapper::modelToDto).toList();
+            String jsonPromotionTemp = gson.toJson(listPromotion);
+            JsonArray voucherArray = JsonParser.parseString(jsonPromotionTemp).getAsJsonArray();
+            salesFormData.add("voucher", voucherArray);
+
+            json.add("basicForm", basicFormData);
+            json.add("feature", this.getFeatureBaseOnInstance(product.get()));
+            json.add("detailsForm", detailsFormData);
+            json.add("salesForm", salesFormData);
+
+            String jsonString = json.toString();
+            return ResponseEntity.ok(jsonString);
+        }
+        return null;
+    }
+
+    private <T extends Product> JsonObject getFeatureBaseOnInstance(T product){
+        JsonObject feature = new JsonObject();
+        if(product instanceof Bird){
+            feature.addProperty("age", ((Bird) product).getAge());
+            feature.addProperty("gender", ((Bird) product).getGender().name());
+            feature.addProperty("color", ((Bird) product).getColor());
+        }else if(product instanceof Accessory){
+            feature.addProperty("origin", ((Accessory) product).getOrigin());
+        }else if(product instanceof  Food) {
+            feature.addProperty("weight", ((Food) product).getWeight());
+        }
+        return feature;
+    }
+
+
 
     private ResponseEntity<?> filterAllProductAllFieldEmpty(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {
         if (productFilter.getCategory() == 1) {
