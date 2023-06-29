@@ -1,23 +1,18 @@
 package com.gangoffive.birdtradingplatform.enums;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public enum SortColumn {
+public enum SortOrderColumn {
     ID("id", "id"),
-    NAME("name", "name"),
-    PRICE("price", "price"),
-    DISCOUNTED_PRICE("discountedPrice", "productSummary.discountedPrice"),
-    TYPE_BIRD("type", "typeBird.name"),
-    TYPE_ACCESSORY("type", "typeAccessory.name"),
-    TYPE_FOOD("type", "typeFood.name"),
+    PRICE("price", "totalPrice"),
+    SHIPPING_FEE("shippingFee", "shippingFee"),
     QUANTITY("quantity", "quantity"),
     TOTAL_ORDERS("totalOrders", "productSummary.totalQuantityOrder"),
     STAR("star", "productSummary.star"),
@@ -29,14 +24,14 @@ public enum SortColumn {
     private String column;
 
     public static String getColumnByField(String field) {
-        return Arrays.stream(SortColumn.values())
-                .filter(sortColumn -> sortColumn.getField().equals(field))
+        return Arrays.stream(SortOrderColumn.values())
+                .filter(sortOrderColumn -> sortOrderColumn.getField().equals(field))
                 .findFirst()
                 .get()
                 .getColumn();
     }
 
     public static boolean checkField(String field) {
-        return Arrays.stream(SortColumn.values()).anyMatch(sortColumn -> sortColumn.getField().equals(field));
+        return Arrays.stream(SortOrderColumn.values()).anyMatch(sortOrderColumn -> sortOrderColumn.getField().equals(field));
     }
 }

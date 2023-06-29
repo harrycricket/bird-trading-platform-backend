@@ -25,7 +25,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findAllByPackageOrder_Id(Long id);
 
-    Optional<Page<Order>> findByShopOwner(ShopOwner shopOwner, Pageable pageable);
+    Optional<Page<Order>> findByShopOwner_Id(Long id, Pageable pageable);
+
+    // Query to check if all order IDs are present in a specific shop ID
+    @Query("SELECT COUNT(o.id) = :orderCount FROM tblOrder o WHERE o.shopOwner.id = :shopId AND o.id IN :orderIds")
+    boolean checkIfOrderIdsBelongToShopId(List<Long> orderIds, Long shopId, int orderCount);
 
     @Modifying
     @Transactional

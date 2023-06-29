@@ -6,6 +6,7 @@ import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
+import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.ColorChart;
 import com.gangoffive.birdtradingplatform.enums.ResponseCode;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
@@ -685,6 +686,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                             .userName(createAccountSaffDto.getUserName())
                             .password(createAccountSaffDto.getPassword())
                             .shopOwner(shopOwner)
+                            .status(AccountStatus.VERIFY)
                             .build();
                     ShopStaff saveShopStaff = shopStaffRepository.save(shopStaff);
                     SuccessResponse successResponse = SuccessResponse.builder()

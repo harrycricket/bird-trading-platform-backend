@@ -209,7 +209,7 @@ public class ProductServiceImpl implements ProductService {
     public ResponseEntity<?> retrieveProductByShopId(long shopId, int pageNumber) {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
-            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
 
             Optional<Page<Product>> pageAble = productRepository.findByShopOwner_IdAndStatusIn(shopId,
@@ -240,7 +240,7 @@ public class ProductServiceImpl implements ProductService {
             if (pageNumber > 0) {
                 --pageNumber;
             }
-            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
             Optional<Page<Product>> pageAble = productRepository.findByShopOwner_IdAndStatusIn(shopId,
                     ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
@@ -349,25 +349,21 @@ public class ProductServiceImpl implements ProductService {
         log.info("productFilter.getPageNumber() {}", productFilter.getPageNumber());
         if (productFilter.getPageNumber() > 0) {
             int pageNumber = productFilter.getPageNumber() - 1;
-            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
             PageRequest pageRequestWithSort = null;
             if (productFilter.getSortDirection() != null
                     && !productFilter.getSortDirection().getSort().isEmpty()
                     && !productFilter.getSortDirection().getField().isEmpty()
             ) {
                 log.info("go pageRequestWithSort---------------------");
-                if (!SortColumn.checkField(productFilter.getSortDirection().getField())) {
+                if (!SortProductColumn.checkField(productFilter.getSortDirection().getField())) {
                     ErrorResponse errorResponse = ErrorResponse.builder()
                             .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
                             .errorMessage("Not found this field in sort direction.")
                             .build();
                     return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
                 }
-//                if (productFilter.getSortDirection().getSort().equals(""))
-                log.info("productFilter.getSortDirection().getSort().toUpperCase() {}", productFilter.getSortDirection().getSort().toUpperCase());
-                log.info("Sort.Direction.ASC.name() {}", Sort.Direction.ASC.name());
                 if (productFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.ASC.name())) {
-                    log.info("asc---------------------");
                     pageRequestWithSort = getPageRequest(productFilter, pageNumber, Sort.Direction.ASC);
                 } else if (productFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.DESC.name())) {
                     pageRequestWithSort = getPageRequest(productFilter, pageNumber, Sort.Direction.DESC);
@@ -382,6 +378,7 @@ public class ProductServiceImpl implements ProductService {
                     && productFilter.getSortDirection().getField().isEmpty()
                     && productFilter.getSortDirection().getSort().isEmpty()
             ) {
+                log.info("all no");
                 return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequest);
             } else if (
                     productFilter.getProductSearchInfo().getField().isEmpty()
@@ -390,6 +387,7 @@ public class ProductServiceImpl implements ProductService {
                             && !productFilter.getSortDirection().getField().isEmpty()
                             && !productFilter.getSortDirection().getSort().isEmpty()
             ) {
+                log.info("with sort");
                 return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequestWithSort);
             }
 
@@ -408,8 +406,9 @@ public class ProductServiceImpl implements ProductService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldTable.NAME.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
-                            && productFilter.getSortDirection() == null
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
+                            && productFilter.getSortDirection().getField().isEmpty()
+                            && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByNameLike(productFilter, shopId, pageRequest);
@@ -421,7 +420,7 @@ public class ProductServiceImpl implements ProductService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldTable.NAME.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByNameLike(productFilter, shopId, pageRequestWithSort);
@@ -433,8 +432,9 @@ public class ProductServiceImpl implements ProductService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldTable.TYPE.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
-                            && productFilter.getSortDirection() == null
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
+                            && productFilter.getSortDirection().getField().isEmpty()
+                            && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByTypeNameLike(productFilter, shopId, pageRequest);
@@ -446,7 +446,7 @@ public class ProductServiceImpl implements ProductService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldTable.TYPE.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByTypeNameLike(productFilter, shopId, pageRequestWithSort);
@@ -458,8 +458,9 @@ public class ProductServiceImpl implements ProductService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldTable.PRICE.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
-                            && productFilter.getSortDirection() == null
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
+                            && productFilter.getSortDirection().getField().isEmpty()
+                            && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterProductByPriceGreaterThanOrEqual(productFilter, shopId, pageRequest);
@@ -471,7 +472,7 @@ public class ProductServiceImpl implements ProductService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldTable.PRICE.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterProductByPriceGreaterThanOrEqual(productFilter, shopId, pageRequestWithSort);
@@ -483,8 +484,9 @@ public class ProductServiceImpl implements ProductService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldTable.DISCOUNTED_PRICE.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
-                            && productFilter.getSortDirection() == null
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
+                            && productFilter.getSortDirection().getField().isEmpty()
+                            && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterProductByDiscountedPriceGreaterThanOrEqual(productFilter, shopId, pageRequest);
@@ -496,7 +498,7 @@ public class ProductServiceImpl implements ProductService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldTable.DISCOUNTED_PRICE.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterProductByDiscountedPriceGreaterThanOrEqual(productFilter, shopId, pageRequestWithSort);
@@ -508,8 +510,9 @@ public class ProductServiceImpl implements ProductService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldTable.STATUS.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
-                            && productFilter.getSortDirection() == null
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
+                            && productFilter.getSortDirection().getField().isEmpty()
+                            && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterProductByStatusEqual(productFilter, shopId, pageRequest);
@@ -521,7 +524,7 @@ public class ProductServiceImpl implements ProductService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldTable.STATUS.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterProductByStatusEqual(productFilter, shopId, pageRequestWithSort);
@@ -624,56 +627,56 @@ public class ProductServiceImpl implements ProductService {
     private static PageRequest getPageRequest(ProductShopOwnerFilterDto productFilter, int pageNumber, Sort.Direction sortDirection) {
         PageRequest pageRequestWithSort = null;
         if (productFilter.getCategory() == 1) {
-            if (productFilter.getSortDirection().getField().equals(SortColumn.TYPE_BIRD.getField())) {
+            if (productFilter.getSortDirection().getField().equals(SortProductColumn.TYPE_BIRD.getField())) {
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
-                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                         Sort.by(sortDirection,
-                                SortColumn.TYPE_BIRD.getColumn())
+                                SortProductColumn.TYPE_BIRD.getColumn())
                         );
             } else {
                 log.info("go here page 1");
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
-                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                         Sort.by(sortDirection,
-                                SortColumn.getColumnByField(productFilter.getSortDirection().getField())
+                                SortProductColumn.getColumnByField(productFilter.getSortDirection().getField())
                         )
                 );
             }
         } else if (productFilter.getCategory() == 2) {
-            if (productFilter.getSortDirection().getField().equals(SortColumn.TYPE_FOOD.getField())) {
+            if (productFilter.getSortDirection().getField().equals(SortProductColumn.TYPE_FOOD.getField())) {
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
-                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                         Sort.by(sortDirection,
-                                SortColumn.TYPE_FOOD.getColumn())
+                                SortProductColumn.TYPE_FOOD.getColumn())
                 );
             } else {
                 log.info("go here page 2");
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
-                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                         Sort.by(sortDirection,
-                                SortColumn.getColumnByField(productFilter.getSortDirection().getField())
+                                SortProductColumn.getColumnByField(productFilter.getSortDirection().getField())
                         )
                 );
             }
         } else if (productFilter.getCategory() == 3) {
-            if (productFilter.getSortDirection().getField().equals(SortColumn.TYPE_ACCESSORY.getField())) {
+            if (productFilter.getSortDirection().getField().equals(SortProductColumn.TYPE_ACCESSORY.getField())) {
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
-                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                         Sort.by(sortDirection,
-                                SortColumn.TYPE_ACCESSORY.getColumn())
+                                SortProductColumn.TYPE_ACCESSORY.getColumn())
                 );
             } else {
                 log.info("go here page 3");
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
-                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                         Sort.by(sortDirection,
-                                SortColumn.getColumnByField(productFilter.getSortDirection().getField())
+                                SortProductColumn.getColumnByField(productFilter.getSortDirection().getField())
                         )
                 );
             }
