@@ -11,14 +11,10 @@ import java.util.Arrays;
 @Getter
 public enum SortOrderColumn {
     ID("id", "id"),
-    PRICE("price", "totalPrice"),
+    PRICE("totalPrice", "totalPrice"),
     SHIPPING_FEE("shippingFee", "shippingFee"),
-    QUANTITY("quantity", "quantity"),
-    TOTAL_ORDERS("totalOrders", "productSummary.totalQuantityOrder"),
-    STAR("star", "productSummary.star"),
-    TOTAL_REVIEWS("totalReviews", "productSummary.reviewTotal"),
-    CREATE_DATE("createDate", "createdDate"),
-    LAST_UPDATE("lastUpdate", "lastUpDated");
+    CREATE_DATE("createdDate", "createdDate"),
+    LAST_UPDATE("lastedUpdate", "lastedUpdate");
 
     private String field;
     private String column;
