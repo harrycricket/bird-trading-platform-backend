@@ -2,11 +2,11 @@ package com.gangoffive.birdtradingplatform.util;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -32,5 +32,11 @@ public class DateUtils {
             previousWeekStartDate = previousWeekStartDate.plusDays(1);
         }
         return localDateList;
+    }
+
+    public static Date timeInMillisecondToDate(Long time) {
+        Instant instant = Instant.ofEpochMilli(time);
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 }
