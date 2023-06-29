@@ -53,7 +53,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     );
 
     Optional<Page<Order>> findAllByPromotionShopsContainingAndShopOwner_IdAndStatusIn(
-            List<PromotionShop> promotionShops, Long shopId, List<OrderStatus> orderStatuses, Pageable pageable
+            PromotionShop promotionShop, Long shopId, List<OrderStatus> orderStatuses, Pageable pageable
     );
 
     Optional<Page<Order>> findAllByShopOwner_IdAndTotalPriceGreaterThanEqualAndStatusIn(

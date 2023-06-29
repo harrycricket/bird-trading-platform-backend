@@ -6,6 +6,7 @@ import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Order;
+import com.gangoffive.birdtradingplatform.entity.PromotionShop;
 import com.gangoffive.birdtradingplatform.enums.*;
 import com.gangoffive.birdtradingplatform.mapper.PromotionShopMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
@@ -403,15 +404,19 @@ public class OrderServiceImpl implements OrderService {
             Long shopId,
             PageRequest pageRequest
     ) {
-        Optional<Page<Order>> orders = orderRepository.findAllByPromotionShopsContainingAndShopOwner_IdAndStatusIn(
-                promotionShopRepository.findAllById(Arrays.asList(Long.valueOf(orderFilter.getOrderSearchInfo().getValue()))),
-                shopId,
-                OrderStatusConstant.VIEW_ORDER_STATUS,
-                pageRequest
+        Optional<PromotionShop> promotionShop = promotionShopRepository.findById(
+                Long.valueOf(orderFilter.getOrderSearchInfo().getValue())
         );
-
-        if (orders.isPresent()) {
-            return getPageNumberWrapperWithOrders(orders);
+        if (promotionShop.isPresent()) {
+            Optional<Page<Order>> orders = orderRepository.findAllByPromotionShopsContainingAndShopOwner_IdAndStatusIn(
+                    promotionShop.get(),
+                    shopId,
+                    OrderStatusConstant.VIEW_ORDER_STATUS,
+                    pageRequest
+            );
+            if (orders.isPresent()) {
+                return getPageNumberWrapperWithOrders(orders);
+            }
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
