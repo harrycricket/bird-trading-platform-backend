@@ -1,7 +1,5 @@
 package com.gangoffive.birdtradingplatform.enums;
 
-import com.gangoffive.birdtradingplatform.dto.ProductStatusShopChangeDto;
-import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import org.springframework.http.HttpStatus;
 

@@ -56,7 +56,7 @@ public class AccessoryServiceImpl implements AccessoryService {
     public ResponseEntity<?> retrieveAccessoriesByShopId(Long shopId, int pageNumber) {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
-            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
 
             Optional<Page<Product>> pageAble = accessoryRepository.findByShopOwner_IdAndStatusIn(shopId,ProductStatusConstant.LIST_STATUS_GET_FOR_USER ,pageRequest);
@@ -141,7 +141,7 @@ public class AccessoryServiceImpl implements AccessoryService {
                 if (pageNumber > 0) {
                     pageNumber--;
                 }
-                PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
+                PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
                 var listBird = accessoryRepository.findByShopOwner_IdAndStatusIn(shopId,
                         ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
                 if(listBird.isPresent()) {
