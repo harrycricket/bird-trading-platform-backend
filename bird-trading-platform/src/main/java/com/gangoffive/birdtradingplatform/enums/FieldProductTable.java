@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public enum FieldTable {
+public enum FieldProductTable {
     ID("id"),
     NAME("name"),
     TYPE("type"),

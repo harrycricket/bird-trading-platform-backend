@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public enum Operator {
     EQUAL("="),
     GREATER_THAN_OR_EQUAL(">="),
-    CONTAIN("Contain");
+    CONTAIN("Contain"),
+    FROM_TO("Range");
     private String operator;
 }

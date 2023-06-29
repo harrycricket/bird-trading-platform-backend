@@ -2,15 +2,12 @@ package com.gangoffive.birdtradingplatform.enums;
 
 import lombok.*;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public enum SortColumn {
+public enum SortProductColumn {
     ID("id", "id"),
     NAME("name", "name"),
     PRICE("price", "price"),
@@ -29,14 +26,14 @@ public enum SortColumn {
     private String column;
 
     public static String getColumnByField(String field) {
-        return Arrays.stream(SortColumn.values())
-                .filter(sortColumn -> sortColumn.getField().equals(field))
+        return Arrays.stream(SortProductColumn.values())
+                .filter(sortProductColumn -> sortProductColumn.getField().equals(field))
                 .findFirst()
                 .get()
                 .getColumn();
     }
 
     public static boolean checkField(String field) {
-        return Arrays.stream(SortColumn.values()).anyMatch(sortColumn -> sortColumn.getField().equals(field));
+        return Arrays.stream(SortProductColumn.values()).anyMatch(sortProductColumn -> sortProductColumn.getField().equals(field));
     }
 }

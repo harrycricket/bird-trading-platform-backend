@@ -7,9 +7,8 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
-public class ProductShopOwnerFilterDto {
-    private int category;
-    private ShopOwnerSearchInfoDto productSearchInfo;
+public class OrderShopOwnerFilterDto {
+    private ShopOwnerSearchInfoDto orderSearchInfo;
     private SortDirectionDto sortDirection;
     private int pageNumber;
 }

@@ -16,7 +16,7 @@ import java.util.List;
 public class OrderShopOwnerDto {
     private Long id;
     private double totalPrice;
-    private OrderStatus status;
+    private OrderStatusDto orderStatus;
     private double shippingFee;
     private PaymentMethod paymentMethod;
     private List<PromotionShopDto> promotionsShop;

@@ -1,6 +1,5 @@
 package com.gangoffive.birdtradingplatform.dto;
 
-import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import lombok.*;
 
 @NoArgsConstructor
@@ -8,9 +7,9 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
-public class ProductShopOwnerSearchInfoDto {
+public class ShopOwnerSearchInfoDto {
+    private Long id;
     private String field;
     private String value;
     private String operator;
-    private Long id;
 }

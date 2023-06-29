@@ -215,7 +215,7 @@ public class ProductServiceImpl implements ProductService {
     public ResponseEntity<?> retrieveProductByShopId(long shopId, int pageNumber) {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
-            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
 
             Optional<Page<Product>> pageAble = productRepository.findByShopOwner_IdAndStatusIn(shopId,
@@ -246,7 +246,7 @@ public class ProductServiceImpl implements ProductService {
             if (pageNumber > 0) {
                 --pageNumber;
             }
-            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
             Optional<Page<Product>> pageAble = productRepository.findByShopOwner_IdAndStatusIn(shopId,
                     ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
@@ -355,28 +355,30 @@ public class ProductServiceImpl implements ProductService {
         log.info("productFilter.getPageNumber() {}", productFilter.getPageNumber());
         if (productFilter.getPageNumber() > 0) {
             int pageNumber = productFilter.getPageNumber() - 1;
-            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
             PageRequest pageRequestWithSort = null;
             if (productFilter.getSortDirection() != null
                     && !productFilter.getSortDirection().getSort().isEmpty()
                     && !productFilter.getSortDirection().getField().isEmpty()
             ) {
                 log.info("go pageRequestWithSort---------------------");
-                if (!SortColumn.checkField(productFilter.getSortDirection().getField())) {
+                if (!SortProductColumn.checkField(productFilter.getSortDirection().getField())) {
                     ErrorResponse errorResponse = ErrorResponse.builder()
                             .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
                             .errorMessage("Not found this field in sort direction.")
                             .build();
                     return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
                 }
-//                if (productFilter.getSortDirection().getSort().equals(""))
-                log.info("productFilter.getSortDirection().getSort().toUpperCase() {}", productFilter.getSortDirection().getSort().toUpperCase());
-                log.info("Sort.Direction.ASC.name() {}", Sort.Direction.ASC.name());
                 if (productFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.ASC.name())) {
-                    log.info("asc---------------------");
                     pageRequestWithSort = getPageRequest(productFilter, pageNumber, Sort.Direction.ASC);
                 } else if (productFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.DESC.name())) {
                     pageRequestWithSort = getPageRequest(productFilter, pageNumber, Sort.Direction.DESC);
+                } else {
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                            .errorMessage("Not found this direction.")
+                            .build();
+                    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
                 }
             }
 
@@ -388,6 +390,7 @@ public class ProductServiceImpl implements ProductService {
                             && productFilter.getSortDirection().getField().isEmpty()
                             && productFilter.getSortDirection().getSort().isEmpty()
             ) {
+                log.info("all no");
                 return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequest);
             } else if (
                     productFilter.getProductSearchInfo().getField().isEmpty()
@@ -396,147 +399,110 @@ public class ProductServiceImpl implements ProductService {
                             && !productFilter.getSortDirection().getField().isEmpty()
                             && !productFilter.getSortDirection().getSort().isEmpty()
             ) {
+                log.info("with sort");
                 return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequestWithSort);
             }
 
 
             if (
-                    productFilter.getProductSearchInfo().getField().equals(FieldTable.ID.getField())
+                    productFilter.getProductSearchInfo().getField().equals(FieldProductTable.ID.getField())
                             && productFilter.getProductSearchInfo().getValue() != null
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterProductByIdEqual(productFilter, shopId, pageRequest);
                 }
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                        .errorMessage("Not found this operator.")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+
+                return getErrorResponseNotFoundOperator();
             } else if (
-                    productFilter.getProductSearchInfo().getField().equals(FieldTable.NAME.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
-                            && productFilter.getSortDirection() == null
+                    productFilter.getProductSearchInfo().getField().equals(FieldProductTable.NAME.getField())
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
+                            && productFilter.getSortDirection().getField().isEmpty()
+                            && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByNameLike(productFilter, shopId, pageRequest);
                 }
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                        .errorMessage("Not found this operator.")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                return getErrorResponseNotFoundOperator();
             } else if (
-                    productFilter.getProductSearchInfo().getField().equals(FieldTable.NAME.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
+                    productFilter.getProductSearchInfo().getField().equals(FieldProductTable.NAME.getField())
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByNameLike(productFilter, shopId, pageRequestWithSort);
                 }
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                        .errorMessage("Not found this operator.")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                return getErrorResponseNotFoundOperator();
             } else if (
-                    productFilter.getProductSearchInfo().getField().equals(FieldTable.TYPE.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
-                            && productFilter.getSortDirection() == null
+                    productFilter.getProductSearchInfo().getField().equals(FieldProductTable.TYPE.getField())
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
+                            && productFilter.getSortDirection().getField().isEmpty()
+                            && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByTypeNameLike(productFilter, shopId, pageRequest);
                 }
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                        .errorMessage("Not found this operator.")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                return getErrorResponseNotFoundOperator();
             } else if (
-                    productFilter.getProductSearchInfo().getField().equals(FieldTable.TYPE.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
+                    productFilter.getProductSearchInfo().getField().equals(FieldProductTable.TYPE.getField())
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByTypeNameLike(productFilter, shopId, pageRequestWithSort);
                 }
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                        .errorMessage("Not found this operator.")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                return getErrorResponseNotFoundOperator();
             } else if (
-                    productFilter.getProductSearchInfo().getField().equals(FieldTable.PRICE.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
-                            && productFilter.getSortDirection() == null
+                    productFilter.getProductSearchInfo().getField().equals(FieldProductTable.PRICE.getField())
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
+                            && productFilter.getSortDirection().getField().isEmpty()
+                            && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterProductByPriceGreaterThanOrEqual(productFilter, shopId, pageRequest);
                 }
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                        .errorMessage("Not found this operator.")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                return getErrorResponseNotFoundOperator();
             } else if (
-                    productFilter.getProductSearchInfo().getField().equals(FieldTable.PRICE.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
+                    productFilter.getProductSearchInfo().getField().equals(FieldProductTable.PRICE.getField())
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterProductByPriceGreaterThanOrEqual(productFilter, shopId, pageRequestWithSort);
                 }
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                        .errorMessage("Not found this operator.")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                return getErrorResponseNotFoundOperator();
             } else if (
-                    productFilter.getProductSearchInfo().getField().equals(FieldTable.DISCOUNTED_PRICE.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
-                            && productFilter.getSortDirection() == null
+                    productFilter.getProductSearchInfo().getField().equals(FieldProductTable.DISCOUNTED_PRICE.getField())
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
+                            && productFilter.getSortDirection().getField().isEmpty()
+                            && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterProductByDiscountedPriceGreaterThanOrEqual(productFilter, shopId, pageRequest);
                 }
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                        .errorMessage("Not found this operator.")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                return getErrorResponseNotFoundOperator();
             } else if (
-                    productFilter.getProductSearchInfo().getField().equals(FieldTable.DISCOUNTED_PRICE.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
+                    productFilter.getProductSearchInfo().getField().equals(FieldProductTable.DISCOUNTED_PRICE.getField())
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterProductByDiscountedPriceGreaterThanOrEqual(productFilter, shopId, pageRequestWithSort);
                 }
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                        .errorMessage("Not found this operator.")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                return getErrorResponseNotFoundOperator();
             } else if (
-                    productFilter.getProductSearchInfo().getField().equals(FieldTable.STATUS.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
-                            && productFilter.getSortDirection() == null
+                    productFilter.getProductSearchInfo().getField().equals(FieldProductTable.STATUS.getField())
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
+                            && productFilter.getSortDirection().getField().isEmpty()
+                            && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterProductByStatusEqual(productFilter, shopId, pageRequest);
                 }
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                        .errorMessage("Not found this operator.")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                return getErrorResponseNotFoundOperator();
             } else if (
-                    productFilter.getProductSearchInfo().getField().equals(FieldTable.STATUS.getField())
-                            && productFilter.getProductSearchInfo().getValue() != null
+                    productFilter.getProductSearchInfo().getField().equals(FieldProductTable.STATUS.getField())
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterProductByStatusEqual(productFilter, shopId, pageRequestWithSort);
                 }
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                        .errorMessage("Not found this operator.")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                return getErrorResponseNotFoundOperator();
             } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
@@ -549,6 +515,14 @@ public class ProductServiceImpl implements ProductService {
                     "Page number cannot less than 1");
             return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private ResponseEntity<ErrorResponse> getErrorResponseNotFoundOperator() {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found this operator.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     @Override
@@ -629,7 +603,7 @@ public class ProductServiceImpl implements ProductService {
 
             String jsonString = json.toString();
             return ResponseEntity.ok(jsonString);
-        }else {
+        } else {
             return new ResponseEntity<>((ErrorResponse.builder().errorCode("400")
                     .errorMessage("Not found this product!").build()), HttpStatus.BAD_REQUEST);
         }
@@ -649,7 +623,6 @@ public class ProductServiceImpl implements ProductService {
         return feature;
     }
 
-
     private ResponseEntity<?> filterAllProductAllFieldEmpty(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {
         if (productFilter.getCategory() == 1) {
             Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndStatusIn(
@@ -659,13 +632,7 @@ public class ProductServiceImpl implements ProductService {
             );
 
             if (birds.isPresent()) {
-                List<ProductShopDto> listBirdShopDto = birds.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listBirdShopDto,
-                        birds.get().getTotalPages(),
-                        birds.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperBirds(birds);
             } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -681,13 +648,7 @@ public class ProductServiceImpl implements ProductService {
             );
 
             if (foods.isPresent()) {
-                List<ProductShopDto> listFoodShopDto = foods.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listFoodShopDto,
-                        foods.get().getTotalPages(),
-                        foods.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperFoods(foods);
             } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -703,13 +664,7 @@ public class ProductServiceImpl implements ProductService {
             );
 
             if (accessories.isPresent()) {
-                List<ProductShopDto> listAccessoryShopDto = accessories.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listAccessoryShopDto,
-                        accessories.get().getTotalPages(),
-                        accessories.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperAccessories(accessories);
             } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -718,67 +673,64 @@ public class ProductServiceImpl implements ProductService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
             }
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                    .errorMessage("Not found this category.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            return getErrorResponseNotFoundCategory();
         }
     }
 
-    private static PageRequest getPageRequest(ProductShopOwnerFilterDto productFilter, int pageNumber, Sort.Direction sortDirection) {
+    private PageRequest getPageRequest(ProductShopOwnerFilterDto productFilter, int pageNumber, Sort.Direction sortDirection) {
         PageRequest pageRequestWithSort = null;
         if (productFilter.getCategory() == 1) {
-            if (productFilter.getSortDirection().getField().equals(SortColumn.TYPE_BIRD.getField())) {
+            if (productFilter.getSortDirection().getField().equals(SortProductColumn.TYPE_BIRD.getField())) {
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
-                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                         Sort.by(sortDirection,
-                                SortColumn.TYPE_BIRD.getColumn())
+
+                                SortProductColumn.TYPE_BIRD.getColumn())
                 );
             } else {
                 log.info("go here page 1");
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
-                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                         Sort.by(sortDirection,
-                                SortColumn.getColumnByField(productFilter.getSortDirection().getField())
+                                SortProductColumn.getColumnByField(productFilter.getSortDirection().getField())
                         )
                 );
             }
         } else if (productFilter.getCategory() == 2) {
-            if (productFilter.getSortDirection().getField().equals(SortColumn.TYPE_FOOD.getField())) {
+            if (productFilter.getSortDirection().getField().equals(SortProductColumn.TYPE_FOOD.getField())) {
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
-                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                         Sort.by(sortDirection,
-                                SortColumn.TYPE_FOOD.getColumn())
+                                SortProductColumn.TYPE_FOOD.getColumn())
                 );
             } else {
                 log.info("go here page 2");
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
-                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                         Sort.by(sortDirection,
-                                SortColumn.getColumnByField(productFilter.getSortDirection().getField())
+                                SortProductColumn.getColumnByField(productFilter.getSortDirection().getField())
                         )
                 );
             }
         } else if (productFilter.getCategory() == 3) {
-            if (productFilter.getSortDirection().getField().equals(SortColumn.TYPE_ACCESSORY.getField())) {
+            if (productFilter.getSortDirection().getField().equals(SortProductColumn.TYPE_ACCESSORY.getField())) {
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
-                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                         Sort.by(sortDirection,
-                                SortColumn.TYPE_ACCESSORY.getColumn())
+                                SortProductColumn.TYPE_ACCESSORY.getColumn())
                 );
             } else {
                 log.info("go here page 3");
                 pageRequestWithSort = PageRequest.of(
                         pageNumber,
-                        PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                         Sort.by(sortDirection,
-                                SortColumn.getColumnByField(productFilter.getSortDirection().getField())
+                                SortProductColumn.getColumnByField(productFilter.getSortDirection().getField())
                         )
                 );
             }
@@ -787,30 +739,22 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ResponseEntity<?> filterProductByStatusEqual(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {
-        List<ProductStatus> productStatus;
+        List<ProductStatus> productStatuses;
         if (Integer.parseInt(productFilter.getProductSearchInfo().getValue()) == 9) {
-            productStatus = ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER;
-        } else {
-            productStatus = Arrays.asList(ProductUpdateStatus.getProductUpdateStatusEnum(
+            productStatuses = ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER;
+        } else{
+            productStatuses = Arrays.asList(ProductUpdateStatus.getProductUpdateStatusEnum(
                     Integer.parseInt(productFilter.getProductSearchInfo().getValue())
             ).getProductStatus());
         }
         if (productFilter.getCategory() == 1) {
             Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndStatusIn(
                     shopId,
-                    productStatus,
+                    productStatuses,
                     pageRequest
             );
             if (birds.isPresent()) {
-                List<ProductShopDto> listBirdShopDto = birds.get().stream()
-                        .map(this::productToProductShopDto)
-                        .toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listBirdShopDto,
-                        birds.get().getTotalPages(),
-                        birds.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperBirds(birds);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -820,19 +764,11 @@ public class ProductServiceImpl implements ProductService {
         } else if (productFilter.getCategory() == 2) {
             Optional<Page<Food>> foods = foodRepository.findAllByShopOwner_IdAndStatusIn(
                     shopId,
-                    productStatus,
+                    productStatuses,
                     pageRequest
             );
             if (foods.isPresent()) {
-                List<ProductShopDto> listFoodShopDto = foods.get().stream()
-                        .map(this::productToProductShopDto)
-                        .toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listFoodShopDto,
-                        foods.get().getTotalPages(),
-                        foods.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperFoods(foods);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -842,19 +778,11 @@ public class ProductServiceImpl implements ProductService {
         } else if (productFilter.getCategory() == 3) {
             Optional<Page<Accessory>> accessories = accessoryRepository.findAllByShopOwner_IdAndStatusIn(
                     shopId,
-                    productStatus,
+                    productStatuses,
                     pageRequest
             );
             if (accessories.isPresent()) {
-                List<ProductShopDto> listAccessoryShopDto = accessories.get().stream()
-                        .map(this::productToProductShopDto)
-                        .toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listAccessoryShopDto,
-                        accessories.get().getTotalPages(),
-                        accessories.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperAccessories(accessories);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -862,11 +790,7 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                    .errorMessage("Not found this category.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            return getErrorResponseNotFoundCategory();
         }
     }
 
@@ -879,13 +803,7 @@ public class ProductServiceImpl implements ProductService {
                     pageRequest
             );
             if (birds.isPresent()) {
-                List<ProductShopDto> listBirdShopDto = birds.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listBirdShopDto,
-                        birds.get().getTotalPages(),
-                        birds.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperBirds(birds);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -900,13 +818,7 @@ public class ProductServiceImpl implements ProductService {
                     pageRequest
             );
             if (foods.isPresent()) {
-                List<ProductShopDto> listFoodShopDto = foods.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listFoodShopDto,
-                        foods.get().getTotalPages(),
-                        foods.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperFoods(foods);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -921,13 +833,7 @@ public class ProductServiceImpl implements ProductService {
                     pageRequest
             );
             if (accessories.isPresent()) {
-                List<ProductShopDto> listAccessoryShopDto = accessories.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listAccessoryShopDto,
-                        accessories.get().getTotalPages(),
-                        accessories.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperAccessories(accessories);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -935,11 +841,7 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                    .errorMessage("Not found this category.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            return getErrorResponseNotFoundCategory();
         }
     }
 
@@ -952,15 +854,7 @@ public class ProductServiceImpl implements ProductService {
                     pageRequest
             );
             if (birds.isPresent()) {
-                List<ProductShopDto> listBirdShopDto = birds.get().stream()
-                        .map(this::productToProductShopDto)
-                        .toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listBirdShopDto,
-                        birds.get().getTotalPages(),
-                        birds.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperBirds(birds);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -975,15 +869,7 @@ public class ProductServiceImpl implements ProductService {
                     pageRequest
             );
             if (foods.isPresent()) {
-                List<ProductShopDto> listFoodShopDto = foods.get().stream()
-                        .map(this::productToProductShopDto)
-                        .toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listFoodShopDto,
-                        foods.get().getTotalPages(),
-                        foods.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperFoods(foods);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -998,15 +884,7 @@ public class ProductServiceImpl implements ProductService {
                     pageRequest
             );
             if (accessories.isPresent()) {
-                List<ProductShopDto> listAccessoryShopDto = accessories.get().stream()
-                        .map(this::productToProductShopDto)
-                        .toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listAccessoryShopDto,
-                        accessories.get().getTotalPages(),
-                        accessories.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperAccessories(accessories);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -1014,11 +892,7 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                    .errorMessage("Not found this category.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            return getErrorResponseNotFoundCategory();
         }
     }
 
@@ -1034,15 +908,7 @@ public class ProductServiceImpl implements ProductService {
                     pageRequest
             );
             if (birds.isPresent()) {
-                List<ProductShopDto> listBirdShopDto = birds.get().stream()
-                        .map(this::productToProductShopDto)
-                        .toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listBirdShopDto,
-                        birds.get().getTotalPages(),
-                        birds.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperBirds(birds);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -1060,15 +926,7 @@ public class ProductServiceImpl implements ProductService {
                     pageRequest
             );
             if (foods.isPresent()) {
-                List<ProductShopDto> listBirdShopDto = foods.get().stream()
-                        .map(this::productToProductShopDto)
-                        .toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listBirdShopDto,
-                        foods.get().getTotalPages(),
-                        foods.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperFoods(foods);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -1086,15 +944,7 @@ public class ProductServiceImpl implements ProductService {
                     pageRequest
             );
             if (accessories.isPresent()) {
-                List<ProductShopDto> listBirdShopDto = accessories.get().stream()
-                        .map(this::productToProductShopDto)
-                        .toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listBirdShopDto,
-                        accessories.get().getTotalPages(),
-                        accessories.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperAccessories(accessories);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -1102,11 +952,7 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                    .errorMessage("Not found this category.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            return getErrorResponseNotFoundCategory();
         }
     }
 
@@ -1118,13 +964,7 @@ public class ProductServiceImpl implements ProductService {
             );
 
             if (birds.isPresent()) {
-                List<ProductShopDto> listBirdShopDto = birds.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listBirdShopDto,
-                        birds.get().getTotalPages(),
-                        birds.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperBirds(birds);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -1138,13 +978,7 @@ public class ProductServiceImpl implements ProductService {
             );
 
             if (foods.isPresent()) {
-                List<ProductShopDto> listFoodShopDto = foods.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listFoodShopDto,
-                        foods.get().getTotalPages(),
-                        foods.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperFoods(foods);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -1158,13 +992,7 @@ public class ProductServiceImpl implements ProductService {
             );
 
             if (accessories.isPresent()) {
-                List<ProductShopDto> listAccessoryShopDto = accessories.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listAccessoryShopDto,
-                        accessories.get().getTotalPages(),
-                        accessories.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperAccessories(accessories);
             }
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -1172,11 +1000,7 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                    .errorMessage("Not found this category.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            return getErrorResponseNotFoundCategory();
         }
     }
 
@@ -1190,13 +1014,7 @@ public class ProductServiceImpl implements ProductService {
             );
 
             if (birds.isPresent()) {
-                List<ProductShopDto> listBirdShopDto = birds.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listBirdShopDto,
-                        birds.get().getTotalPages(),
-                        birds.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperBirds(birds);
             }
         } else if (productFilter.getCategory() == 2) {
             Optional<Page<Food>> foods = foodRepository.findByIdAndShopOwner_IdAndStatusIn(
@@ -1207,13 +1025,7 @@ public class ProductServiceImpl implements ProductService {
             );
 
             if (foods.isPresent()) {
-                List<ProductShopDto> listFoodShopDto = foods.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listFoodShopDto,
-                        foods.get().getTotalPages(),
-                        foods.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperFoods(foods);
             }
         } else if (productFilter.getCategory() == 3) {
             Optional<Page<Accessory>> accessories = accessoryRepository.findByIdAndShopOwner_IdAndStatusIn(
@@ -1224,20 +1036,10 @@ public class ProductServiceImpl implements ProductService {
             );
 
             if (accessories.isPresent()) {
-                List<ProductShopDto> listAccessoryShopDto = accessories.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWraper result = new PageNumberWraper<>(
-                        listAccessoryShopDto,
-                        accessories.get().getTotalPages(),
-                        accessories.get().getTotalElements()
-                );
-                return ResponseEntity.ok(result);
+                return getPageNumberWrapperAccessories(accessories);
             }
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                    .errorMessage("Not found this category.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            return getErrorResponseNotFoundCategory();
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -1246,6 +1048,49 @@ public class ProductServiceImpl implements ProductService {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
+    private ResponseEntity<ErrorResponse> getErrorResponseNotFoundCategory() {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found this category.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<PageNumberWraper<ProductShopDto>> getPageNumberWrapperAccessories(Optional<Page<Accessory>> accessories) {
+        List<ProductShopDto> listAccessoryShopDto = accessories.get().stream()
+                .map(this::productToProductShopDto)
+                .toList();
+        PageNumberWraper<ProductShopDto> result = new PageNumberWraper<>(
+                listAccessoryShopDto,
+                accessories.get().getTotalPages(),
+                accessories.get().getTotalElements()
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    private ResponseEntity<PageNumberWraper<ProductShopDto>> getPageNumberWrapperFoods(Optional<Page<Food>> foods) {
+        List<ProductShopDto> listFoodShopDto = foods.get().stream()
+                .map(this::productToProductShopDto)
+                .toList();
+        PageNumberWraper<ProductShopDto> result = new PageNumberWraper<>(
+                listFoodShopDto,
+                foods.get().getTotalPages(),
+                foods.get().getTotalElements()
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    private ResponseEntity<PageNumberWraper<ProductShopDto>> getPageNumberWrapperBirds(Optional<Page<Bird>> birds) {
+        List<ProductShopDto> listBirdShopDto = birds.get().stream()
+                .map(this::productToProductShopDto)
+                .toList();
+        PageNumberWraper<ProductShopDto> result = new PageNumberWraper<>(
+                listBirdShopDto,
+                birds.get().getTotalPages(),
+                birds.get().getTotalElements()
+        );
+        return ResponseEntity.ok(result);
+    }
 
     private ProductCartDto productToProductCart(Product product) {
         if (product != null) {

@@ -6,7 +6,6 @@ import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.dto.ProductShopDto;
-import com.gangoffive.birdtradingplatform.dto.ProductShopOwnerFilterDto;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.*;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
@@ -59,7 +58,7 @@ public class BirdServiceImpl implements BirdService {
     public ResponseEntity<?> retrieveBirdsByShopId(Long shopId, int pageNumber) {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
-            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE,
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                     Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
 
             Optional<Page<Product>> pageAble = birdRepository.findByShopOwner_IdAndStatusIn(shopId,
@@ -144,7 +143,7 @@ public class BirdServiceImpl implements BirdService {
                 if (pageNumber > 0) {
                     pageNumber--;
                 }
-                PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_PRODUCT_SIZE);
+                PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
                 var listBird = birdRepository.findByShopOwner_IdAndStatusIn(shopId,
                         ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
                 if (listBird.isPresent()) {
