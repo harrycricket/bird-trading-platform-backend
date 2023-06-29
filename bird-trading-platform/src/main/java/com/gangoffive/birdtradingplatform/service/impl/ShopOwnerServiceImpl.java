@@ -12,6 +12,7 @@ import com.gangoffive.birdtradingplatform.enums.ResponseCode;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
+import com.gangoffive.birdtradingplatform.mapper.ShopStaffMapper;
 import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.ChannelService;
@@ -54,6 +55,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final JwtService jwtService;
     private final AppProperties appProperties;
     private final ShopStaffRepository shopStaffRepository;
+    private final ShopStaffMapper shopStaffMapper;
 
     @Override
     public List<String> listShopDto(List<Long> listShopId, long userId) {
@@ -678,6 +680,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             String username = authentication.getName();
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Optional<Account> accountShop = accountRepository.findByEmail(email);
+            System.out.println(accountShop  );
             ShopOwner shopOwner = accountShop.get().getShopOwner();
             if (shopOwner != null){
                 Optional<ShopStaff> accountStaff = shopStaffRepository.findByUserName(createAccountSaffDto.getUserName());
@@ -717,5 +720,28 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
     }
+    public ResponseEntity<?> getShopStaff(){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Account> account = accountRepository.findByEmail(email);
+        ShopOwner shopOwner = account.get().getShopOwner();
+        if (shopOwner != null){
+            List<ShopStaff> lists = shopStaffRepository.findByShopOwner(shopOwner);
+            if (lists != null && lists.size() != 0){
+                List<ShopStaffDto> listShopStaff = lists.stream().map(shopStaffMapper::modelToDto).toList();
+                return ResponseEntity.ok(listShopStaff);
+            }else {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .errorMessage("No list staff of shop " + shopOwner.getShopName() + ".")
+                        .build();
+                return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
+            }
 
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                .errorMessage("Account " + account.get().getFullName() + " no shop.")
+                .build();
+       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
 }
