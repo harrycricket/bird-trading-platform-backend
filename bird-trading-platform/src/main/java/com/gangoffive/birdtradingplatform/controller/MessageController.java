@@ -70,14 +70,15 @@ public class MessageController {
     }
 
     @GetMapping("/shop-owner/{shopId}/channels")
-    public String getUserInChannel(@PathVariable long shopId) {
-        return messageService.getListUserInChannel();
+    public String getUserInChannel(@PathVariable long shopId, @RequestParam("pagenumber") int pageNumber) {
+        return messageService.getListUserInChannel(pageNumber);
     }
 
     @GetMapping("/shop-owner/{shopId}/messages")
     public ResponseEntity<?> getMessage (@PathVariable long shopId, @RequestParam("userid") long userId,
                                          @RequestParam("pagenumber") int pageNumber) {
         long channelID = channelService.getAndSaveChannel(userId, shopId).getId();
+        log.info("page number ne {}", pageNumber);
         return messageService.getListMessageByChannelId(channelID ,pageNumber , shopId, true);
     }
 }
