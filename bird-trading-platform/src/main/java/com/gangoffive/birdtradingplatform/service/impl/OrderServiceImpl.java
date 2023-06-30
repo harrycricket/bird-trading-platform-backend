@@ -459,10 +459,10 @@ public class OrderServiceImpl implements OrderService {
             PageRequest pageRequest
     ) {
         List<PaymentMethod> paymentMethods;
-        if (Integer.parseInt(orderFilter.getOrderSearchInfo().getValue()) == 9) {
+        if (orderFilter.getOrderSearchInfo().getValue().trim().equals("9")) {
             paymentMethods = List.of(PaymentMethod.values());
         } else {
-            paymentMethods = Arrays.asList(PaymentMethod.valueOf(orderFilter.getOrderSearchInfo().getValue()));
+            paymentMethods = List.of(PaymentMethod.valueOf(orderFilter.getOrderSearchInfo().getValue()));
         }
 
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndPackageOrder_PaymentMethodInAndStatusIn(
