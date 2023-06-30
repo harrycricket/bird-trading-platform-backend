@@ -51,6 +51,8 @@ public class PromotionShopServiceImpl implements PromotionShopService {
 
     @Override
     public ResponseEntity<?> createNewPromotionShop(PromotionShopDto promotionShop) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Optional<Account> account = accountRepository.findByEmail(authentication.getName());
         if (
                 promotionShop != null
                         && !promotionShop.getName().isEmpty()
@@ -65,6 +67,7 @@ public class PromotionShopServiceImpl implements PromotionShopService {
             promotion.setDiscountRate(promotionShop.getDiscountRate());
             promotion.setStartDate(DateUtils.timeInMillisecondToDate(promotionShop.getStartDate()));
             promotion.setEndDate(DateUtils.timeInMillisecondToDate(promotionShop.getEndDate()));
+            promotion.setShopOwner(account.get().getShopOwner());
             promotionShopRepository.save(promotion);
             SuccessResponse successResponse = SuccessResponse.builder()
                     .successCode(String.valueOf(HttpStatus.CREATED.value()))
