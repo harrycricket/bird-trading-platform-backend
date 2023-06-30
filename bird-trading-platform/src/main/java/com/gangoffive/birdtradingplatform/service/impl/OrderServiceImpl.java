@@ -236,20 +236,26 @@ public class OrderServiceImpl implements OrderService {
                             && orderFilter.getSortDirection().getField().isEmpty()
                             && orderFilter.getSortDirection().getSort().isEmpty()
             ) {
-                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
-                    return filterOrderByCreatedDateGreaterThanOrEqual(orderFilter, shopId, pageRequest);
-                } else if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
-                    return filterOrderByCreatedDateFromTo(orderFilter, shopId, pageRequest);
+                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(orderFilter.getOrderSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterOrderByCreatedDateGreaterThanOrEqual(shopId, dateRange, pageRequest);
+                    } else {
+                        return filterOrderByCreatedDateFromTo(shopId, dateRange, pageRequest);
+                    }
                 }
                 return getErrorResponseNotFoundOperator();
             } else if (
                     orderFilter.getOrderSearchInfo().getField().equals(FieldOrderTable.CREATED_DATE.getField())
                             && !orderFilter.getOrderSearchInfo().getValue().isEmpty()
             ) {
-                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
-                    return filterOrderByCreatedDateGreaterThanOrEqual(orderFilter, shopId, pageRequestWithSort);
-                } else if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
-                    return filterOrderByCreatedDateFromTo(orderFilter, shopId, pageRequestWithSort);
+                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(orderFilter.getOrderSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterOrderByCreatedDateGreaterThanOrEqual(shopId, dateRange, pageRequestWithSort);
+                    } else {
+                        return filterOrderByCreatedDateFromTo(shopId, dateRange, pageRequestWithSort);
+                    }
                 }
                 return getErrorResponseNotFoundOperator();
             } else if (
@@ -258,20 +264,27 @@ public class OrderServiceImpl implements OrderService {
                             && orderFilter.getSortDirection().getField().isEmpty()
                             && orderFilter.getSortDirection().getSort().isEmpty()
             ) {
-                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
-                    return filterOrderByLastedDateGreaterThanOrEqual(orderFilter, shopId, pageRequest);
-                } else if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
-                    return filterOrderByLastedDateFromTo(orderFilter, shopId, pageRequest);
+                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(orderFilter.getOrderSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterOrderByLastedDateGreaterThanOrEqual(shopId, dateRange, pageRequest);
+                    } else {
+                        log.info("Han iu");
+                        return filterOrderByLastedDateFromTo(shopId, dateRange, pageRequest);
+                    }
                 }
                 return getErrorResponseNotFoundOperator();
             } else if (
                     orderFilter.getOrderSearchInfo().getField().equals(FieldOrderTable.LASTED_UPDATE.getField())
                             && !orderFilter.getOrderSearchInfo().getValue().isEmpty()
             ) {
-                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
-                    return filterOrderByLastedDateGreaterThanOrEqual(orderFilter, shopId, pageRequestWithSort);
-                } else if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
-                    return filterOrderByLastedDateFromTo(orderFilter, shopId, pageRequestWithSort);
+                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(orderFilter.getOrderSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterOrderByLastedDateGreaterThanOrEqual(shopId, dateRange, pageRequestWithSort);
+                    } else {
+                        return filterOrderByLastedDateFromTo(shopId, dateRange, pageRequestWithSort);
+                    }
                 }
                 return getErrorResponseNotFoundOperator();
             } else {
@@ -289,11 +302,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private ResponseEntity<?> filterOrderByLastedDateFromTo(
-            OrderShopOwnerFilterDto orderFilter,
             Long shopId,
+            DateRangeDto dateRange,
             PageRequest pageRequest
     ) {
-        DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(orderFilter.getOrderSearchInfo().getValue(), DateRangeDto.class);
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndLastedUpdateBetweenAndStatusIn(
                 shopId,
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
@@ -313,12 +325,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private ResponseEntity<?> filterOrderByLastedDateGreaterThanOrEqual(
-            OrderShopOwnerFilterDto orderFilter,
             Long shopId,
+            DateRangeDto dateRange,
             PageRequest pageRequest
     ) {
-        DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(orderFilter.getOrderSearchInfo().getValue(), DateRangeDto.class);
-
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndLastedUpdateGreaterThanEqualAndStatusIn(
                 shopId,
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
@@ -337,11 +347,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private ResponseEntity<?> filterOrderByCreatedDateFromTo(
-            OrderShopOwnerFilterDto orderFilter,
             Long shopId,
+            DateRangeDto dateRange,
             PageRequest pageRequest
     ) {
-        DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(orderFilter.getOrderSearchInfo().getValue(), DateRangeDto.class);
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndCreatedDateBetweenAndStatusIn(
                 shopId,
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
@@ -361,12 +370,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private ResponseEntity<?> filterOrderByCreatedDateGreaterThanOrEqual(
-            OrderShopOwnerFilterDto orderFilter,
             Long shopId,
+            DateRangeDto dateRange,
             PageRequest pageRequest
     ) {
-        DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(orderFilter.getOrderSearchInfo().getValue(), DateRangeDto.class);
-
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndCreatedDateGreaterThanEqualAndStatusIn(
                 shopId,
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
