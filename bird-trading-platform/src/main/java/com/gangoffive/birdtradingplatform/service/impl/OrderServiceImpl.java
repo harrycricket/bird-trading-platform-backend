@@ -27,9 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -659,13 +657,24 @@ public class OrderServiceImpl implements OrderService {
                 .id(order.getStatus().getStatusCode())
                 .status(order.getStatus())
                 .build();
+        List<PromotionShopDto> promotionsShop = order.getPromotionShops().stream()
+                .map(promotionShopMapper::modelToDto)
+                .toList();
+        Map<PromotionShopDto, Integer> promotionQuantityMap = new HashMap<>();
+        for (PromotionShopDto promotionShop : promotionsShop) {
+            promotionQuantityMap.merge(promotionShop, 1, Integer::sum);
+        }
+        List<PromotionShopOrderDto> promotionsShopOrder = new ArrayList<>();
+        promotionQuantityMap.entrySet().forEach(entry -> {
+            promotionsShopOrder.add(promotionShopDtoToPromotionShopOrderDto(entry.getKey(), entry.getValue()));
+        });
         return OrderShopOwnerDto.builder()
                 .id(order.getId())
                 .totalPrice(order.getTotalPrice())
                 .orderStatus(orderStatus)
                 .shippingFee(order.getShippingFee())
                 .paymentMethod(order.getPackageOrder().getPaymentMethod())
-                .promotionsShop(order.getPromotionShops().stream().map(promotionShopMapper::modelToDto).collect(Collectors.toList()))
+                .promotionsShop(promotionsShopOrder)
                 .createdDate(order.getCreatedDate().getTime())
                 .lastedUpdate(order.getLastedUpdate().getTime())
                 .build();
@@ -684,6 +693,18 @@ public class OrderServiceImpl implements OrderService {
                 .paymentMethod(order.getPackageOrder().getPaymentMethod())
                 .createdDate(order.getCreatedDate().getTime())
                 .lastedUpdate(order.getLastedUpdate().getTime())
+                .build();
+    }
+
+    private PromotionShopOrderDto promotionShopDtoToPromotionShopOrderDto(PromotionShopDto promotionShop, int quantity) {
+        return PromotionShopOrderDto.builder()
+                .id(promotionShop.getId())
+                .name(promotionShop.getName())
+                .description(promotionShop.getDescription())
+                .discountRate(promotionShop.getDiscountRate())
+                .quantity(quantity)
+                .startDate(promotionShop.getStartDate())
+                .endDate(promotionShop.getEndDate())
                 .build();
     }
 }
