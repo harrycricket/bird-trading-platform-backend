@@ -1,10 +1,8 @@
 package com.gangoffive.birdtradingplatform.dto;
 
-import com.gangoffive.birdtradingplatform.enums.OrderStatus;
 import com.gangoffive.birdtradingplatform.enums.PaymentMethod;
 import lombok.*;
 
-import java.util.Date;
 import java.util.List;
 
 @NoArgsConstructor
@@ -19,7 +17,7 @@ public class OrderShopOwnerDto {
     private OrderStatusDto orderStatus;
     private double shippingFee;
     private PaymentMethod paymentMethod;
-    private List<PromotionShopDto> promotionsShop;
+    private List<PromotionShopOrderDto> promotionsShop;
     private Long createdDate;
     private Long lastedUpdate;
 }
