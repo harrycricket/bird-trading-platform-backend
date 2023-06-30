@@ -67,14 +67,6 @@ public class Order {
     @OneToMany(mappedBy = "order")
     private List<Report> reports;
 
-    @ManyToMany
-    @JoinTable(
-            name = "tblOrder_Promotion_Shop",
-            joinColumns = @JoinColumn(name = "order_id"),
-            foreignKey = @ForeignKey(name = "FK_ORDER_PROMOTION_SHOP"),
-            inverseJoinColumns = @JoinColumn(name = "promotion_s_id")
-    )
-    private List<PromotionShop> promotionShops;
 
     public Long getId() {
         return id;
@@ -146,13 +138,5 @@ public class Order {
 
     public void addReports(Report report) {
         this.reports.add(report);
-    }
-
-    public List<PromotionShop> getPromotionShops() {
-        return promotionShops;
-    }
-
-    public void addPromotionShops(PromotionShop promotionShop) {
-        this.promotionShops.add(promotionShop);
     }
 }

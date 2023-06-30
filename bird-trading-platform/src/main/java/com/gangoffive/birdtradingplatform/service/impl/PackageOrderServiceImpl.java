@@ -15,7 +15,7 @@ import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.PackageOrderService;
 import com.gangoffive.birdtradingplatform.service.PaypalService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
-import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
@@ -36,7 +36,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +54,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     private final PaypalService paypalService;
 
     @Override
+    @Transactional
     public ResponseEntity<?> packageOrder(PackageOrderRequestDto packageOrder, String paymentId, String payerId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -131,8 +131,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     List<PackageOrderDto> packageOrderDtoList = pageAble.get().stream()
                             .map(this::packageOrderToPackageOrderDto)
                             .toList();
-                    PageNumberWraper<PackageOrderDto> pageNumberWraper = new PageNumberWraper<>(packageOrderDtoList, pageAble.get().getTotalPages());
-                    return ResponseEntity.ok(pageNumberWraper);
+                    PageNumberWrapper<PackageOrderDto> pageNumberWrapper = new PageNumberWrapper<>(packageOrderDtoList, pageAble.get().getTotalPages());
+                    return ResponseEntity.ok(pageNumberWrapper);
                 } else {
                     ErrorResponse errorResponse = ErrorResponse.builder()
                             .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -418,46 +418,21 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         List<ShopOwner> shops = getListShopOwners(products);
         shops.stream().forEach(s -> log.info("shop {}", s.getId()));
 
-//        Map<Long, Double> totalPriceByShop = products.stream()
-//                .collect(
-//                        Collectors.groupingBy(
-//                                product -> product.getShopOwner().getId(),
-//                                Collectors.summingDouble(
-//                                        product -> {
-//                                            double saleOff = productService.CalculateSaleOff(product.getPromotionShops(), product.getPrice());
-//                                            double priceAfterDiscount = productService.CalculateDiscountedPrice(product.getPrice(), saleOff);
-//                                            return priceAfterDiscount * productOrder.get(product.getId());
-//                                        }
-//                                )
-//                        )
-//                );
-//
-//        totalPriceByShop.entrySet()
-//                .stream()
-//                .forEach(
-//                        price -> log.info("key {} value {}", price.getKey().toString(), price.getValue().toString())
-//                );
-//
-//        for (Long id : totalPriceByShop.keySet()) {
-//            totalPriceByShop.put(id, Math.round(totalPriceByShop.get(id) * 100.0) / 100.0);
-//        }
-
         List<ItemByShopDto> itemsByShop = packageOrderRequestDto.getCartInfo().getItemsByShop();
         shops.stream().forEach(shopOwner -> {
             ItemByShopDto itemByShop = itemsByShop.stream()
                     .filter(itemByShopDto -> itemByShopDto.getShopId().equals(shopOwner.getId()))
                     .findFirst().get();
-            List<PromotionShop> promotionShops = products.stream()
-                    .filter(
-                            product -> product.getShopOwner().equals(shopOwner)
-                    ).map(Product::getPromotionShops)
-                    .flatMap(List::stream)
-                    .collect(Collectors.toList());
+//            List<PromotionShop> promotionShops = products.stream()
+//                    .filter(
+//                            product -> product.getShopOwner().equals(shopOwner)
+//                    ).map(Product::getPromotionShops)
+//                    .flatMap(List::stream)
+//                    .collect(Collectors.toList());
             Order order = Order.builder()
                     .totalPrice(itemByShop.getTotalShopPrice())
                     .shippingFee(itemByShop.getShippingFee())
                     .status(OrderStatus.PENDING)
-                    .promotionShops(promotionShops)
                     .shopOwner(shopOwner)
                     .packageOrder(packageOrder)
                     .build();
@@ -495,7 +470,6 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 //        }
 
         orders.stream()
-//                .filter(order -> shopOwners.contains(order.getShopOwner()))
                 .forEach(
                         order -> products.stream()
                                 .filter(product -> product.getShopOwner().equals(order.getShopOwner()))
@@ -508,6 +482,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                                             .product(product)
                                             .price(discountedPrice)
                                             .quantity(productOrder.get(product.getId()))
+                                            .promotionShops(new ArrayList<>(product.getPromotionShops()))
                                             .build();
                                     product.setQuantity(newQuantity);
                                     productRepository.save(product);
@@ -518,8 +493,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return orderDetails;
     }
 
-    @Transactional
-    public void saveAll(PackageOrderRequestDto packageOrderRequestDto, String paymentId, Account account, Map<Long, Integer> productOrder) {
+    private void saveAll(PackageOrderRequestDto packageOrderRequestDto, String paymentId, Account account, Map<Long, Integer> productOrder) {
         Transaction transaction = Transaction.builder()
                 .amount(packageOrderRequestDto.getCartInfo().getTotal().getPaymentTotal())
                 .status(TransactionStatus.PROCESSING)

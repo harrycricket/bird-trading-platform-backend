@@ -3,6 +3,8 @@ package com.gangoffive.birdtradingplatform.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity(name = "tblOrder_Detail")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,8 +33,7 @@ public class OrderDetail {
 				,nullable = false
 	)
 	private Product product;
-	
-	//one order have many orderdetail
+
 	@ManyToOne
 	@JoinColumn(name = "order_id"
 				,foreignKey = @ForeignKey(name = "FK_ORDER_DETAIL_ORDER")
@@ -42,5 +43,21 @@ public class OrderDetail {
 
 	@OneToOne(mappedBy = "orderDetail")
 	private Review review;
-	
+
+	@ManyToMany
+	@JoinTable(
+			name = "tblOrder_Detail_Promotion_Shop",
+			foreignKey = @ForeignKey(name = "FK_ORDER_DETAIL_PROMOTION_SHOP"),
+			joinColumns = @JoinColumn(name = "order_d_id"),
+			inverseJoinColumns = @JoinColumn(name = "promotion_s_id")
+	)
+	private List<PromotionShop> promotionShops;
+
+	public List<PromotionShop> getPromotionShops() {
+		return promotionShops;
+	}
+
+	public void addPromotionShops(PromotionShop promotionShop) {
+		this.promotionShops.add(promotionShop);
+	}
 }

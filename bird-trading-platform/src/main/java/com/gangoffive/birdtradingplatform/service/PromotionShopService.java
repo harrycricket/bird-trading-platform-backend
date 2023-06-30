@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface PromotionShopService {
     ResponseEntity<?> retrieveAllPromotionShop();
+
+    ResponseEntity<?> createNewPromotionShop(PromotionShopDto promotionShop);
 }

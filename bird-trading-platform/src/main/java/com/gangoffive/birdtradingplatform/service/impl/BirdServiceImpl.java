@@ -15,7 +15,7 @@ import com.gangoffive.birdtradingplatform.service.AuthenticationService;
 import com.gangoffive.birdtradingplatform.service.BirdService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
-import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -67,8 +67,8 @@ public class BirdServiceImpl implements BirdService {
                 List<ProductDto> list = pageAble.get().stream()
                         .map(productService::ProductToDto)
                         .toList();
-                PageNumberWraper<ProductDto> pageNumberWraper = new PageNumberWraper<>(list, pageAble.get().getTotalPages());
-                return ResponseEntity.ok(pageNumberWraper);
+                PageNumberWrapper<ProductDto> pageNumberWrapper = new PageNumberWrapper<>(list, pageAble.get().getTotalPages());
+                return ResponseEntity.ok(pageNumberWrapper);
             } else {
                 ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
                         "Not found product in shop.");
@@ -91,7 +91,7 @@ public class BirdServiceImpl implements BirdService {
                     .stream()
                     .map(bird -> (BirdDto) productService.ProductToDto(bird))
                     .collect(Collectors.toList());
-            PageNumberWraper<BirdDto> result = new PageNumberWraper<>(birds, pageAble.getTotalPages());
+            PageNumberWrapper<BirdDto> result = new PageNumberWrapper<>(birds, pageAble.getTotalPages());
             return ResponseEntity.ok(result);
         }
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
@@ -148,7 +148,7 @@ public class BirdServiceImpl implements BirdService {
                         ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
                 if (listBird.isPresent()) {
                     List<ProductShopDto> listBirdShopDto = listBird.get().stream().map(bird -> this.birdToProductDto(bird)).toList();
-                    PageNumberWraper result = new PageNumberWraper();
+                    PageNumberWrapper result = new PageNumberWrapper();
                     result.setLists(listBirdShopDto);
                     result.setTotalElement(listBird.get().getTotalElements());
                     result.setPageNumber(listBird.get().getTotalPages());

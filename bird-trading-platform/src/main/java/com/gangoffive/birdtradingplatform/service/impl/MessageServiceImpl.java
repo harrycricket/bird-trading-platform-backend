@@ -14,8 +14,8 @@ import com.gangoffive.birdtradingplatform.repository.MessageRepository;
 import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
 import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.MessageService;
-import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
 import com.google.gson.Gson;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +58,7 @@ public class MessageServiceImpl implements MessageService {
                 Sort.by(Sort.Direction.DESC, "timestamp"));
         var listMessage = messageRepository.findByChannel_Id(channelId, pageRequest);
         if(listMessage != null) {
-            PageNumberWraper pageNumberWraper = new PageNumberWraper();
+            PageNumberWrapper pageNumberWrapper = new PageNumberWrapper();
             List<MessageDto> result = new ArrayList<>();
             if(isShop) {
                 var shopOwner = shopOwnerRepository.findById(id);
@@ -74,9 +74,9 @@ public class MessageServiceImpl implements MessageService {
 
             List<MessageDto> reversedList = new ArrayList<>(result);
             Collections.reverse(reversedList);
-            pageNumberWraper.setLists(reversedList);
-            pageNumberWraper.setPageNumber(listMessage.getTotalPages());
-            return ResponseEntity.ok(pageNumberWraper);
+            pageNumberWrapper.setLists(reversedList);
+            pageNumberWrapper.setPageNumber(listMessage.getTotalPages());
+            return ResponseEntity.ok(pageNumberWrapper);
         }
         return null;
     }

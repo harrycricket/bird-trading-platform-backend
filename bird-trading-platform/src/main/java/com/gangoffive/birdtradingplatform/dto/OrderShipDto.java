@@ -11,13 +11,12 @@ import java.util.List;
 @Setter
 @Builder
 @ToString
-public class OrderShopOwnerDto {
+public class OrderShipDto {
     private Long id;
     private double totalPrice;
     private OrderStatusDto orderStatus;
     private double shippingFee;
     private PaymentMethod paymentMethod;
-    private List<PromotionShopOrderDto> promotionsShop;
     private Long createdDate;
     private Long lastedUpdate;
 }

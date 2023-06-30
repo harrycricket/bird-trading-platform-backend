@@ -6,9 +6,12 @@ import java.util.Arrays;
 import java.util.List;
 
 public class OrderStatusConstant {
-    public static List<OrderStatus> VIEW_ORDER_STATUS =
+    public static List<OrderStatus> VIEW_ALL_ORDER_STATUS =
             Arrays.asList(OrderStatus.PENDING, OrderStatus.PROCESSING, OrderStatus.SHIPPED,
                     OrderStatus.SHIPPING, OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.REFUNDED);
+
+    public static List<OrderStatus> VIEW_ORDER_STATUS_BY_SHIP =
+            Arrays.asList(OrderStatus.SHIPPED, OrderStatus.SHIPPING, OrderStatus.DELIVERED, OrderStatus.CANCELLED);
     public static List<OrderStatus> UPDATE_ORDER_STATUS_USER =
             Arrays.asList(OrderStatus.CANCELLED);
     //co cancel hay k

@@ -52,8 +52,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             Long shopId, List<PaymentMethod> paymentMethods, List<OrderStatus> orderStatuses, Pageable pageable
     );
 
-    Optional<Page<Order>> findAllByPromotionShopsContainingAndShopOwner_IdAndStatusIn(
-            PromotionShop promotionShop, Long shopId, List<OrderStatus> orderStatuses, Pageable pageable
+    Optional<Page<Order>> findByIdIn(
+            List<Long> orderIds, Pageable pageable
     );
 
     Optional<Page<Order>> findAllByShopOwner_IdAndTotalPriceGreaterThanEqualAndStatusIn(
@@ -78,5 +78,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Optional<Page<Order>> findAllByShopOwner_IdAndLastedUpdateBetweenAndStatusIn(
             Long shopId, Date dateFrom, Date dateTo, List<OrderStatus> orderStatuses, Pageable pageable
+    );
+
+    Optional<Page<Order>> findAllByStatusIn(
+            List<OrderStatus> orderStatuses, Pageable pageable
     );
 }

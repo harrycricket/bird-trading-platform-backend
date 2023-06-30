@@ -37,5 +37,6 @@ public interface ShopOwnerService {
 
     long getShopIdByEmail(String email);
     ResponseEntity<?> createAccountStaff(CreateAccountSaffDto createAccountSaffDto);
+    ResponseEntity<?> getShopStaff();
 
 }

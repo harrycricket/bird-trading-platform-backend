@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 /**
  *
@@ -24,6 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "tblPromotion_Shop")
+@Where(clause = "start_date <= CURRENT_DATE and end_date >= CURRENT_DATE")
 public class PromotionShop {
 
     @Id
@@ -50,13 +52,13 @@ public class PromotionShop {
     @JoinTable(
             name = "tblProduct_Promotion",
             joinColumns = @JoinColumn(name = "promotion_s_id"),
-            foreignKey = @ForeignKey(name = "FK_PROMOTIONSHOP_PRODUCT"),
+            foreignKey = @ForeignKey(name = "FK_PROMOTION_SHOP_PRODUCT"),
             inverseJoinColumns = @JoinColumn(name = "product_id")
     )
     private List<Product> products;
 
     @ManyToMany(mappedBy = "promotionShops")
-    private List<Order> orders;
+    private List<OrderDetail> orderDetails;
 
     @ManyToOne
     @JoinColumn(name = "shop_id",
@@ -67,8 +69,8 @@ public class PromotionShop {
         this.products.add(product);
     }
     
-     public void addOrder(Order order) {
-        this.orders.add(order);
+     public void addOrder(OrderDetail orderDetail) {
+        this.orderDetails.add(orderDetail);
     }
 
     public int getDiscountRate() {
