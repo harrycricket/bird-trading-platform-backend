@@ -27,7 +27,7 @@ public class ShopOwner {
 	)
 	private String shopName;
 	
-	@Column(name = "shope_phone"
+	@Column(name = "shop_phone"
 			,nullable = false
 			,unique = true
 	)
@@ -65,8 +65,7 @@ public class ShopOwner {
 
 	@OneToMany(mappedBy = "shopOwner")
 	private List<ShopStaff> shopStaffAccount;
-	
-	//one shop have many ordes
+
 	@OneToMany(mappedBy = "shopOwner")
 	private List<Order> orders;
 

@@ -417,46 +417,21 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         List<ShopOwner> shops = getListShopOwners(products);
         shops.stream().forEach(s -> log.info("shop {}", s.getId()));
 
-//        Map<Long, Double> totalPriceByShop = products.stream()
-//                .collect(
-//                        Collectors.groupingBy(
-//                                product -> product.getShopOwner().getId(),
-//                                Collectors.summingDouble(
-//                                        product -> {
-//                                            double saleOff = productService.CalculateSaleOff(product.getPromotionShops(), product.getPrice());
-//                                            double priceAfterDiscount = productService.CalculateDiscountedPrice(product.getPrice(), saleOff);
-//                                            return priceAfterDiscount * productOrder.get(product.getId());
-//                                        }
-//                                )
-//                        )
-//                );
-//
-//        totalPriceByShop.entrySet()
-//                .stream()
-//                .forEach(
-//                        price -> log.info("key {} value {}", price.getKey().toString(), price.getValue().toString())
-//                );
-//
-//        for (Long id : totalPriceByShop.keySet()) {
-//            totalPriceByShop.put(id, Math.round(totalPriceByShop.get(id) * 100.0) / 100.0);
-//        }
-
         List<ItemByShopDto> itemsByShop = packageOrderRequestDto.getCartInfo().getItemsByShop();
         shops.stream().forEach(shopOwner -> {
             ItemByShopDto itemByShop = itemsByShop.stream()
                     .filter(itemByShopDto -> itemByShopDto.getShopId().equals(shopOwner.getId()))
                     .findFirst().get();
-            List<PromotionShop> promotionShops = products.stream()
-                    .filter(
-                            product -> product.getShopOwner().equals(shopOwner)
-                    ).map(Product::getPromotionShops)
-                    .flatMap(List::stream)
-                    .collect(Collectors.toList());
+//            List<PromotionShop> promotionShops = products.stream()
+//                    .filter(
+//                            product -> product.getShopOwner().equals(shopOwner)
+//                    ).map(Product::getPromotionShops)
+//                    .flatMap(List::stream)
+//                    .collect(Collectors.toList());
             Order order = Order.builder()
                     .totalPrice(itemByShop.getTotalShopPrice())
                     .shippingFee(itemByShop.getShippingFee())
                     .status(OrderStatus.PENDING)
-                    .promotionShops(promotionShops)
                     .shopOwner(shopOwner)
                     .packageOrder(packageOrder)
                     .build();
@@ -507,6 +482,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                                             .product(product)
                                             .price(discountedPrice)
                                             .quantity(productOrder.get(product.getId()))
+                                            .promotionShops(product.getPromotionShops())
                                             .build();
                                     product.setQuantity(newQuantity);
                                     productRepository.save(product);
