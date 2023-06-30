@@ -304,10 +304,13 @@ public class OrderServiceImpl implements OrderService {
             DateRangeDto dateRange,
             PageRequest pageRequest
     ) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(DateUtils.timeInMillisecondToDate(dateRange.getDateTo()));
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndLastedUpdateBetweenAndStatusIn(
                 shopId,
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
-                DateUtils.timeInMillisecondToDate(dateRange.getDateTo()),
+                calendar.getTime(),
                 OrderStatusConstant.VIEW_ALL_ORDER_STATUS,
                 pageRequest
         );
@@ -349,10 +352,13 @@ public class OrderServiceImpl implements OrderService {
             DateRangeDto dateRange,
             PageRequest pageRequest
     ) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(DateUtils.timeInMillisecondToDate(dateRange.getDateTo()));
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndCreatedDateBetweenAndStatusIn(
                 shopId,
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
-                DateUtils.timeInMillisecondToDate(dateRange.getDateTo()),
+                calendar.getTime(),
                 OrderStatusConstant.VIEW_ALL_ORDER_STATUS,
                 pageRequest
         );
