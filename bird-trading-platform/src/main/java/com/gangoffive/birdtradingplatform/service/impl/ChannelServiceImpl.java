@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Channel;
 import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.enums.MessageStatus;
+import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.ChannelRepository;
 import com.gangoffive.birdtradingplatform.repository.MessageRepository;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -69,5 +71,13 @@ public class ChannelServiceImpl implements ChannelService {
             }
         }
         return 0;
+    }
+
+    @Override
+    public void setLastedUpdateTime(Long id) {
+        int result = channelRepository.updateLastedUpdate(new Date(System.currentTimeMillis()), id);
+        if (result == 0) {
+            throw new CustomRuntimeException("400", "Not found this channel id");
+        }
     }
 }
