@@ -54,6 +54,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     private final PaypalService paypalService;
 
     @Override
+    @Transactional
     public ResponseEntity<?> packageOrder(PackageOrderRequestDto packageOrder, String paymentId, String payerId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -469,7 +470,6 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 //        }
 
         orders.stream()
-//                .filter(order -> shopOwners.contains(order.getShopOwner()))
                 .forEach(
                         order -> products.stream()
                                 .filter(product -> product.getShopOwner().equals(order.getShopOwner()))
@@ -482,7 +482,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                                             .product(product)
                                             .price(discountedPrice)
                                             .quantity(productOrder.get(product.getId()))
-                                            .promotionShops(product.getPromotionShops())
+                                            .promotionShops(new ArrayList<>(product.getPromotionShops()))
                                             .build();
                                     product.setQuantity(newQuantity);
                                     productRepository.save(product);
@@ -493,8 +493,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return orderDetails;
     }
 
-    @Transactional
-    public void saveAll(PackageOrderRequestDto packageOrderRequestDto, String paymentId, Account account, Map<Long, Integer> productOrder) {
+    private void saveAll(PackageOrderRequestDto packageOrderRequestDto, String paymentId, Account account, Map<Long, Integer> productOrder) {
         Transaction transaction = Transaction.builder()
                 .amount(packageOrderRequestDto.getCartInfo().getTotal().getPaymentTotal())
                 .status(TransactionStatus.PROCESSING)
