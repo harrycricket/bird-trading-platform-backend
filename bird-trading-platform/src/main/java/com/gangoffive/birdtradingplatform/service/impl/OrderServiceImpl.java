@@ -6,10 +6,12 @@ import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Order;
+import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.PromotionShop;
 import com.gangoffive.birdtradingplatform.enums.*;
 import com.gangoffive.birdtradingplatform.mapper.PromotionShopMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
+import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderRepository;
 import com.gangoffive.birdtradingplatform.repository.PromotionShopRepository;
 import com.gangoffive.birdtradingplatform.service.OrderService;
@@ -38,6 +40,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final PromotionShopMapper promotionShopMapper;
     private final PromotionShopRepository promotionShopRepository;
+    private final OrderDetailRepository orderDetailRepository;
 
     @Override
     public ResponseEntity<?> getAllOrderByPackageOrderId(Long packageOrderId) {
@@ -447,14 +450,22 @@ public class OrderServiceImpl implements OrderService {
                 Long.valueOf(orderFilter.getOrderSearchInfo().getValue())
         );
         if (promotionShop.isPresent()) {
-            Optional<Page<Order>> orders = orderRepository.findAllByPromotionShopsContainingAndShopOwner_IdAndStatusIn(
-                    promotionShop.get(),
-                    shopId,
-                    OrderStatusConstant.VIEW_ALL_ORDER_STATUS,
-                    pageRequest
-            );
-            if (orders.isPresent()) {
-                return getPageNumberWrapperWithOrders(orders, true, false);
+            Optional<List<OrderDetail>> orderDetailsContainingPromotion =
+                    orderDetailRepository.findAllByPromotionShopsContainingAndOrder_ShopOwner_IdAndOrder_StatusIn(
+                            promotionShop.get(), shopId, OrderStatusConstant.VIEW_ALL_ORDER_STATUS
+                    );
+            if (orderDetailsContainingPromotion.isPresent()) {
+                List<Long> orderIds = orderDetailsContainingPromotion.get().stream()
+                        .map(orderDetail -> orderDetail.getOrder().getId())
+                        .distinct()
+                        .toList();
+                Optional<Page<Order>> orders = orderRepository.findByIdIn(
+                        orderIds,
+                        pageRequest
+                );
+                if (orders.isPresent()) {
+                    return getPageNumberWrapperWithOrders(orders, true, false);
+                }
             }
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
@@ -663,7 +674,10 @@ public class OrderServiceImpl implements OrderService {
                 .id(order.getStatus().getStatusCode())
                 .status(order.getStatus())
                 .build();
-        List<PromotionShopDto> promotionsShop = order.getPromotionShops().stream()
+        List<OrderDetail> orderDetails = order.getOrderDetails();
+        List<PromotionShop> promotionShops = new ArrayList<>();
+        orderDetails.stream().forEach(orderDetail -> promotionShops.addAll(orderDetail.getPromotionShops()));
+        List<PromotionShopDto> promotionsShop = promotionShops.stream()
                 .map(promotionShopMapper::modelToDto)
                 .toList();
         Map<PromotionShopDto, Integer> promotionQuantityMap = new HashMap<>();

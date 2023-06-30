@@ -1,6 +1,9 @@
 package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.Order;
+import com.gangoffive.birdtradingplatform.entity.PromotionShop;
+import com.gangoffive.birdtradingplatform.enums.OrderStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -17,5 +20,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
 
     List<OrderDetail> findOrderDetailByOrderIn(List<Order> orders);
 
-
+    Optional<List<OrderDetail>> findAllByPromotionShopsContainingAndOrder_ShopOwner_IdAndOrder_StatusIn(
+            PromotionShop promotionShop, Long shopId, List<OrderStatus> orderStatuses
+    );
 }
