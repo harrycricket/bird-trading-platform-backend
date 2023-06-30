@@ -79,4 +79,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Page<Order>> findAllByShopOwner_IdAndLastedUpdateBetweenAndStatusIn(
             Long shopId, Date dateFrom, Date dateTo, List<OrderStatus> orderStatuses, Pageable pageable
     );
+
+    Optional<Page<Order>> findAllByStatusIn(
+            List<OrderStatus> orderStatuses, Pageable pageable
+    );
 }

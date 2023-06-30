@@ -18,7 +18,7 @@ import com.gangoffive.birdtradingplatform.repository.TagRepository;
 import com.gangoffive.birdtradingplatform.service.AccessoryService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
-import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -64,8 +64,8 @@ public class AccessoryServiceImpl implements AccessoryService {
                 List<ProductDto> list = pageAble.get().stream()
                         .map(productService::ProductToDto)
                         .toList();
-                PageNumberWraper<ProductDto> pageNumberWraper = new PageNumberWraper<>(list, pageAble.get().getTotalPages());
-                return ResponseEntity.ok(pageNumberWraper);
+                PageNumberWrapper<ProductDto> pageNumberWrapper = new PageNumberWrapper<>(list, pageAble.get().getTotalPages());
+                return ResponseEntity.ok(pageNumberWrapper);
             } else {
                 ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
                         "Not found product in shop.");
@@ -88,7 +88,7 @@ public class AccessoryServiceImpl implements AccessoryService {
                     .stream()
                     .map(accessory -> (AccessoryDto) productService.ProductToDto(accessory))
                     .collect(Collectors.toList());
-            PageNumberWraper<AccessoryDto> result = new PageNumberWraper<>(accessories, pageAble.getTotalPages());
+            PageNumberWrapper<AccessoryDto> result = new PageNumberWrapper<>(accessories, pageAble.getTotalPages());
             return ResponseEntity.ok(result);
         }
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
@@ -146,7 +146,7 @@ public class AccessoryServiceImpl implements AccessoryService {
                         ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
                 if(listBird.isPresent()) {
                     List<ProductShopDto> listAccessoryShopDto = listBird.get().stream().map(bird ->  this.accessoryToProductDto(bird)).toList();
-                    PageNumberWraper result = new PageNumberWraper();
+                    PageNumberWrapper result = new PageNumberWrapper();
                     result.setLists(listAccessoryShopDto);
                     result.setTotalElement(listBird.get().getTotalElements());
                     result.setPageNumber(listBird.get().getTotalPages());

@@ -15,7 +15,7 @@ import com.gangoffive.birdtradingplatform.repository.PromotionShopRepository;
 import com.gangoffive.birdtradingplatform.service.OrderService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
-import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -46,6 +46,34 @@ public class OrderServiceImpl implements OrderService {
         List<Order> orders = orderRepository.findAllByPackageOrder_Id(packageOrderId);
 
         return null;
+    }
+
+    @Override
+    public ResponseEntity<?> getAllOrderByShip(int pageNumber) {
+        if (pageNumber > 0) {
+            pageNumber--;
+            PageRequest pageRequest = PageRequest.of(
+                    pageNumber,
+                    PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                    Sort.by(Sort.Direction.DESC,
+                            SortOrderColumn.LAST_UPDATE.getColumn()
+                    )
+            );
+            Optional<Page<Order>> allOrdersForShip = orderRepository.findAllByStatusIn(OrderStatusConstant.VIEW_ORDER_STATUS_BY_SHIP, pageRequest);
+            if (allOrdersForShip.isPresent()) {
+                return getPageNumberWrapperWithOrders(allOrdersForShip, false, true);
+            }
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                    .errorMessage("No have order.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                .errorMessage("Page number cannot less than 1")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @Override
@@ -92,7 +120,7 @@ public class OrderServiceImpl implements OrderService {
                             && orderFilter.getSortDirection().getSort().isEmpty()
             ) {
                 log.info("all no");
-                return filterAllProductAllFieldEmpty(shopId, pageRequest);
+                return filterAllOrderAllFieldEmpty(shopId, pageRequest);
             } else if (
                     orderFilter.getOrderSearchInfo().getField().isEmpty()
                             && orderFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -101,7 +129,7 @@ public class OrderServiceImpl implements OrderService {
                             && !orderFilter.getSortDirection().getSort().isEmpty()
             ) {
                 log.info("with sort");
-                return filterAllProductAllFieldEmpty(shopId, pageRequestWithSort);
+                return filterAllOrderAllFieldEmpty(shopId, pageRequestWithSort);
             }
 
             if (
@@ -270,12 +298,12 @@ public class OrderServiceImpl implements OrderService {
                 shopId,
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
                 DateUtils.timeInMillisecondToDate(dateRange.getDateTo()),
-                OrderStatusConstant.VIEW_ORDER_STATUS,
+                OrderStatusConstant.VIEW_ALL_ORDER_STATUS,
                 pageRequest
         );
 
         if (orders.isPresent()) {
-            return getPageNumberWrapperWithOrders(orders);
+            return getPageNumberWrapperWithOrders(orders, true, false);
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -294,12 +322,12 @@ public class OrderServiceImpl implements OrderService {
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndLastedUpdateGreaterThanEqualAndStatusIn(
                 shopId,
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
-                OrderStatusConstant.VIEW_ORDER_STATUS,
+                OrderStatusConstant.VIEW_ALL_ORDER_STATUS,
                 pageRequest
         );
 
         if (orders.isPresent()) {
-            return getPageNumberWrapperWithOrders(orders);
+            return getPageNumberWrapperWithOrders(orders, true, false);
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -318,12 +346,12 @@ public class OrderServiceImpl implements OrderService {
                 shopId,
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
                 DateUtils.timeInMillisecondToDate(dateRange.getDateTo()),
-                OrderStatusConstant.VIEW_ORDER_STATUS,
+                OrderStatusConstant.VIEW_ALL_ORDER_STATUS,
                 pageRequest
         );
 
         if (orders.isPresent()) {
-            return getPageNumberWrapperWithOrders(orders);
+            return getPageNumberWrapperWithOrders(orders, true, false);
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -342,12 +370,12 @@ public class OrderServiceImpl implements OrderService {
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndCreatedDateGreaterThanEqualAndStatusIn(
                 shopId,
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
-                OrderStatusConstant.VIEW_ORDER_STATUS,
+                OrderStatusConstant.VIEW_ALL_ORDER_STATUS,
                 pageRequest
         );
 
         if (orders.isPresent()) {
-            return getPageNumberWrapperWithOrders(orders);
+            return getPageNumberWrapperWithOrders(orders, true, false);
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -364,12 +392,12 @@ public class OrderServiceImpl implements OrderService {
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndShippingFeeGreaterThanEqualAndStatusIn(
                 shopId,
                 Double.parseDouble(orderFilter.getOrderSearchInfo().getValue()),
-                OrderStatusConstant.VIEW_ORDER_STATUS,
+                OrderStatusConstant.VIEW_ALL_ORDER_STATUS,
                 pageRequest
         );
 
         if (orders.isPresent()) {
-            return getPageNumberWrapperWithOrders(orders);
+            return getPageNumberWrapperWithOrders(orders, true, false);
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -385,12 +413,12 @@ public class OrderServiceImpl implements OrderService {
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndTotalPriceGreaterThanEqualAndStatusIn(
                 shopId,
                 Double.parseDouble(orderFilter.getOrderSearchInfo().getValue()),
-                OrderStatusConstant.VIEW_ORDER_STATUS,
+                OrderStatusConstant.VIEW_ALL_ORDER_STATUS,
                 pageRequest
         );
 
         if (orders.isPresent()) {
-            return getPageNumberWrapperWithOrders(orders);
+            return getPageNumberWrapperWithOrders(orders, true, false);
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -411,11 +439,11 @@ public class OrderServiceImpl implements OrderService {
             Optional<Page<Order>> orders = orderRepository.findAllByPromotionShopsContainingAndShopOwner_IdAndStatusIn(
                     promotionShop.get(),
                     shopId,
-                    OrderStatusConstant.VIEW_ORDER_STATUS,
+                    OrderStatusConstant.VIEW_ALL_ORDER_STATUS,
                     pageRequest
             );
             if (orders.isPresent()) {
-                return getPageNumberWrapperWithOrders(orders);
+                return getPageNumberWrapperWithOrders(orders, true, false);
             }
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
@@ -440,11 +468,11 @@ public class OrderServiceImpl implements OrderService {
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndPackageOrder_PaymentMethodInAndStatusIn(
                 shopId,
                 paymentMethods,
-                OrderStatusConstant.VIEW_ORDER_STATUS,
+                OrderStatusConstant.VIEW_ALL_ORDER_STATUS,
                 pageRequest
         );
         if (orders.isPresent()) {
-            return getPageNumberWrapperWithOrders(orders);
+            return getPageNumberWrapperWithOrders(orders, true, false);
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -460,7 +488,7 @@ public class OrderServiceImpl implements OrderService {
     ) {
         List<OrderStatus> orderStatuses;
         if (Integer.parseInt(orderFilter.getOrderSearchInfo().getValue()) == 9) {
-            orderStatuses = OrderStatusConstant.VIEW_ORDER_STATUS;
+            orderStatuses = OrderStatusConstant.VIEW_ALL_ORDER_STATUS;
         } else {
             orderStatuses = Arrays.asList(
                     OrderStatus.getOrderStatusBaseOnStatusCode(
@@ -475,7 +503,7 @@ public class OrderServiceImpl implements OrderService {
                 pageRequest
         );
         if (orders.isPresent()) {
-            return getPageNumberWrapperWithOrders(orders);
+            return getPageNumberWrapperWithOrders(orders, true, false);
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -492,12 +520,12 @@ public class OrderServiceImpl implements OrderService {
         Optional<Page<Order>> orders = orderRepository.findByIdAndShopOwner_IdAndStatusIn(
                 Long.valueOf(orderFilter.getOrderSearchInfo().getValue()),
                 shopId,
-                OrderStatusConstant.VIEW_ORDER_STATUS,
+                OrderStatusConstant.VIEW_ALL_ORDER_STATUS,
                 pageRequest
         );
 
         if (orders.isPresent()) {
-            return getPageNumberWrapperWithOrders(orders);
+            return getPageNumberWrapperWithOrders(orders, true, false);
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -506,19 +534,19 @@ public class OrderServiceImpl implements OrderService {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
-    private ResponseEntity<?> filterAllProductAllFieldEmpty(
+    private ResponseEntity<?> filterAllOrderAllFieldEmpty(
             Long shopId,
             PageRequest pageRequest
     ) {
 
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndStatusIn(
                 shopId,
-                OrderStatusConstant.VIEW_ORDER_STATUS,
+                OrderStatusConstant.VIEW_ALL_ORDER_STATUS,
                 pageRequest
         );
 
         if (orders.isPresent()) {
-            return getPageNumberWrapperWithOrders(orders);
+            return getPageNumberWrapperWithOrders(orders, true, false);
         } else {
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
@@ -528,18 +556,31 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private ResponseEntity<PageNumberWraper<OrderShopOwnerDto>> getPageNumberWrapperWithOrders(
-            Optional<Page<Order>> orders
+    private ResponseEntity<PageNumberWrapper<?>> getPageNumberWrapperWithOrders(
+            Optional<Page<Order>> orders, boolean isOrderShopOwner, boolean isOrderShip
     ) {
-        List<OrderShopOwnerDto> orderShopOwnerDto = orders.get().stream()
-                .map(this::orderToOrderShopOwnerDto)
-                .collect(Collectors.toList());
-        PageNumberWraper<OrderShopOwnerDto> result = new PageNumberWraper<>(
-                orderShopOwnerDto,
-                orders.get().getTotalPages(),
-                orders.get().getTotalElements()
-        );
-        return ResponseEntity.ok(result);
+        if (isOrderShopOwner) {
+            List<OrderShopOwnerDto> ordersShopOwnerDto = orders.get().stream()
+                    .map(this::orderToOrderShopOwnerDto)
+                    .collect(Collectors.toList());
+            PageNumberWrapper<OrderShopOwnerDto> result = new PageNumberWrapper<>(
+                    ordersShopOwnerDto,
+                    orders.get().getTotalPages(),
+                    orders.get().getTotalElements()
+            );
+            return ResponseEntity.ok(result);
+        } else if (isOrderShip) {
+            List<OrderShipDto> ordersShipDto = orders.get().stream()
+                    .map(this::orderToOrderShipDto)
+                    .collect(Collectors.toList());
+            PageNumberWrapper<OrderShipDto> result = new PageNumberWrapper<>(
+                    ordersShipDto,
+                    orders.get().getTotalPages(),
+                    orders.get().getTotalElements()
+            );
+            return ResponseEntity.ok(result);
+        }
+        return ResponseEntity.ofNullable(null);
     }
 
     private PageRequest getPageRequest(OrderShopOwnerFilterDto orderFilter, int pageNumber, Sort.Direction sortDirection) {
@@ -547,7 +588,7 @@ public class OrderServiceImpl implements OrderService {
                 pageNumber,
                 PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
                 Sort.by(sortDirection,
-                        SortProductColumn.getColumnByField(orderFilter.getSortDirection().getField())
+                        SortOrderColumn.getColumnByField(orderFilter.getSortDirection().getField())
                 )
         );
     }
@@ -618,6 +659,22 @@ public class OrderServiceImpl implements OrderService {
                 .shippingFee(order.getShippingFee())
                 .paymentMethod(order.getPackageOrder().getPaymentMethod())
                 .promotionsShop(order.getPromotionShops().stream().map(promotionShopMapper::modelToDto).collect(Collectors.toList()))
+                .createdDate(order.getCreatedDate().getTime())
+                .lastedUpdate(order.getLastedUpdate().getTime())
+                .build();
+    }
+
+    private OrderShipDto orderToOrderShipDto(Order order) {
+        OrderStatusDto orderStatus = OrderStatusDto.builder()
+                .id(order.getStatus().getStatusCode())
+                .status(order.getStatus())
+                .build();
+        return OrderShipDto.builder()
+                .id(order.getId())
+                .totalPrice(order.getTotalPrice())
+                .orderStatus(orderStatus)
+                .shippingFee(order.getShippingFee())
+                .paymentMethod(order.getPackageOrder().getPaymentMethod())
                 .createdDate(order.getCreatedDate().getTime())
                 .lastedUpdate(order.getLastedUpdate().getTime())
                 .build();

@@ -7,6 +7,7 @@ import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaypalService {
     private final APIContext apiContext;
 
@@ -71,7 +73,7 @@ public class PaypalService {
             // Execute the payout
             PayoutBatch payoutBatch = payout.create(apiContext, headers);
 
-            System.out.println("Payout successful!");
+            log.info("Payout successful!");
 
         } catch (PayPalRESTException e) {
             System.err.println(e.getDetails());
