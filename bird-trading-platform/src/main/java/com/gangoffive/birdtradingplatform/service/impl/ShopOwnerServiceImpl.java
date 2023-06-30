@@ -676,8 +676,6 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     @Override
     public ResponseEntity<?> createAccountStaff(CreateAccountSaffDto createAccountSaffDto) {
         if (createAccountSaffDto.getConfirmPassword().equals(createAccountSaffDto.getPassword())) {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String username = authentication.getName();
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Optional<Account> accountShop = accountRepository.findByEmail(email);
             ShopOwner shopOwner = accountShop.get().getShopOwner();
