@@ -15,7 +15,7 @@ import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.PackageOrderService;
 import com.gangoffive.birdtradingplatform.service.PaypalService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
-import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
 import com.paypal.base.rest.PayPalRESTException;
@@ -36,7 +36,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 
 @Service
 @RequiredArgsConstructor
@@ -131,8 +130,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     List<PackageOrderDto> packageOrderDtoList = pageAble.get().stream()
                             .map(this::packageOrderToPackageOrderDto)
                             .toList();
-                    PageNumberWraper<PackageOrderDto> pageNumberWraper = new PageNumberWraper<>(packageOrderDtoList, pageAble.get().getTotalPages());
-                    return ResponseEntity.ok(pageNumberWraper);
+                    PageNumberWrapper<PackageOrderDto> pageNumberWrapper = new PageNumberWrapper<>(packageOrderDtoList, pageAble.get().getTotalPages());
+                    return ResponseEntity.ok(pageNumberWrapper);
                 } else {
                     ErrorResponse errorResponse = ErrorResponse.builder()
                             .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))

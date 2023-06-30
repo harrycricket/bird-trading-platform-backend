@@ -38,4 +38,9 @@ public class OrderController {
     public ResponseEntity<?> updateStatusOfListOrder(@RequestBody ChangeStatusListIdDto changeStatusListIdDto) {
         return orderService.updateStatusOfListOrder(changeStatusListIdDto);
     }
+
+    @GetMapping("ship/orders")
+    public ResponseEntity<?> getAllOrderByShipper(@RequestParam int pageNumber) {
+        return orderService.getAllOrderByShip(pageNumber);
+    }
 }

@@ -81,6 +81,7 @@ public class SecurityConfiguration {
 //            "api/v1/shop-owner/**",
 //            "api/v1/shop-owner",
             "api/v1/admin",
+            "api/v1/ship/orders",
 //            "/favicon.ico",
 //            "/**/*.png",
 //            "/**/*.gif",

@@ -10,4 +10,6 @@ public interface OrderService {
     ResponseEntity<?> getAllOrderByShopOwner(OrderShopOwnerFilterDto orderShopOwnerFilter);
 
     ResponseEntity<?> updateStatusOfListOrder(ChangeStatusListIdDto changeStatusListIdDto);
+
+    ResponseEntity<?> getAllOrderByShip(int pageNumber);
 }

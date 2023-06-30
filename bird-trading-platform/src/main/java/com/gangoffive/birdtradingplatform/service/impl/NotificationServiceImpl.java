@@ -11,12 +11,11 @@ import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.NotificationMapper;
 import com.gangoffive.birdtradingplatform.repository.NotificationRepository;
 import com.gangoffive.birdtradingplatform.service.NotificationService;
-import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,14 +51,14 @@ public class NotificationServiceImpl implements NotificationService {
                 ,id , UserRole.USER, page);
         if(!listNotifications.isEmpty()) {
             List<NotificationDto> list = listNotifications.get().map(this::notiModelToDto).toList();
-            PageNumberWraper result = new PageNumberWraper();
+            PageNumberWrapper result = new PageNumberWrapper();
             result.setPageNumber(listNotifications.getTotalPages());
             result.setLists(list);
             return ResponseEntity.ok(result);
         }
 //        return new ResponseEntity<>(new ErrorResponse(ResponseCode.NOT_FOUND_NOTIFICATION_ID.getCode()+"",
 //                ResponseCode.NOT_FOUND_NOTIFICATION_ID.getMessage()), HttpStatus.BAD_REQUEST);
-        return new ResponseEntity<>(new PageNumberWraper<>(new ArrayList<>(), 0), HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(new PageNumberWrapper<>(new ArrayList<>(), 0), HttpStatus.ACCEPTED);
     }
 
     @Override

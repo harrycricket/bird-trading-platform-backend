@@ -1,9 +1,7 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
-import com.gangoffive.birdtradingplatform.common.MessageConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.MessageDto;
-import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Channel;
 import com.gangoffive.birdtradingplatform.entity.Message;
 import com.gangoffive.birdtradingplatform.enums.MessageStatus;
@@ -14,7 +12,7 @@ import com.gangoffive.birdtradingplatform.repository.MessageRepository;
 import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
 import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.MessageService;
-import com.gangoffive.birdtradingplatform.wrapper.PageNumberWraper;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +54,7 @@ public class MessageServiceImpl implements MessageService {
                 Sort.by(Sort.Direction.DESC, "timestamp"));
         var listMessage = messageRepository.findByChannel_Id(channelId, pageRequest);
         if(listMessage != null) {
-            PageNumberWraper pageNumberWraper = new PageNumberWraper();
+            PageNumberWrapper pageNumberWrapper = new PageNumberWrapper();
             List<MessageDto> result = new ArrayList<>();
             if(isShop) {
                 var shopOwner = shopOwnerRepository.findById(id);
@@ -72,9 +70,9 @@ public class MessageServiceImpl implements MessageService {
 
             List<MessageDto> reversedList = new ArrayList<>(result);
             Collections.reverse(reversedList);
-            pageNumberWraper.setLists(reversedList);
-            pageNumberWraper.setPageNumber(listMessage.getTotalPages());
-            return ResponseEntity.ok(pageNumberWraper);
+            pageNumberWrapper.setLists(reversedList);
+            pageNumberWrapper.setPageNumber(listMessage.getTotalPages());
+            return ResponseEntity.ok(pageNumberWrapper);
         }
         return null;
     }
