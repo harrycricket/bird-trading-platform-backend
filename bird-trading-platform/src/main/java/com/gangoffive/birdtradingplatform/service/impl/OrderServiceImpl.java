@@ -180,16 +180,16 @@ public class OrderServiceImpl implements OrderService {
                             && orderFilter.getSortDirection().getField().isEmpty()
                             && orderFilter.getSortDirection().getSort().isEmpty()
             ) {
-                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
-                    return filterOrderByPromotionIdEqual(orderFilter, shopId, pageRequest);
+                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterOrderByPromotionIdContain(orderFilter, shopId, pageRequest);
                 }
                 return getErrorResponseNotFoundOperator();
             } else if (
                     orderFilter.getOrderSearchInfo().getField().equals(FieldOrderTable.PROMOTION_SHOP.getField())
                             && !orderFilter.getOrderSearchInfo().getValue().isEmpty()
             ) {
-                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
-                    return filterOrderByPromotionIdEqual(orderFilter, shopId, pageRequestWithSort);
+                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterOrderByPromotionIdContain(orderFilter, shopId, pageRequestWithSort);
                 }
                 return getErrorResponseNotFoundOperator();
             } else if (
@@ -438,7 +438,7 @@ public class OrderServiceImpl implements OrderService {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
-    private ResponseEntity<?> filterOrderByPromotionIdEqual(
+    private ResponseEntity<?> filterOrderByPromotionIdContain(
             OrderShopOwnerFilterDto orderFilter,
             Long shopId,
             PageRequest pageRequest
