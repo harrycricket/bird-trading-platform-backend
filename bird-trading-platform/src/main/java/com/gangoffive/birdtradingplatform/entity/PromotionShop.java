@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 /**
  *
@@ -24,6 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "tblPromotion_Shop")
+@Where(clause = "start_date <= CURRENT_DATE and end_date >= CURRENT_DATE")
 public class PromotionShop {
 
     @Id
