@@ -680,7 +680,6 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             String username = authentication.getName();
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Optional<Account> accountShop = accountRepository.findByEmail(email);
-            System.out.println(accountShop  );
             ShopOwner shopOwner = accountShop.get().getShopOwner();
             if (shopOwner != null){
                 Optional<ShopStaff> accountStaff = shopStaffRepository.findByUserName(createAccountSaffDto.getUserName());
