@@ -70,6 +70,11 @@ public class ShopOwnerController {
     public ResponseEntity<?> createAccountStaff(@RequestBody CreateAccountSaffDto createAccountSaffDto){
         return shopOwnerService.createAccountStaff(createAccountSaffDto);
     }
-    @GetMapping("/list-staff")
-    public ResponseEntity<?> getShopStaff(){return shopOwnerService.getShopStaff();}
+    @GetMapping("/staffs/pages/{pagenumber}")
+    public ResponseEntity<?> getShopStaff(@RequestParam("pagenumber") int pageNumber){return shopOwnerService.getShopStaff(pageNumber);}
+
+    @PutMapping
+    public ResponseEntity<?> updateShopOwnerProfile(@RequestBody ShopInfoDto shopInfoDto) {
+        return shopOwnerService.updateShopOwnerProfile(shopInfoDto);
+    }
 }
