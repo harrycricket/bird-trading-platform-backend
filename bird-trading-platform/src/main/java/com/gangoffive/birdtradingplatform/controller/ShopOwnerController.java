@@ -77,6 +77,6 @@ public class ShopOwnerController {
     public ResponseEntity<?> updateShopOwnerProfile(@RequestParam(name = "avatar", required = false) MultipartFile avatarImg,
                                                     @RequestParam(name ="cover", required = false) MultipartFile coverImg,
                                                     @RequestPart ShopInfoDto shopInfoDto) {
-        return shopOwnerService.updateShopOwnerProfile(shopInfoDto);
+        return shopOwnerService.updateShopOwnerProfile(avatarImg, coverImg, shopInfoDto);
     }
 }

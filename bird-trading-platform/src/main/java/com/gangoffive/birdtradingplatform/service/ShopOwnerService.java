@@ -5,6 +5,7 @@ import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Order;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -39,5 +40,5 @@ public interface ShopOwnerService {
     ResponseEntity<?> createAccountStaff(CreateAccountSaffDto createAccountSaffDto);
     ResponseEntity<?> getShopStaff(int pageNumber);
 
-    ResponseEntity<?> updateShopOwnerProfile(ShopInfoDto shopInfoDto);
+    ResponseEntity<?> updateShopOwnerProfile(MultipartFile avatarImg, MultipartFile coverImg, ShopInfoDto shopInfoDto);
 }
