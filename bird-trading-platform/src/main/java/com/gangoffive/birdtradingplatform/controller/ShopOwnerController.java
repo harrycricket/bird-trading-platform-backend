@@ -71,10 +71,12 @@ public class ShopOwnerController {
         return shopOwnerService.createAccountStaff(createAccountSaffDto);
     }
     @GetMapping("/staffs/pages/{pagenumber}")
-    public ResponseEntity<?> getShopStaff(@RequestParam("pagenumber") int pageNumber){return shopOwnerService.getShopStaff(pageNumber);}
+    public ResponseEntity<?> getShopStaff(@PathVariable("pagenumber") int pageNumber){return shopOwnerService.getShopStaff(pageNumber);}
 
     @PutMapping
-    public ResponseEntity<?> updateShopOwnerProfile(@RequestBody ShopInfoDto shopInfoDto) {
+    public ResponseEntity<?> updateShopOwnerProfile(@RequestParam(name = "avatar", required = false) MultipartFile avatarImg,
+                                                    @RequestParam(name ="cover", required = false) MultipartFile coverImg,
+                                                    @RequestPart ShopInfoDto shopInfoDto) {
         return shopOwnerService.updateShopOwnerProfile(shopInfoDto);
     }
 }
