@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Slf4j
 public class OrderDetailServiceImpl implements OrderDetailService {
-    private final PromotionPriceService promotionPriceService;
     private final OrderDetailRepository orderDetailRepository;
     private final AccountRepository accountRepository;
 
@@ -156,9 +155,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     private OrderDetailShopOwnerDto orderDetailToOrderDetailShopOwnerDto(OrderDetail orderDetail) {
         Review review = orderDetail.getReview();
         Product product = orderDetail.getProduct();
-        double promotionRate = promotionPriceService.calculatePercentDiscountedOfProductByPromotions(
-                orderDetail.getPromotionShops(), orderDetail.getPrice()
-        );
         OrderDetailShopOwnerDto orderDetailShopOwnerDto = OrderDetailShopOwnerDto.builder()
                 .orderId(orderDetail.getOrder().getId())
                 .id(orderDetail.getId())
@@ -167,7 +163,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 .nane(product.getName())
                 .price(orderDetail.getPrice())
                 .quantity(orderDetail.getQuantity())
-                .promotionRate(promotionRate)
+                .promotionRate(orderDetail.getProductPromotionRate())
                 .build();
         if (review != null) {
             orderDetailShopOwnerDto.setReviewRating(review.getRating().getStar());
