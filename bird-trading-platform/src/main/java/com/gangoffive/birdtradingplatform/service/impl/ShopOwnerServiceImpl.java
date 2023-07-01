@@ -20,6 +20,7 @@ import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
+import com.gangoffive.birdtradingplatform.util.S3Utils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.google.gson.*;
 import lombok.RequiredArgsConstructor;
@@ -28,11 +29,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -40,10 +43,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -61,6 +61,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final AppProperties appProperties;
     private final ShopStaffRepository shopStaffRepository;
     private final ShopStaffMapper shopStaffMapper;
+    private final AddressRepository addressRepository;
 
     @Override
     public List<String> listShopDto(List<Long> listShopId, long userId) {
@@ -756,7 +757,55 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     }
 
     @Override
-    public ResponseEntity<?> updateShopOwnerProfile(MultipartFile avatarImg, MultipartFile coverImg, ShopInfoDto shopInfoDto) {
-        return null;
+    public ResponseEntity<?> updateShopOwnerProfile(MultipartFile avatarImg, MultipartFile coverImg, ShopOwnerUpdateDto shopUpdateDto) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        var shop = shopOwnerRepository.findByAccount_Email(email);
+        if(shop.isPresent()) {
+            if(shop.get().getId() == shopUpdateDto.getId()) {
+                ShopOwner shopUpdate = shop.get();
+                shopUpdate.setShopName(shopUpdateDto.getShopName());
+                shopUpdate.setShopPhone(shopUpdateDto.getShopPhone());
+                shopUpdate.setDescription(shopUpdateDto.getDescription());
+                try {
+                    String avatar = this.uploadImages(avatarImg);
+                    String cover = this.uploadImages(coverImg);
+                    if(!avatar.isEmpty())
+                        shopUpdate.setAvatarImgUrl(avatar);
+                    if(!cover.isEmpty())
+                        shopUpdate.setCoverImgUrl(cover);
+                    Address address = shopUpdate.getAddress();
+                    address.setAddress(shopUpdateDto.getAddress());
+                    addressRepository.save(address);
+                    shopUpdate = shopOwnerRepository.save(shopUpdate);
+                    ShopInfoDto shopInfoDto = shopOwnerMapper.modelToShopInfoDto(shopUpdate);
+                    return ResponseEntity.ok(shopInfoDto);
+                }catch (Exception e) {
+                    e.printStackTrace();
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .errorMessage("Upload file fail")
+                            .build();
+                    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                .errorMessage("Some thing went wrong!")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+    @Async
+    protected String uploadImages(MultipartFile img) throws IOException {
+        String originUrl = appProperties.getS3().getUrl();
+        String urlImage = "";
+        if (img != null && !img.isEmpty()) {
+            String contentType = img.getContentType();
+            String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
+            newFilename = "image/" + newFilename;
+            urlImage = originUrl + newFilename;
+            S3Utils.uploadFile(newFilename, img.getInputStream());
+        }
+        return urlImage;
     }
 }
