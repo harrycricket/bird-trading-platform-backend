@@ -3,6 +3,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
@@ -19,9 +20,12 @@ import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.google.gson.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -717,15 +721,20 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
     }
-    public ResponseEntity<?> getShopStaff(){
+    public ResponseEntity<?> getShopStaff(int pageNumber){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         ShopOwner shopOwner = account.get().getShopOwner();
         if (shopOwner != null){
-            List<ShopStaff> lists = shopStaffRepository.findByShopOwner(shopOwner);
-            if (lists != null && lists.size() != 0){
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
+            Page<ShopStaff> lists = shopStaffRepository.findByShopOwner(shopOwner,pageRequest);
+            if (lists != null && lists.getContent().size() != 0){
                 List<ShopStaffDto> listShopStaff = lists.stream().map(shopStaffMapper::modelToDto).toList();
-                return ResponseEntity.ok(listShopStaff);
+                PageNumberWrapper result = new PageNumberWrapper();
+                result.setLists(listShopStaff);
+                result.setPageNumber(lists.getTotalPages());
+                result.setTotalElement(lists.getTotalElements());
+                return ResponseEntity.ok(result);
             }else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
@@ -740,5 +749,10 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 .errorMessage("Account " + account.get().getFullName() + " no shop.")
                 .build();
        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<?> updateShopOwnerProfile(ShopInfoDto shopInfoDto) {
+        return null;
     }
 }
