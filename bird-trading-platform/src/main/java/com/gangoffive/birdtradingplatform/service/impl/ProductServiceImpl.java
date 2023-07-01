@@ -129,7 +129,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public double CalculateSaleOff(List<PromotionShop> listPromotion, double price) {
-        return promotionPriceService.CalculateSaleOff(listPromotion, price);
+        return Math.round(promotionPriceService.CalculateSaleOff(listPromotion, price) * 100.0) / 100.0;
     }
 
 
@@ -196,7 +196,7 @@ public class ProductServiceImpl implements ProductService {
         productTemp.setImgUrl(MyUtils.toLists(product.getImgUrl(), ",").get(0));
         productTemp.setStar(this.CalculationRating(product.getOrderDetails()));
         productTemp.setDiscountRate(this.CalculateSaleOff(product.getPromotionShops(), productTemp.getPrice()));
-        productTemp.setDiscountedPrice(this.CalculateDiscountedPrice(productTemp.getPrice(), productTemp.getDiscountRate()));
+        productTemp.setDiscountedPrice(promotionPriceService.CalculateDiscountedPrice(productTemp.getPrice(), productTemp.getDiscountRate()));
         productTemp.setCategoryId(Category.getCategoryIdByName(productTemp.getClass().getSimpleName()));
         return productTemp;
     }
@@ -285,7 +285,7 @@ public class ProductServiceImpl implements ProductService {
             productShopDto.setId(product.getId());
             productShopDto.setName(product.getName());
             productShopDto.setPrice(product.getPrice());
-            productShopDto.setDiscountedPrice(CalculateDiscountedPrice(product.getPrice(), CalculateSaleOff(product.getPromotionShops(), product.getPrice())));
+            productShopDto.setDiscountedPrice(CalculateDiscountedPrice(product.getPrice(), promotionPriceService.CalculateSaleOff(product.getPromotionShops(), product.getPrice())));
             productShopDto.setQuantity(product.getQuantity());
             productShopDto.setStatus(product.getStatus().getStatusCode());
             productShopDto.setCreateDate(product.getCreatedDate().getTime());
