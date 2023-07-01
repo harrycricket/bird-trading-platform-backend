@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public enum ReviewRating {
+	NO_STAR(0),
 	ONE_STAR(1),
 	TWO_STAR(2),
 	THREE_STAR(3),

@@ -157,7 +157,7 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
             List<Review> listReview = reviewRepository.findAllByOrderDetailIdIn(orderDetailId).get();
             if (listReview != null && listReview.size() != 0) {
                 double sumRating = listReview.stream()
-                        .map(rating -> rating.getRating().ordinal() + 1)
+                        .map(rating -> rating.getRating().getStar())
                         .reduce(0, Integer::sum);
                 return Math.round((sumRating / listReview.size()) * 10.0) / 10.0;
             }
