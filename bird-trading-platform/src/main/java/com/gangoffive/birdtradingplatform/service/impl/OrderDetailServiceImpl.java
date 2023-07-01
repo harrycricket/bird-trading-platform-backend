@@ -49,7 +49,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         );
         OrderDetailShopOwnerDto orderDetailShopOwnerDto = OrderDetailShopOwnerDto.builder()
                 .orderId(orderDetail.getOrder().getId())
-                .orderDetailId(orderDetail.getId())
+                .id(orderDetail.getId())
                 .createDate(orderDetail.getOrder().getCreatedDate().getTime())
                 .productId(product.getId())
                 .nane(product.getName())

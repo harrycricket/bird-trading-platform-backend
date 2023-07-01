@@ -28,8 +28,8 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             "WHERE f.name LIKE %?1% " +
             "AND f.type_id IN (?2) " +
             "AND ps.star >= ?3 " +
-            "AND f.price >= ?4 " +
-            "AND f.price <= ?5 " +
+            "AND ps.discounted_price >= ?4 " +
+            "AND ps.discounted_price <= ?5 " +
             "And f.status = 'ACTIVE' " +
             "And f.quantity > 0 ", nativeQuery = true)
 
@@ -48,7 +48,7 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             "AND f.name LIKE %?2% " +
             "AND f.type_id IN (?3) " +
             "AND ps.star >= ?4 " +
-            "AND d >= ?5 " +
+            "AND ps.discounted_price >= ?5 " +
             "AND ps.discounted_price <= ?6 " +
             "AND f.quantity > 0 " +
             "And f.status = 'ACTIVE' ", nativeQuery = true)
