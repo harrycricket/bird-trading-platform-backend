@@ -8,6 +8,7 @@ import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.PromotionShop;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,6 +23,8 @@ public interface PromotionShopRepository extends JpaRepository<PromotionShop, Lo
 
     Optional<List<PromotionShop>> findByShopOwner_Id(long shopId);
 
-    @Query("SELECT ps FROM PromotionShop ps JOIN ps.orderDetails od WHERE od = :orderDetail")
-    Optional<List<PromotionShop>> findAllByOrderDetail(OrderDetail orderDetail);
+    @Query(value = "SELECT ps.* FROM tblPromotion_Shop ps " +
+            "INNER JOIN tblOrder_Detail od ON ps.promotion_s_id = od.promotion_s_id " +
+            "WHERE od.order_detail_id = :orderDetailId", nativeQuery = true)
+    Optional<List<PromotionShop>> findAllByOrderDetail(@Param("orderDetailId") Long orderDetailId);
 }

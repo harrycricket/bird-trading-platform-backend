@@ -701,7 +701,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private List<PromotionShop> getListPromotionShopByOrderDetail(OrderDetail orderDetail) {
-        Optional<List<PromotionShop>> promotionShopList = promotionShopRepository.findAllByOrderDetail(orderDetail);
+        Optional<List<PromotionShop>> promotionShopList = promotionShopRepository.findAllByOrderDetail(orderDetail.getId());
         return promotionShopList.orElse(null);
     }
 
