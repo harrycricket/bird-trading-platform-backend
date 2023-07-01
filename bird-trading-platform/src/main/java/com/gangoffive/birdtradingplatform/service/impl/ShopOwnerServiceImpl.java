@@ -342,7 +342,10 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private double dataPieChartByTypeProduct(Account account, Class<?> productClass) {
         List<BarChartOneTypeDto> barChartFoodPreviousOneWeekDtoList =
                 dataBarChartEachTypeProduct(account, productClass, true, false, false, 1);
-        return barChartFoodPreviousOneWeekDtoList.stream().mapToDouble(BarChartOneTypeDto::getValue).sum();
+        double sum = barChartFoodPreviousOneWeekDtoList.stream().mapToDouble(BarChartOneTypeDto::getValue).sum();
+        DecimalFormat decimalFormat = new DecimalFormat("#.00");
+        String formatSum = decimalFormat.format(sum);
+        return Double.parseDouble(formatSum);
     }
 
     private List<BarChartDto> getListBarChartDto(
@@ -414,6 +417,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             }
             DecimalFormat decimalFormat = new DecimalFormat("#.00");
             String formattedTotalPrice = decimalFormat.format(totalPrice);
+            log.info("formattedTotalPrice {}", formattedTotalPrice);
             BarChartOneTypeDto barChartDto = new BarChartOneTypeDto();
             if (isCalcPrice) {
                 barChartDto.setValue(Double.parseDouble(formattedTotalPrice));

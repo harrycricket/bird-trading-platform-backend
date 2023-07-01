@@ -11,4 +11,8 @@ public interface PromotionPriceService {
     double CalculateDiscountedPrice(double price, double saleOff);
 
     double getDiscountedPrice(Product product);
+
+    double calculatePercentDiscountedOfProductByPromotions(
+            List<PromotionShop> promotionShops, double discountedPrice
+    );
 }

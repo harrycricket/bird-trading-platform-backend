@@ -40,4 +40,24 @@ public class PromotionPriceServiceImpl implements PromotionPriceService {
         double result = this.CalculateDiscountedPrice(product.getPrice(), saleOf);
         return result;
     }
+
+    @Override
+    public double calculatePercentDiscountedOfProductByPromotions(
+            List<PromotionShop> promotionShops, double discountedPrice
+    ) {
+        if (promotionShops.isEmpty()) {
+            return 0;
+        }
+        double originPrice = 0;
+        for (int i = 0; i < promotionShops.size(); i++) {
+            if (i == 0) {
+                originPrice = discountedPrice + discountedPrice * (promotionShops.get(i).getDiscountRate() * 1.0 / 100);
+                log.info("originPrice 0 {}", originPrice);
+            } else {
+                originPrice = originPrice + originPrice * (promotionShops.get(i).getDiscountRate() * 1.0 / 100);
+                log.info("originPrice > 0 {}", originPrice);
+            }
+        }
+        return Math.round(((originPrice - discountedPrice) / originPrice) * 100.0) / 100.0;
+    }
 }
