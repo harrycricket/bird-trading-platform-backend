@@ -160,7 +160,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 .id(orderDetail.getId())
                 .createDate(orderDetail.getOrder().getCreatedDate().getTime())
                 .productId(product.getId())
-                .nane(product.getName())
+                .name(product.getName())
                 .price(orderDetail.getPrice())
                 .quantity(orderDetail.getQuantity())
                 .promotionRate(orderDetail.getProductPromotionRate())
