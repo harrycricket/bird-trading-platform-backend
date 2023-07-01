@@ -22,7 +22,7 @@ public class PromotionPriceServiceImpl implements PromotionPriceService {
             for (double sale : saleOff) {
                 priceDiscount = priceDiscount - priceDiscount * sale / 100;
             }
-            double percentDiscount = Math.round(((price - priceDiscount) / price) * 100.0) / 100.0;
+            double percentDiscount = (price - priceDiscount) / price;
 
             return percentDiscount;
         }
