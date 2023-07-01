@@ -31,6 +31,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -726,6 +727,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         Optional<Account> account = accountRepository.findByEmail(email);
         ShopOwner shopOwner = account.get().getShopOwner();
         if (shopOwner != null){
+            if(pageNumber > 0) {
+                pageNumber--;
+            }
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
             Page<ShopStaff> lists = shopStaffRepository.findByShopOwner(shopOwner,pageRequest);
             if (lists != null && lists.getContent().size() != 0){
@@ -752,7 +756,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     }
 
     @Override
-    public ResponseEntity<?> updateShopOwnerProfile(ShopInfoDto shopInfoDto) {
+    public ResponseEntity<?> updateShopOwnerProfile(MultipartFile avatarImg, MultipartFile coverImg, ShopInfoDto shopInfoDto) {
         return null;
     }
 }
