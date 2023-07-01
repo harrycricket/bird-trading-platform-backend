@@ -27,7 +27,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             PromotionShop promotionShop, Long shopId, List<OrderStatus> orderStatuses
     );
 
-    Optional<Page<OrderDetail>> findAllByOrder_ShopOwner(
-            ShopOwner shopOwner, Pageable pageable
+    Optional<Page<OrderDetail>> findAllByOrder_ShopOwner_Id(
+            Long shopOwner, Pageable pageable
     );
 }

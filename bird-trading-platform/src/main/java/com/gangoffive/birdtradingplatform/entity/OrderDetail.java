@@ -26,6 +26,9 @@ public class OrderDetail {
 			,nullable = false
 	)
 	private int quantity;
+
+	@Column(name = "product_promotion_rate")
+	private double productPromotionRate;
 	
 	@ManyToOne
 	@JoinColumn(name = "product_id"

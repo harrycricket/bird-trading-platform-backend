@@ -12,7 +12,7 @@ import lombok.*;
 public class OrderDetailShopOwnerDto {
 //    id orderId product price quantity review createDate promotionRate
     private Long orderId;
-    private Long orderDetailId;
+    private Long id;
     private Long productId;
     private String nane;
     private double price;
