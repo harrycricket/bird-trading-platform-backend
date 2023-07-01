@@ -14,7 +14,7 @@ public class OrderDetailShopOwnerDto {
     private Long orderId;
     private Long id;
     private Long productId;
-    private String nane;
+    private String name;
     private double price;
     private int quantity;
     private double promotionRate;

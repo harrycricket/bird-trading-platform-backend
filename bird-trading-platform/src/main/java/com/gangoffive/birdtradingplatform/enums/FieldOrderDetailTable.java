@@ -11,9 +11,8 @@ public enum FieldOrderDetailTable {
     ID("id"),
     ORDER_ID("orderId"),
     PRODUCT_ID("productId"),
-    PRODUCT_NAME("productName"),
+    PRODUCT_NAME("name"),
     PRICE("price"),
-    QUANTITY("quantity"),
     CREATE_DATE("createdDate"),
     REVIEW_RATING("reviewRating");
 

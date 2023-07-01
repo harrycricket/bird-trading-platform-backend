@@ -676,7 +676,7 @@ public class OrderServiceImpl implements OrderService {
                 .build();
         List<OrderDetail> orderDetails = order.getOrderDetails();
         List<PromotionShop> promotionShops = new ArrayList<>();
-        orderDetails.stream().forEach(orderDetail -> promotionShops.addAll(orderDetail.getPromotionShops()));
+        orderDetails.forEach(orderDetail -> promotionShops.addAll(getListPromotionShopByOrderDetail(orderDetail)));
         List<PromotionShopDto> promotionsShop = promotionShops.stream()
                 .map(promotionShopMapper::modelToDto)
                 .toList();
@@ -698,6 +698,11 @@ public class OrderServiceImpl implements OrderService {
                 .createdDate(order.getCreatedDate().getTime())
                 .lastedUpdate(order.getLastedUpdate().getTime())
                 .build();
+    }
+
+    private List<PromotionShop> getListPromotionShopByOrderDetail(OrderDetail orderDetail) {
+        Optional<List<PromotionShop>> promotionShopList = promotionShopRepository.findAllByOrderDetail(orderDetail);
+        return promotionShopList.orElse(null);
     }
 
     private OrderShipDto orderToOrderShipDto(Order order) {
