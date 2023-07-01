@@ -23,8 +23,6 @@ public interface PromotionShopRepository extends JpaRepository<PromotionShop, Lo
 
     Optional<List<PromotionShop>> findByShopOwner_Id(long shopId);
 
-    @Query(value = "SELECT ps.* FROM tbl_Promotion_Shop ps " +
-            "INNER JOIN tbl_Order_Detail od ON ps.promotion_s_id = od.promotion_s_id " +
-            "WHERE od.order_detail_id = :orderDetailId", nativeQuery = true)
+    @Query(value = "SELECT ps.* FROM `bird-trading-platform`.tbl_promotion_shop ps WHERE ps.promotion_s_id IN (SELECT dps.promotion_s_id FROM `bird-trading-platform`.tbl_order_detail_promotion_shop dps WHERE dps.order_d_id = :orderDetailId)", nativeQuery = true)
     Optional<List<PromotionShop>> findAllByOrderDetail(@Param("orderDetailId") Long orderDetailId);
 }
