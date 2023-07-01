@@ -73,10 +73,12 @@ public class ShopOwnerController {
     @GetMapping("/staffs/pages/{pagenumber}")
     public ResponseEntity<?> getShopStaff(@PathVariable("pagenumber") int pageNumber){return shopOwnerService.getShopStaff(pageNumber);}
 
-    @PutMapping
+    @PutMapping("/profile")
     public ResponseEntity<?> updateShopOwnerProfile(@RequestParam(name = "avatar", required = false) MultipartFile avatarImg,
                                                     @RequestParam(name ="cover", required = false) MultipartFile coverImg,
-                                                    @RequestPart ShopInfoDto shopInfoDto) {
-        return shopOwnerService.updateShopOwnerProfile(avatarImg, coverImg, shopInfoDto);
+                                                    @RequestPart(name = "data") ShopOwnerUpdateDto shopOwnerDto) {
+        return shopOwnerService.updateShopOwnerProfile(avatarImg, coverImg, shopOwnerDto);
     }
+
+
 }
