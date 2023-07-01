@@ -765,32 +765,30 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         var shop = shopOwnerRepository.findByAccount_Email(email);
         if(shop.isPresent()) {
-            if(shop.get().getId() == shopUpdateDto.getId()) {
-                ShopOwner shopUpdate = shop.get();
-                shopUpdate.setShopName(shopUpdateDto.getShopName());
-                shopUpdate.setShopPhone(shopUpdateDto.getShopPhone());
-                shopUpdate.setDescription(shopUpdateDto.getDescription());
-                try {
-                    String avatar = this.uploadImages(avatarImg);
-                    String cover = this.uploadImages(coverImg);
-                    if(!avatar.isEmpty())
-                        shopUpdate.setAvatarImgUrl(avatar);
-                    if(!cover.isEmpty())
-                        shopUpdate.setCoverImgUrl(cover);
-                    Address address = shopUpdate.getAddress();
-                    address.setAddress(shopUpdateDto.getAddress());
-                    addressRepository.save(address);
-                    shopUpdate = shopOwnerRepository.save(shopUpdate);
-                    ShopInfoDto shopInfoDto = shopOwnerMapper.modelToShopInfoDto(shopUpdate);
-                    return ResponseEntity.ok(shopInfoDto);
-                }catch (Exception e) {
-                    e.printStackTrace();
-                    ErrorResponse errorResponse = ErrorResponse.builder()
-                            .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                            .errorMessage("Upload file fail")
-                            .build();
-                    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-                }
+            ShopOwner shopUpdate = shop.get();
+            shopUpdate.setShopName(shopUpdateDto.getShopName());
+            shopUpdate.setShopPhone(shopUpdateDto.getShopPhone());
+            shopUpdate.setDescription(shopUpdateDto.getDescription());
+            try {
+                String avatar = this.uploadImages(avatarImg);
+                String cover = this.uploadImages(coverImg);
+                if(!avatar.isEmpty())
+                    shopUpdate.setAvatarImgUrl(avatar);
+                if(!cover.isEmpty())
+                    shopUpdate.setCoverImgUrl(cover);
+                Address address = shopUpdate.getAddress();
+                address.setAddress(shopUpdateDto.getAddress());
+                addressRepository.save(address);
+                shopUpdate = shopOwnerRepository.save(shopUpdate);
+                ShopInfoDto shopInfoDto = shopOwnerMapper.modelToShopInfoDto(shopUpdate);
+                return ResponseEntity.ok(shopInfoDto);
+            }catch (Exception e) {
+                e.printStackTrace();
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .errorMessage("Upload file fail")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
             }
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
