@@ -8,4 +8,6 @@ public interface ChannelService {
     public int getMessageUnreadByUserAndShop (long userId, long shopId);
 
     int getMessageUnreadByUserAndShopForShopOwner(long userId, long shopId);
+
+    void setLastedUpdateTime(Long id);
 }

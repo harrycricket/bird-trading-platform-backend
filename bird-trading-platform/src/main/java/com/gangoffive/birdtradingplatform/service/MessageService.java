@@ -10,5 +10,5 @@ public interface MessageService {
 
     boolean maskAllSeen(long senderId, long channelId);
 
-    String getListUserInChannel();
+    String getListUserInChannel(int pageNumber);
 }

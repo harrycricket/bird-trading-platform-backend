@@ -1,7 +1,7 @@
 package com.gangoffive.birdtradingplatform.common;
 
 public class MessageConstant {
-
+    public static final int CHANNEL_PAGING_SIZE = 10;
     public static final String MESSAGE_STATUS_SENT = "sent";
     public static final String MESSAGE_SHOP_ROLE = "shop";
     public static final String MESSAGE_USER_ROLE = "user";

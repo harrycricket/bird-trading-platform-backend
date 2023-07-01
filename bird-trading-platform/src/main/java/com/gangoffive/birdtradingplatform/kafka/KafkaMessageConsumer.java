@@ -106,8 +106,11 @@ public class KafkaMessageConsumer {
         Account acc = new Account();
         acc.setId(senderId);
         messTemp.setAccount(acc);
+        channelService.setLastedUpdateTime(channel.getId());
         //save message
         messageService.saveMessage(messTemp);
+        //update time of channel id
+
         //mask all other message to read;
         messageService.maskAllSeen(senderId,channel.getId());
         log.info(String.format("Message like %s",message.toString()));

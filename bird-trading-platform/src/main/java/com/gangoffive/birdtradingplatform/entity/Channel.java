@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 import java.util.List;
@@ -20,9 +21,9 @@ public class Channel {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "create_at")
-    @CreationTimestamp
-    private Date createDate;
+    @Column(name = "lasted_update")
+    @UpdateTimestamp
+    private Date lastedUpdate;
 
     @ManyToOne
     @JoinColumn(name = "account_id",
@@ -53,12 +54,20 @@ public class Channel {
         this.name = name;
     }
 
-    public Date getCreateDate() {
-        return createDate;
+    public Date getLastedUpdate() {
+        return lastedUpdate;
     }
 
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
+    public void setLastedUpdate(Date lastedUpdate) {
+        this.lastedUpdate = lastedUpdate;
+    }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<Message> messages) {
+        this.messages = messages;
     }
 
     public Account getAccount() {
