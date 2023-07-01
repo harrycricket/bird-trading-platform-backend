@@ -12,5 +12,6 @@ public enum Operator {
     GREATER_THAN_OR_EQUAL(">="),
     CONTAIN("Contain"),
     FROM_TO("Range");
+
     private String operator;
 }

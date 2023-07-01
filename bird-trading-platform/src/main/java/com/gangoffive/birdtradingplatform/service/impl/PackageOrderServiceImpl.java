@@ -15,6 +15,7 @@ import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.PackageOrderService;
 import com.gangoffive.birdtradingplatform.service.PaypalService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
+import com.gangoffive.birdtradingplatform.service.PromotionPriceService;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
@@ -52,6 +53,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     private final AddressRepository addressRepository;
     private final OrderRepository orderRepository;
     private final PaypalService paypalService;
+    private final PromotionPriceService promotionPriceService;
 
     @Override
     @Transactional
@@ -477,12 +479,14 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                                     int newQuantity = product.getQuantity() - productOrder.get(product.getId());
                                     double saleOff = productService.CalculateSaleOff(product.getPromotionShops(), product.getPrice());
                                     double discountedPrice = productService.CalculateDiscountedPrice(product.getPrice(), saleOff);
+                                    ArrayList<PromotionShop> promotionShops = new ArrayList<>(product.getPromotionShops());
                                     OrderDetail orderDetail = OrderDetail.builder()
                                             .order(order)
                                             .product(product)
                                             .price(discountedPrice)
                                             .quantity(productOrder.get(product.getId()))
-                                            .promotionShops(new ArrayList<>(product.getPromotionShops()))
+                                            .promotionShops(promotionShops)
+                                            .productPromotionRate(promotionPriceService.calculatePercentDiscountedOfProductByPromotions(promotionShops, discountedPrice))
                                             .build();
                                     product.setQuantity(newQuantity);
                                     productRepository.save(product);

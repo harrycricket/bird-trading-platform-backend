@@ -10,6 +10,7 @@ public enum ContentType {
     tiff,
     ico,
     svg,
+    webp,
     avi,
     mp4,
     mpeg,
@@ -26,6 +27,7 @@ public enum ContentType {
         type.put(tiff, "image/tiff");
         type.put(ico, "image/vnd.microsoft.icon");
         type.put(svg, "image/svg+xml");
+        type.put(webp, "image/webp");
         type.put(avi, "video/x-msvideo");
         type.put(mp4, "video/mp4");
         type.put(mpeg, "video/mpeg");
