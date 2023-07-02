@@ -325,7 +325,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "        WHEN rating = 'TWO_STAR' THEN 2\n" +
             "        WHEN rating = 'ONE_STAR' THEN 1\n" +
             "        ELSE 0\n" +
-            "    END ASC;", nativeQuery = true)
+            "    END ASC", nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByReviewRatingStarGreaterThanEqualAndOrderShopOwnerIdSortByReviewRatingASC(
             @Param("star") int star, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -353,7 +353,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "        WHEN rating = 'TWO_STAR' THEN 2\n" +
             "        WHEN rating = 'ONE_STAR' THEN 1\n" +
             "        ELSE 0\n" +
-            "    END DESC;", nativeQuery = true)
+            "    END DESC", nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByReviewRatingStarGreaterThanEqualAndOrderShopOwnerIdSortByReviewRatingDESC(
             @Param("star") int star, @Param("shopId") Long shopId, Pageable pageable
     );
