@@ -13,6 +13,7 @@ public enum FieldOrderDetailTable {
     PRODUCT_ID("productId"),
     PRODUCT_NAME("name"),
     PRICE("price"),
+    PROMOTION_RATE("promotionRate"),
     CREATE_DATE("createdDate"),
     REVIEW_RATING("reviewRating");
 
