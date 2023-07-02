@@ -59,7 +59,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (accountDto.getMatchingPassword().equals(accountDto.getPassword())) {
             Optional<Account> temp = accountRepository.findByEmail(accountDto.getEmail());
             if (!temp.isPresent()) {
-//                log.info("Email Valid {}", emailService.isEmailValid(accountDto.getEmail()));
                 if (!emailService.isEmailExist(accountDto.getEmail())) {
                     return new ResponseEntity<>(ErrorResponse.builder()
                             .errorCode(HttpStatus.NOT_FOUND.name())

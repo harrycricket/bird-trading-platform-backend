@@ -60,10 +60,10 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
 
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od INNER JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
-            "\t\t\t\tWHERE o.shop_id = :shopId\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od INNER JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "           ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "           WHERE o.shop_id = :shopId\n" +
             ") AS tmp WHERE \n" +
             "    CASE\n" +
             "        WHEN rating = 'FIVE_STAR' THEN 5\n" +
@@ -72,7 +72,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "        WHEN rating = 'TWO_STAR' THEN 2\n" +
             "        WHEN rating = 'ONE_STAR' THEN 1\n" +
             "        ELSE 0\n" +
-            "    END >= :star", nativeQuery = true)
+            "END >= :star", nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByReviewRatingStarGreaterThanEqualAndOrderShopOwnerId(
             @Param("star") int star, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -86,27 +86,27 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
-            "                WHERE o.shop_id = :shopId\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "            ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "            WHERE o.shop_id = :shopId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
             "    WHEN 'TWO_STAR' THEN 2\n" +
             "    WHEN 'THREE_STAR' THEN 3\n" +
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
-            "    ELSE 0\n" +
+            "ELSE 0\n" +
             "END ASC", nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByOrderShopOwnerIdAndSortByReviewRatingASC(
             @Param("shopId") Long shopId, Pageable pageable
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
-            "                WHERE o.shop_id = :shopId\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "               ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "               WHERE o.shop_id = :shopId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
             "    WHEN 'TWO_STAR' THEN 2\n" +
@@ -120,10 +120,10 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
-            "                WHERE o.shop_id = :shopId AND o.order_id = :orderId\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "               ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "               WHERE o.shop_id = :shopId AND o.order_id = :orderId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
             "    WHEN 'TWO_STAR' THEN 2\n" +
@@ -137,9 +137,9 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND o.order_id = :orderId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
@@ -154,9 +154,9 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.product_id = :productId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
@@ -171,10 +171,10 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
-            "                WHERE o.shop_id = :shopId AND od.product_id = :productId\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "               ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "               WHERE o.shop_id = :shopId AND od.product_id = :productId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
             "    WHEN 'TWO_STAR' THEN 2\n" +
@@ -190,9 +190,9 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     List<OrderDetail> findAllByProduct_NameLikeAndOrder_ShopOwner_Id(String productName, Long shopId);
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.order_d_id IN :orderDetailsId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
@@ -207,9 +207,9 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.order_d_id IN :orderDetailsId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
@@ -224,9 +224,9 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.price >= :price\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
@@ -241,9 +241,9 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.price >= :price\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
@@ -258,9 +258,9 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.product_promotion_rate >= :promotionRate\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
@@ -275,9 +275,9 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.product_promotion_rate >= :promotionRate\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
@@ -292,11 +292,12 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od INNER JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
-            "\t\t\t\tWHERE o.shop_id = :shopId\n" +
-            ") AS tmp WHERE \n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od INNER JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "               ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "               WHERE o.shop_id = :shopId\n" +
+            ") AS tmp \n" +
+            "WHERE \n" +
             "    CASE\n" +
             "        WHEN rating = 'FIVE_STAR' THEN 5\n" +
             "        WHEN rating = 'FOUR_STAR' THEN 4\n" +
@@ -305,7 +306,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "        WHEN rating = 'ONE_STAR' THEN 1\n" +
             "        ELSE 0\n" +
             "    END >= :star\n" +
-            "    ORDER BY \n" +
+            "ORDER BY \n" +
             "    CASE\n" +
             "        WHEN rating = 'FIVE_STAR' THEN 5\n" +
             "        WHEN rating = 'FOUR_STAR' THEN 4\n" +
@@ -313,18 +314,19 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "        WHEN rating = 'TWO_STAR' THEN 2\n" +
             "        WHEN rating = 'ONE_STAR' THEN 1\n" +
             "        ELSE 0\n" +
-            "    END ASC", nativeQuery = true)
+            "END ASC", nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByReviewRatingStarGreaterThanEqualAndOrderShopOwnerIdSortByReviewRatingASC(
             @Param("star") int star, @Param("shopId") Long shopId, Pageable pageable
     );
 
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od INNER JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
-            "\t\t\t\tWHERE o.shop_id = :shopId\n" +
-            ") AS tmp WHERE \n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od INNER JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "               ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "               WHERE o.shop_id = :shopId\n" +
+            ") AS tmp \n" +
+            "WHERE \n" +
             "    CASE\n" +
             "        WHEN rating = 'FIVE_STAR' THEN 5\n" +
             "        WHEN rating = 'FOUR_STAR' THEN 4\n" +
@@ -333,7 +335,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "        WHEN rating = 'ONE_STAR' THEN 1\n" +
             "        ELSE 0\n" +
             "    END >= :star\n" +
-            "    ORDER BY \n" +
+            "ORDER BY \n" +
             "    CASE\n" +
             "        WHEN rating = 'FIVE_STAR' THEN 5\n" +
             "        WHEN rating = 'FOUR_STAR' THEN 4\n" +
@@ -341,15 +343,15 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "        WHEN rating = 'TWO_STAR' THEN 2\n" +
             "        WHEN rating = 'ONE_STAR' THEN 1\n" +
             "        ELSE 0\n" +
-            "    END DESC", nativeQuery = true)
+            "END DESC", nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByReviewRatingStarGreaterThanEqualAndOrderShopOwnerIdSortByReviewRatingDESC(
             @Param("star") int star, @Param("shopId") Long shopId, Pageable pageable
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND o.created_date >= :dateFrom\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
@@ -364,9 +366,9 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND o.created_date >= :dateFrom\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
@@ -381,9 +383,9 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND o.created_date >= :dateFrom AND o.created_date <= :dateTo\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
@@ -398,9 +400,9 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
     );
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(\n" +
-            "\tSELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "\t\t\t\tON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "(" +
+            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND o.created_date >= :dateFrom AND o.created_date <= :dateTo\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
             "    WHEN 'ONE_STAR' THEN 1\n" +
