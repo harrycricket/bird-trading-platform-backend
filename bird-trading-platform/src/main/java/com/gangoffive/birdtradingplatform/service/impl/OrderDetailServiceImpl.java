@@ -480,7 +480,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         OrderDetailShopOwnerDto orderDetailShopOwnerDto = OrderDetailShopOwnerDto.builder()
                 .orderId(orderDetail.getOrder().getId())
                 .id(orderDetail.getId())
-                .createDate(orderDetail.getOrder().getCreatedDate().getTime())
+                .createdDate(orderDetail.getOrder().getCreatedDate().getTime())
                 .productId(product.getId())
                 .name(product.getName())
                 .price(orderDetail.getPrice())

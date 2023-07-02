@@ -18,6 +18,6 @@ public class OrderDetailShopOwnerDto {
     private double price;
     private int quantity;
     private double promotionRate;
-    private Long createDate;
+    private Long createdDate;
     private int reviewRating;
 }
