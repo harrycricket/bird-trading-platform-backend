@@ -14,7 +14,7 @@ public enum FieldOrderDetailTable {
     PRODUCT_NAME("name"),
     PRICE("price"),
     PROMOTION_RATE("promotionRate"),
-    CREATE_DATE("createdDate"),
+    CREATED_DATE("createdDate"),
     REVIEW_RATING("reviewRating");
 
     private String field;
