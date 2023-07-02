@@ -176,7 +176,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             ) {
                 if (orderDetailFilter.getOrderSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     if (orderDetailFilter.getSortDirection().getField().equals(SortOrderDetailColumn.REVIEW_RATING.getField())) {
-                        List<OrderDetail> orderDetails = orderDetailRepository.findAllByProduct_NameLikeAndOrderShopOwner_Id(
+                        List<OrderDetail> orderDetails = orderDetailRepository.findAllByProduct_NameLikeAndOrder_ShopOwner_Id(
                                         "%" + orderDetailFilter.getOrderSearchInfo().getValue() + "%", shopId
                                 );
                         log.info("orderDetails.size() {}", orderDetails.size());

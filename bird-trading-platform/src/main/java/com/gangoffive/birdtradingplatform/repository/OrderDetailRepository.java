@@ -187,7 +187,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             @Param("productId") Long productId, @Param("shopId") Long shopId, Pageable pageable
     );
 
-    List<OrderDetail> findAllByProduct_NameLikeAndOrderShopOwner_Id(String productName, Long shopId);
+    List<OrderDetail> findAllByProduct_NameLikeAndOrder_ShopOwner_Id(String productName, Long shopId);
 
     @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
             "(\n" +
