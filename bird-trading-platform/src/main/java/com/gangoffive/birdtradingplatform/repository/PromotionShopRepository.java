@@ -4,8 +4,11 @@
  */
 package com.gangoffive.birdtradingplatform.repository;
 
+import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.PromotionShop;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,5 +22,12 @@ import java.util.Optional;
 public interface PromotionShopRepository extends JpaRepository<PromotionShop, Long>{
 
     Optional<List<PromotionShop>> findByShopOwner_Id(long shopId);
-    
+
+    @Query(value = "SELECT ps.* FROM `bird-trading-platform`.tbl_promotion_shop ps" +
+                                        " WHERE ps.promotion_s_id IN (" +
+                                                "SELECT dps.promotion_s_id " +
+                                                "FROM `bird-trading-platform`.tbl_order_detail_promotion_shop dps " +
+                                                "WHERE dps.order_d_id = :orderDetailId" +
+                                        ")", nativeQuery = true)
+    Optional<List<PromotionShop>> findAllByOrderDetail(@Param("orderDetailId") Long orderDetailId);
 }

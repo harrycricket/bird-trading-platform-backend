@@ -39,7 +39,7 @@ public class Review {
 	private Date reviewDate;
 	
 	@OneToOne
-	@JoinColumn(name = "order_product_id"
+	@JoinColumn(name = "order_detail_id"
 		,foreignKey = @ForeignKey(name = "FK_REVIEW_ORDER_DETAIL")
 		,nullable = false
 	)

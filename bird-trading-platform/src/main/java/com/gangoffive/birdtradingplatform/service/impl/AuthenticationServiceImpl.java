@@ -56,72 +56,67 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public ResponseEntity<?> register(AccountDto accountDto) {
-//        var account = Account.builder()
-//                .email(request.getEmail())
-//                .password(passwordEncoder.encode(request.getPassword()))
-//                .firstName(request.getFirstname())
-//                .lastName(request.getLastname())
-//                .address(request.getAddress())
-//                .role(request.getRole())
-//                .build();
-//        var saveAccount = accountRepository.save(account);
-//        return getAuthenticationResponse(saveAccount);
         if (accountDto.getMatchingPassword().equals(accountDto.getPassword())) {
             Optional<Account> temp = accountRepository.findByEmail(accountDto.getEmail());
             if (!temp.isPresent()) {
-//                log.info("Email Valid {}", emailService.isEmailValid(accountDto.getEmail()));
                 if (!emailService.isEmailExist(accountDto.getEmail())) {
                     return new ResponseEntity<>(ErrorResponse.builder()
                             .errorCode(HttpStatus.NOT_FOUND.name())
                             .errorMessage("The mail is not found!").build(), HttpStatus.NOT_FOUND);
                 }
-                Account acc = accountMapper.toModel(accountDto);
-                acc.setPassword(passwordEncoder.encode(accountDto.getPassword()));
-                acc.setRole(UserRole.USER);
-                acc.setStatus(AccountStatus.NOT_VERIFY);
-                acc.setProvider(AuthProvider.local);
-
-                //sending mail to verify
-                int randomToken = MyUtils.generateSixRandomNumber();
-//                String verificationLink = appProperties.getEmail().getVerifyLink() + "register?token=" + verificationCode;
-//                log.info("verify link {}", verificationLink);
-                String emailSubject = "Account Verification";
-                StringBuilder emailContent = new StringBuilder();
-                emailContent.append("Dear " + acc.getFullName() + ",\n");
-                emailContent.append("Thank you for registering an account with our service. Please use the code to activate your account.\n");
-                emailContent.append("Verification code: " + randomToken +"\n");
-                emailContent.append("This link will expire after 10 minutes.\n");
-                emailContent.append("If you did not create an account or have any questions, please contact our support team.\n");
-                emailContent.append("Best regards,\n");
-                emailContent.append("BirdStore2ND\n");
-
-                VerifyToken verifyToken = new VerifyToken();
-                verifyToken.setToken(randomToken);
-                verifyToken.setAccount(acc);
-                verifyToken.setRevoked(false);
-                verifyToken.setExpired(new Date(System.currentTimeMillis() + expiration));
-                verifyToken.setRevoked(false);
-                //send mail
-                try {
-                    emailService.sendSimpleEmail(accountDto.getEmail(), emailContent.toString(), emailSubject);
-                } catch (Exception e) {
-                    return new ResponseEntity<>(ErrorResponse.builder()
-                            .errorCode(HttpStatus.NOT_FOUND.name())
-                            .errorMessage("The mail is not found!").build(), HttpStatus.NOT_FOUND);
-                }
-                accountRepository.save(acc);
-                //save token
-                verifyTokenRepository.save(verifyToken);
-                return ResponseEntity.ok("Register Successfully!");
+                return sendMailAndSaveAccount(accountDto);
             } else {
-                return new ResponseEntity<>(ErrorResponse.builder()
-                        .errorCode(HttpStatus.CONFLICT.name())
-                        .errorMessage("The email has already been used!").build(), HttpStatus.CONFLICT);
+                if (temp.get().getStatus().equals(AccountStatus.VERIFY)) {
+                    return new ResponseEntity<>(ErrorResponse.builder()
+                            .errorCode(HttpStatus.CONFLICT.name())
+                            .errorMessage("The email has already been used!").build(), HttpStatus.CONFLICT);
+                } else {
+                    return sendMailAndSaveAccount(accountDto);
+                }
             }
         }
         return new ResponseEntity<>(ErrorResponse.builder()
                 .errorCode(HttpStatus.BAD_REQUEST.name())
                 .errorMessage("Something went wrong!").build(), HttpStatus.BAD_REQUEST);
+    }
+
+    private ResponseEntity<?> sendMailAndSaveAccount(AccountDto accountDto) {
+        Account acc = accountMapper.toModel(accountDto);
+        acc.setPassword(passwordEncoder.encode(accountDto.getPassword()));
+        acc.setRole(UserRole.USER);
+        acc.setStatus(AccountStatus.NOT_VERIFY);
+        acc.setProvider(AuthProvider.local);
+
+        //sending mail to verify
+        int randomToken = MyUtils.generateSixRandomNumber();
+        String emailSubject = "Account Verification";
+        StringBuilder emailContent = new StringBuilder();
+        emailContent.append("Dear " + acc.getFullName() + ",\n");
+        emailContent.append("Thank you for registering an account with our service. Please use the code to activate your account.\n");
+        emailContent.append("Verification code: " + randomToken +"\n");
+        emailContent.append("This link will expire after 10 minutes.\n");
+        emailContent.append("If you did not create an account or have any questions, please contact our support team.\n");
+        emailContent.append("Best regards,\n");
+        emailContent.append("BirdStore2ND\n");
+
+        VerifyToken verifyToken = new VerifyToken();
+        verifyToken.setToken(randomToken);
+        verifyToken.setAccount(acc);
+        verifyToken.setRevoked(false);
+        verifyToken.setExpired(new Date(System.currentTimeMillis() + expiration));
+        verifyToken.setRevoked(false);
+        //send mail
+        try {
+            emailService.sendSimpleEmail(accountDto.getEmail(), emailContent.toString(), emailSubject);
+        } catch (Exception e) {
+            return new ResponseEntity<>(ErrorResponse.builder()
+                    .errorCode(HttpStatus.NOT_FOUND.name())
+                    .errorMessage("The mail is not found!").build(), HttpStatus.NOT_FOUND);
+        }
+        accountRepository.save(acc);
+        //save token
+        verifyTokenRepository.save(verifyToken);
+        return ResponseEntity.ok("Register Successfully!");
     }
 
     @Override
