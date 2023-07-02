@@ -72,7 +72,19 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "        WHEN rating = 'TWO_STAR' THEN 2\n" +
             "        WHEN rating = 'ONE_STAR' THEN 1\n" +
             "        ELSE 0\n" +
-            "END >= :star", nativeQuery = true)
+            "END >= :star",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od INNER JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "           ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "           WHERE o.shop_id = :shopId\n" +
+                    "           AND CASE\n" +
+                    "               WHEN rating = 'FIVE_STAR' THEN 5\n" +
+                    "               WHEN rating = 'FOUR_STAR' THEN 4\n" +
+                    "               WHEN rating = 'THREE_STAR' THEN 3\n" +
+                    "               WHEN rating = 'TWO_STAR' THEN 2\n" +
+                    "               WHEN rating = 'ONE_STAR' THEN 1\n" +
+                    "               ELSE 0\n" +
+                    "           END >= :star"
+            ,nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByReviewRatingStarGreaterThanEqualAndOrderShopOwnerId(
             @Param("star") int star, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -85,19 +97,26 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             Date dateFrom, Date dateTo, Long shopId, Pageable pageable
     );
 
-    @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id FROM\n" +
-            "(" +
-            "SELECT od.*, rv.rating AS rating FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
-            "            ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
-            "            WHERE o.shop_id = :shopId\n" +
-            ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
-            "ELSE 0\n" +
-            "END ASC", nativeQuery = true)
+    @Query(value = "SELECT tmp.order_d_id, tmp.price, tmp.product_promotion_rate, tmp.quantity, tmp.order_id, tmp.product_id " +
+            "FROM ( " +
+            "    SELECT od.*, rv.rating AS rating FROM tbl_order_detail od " +
+            "    LEFT JOIN tbl_review rv ON od.order_d_id = rv.order_detail_id " +
+            "    JOIN tbl_order o ON od.order_id = o.order_id " +
+            "    WHERE o.shop_id = :shopId " +
+            ") AS tmp " +
+            "ORDER BY CASE " +
+            "    WHEN tmp.rating = 'ONE_STAR' THEN 1 " +
+            "    WHEN tmp.rating = 'TWO_STAR' THEN 2 " +
+            "    WHEN tmp.rating = 'THREE_STAR' THEN 3 " +
+            "    WHEN tmp.rating = 'FOUR_STAR' THEN 4 " +
+            "    WHEN tmp.rating = 'FIVE_STAR' THEN 5 " +
+            "    ELSE 0 " +
+            "END ASC",
+            countQuery = "SELECT COUNT(*) FROM tbl_order_detail od " +
+                    "                     LEFT JOIN tbl_review rv ON od.order_d_id = rv.order_detail_id " +
+                    "                     JOIN tbl_order o ON od.order_id = o.order_id " +
+                    "                     WHERE o.shop_id = :shopId",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByOrderShopOwnerIdAndSortByReviewRatingASC(
             @Param("shopId") Long shopId, Pageable pageable
     );
@@ -114,7 +133,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END DESC", nativeQuery = true)
+            "END DESC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "               ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "               WHERE o.shop_id = :shopId",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByOrderShopOwnerIdAndSortByReviewRatingDESC(
             @Param("shopId") Long shopId, Pageable pageable
     );
@@ -131,7 +154,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END ASC;", nativeQuery = true)
+            "END ASC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "               ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "               WHERE o.shop_id = :shopId AND o.order_id = :orderId",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByOrderIdAndShopOwnerIdAndSortByReviewRatingASC(
             @Param("orderId") Long orderId, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -148,7 +175,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END DESC;", nativeQuery = true)
+            "END DESC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "                WHERE o.shop_id = :shopId AND o.order_id = :orderId",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByOrderIdAndShopOwnerIdAndSortByReviewRatingDESC(
             @Param("orderId") Long orderId, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -165,7 +196,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END ASC;", nativeQuery = true)
+            "END ASC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "                WHERE o.shop_id = :shopId AND od.product_id = :productId",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByProductIdAndOrderShopOwnerIdSortByReviewRatingASC(
             @Param("productId") Long productId, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -182,7 +217,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END DESC;", nativeQuery = true)
+            "END DESC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "                WHERE o.shop_id = :shopId AND od.product_id = :productId",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByProductIdAndOrderShopOwnerIdSortByReviewRatingDESC(
             @Param("productId") Long productId, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -201,7 +240,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END ASC;", nativeQuery = true)
+            "END ASC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "                WHERE o.shop_id = :shopId AND od.order_d_id IN :orderDetailsId",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByOrderDetailIdInAndOrderShopOwnerIdSortByReviewRatingASC(
             @Param("orderDetailsId") List<Long> orderDetailsId, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -218,7 +261,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END DESC;", nativeQuery = true)
+            "END DESC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "                WHERE o.shop_id = :shopId AND od.order_d_id IN :orderDetailsId",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByOrderDetailIdInAndOrderShopOwnerIdSortByReviewRatingDESC(
             @Param("orderDetailsId") List<Long> orderDetailsId, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -235,7 +282,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END ASC;", nativeQuery = true)
+            "END ASC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "                WHERE o.shop_id = :shopId AND od.price >= :price",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByPriceGreaterThanEqualAndOrderShopOwnerIdSortByReviewRatingASC(
             @Param("price") double price, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -252,7 +303,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END DESC;", nativeQuery = true)
+            "END DESC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "                WHERE o.shop_id = :shopId AND od.price >= :price",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByPriceGreaterThanEqualAndOrderShopOwnerIdSortByReviewRatingDESC(
             @Param("price") double price, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -269,7 +324,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END ASC;", nativeQuery = true)
+            "END ASC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+            "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+            "                WHERE o.shop_id = :shopId AND od.product_promotion_rate >= :promotionRate",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByProductPromotionRateGreaterThanEqualAndOrderShopOwnerIdSortByReviewRatingASC(
             @Param("promotionRate") double promotionRate, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -286,7 +345,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END DESC;", nativeQuery = true)
+            "END DESC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "                WHERE o.shop_id = :shopId AND od.product_promotion_rate >= :promotionRate",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByProductPromotionRateGreaterThanEqualAndOrderShopOwnerIdSortByReviewRatingDESC(
             @Param("promotionRate") double promotionRate, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -314,7 +377,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "        WHEN rating = 'TWO_STAR' THEN 2\n" +
             "        WHEN rating = 'ONE_STAR' THEN 1\n" +
             "        ELSE 0\n" +
-            "END ASC", nativeQuery = true)
+            "END ASC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od INNER JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "               ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "               WHERE o.shop_id = :shopId",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByReviewRatingStarGreaterThanEqualAndOrderShopOwnerIdSortByReviewRatingASC(
             @Param("star") int star, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -343,7 +410,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "        WHEN rating = 'TWO_STAR' THEN 2\n" +
             "        WHEN rating = 'ONE_STAR' THEN 1\n" +
             "        ELSE 0\n" +
-            "END DESC", nativeQuery = true)
+            "END DESC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od INNER JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "               ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "               WHERE o.shop_id = :shopId",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByReviewRatingStarGreaterThanEqualAndOrderShopOwnerIdSortByReviewRatingDESC(
             @Param("star") int star, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -360,7 +431,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END ASC;", nativeQuery = true)
+            "END ASC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "                WHERE o.shop_id = :shopId AND o.created_date >= :dateFrom",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByOrderCreatedDateGreaterThanEqualAndOrderShopOwnerIdSortByReviewRatingASC(
             @Param("dateFrom") Date dateFrom, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -377,7 +452,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END DESC;", nativeQuery = true)
+            "END DESC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "                WHERE o.shop_id = :shopId AND o.created_date >= :dateFrom",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByOrderCreatedDateGreaterThanEqualAndOrderShopOwnerIdSortByReviewRatingDESC(
             @Param("dateFrom") Date dateFrom, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -394,7 +473,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END ASC;", nativeQuery = true)
+            "END ASC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "                WHERE o.shop_id = :shopId AND o.created_date >= :dateFrom AND o.created_date <= :dateTo",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByOrderCreatedDateBetweenAndOrderShopOwnerIdSortByReviewRatingASC(
             @Param("dateFrom") Date dateFrom, @Param("dateTo") Date dateTo, @Param("shopId") Long shopId, Pageable pageable
     );
@@ -411,7 +494,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHEN 'FOUR_STAR' THEN 4\n" +
             "    WHEN 'FIVE_STAR' THEN 5\n" +
             "    ELSE 0\n" +
-            "END DESC;", nativeQuery = true)
+            "END DESC",
+            countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
+                    "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
+                    "                WHERE o.shop_id = :shopId AND o.created_date >= :dateFrom AND o.created_date <= :dateTo",
+            nativeQuery = true)
     Optional<Page<OrderDetail>> findAllByOrderCreatedDateBetweenAndOrderShopOwnerIdSortByReviewRatingDESC(
             @Param("dateFrom") Date dateFrom, @Param("dateTo") Date dateTo, @Param("shopId") Long shopId, Pageable pageable
     );
