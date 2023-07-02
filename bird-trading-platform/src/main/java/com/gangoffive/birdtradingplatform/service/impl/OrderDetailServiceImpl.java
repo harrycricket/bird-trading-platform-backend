@@ -249,7 +249,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             ) {
                 if (orderDetailFilter.getOrderSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     if (orderDetailFilter.getSortDirection().getField().equals(SortOrderDetailColumn.REVIEW_RATING.getField())) {
-                        return filterOrderDetailByReviewRatingGreaterThanEqualSortWithRating(orderDetailFilter, shopId, pageRequestWithSort);
+                        return filterOrderDetailByReviewRatingGreaterThanEqualSortWithRating(orderDetailFilter, shopId, pageRequest);
                     } else {
                         return filterOrderDetailByReviewRatingGreaterThanEqual(orderDetailFilter, shopId, pageRequestWithSort);
                     }
