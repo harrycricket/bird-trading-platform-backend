@@ -135,7 +135,7 @@ public class OrderServiceImpl implements OrderService {
 
             if (
                     orderFilter.getOrderSearchInfo().getField().equals(FieldOrderTable.ID.getField())
-                            && orderFilter.getOrderSearchInfo().getValue() != null
+                            && !orderFilter.getOrderSearchInfo().getValue().isEmpty()
             ) {
                 if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterOrderByIdEqual(orderFilter, shopId, pageRequest);
