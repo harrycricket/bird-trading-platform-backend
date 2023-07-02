@@ -179,7 +179,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                         List<OrderDetail> orderDetails = orderDetailRepository.findAllByProduct_NameLikeAndOrderShopOwner_Id(
                                         "%" + orderDetailFilter.getOrderSearchInfo().getValue() + "%", shopId
                                 );
-
+                        log.info("orderDetails.size() {}", orderDetails.size());
                         return pagingWithOrderDetailsIdSortWithRating(
                                 orderDetailFilter, orderDetails.stream().map(OrderDetail::getId).toList(),
                                 shopId, pageRequest
