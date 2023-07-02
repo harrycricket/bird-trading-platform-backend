@@ -125,7 +125,7 @@ public class KafkaMessageConsumer {
     void sendNotificationPrivate (NotificationDto notification) {
         Notification noti = notificationMapper.dtoToModel(notification);
         notification.setId(System.currentTimeMillis());
-        log.info("Here is noti after mapper {}", noti);
+        log.info("Here is noti after mapper {}", notification);
         //check send to shop or account
         Account acc = new Account();
         acc.setId(notification.getReceiveId());

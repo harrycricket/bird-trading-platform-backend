@@ -10,12 +10,17 @@ import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.NotificationMapper;
 import com.gangoffive.birdtradingplatform.repository.NotificationRepository;
+import com.gangoffive.birdtradingplatform.service.AccountService;
 import com.gangoffive.birdtradingplatform.service.NotificationService;
+import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +36,7 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
+    private final ShopOwnerService shopOwnerService;
     @Override
     public boolean saveNotify(Notification notification) {
         try {
@@ -47,8 +53,15 @@ public class NotificationServiceImpl implements NotificationService {
         long timeAfter7SevenDay = currentTime - NotifiConstant.TIME_BEFOR_NOTI_LOAD;
         PageRequest page = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE,
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "notiDate"));
-        var listNotifications = notificationRepository.findAllByNotiDateAfterAndAccount_IdAndRoleIs(new Date(timeAfter7SevenDay)
-                ,id , role, page);
+        Page<Notification> listNotifications;
+        if(role.equals(UserRole.USER)) {
+            listNotifications = notificationRepository.findAllByNotiDateAfterAndAccount_IdAndRoleIs(new Date(timeAfter7SevenDay)
+                    ,id , role, page);
+        }else {
+            long accountIdOfShop = shopOwnerService.getAccountIdByShopid(id);
+            listNotifications = notificationRepository.findAllByNotiDateAfterAndAccount_IdAndRoleIs(new Date(timeAfter7SevenDay)
+                    ,accountIdOfShop , role, page);
+        }
         if(!listNotifications.isEmpty()) {
             List<NotificationDto> list = listNotifications.get().map(this::notiModelToDto).toList();
             PageNumberWrapper result = new PageNumberWrapper();
@@ -62,10 +75,17 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public ResponseEntity<?> getUserUnreadNotification(long userid, UserRole role) {
+    public ResponseEntity<?> getUserUnreadNotification(long id, UserRole role) {
         try{
-            //get unread noti
-            long unreadNoti  = notificationRepository.countAllBySeenIsFalseAndAccount_IdAndRoleIs(userid, role);
+            long unreadNoti = 0;
+            if(role.equals(UserRole.USER)) {
+                //get unread noto
+                unreadNoti  = notificationRepository.countAllBySeenIsFalseAndAccount_IdAndRoleIs(id, role);
+            }else {
+                long accountOfShop = shopOwnerService.getAccountIdByShopid(id);
+                unreadNoti  = notificationRepository.countAllBySeenIsFalseAndAccount_IdAndRoleIs(accountOfShop, role);
+            }
+            
             log.info("here is number un read {}", unreadNoti);
             JsonObject result = new JsonObject();
             result.addProperty("unread", unreadNoti);

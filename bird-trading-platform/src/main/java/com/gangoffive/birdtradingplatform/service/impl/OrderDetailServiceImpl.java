@@ -722,6 +722,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     private ResponseEntity<?> filterAllOrderDetailAllFieldEmptySortWithRating(Long shopId, String sortDirection, PageRequest pageRequest) {
         Optional<Page<OrderDetail>> orderDetails;
         if (sortDirection.toUpperCase().equals(Sort.Direction.ASC.name())) {
+            log.info("shop id {}", shopId);
             orderDetails = orderDetailRepository.findAllByOrderShopOwnerIdAndSortByReviewRatingASC(
                     shopId,
                     pageRequest
