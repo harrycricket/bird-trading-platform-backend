@@ -199,16 +199,16 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                             && orderDetailFilter.getSortDirection().getField().isEmpty()
                             && orderDetailFilter.getSortDirection().getSort().isEmpty()
             ) {
-                if (orderDetailFilter.getOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
-                    return filterOrderDetailByReviewRatingFromTo(orderDetailFilter, shopId, pageRequest);
+                if (orderDetailFilter.getOrderSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
+                    return filterOrderDetailByReviewRatingGreaterThanEqual(orderDetailFilter, shopId, pageRequest);
                 }
                 return getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.REVIEW_RATING.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
             ) {
-                if (orderDetailFilter.getOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
-                    return filterOrderDetailByReviewRatingFromTo(orderDetailFilter, shopId, pageRequestWithSort);
+                if (orderDetailFilter.getOrderSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
+                    return filterOrderDetailByReviewRatingGreaterThanEqual(orderDetailFilter, shopId, pageRequestWithSort);
                 }
                 return getErrorResponseNotFoundOperator();
             } else if (
@@ -293,7 +293,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     }
 
 
-    private ResponseEntity<?> filterOrderDetailByReviewRatingFromTo(
+    private ResponseEntity<?> filterOrderDetailByReviewRatingGreaterThanEqual(
             OrderDetailShopOwnerFilterDto orderDetailFilter, Long shopId, PageRequest pageRequest
     ) {
         Optional<Page<OrderDetail>> orderDetails = orderDetailRepository.findAllByReview_RatingStarGreaterThanEqualAndOrder_ShopOwner_Id(
