@@ -42,13 +42,13 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public ResponseEntity<?> getNotifications(long id, int pageNumber) {
+    public ResponseEntity<?> getNotifications(long id, int pageNumber, UserRole role) {
         long currentTime = System.currentTimeMillis();
         long timeAfter7SevenDay = currentTime - NotifiConstant.TIME_BEFOR_NOTI_LOAD;
         PageRequest page = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE,
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "notiDate"));
         var listNotifications = notificationRepository.findAllByNotiDateAfterAndAccount_IdAndRoleIs(new Date(timeAfter7SevenDay)
-                ,id , UserRole.USER, page);
+                ,id , role, page);
         if(!listNotifications.isEmpty()) {
             List<NotificationDto> list = listNotifications.get().map(this::notiModelToDto).toList();
             PageNumberWrapper result = new PageNumberWrapper();
@@ -62,10 +62,10 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public ResponseEntity<?> getUserUnreadNotification(long userid) {
+    public ResponseEntity<?> getUserUnreadNotification(long userid, UserRole role) {
         try{
             //get unread noti
-            long unreadNoti  = notificationRepository.countAllBySeenIsFalseAndAccount_IdAndRoleIs(userid, UserRole.USER);
+            long unreadNoti  = notificationRepository.countAllBySeenIsFalseAndAccount_IdAndRoleIs(userid, role);
             log.info("here is number un read {}", unreadNoti);
             JsonObject result = new JsonObject();
             result.addProperty("unread", unreadNoti);

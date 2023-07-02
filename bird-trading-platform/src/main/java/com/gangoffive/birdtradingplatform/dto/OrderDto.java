@@ -14,7 +14,7 @@ import java.util.List;
 @ToString
 public class OrderDto {
     private OrderStatus orderStatus;
-    private ShopOwnerDto shopOwnerDto;
+    private ShopOwnerDto shopOwner;
     private List<OrderDetailDto> orderDetails;
     private double totalPriceProduct;
     private double shippingFee;

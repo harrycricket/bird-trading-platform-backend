@@ -2,7 +2,8 @@ package com.gangoffive.birdtradingplatform.controller;
 
     import com.gangoffive.birdtradingplatform.common.KafkaConstant;
 import com.gangoffive.birdtradingplatform.dto.NotificationDto;
-import com.gangoffive.birdtradingplatform.service.NotificationService;
+    import com.gangoffive.birdtradingplatform.enums.UserRole;
+    import com.gangoffive.birdtradingplatform.service.NotificationService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,12 +41,22 @@ public class NotificationController {
 
     @GetMapping("/users/{userid}/notifications")
     public ResponseEntity<?> getNotification (@PathVariable long userid, @RequestParam int pagenumber) {
-        return notificationService.getNotifications(userid, pagenumber);
+        return notificationService.getNotifications(userid, pagenumber, UserRole.USER);
     }
 
     @GetMapping("/users/{userid}/notifications/unread")
     public ResponseEntity<?> getUnreadNotification (@PathVariable long userid) {
-        return notificationService.getUserUnreadNotification(userid);
+        return notificationService.getUserUnreadNotification(userid, UserRole.USER);
+    }
+
+    @GetMapping("/shop-owner/{shopid}/notifications")
+    public ResponseEntity<?> getNotificationShop (@PathVariable("shopid") long shopId, @RequestParam int pagenumber) {
+        return notificationService.getNotifications(shopId, pagenumber, UserRole.SHOPOWNER);
+    }
+
+    @GetMapping("/shop-owner/{shopid}/notifications/unread")
+    public ResponseEntity<?> getUnreadNotificationShop (@PathVariable("shopid") long shopId) {
+        return notificationService.getUserUnreadNotification(shopId, UserRole.SHOPOWNER);
     }
 
 }
