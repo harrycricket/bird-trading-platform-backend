@@ -241,4 +241,14 @@ public class AccountServiceImpl implements AccountService {
             throw new CustomRuntimeException("400", String.format("Cannot find account with id %d", userId));
         }
     }
+
+    @Override
+    public Account getAccountById(long userId) {
+        var acc = accountRepository.findById(userId);
+        if(acc.isPresent()) {
+            return acc.get();
+        }else {
+            throw new CustomRuntimeException("400", "Not found this account Id");
+        }
+    }
 }

@@ -8,6 +8,7 @@ import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.MessageService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,20 +54,21 @@ public class MessageController {
     }
 
     @GetMapping("/users/{userid}/channels")
-    public String getShopInChannel (@PathVariable long userid) {
-        List<Long> listShopId = accountService.getAllChanelByUserId(userid);
-        List<String> result = shopOwnerService.listShopDto(listShopId, userid);
-        if(result != null ){
-            return StringEscapeUtils.unescapeJson(result.toString());
-        }else {
-            return new ArrayList<>().toString();
-        }
+    public ResponseEntity<?> getShopInChannel (@PathVariable long userid, @RequestParam("pagenumber") int pageNumber) {
+        ResponseEntity<?> shopTemp = channelService.getAllShopIdInChanelWithUserId(userid, pageNumber);
+        return shopTemp;
     }
 
     @GetMapping("/users/{userid}/messages")
-    public ResponseEntity<?> getMessage (@PathVariable long userid, @RequestParam long shopId) {
+    public ResponseEntity<?> getMessageUser (@PathVariable long userid, @RequestParam("shopid") long shopId,
+                                         @RequestParam("pagenumber") int pageNumber) {
         long channelID = channelService.getAndSaveChannel(userid, shopId).getId();
-        return messageService.getListMessageByChannelId(channelID,1, userid, false);
+        return messageService.getListMessageByChannelId(channelID,pageNumber, userid, false);
+    }
+
+    @GetMapping("/users/{userid}/messages/unread")
+    public ResponseEntity<?> getNumberUnreadMessageUser (@PathVariable long userid) {
+        return messageService.getTotalNumberUnreadMessageUser(userid);
     }
 
     @GetMapping("/shop-owner/{shopId}/channels")
@@ -78,7 +80,11 @@ public class MessageController {
     public ResponseEntity<?> getMessage (@PathVariable long shopId, @RequestParam("userid") long userId,
                                          @RequestParam("pagenumber") int pageNumber) {
         long channelID = channelService.getAndSaveChannel(userId, shopId).getId();
-        log.info("page number ne {}", pageNumber);
         return messageService.getListMessageByChannelId(channelID ,pageNumber , shopId, true);
+    }
+
+    @GetMapping("/shop-owner/{shopid}/messages/unread")
+    public ResponseEntity<?> getNumberUnreadMessageShop (@PathVariable long shopid) {
+        return messageService.getTotalNumberUnreadMessageShop(shopid);
     }
 }

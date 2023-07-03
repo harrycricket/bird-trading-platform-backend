@@ -84,10 +84,13 @@ public class KafkaMessageConsumer {
             senderId = userID;
             receiveId = shopId;
             long accountShopId = shopOwnerService.getAccountIdByShopid(shopId);
+            Account acc =  accountService.getAccountById(accountShopId);
             //check user cannot send to their shop
             if(senderId == accountShopId) {
                 throw new CustomRuntimeException("400", "You cannot send message for your shop!");
             }
+            message.setUserAvatar(acc.getImgUrl());
+            message.setSenderName(acc.getFullName());
             message.setShopID(-1);
             destination = String.format("/chatroom/%d/shop",receiveId);
         } else {

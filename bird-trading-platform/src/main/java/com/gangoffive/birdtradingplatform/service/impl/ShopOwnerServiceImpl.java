@@ -63,15 +63,6 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final ShopStaffMapper shopStaffMapper;
     private final AddressRepository addressRepository;
 
-    @Override
-    public List<String> listShopDto(List<Long> listShopId, long userId) {
-        var listShop = shopOwnerRepository.findAllById(listShopId);
-        if (listShop != null && !listShop.isEmpty()) {
-            List<String> list = listShop.stream().map(shop -> this.shopOwnerToDtoWithUnread(shop, userId)).toList();
-            return list;
-        }
-        return null;
-    }
 
     @Override
     public long getAccountIdByShopid(long shopId) {
@@ -87,24 +78,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         return 0;
     }
 
-    private String shopOwnerToDtoWithUnread(ShopOwner shopOwner, long userId) {
-        ShopOwnerDto shopOwnerDto = shopOwnerMapper.modelToDto(shopOwner);
-//        String shopDtoJson = JsonUtil.INSTANCE.getJsonString(shopOwner);
-        Gson gson = new GsonBuilder()
-                .disableHtmlEscaping()
-                .create();
-        String shopDtoJson = gson.toJson(shopOwnerDto, ShopOwnerDto.class);
 
-        JsonParser parser = new JsonParser();
-
-        JsonElement shopElement = parser.parse(shopDtoJson);
-        JsonObject jsonObject = shopElement.getAsJsonObject();
-        //get out channel id
-        int unread = channelService.getMessageUnreadByUserAndShop(userId, shopOwner.getId());
-        jsonObject.addProperty("unread", unread);
-        return jsonObject.toString();
-
-    }
 
     @Override
     public List<LineChartDto> getDataLineChart(String dateFrom, int date) {

@@ -1,6 +1,8 @@
 package com.gangoffive.birdtradingplatform.repository;
 
+import com.gangoffive.birdtradingplatform.entity.Channel;
 import com.gangoffive.birdtradingplatform.entity.Message;
+import com.gangoffive.birdtradingplatform.enums.MessageStatus;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,4 +31,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             "WHERE m.channel_id = ?2 AND m.sender_id <> ?3 AND m.status =?4 ", nativeQuery = true)
     int updateStatusToSeen( String seenStatus ,long channelId,
                              long userId, String sentStatus);
+
+    Long countByAccount_IdNotInAndStatusInAndChannelIn(List<Long> userId, List<MessageStatus> statusList, List<Channel> channelList);
+
 }

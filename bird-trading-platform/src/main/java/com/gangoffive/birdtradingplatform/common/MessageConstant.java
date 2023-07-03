@@ -1,6 +1,12 @@
 package com.gangoffive.birdtradingplatform.common;
 
+import com.gangoffive.birdtradingplatform.enums.MessageStatus;
+
+import java.util.Arrays;
+import java.util.List;
+
 public class MessageConstant {
+    public static final List<MessageStatus> STATUS_UNREAD = Arrays.asList(MessageStatus.SENT, MessageStatus.DELIVERED);
     public static final int CHANNEL_PAGING_SIZE = 10;
     public static final String MESSAGE_STATUS_SENT = "sent";
     public static final String MESSAGE_SHOP_ROLE = "shop";

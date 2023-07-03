@@ -18,4 +18,6 @@ public interface AccountService {
 
     long retrieveShopID(long receiveId);
     public List<Long> getAllChanelByUserId (long userId);
+
+    Account getAccountById(long userId);
 }
