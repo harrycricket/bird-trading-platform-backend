@@ -2,9 +2,7 @@ package com.gangoffive.birdtradingplatform.entity;
 
 import com.gangoffive.birdtradingplatform.enums.Gender;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +14,12 @@ import org.hibernate.annotations.SQLDelete;
 @Table(name = "tblBird")
 @NoArgsConstructor
 @AllArgsConstructor
+@Setter
+@Getter
 @ToString
 @SQLDelete(sql = "update tbl_Bird set is_deleted = true where product_id = ?")
 public class Bird extends Product {
-    protected Integer age;
+    protected int age;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -37,42 +37,6 @@ public class Bird extends Product {
 
     @ManyToMany(mappedBy = "birds")
     private List<Tag> tags = new ArrayList<>();
-
-    public Integer getAge() {
-        return age;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
-    public Gender getGender() {
-        return gender;
-    }
-
-    public void setGender(Gender gender) {
-        this.gender = gender;
-    }
-
-    public String getColor() {
-        return color;
-    }
-
-    public void setColor(String color) {
-        this.color = color;
-    }
-
-    public TypeBird getTypeBird() {
-        return typeBird;
-    }
-
-    public void setTypeBird(TypeBird typeBird) {
-        this.typeBird = typeBird;
-    }
-
-    public List<Tag> getTags() {
-        return tags;
-    }
 
     public void addTags(Tag tag) {
         this.tags.add(tag);

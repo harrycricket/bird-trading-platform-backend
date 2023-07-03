@@ -11,10 +11,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.waiters.S3Waiter;
 
 import java.io.ByteArrayInputStream;
@@ -37,7 +34,7 @@ public class S3Utils {
     }
 
     public static void uploadFile(String fileName, InputStream inputStream)
-            throws S3Exception, AwsServiceException, SdkClientException, IOException {
+            throws AwsServiceException, SdkClientException, IOException {
         int dotIndex = fileName.lastIndexOf(".");
         String typeFile = fileName.substring(dotIndex + 1);
 //        for (ContentType type: ContentType.values()) {
@@ -99,4 +96,28 @@ public class S3Utils {
             // run custom code that should be executed after the upload file exists
         });
     }
+
+    public static void deleteFile(String fileName)
+            throws AwsServiceException, SdkClientException {
+        S3Client client = S3Client.builder()
+                .region(Region.AP_SOUTHEAST_1)
+                .credentialsProvider(() -> new AwsCredentials() {
+                    @Override
+                    public String accessKeyId() {
+                        return appProperties.getAws().getAccessKey();
+                    }
+
+                    @Override
+                    public String secretAccessKey() {
+                        return appProperties.getAws().getSecretKey();
+                    }
+                })
+                .build();
+
+        client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(BUCKET)
+                .key(fileName)
+                .build());
+    }
+
 }

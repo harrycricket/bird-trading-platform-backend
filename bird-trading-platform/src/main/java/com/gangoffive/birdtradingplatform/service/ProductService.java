@@ -25,17 +25,26 @@ public interface ProductService {
     List<ProductDto> listModelToDto(List<Product> products);
 
     ResponseEntity<?> retrieveProductById(Long id);
+
     double CalculateDiscountedPrice(double price, double saleOff);
+
     ProductDto ProductToDto(Product product);
+
     ResponseEntity<?> retrieveProductByListId(long[] ids);
 
     ResponseEntity<?> retrieveProductByShopId(long shopId, int pageNumber);
 
     //ForSO it mean For Shop Owner
     ResponseEntity<?> retrieveProductByShopIdForSO(int pageNumber);
+
     ResponseEntity<?> filter(ProductFilterDto filterDto);
 
-    ResponseEntity<?> addNewProduct(List<MultipartFile> multipartImgList, MultipartFile multipartVideo, ProductShopOwnerDto productShopOwnerDto);
+    ResponseEntity<?> addNewProduct(
+            List<MultipartFile> multipartImgList,
+            MultipartFile multipartVideo,
+            ProductShopOwnerDto productShopOwnerDto
+    );
+
     public ResponseEntity<?> filterByShop(ShopFilterDto shopFilterDto);
 
     ProductShopDto productToProductShopDto(Product product);
@@ -47,5 +56,11 @@ public interface ProductService {
     ResponseEntity<?> filterAllProductByShopOwner(ProductShopOwnerFilterDto productFilter);
 
     ResponseEntity<?> getProductDetailForShop(long productId);
+
+    ResponseEntity<?> updateProduct(
+            List<MultipartFile> multipartImgList,
+            MultipartFile multipartVideo,
+            ProductUpdateDto productUpdate
+    );
 }
 

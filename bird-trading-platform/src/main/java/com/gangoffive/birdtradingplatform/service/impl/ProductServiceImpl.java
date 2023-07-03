@@ -577,7 +577,7 @@ public class ProductServiceImpl implements ProductService {
             detailsFormData.addProperty("type", typeDto.getId());
             String jsonTag = gson.toJson(tagDtos);
             JsonArray jsonArrayTag = JsonParser.parseString(jsonTag).getAsJsonArray();
-            detailsFormData.add("tag", jsonArrayTag);
+            detailsFormData.add("tags", jsonArrayTag);
 
             salesFormData.addProperty("price", product.get().getPrice());
             salesFormData.addProperty("quantity", product.get().getQuantity());
@@ -607,6 +607,290 @@ public class ProductServiceImpl implements ProductService {
             return new ResponseEntity<>((ErrorResponse.builder().errorCode("400")
                     .errorMessage("Not found this product!").build()), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<?> updateProduct(
+            List<MultipartFile> multipartImgList,
+            MultipartFile multipartVideo,
+            ProductUpdateDto productUpdate) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Optional<Account> account = accountRepository.findByEmail(authentication.getName());
+        if (productUpdate.getBasicForm().getCategory() == Category.BIRD.getCategoryId()) {
+            Bird bird = birdRepository.findByIdAndShopOwner(
+                    productUpdate.getBasicForm().getId(), account.get().getShopOwner()
+            );
+            if (bird != null) {
+                List<Long> tagIds = productUpdate.getDetailsForm().getTags().stream()
+                        .map(TagDto::getId)
+                        .toList();
+                List<Tag> tags = tagRepository.findByIdIn(tagIds);
+                List<Long> promotionShopIds = productUpdate.getSalesForm().getVoucher().stream()
+                        .map(PromotionShopDto::getId)
+                        .toList();
+                List<PromotionShop> promotionShops = promotionShopRepository.findAllById(promotionShopIds);
+                bird.setName(productUpdate.getBasicForm().getName());
+                bird.setAge(productUpdate.getFeature().getAge());
+                bird.setGender(productUpdate.getFeature().getGender());
+                bird.setColor(productUpdate.getFeature().getColor());
+                bird.setDescription(productUpdate.getDetailsForm().getDescription());
+                bird.setTypeBird(typeBirdRepository.findById(productUpdate.getDetailsForm().getTypeId()).get());
+                if (tags.size() > 0) {
+                    bird.setTags(tags);
+                }
+                bird.setPrice(productUpdate.getSalesForm().getPrice());
+                bird.setQuantity(productUpdate.getSalesForm().getQuantity());
+                if (promotionShops.size() > 0) {
+                    bird.setPromotionShops(promotionShops);
+                }
+                List<String> urlList = Arrays.asList(bird.getImgUrl().split(","));
+                List<String> listImagesRemove = productUpdate.getListImages();
+                //Remove image
+                if (listImagesRemove.size() > 0) {
+                    //remove in DB
+                    listImagesRemove.forEach(urlList::remove);
+                    //remove in S3
+                    ResponseEntity<ErrorResponse> errorResponse = removeListImageInS3(listImagesRemove);
+                    if (errorResponse != null) {
+                        return errorResponse;
+                    }
+                }
+                String originUrl = appProperties.getS3().getUrl();
+                //Add new image
+                if (multipartImgList != null && !multipartImgList.isEmpty()) {
+                    for (MultipartFile multipartFile : multipartImgList) {
+                        String newFilename = getNewImageFileName(multipartFile);
+                        urlList.add(originUrl + newFilename);
+                        try {
+                            S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
+                        } catch (Exception ex) {
+                            ErrorResponse errorResponse = ErrorResponse.builder()
+                                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                                    .errorMessage("Upload file fail")
+                                    .build();
+                            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                        }
+                    }
+                }
+                String imgUrl = urlList.stream()
+                        .collect(Collectors.joining(","));
+                bird.setImgUrl(imgUrl);
+
+                //Add new video
+                if (multipartVideo != null && !multipartVideo.isEmpty()) {
+                    String newFilename = getNewVideoFileName(multipartVideo);
+                    String urlVideo = originUrl + newFilename;
+                    try {
+                        S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
+                        bird.setVideoUrl(urlVideo);
+                    } catch (Exception ex) {
+                        ErrorResponse errorResponse = ErrorResponse.builder()
+                                .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                                .errorMessage("Upload file fail")
+                                .build();
+                        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    }
+                }
+                birdRepository.save(bird);
+                return this.getProductDetailForShop(bird.getId());
+            }
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                    .errorMessage("Bird not found.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        } else if (productUpdate.getBasicForm().getCategory() == Category.FOOD.getCategoryId()) {
+            Food food = foodRepository.findByIdAndShopOwner(
+                    productUpdate.getBasicForm().getId(), account.get().getShopOwner()
+            );
+            if (food != null) {
+                List<Long> tagIds = productUpdate.getDetailsForm().getTags().stream()
+                        .map(TagDto::getId)
+                        .toList();
+                List<Tag> tags = tagRepository.findByIdIn(tagIds);
+                List<Long> promotionShopIds = productUpdate.getSalesForm().getVoucher().stream()
+                        .map(PromotionShopDto::getId)
+                        .toList();
+                List<PromotionShop> promotionShops = promotionShopRepository.findAllById(promotionShopIds);
+                food.setName(productUpdate.getBasicForm().getName());
+                food.setWeight(productUpdate.getFeature().getWeight());
+                food.setDescription(productUpdate.getDetailsForm().getDescription());
+                food.setTypeFood(typeFoodRepository.findById(productUpdate.getDetailsForm().getTypeId()).get());
+                if (tags.size() > 0) {
+                    food.setTags(tags);
+                }
+                food.setPrice(productUpdate.getSalesForm().getPrice());
+                food.setQuantity(productUpdate.getSalesForm().getQuantity());
+                if (promotionShops.size() > 0) {
+                    food.setPromotionShops(promotionShops);
+                }
+                List<String> urlList = Arrays.asList(food.getImgUrl().split(","));
+                List<String> listImagesRemove = productUpdate.getListImages();
+                //Remove image
+                if (listImagesRemove.size() > 0) {
+                    //remove in DB
+                    listImagesRemove.forEach(urlList::remove);
+                    //remove in S3
+                    ResponseEntity<ErrorResponse> errorResponse = removeListImageInS3(listImagesRemove);
+                    if (errorResponse != null) {
+                        return errorResponse;
+                    }
+                }
+                String originUrl = appProperties.getS3().getUrl();
+                //Add new image
+                if (multipartImgList != null && !multipartImgList.isEmpty()) {
+                    for (MultipartFile multipartFile : multipartImgList) {
+                        String newFilename = getNewImageFileName(multipartFile);
+                        urlList.add(originUrl + newFilename);
+                        try {
+                            S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
+                        } catch (Exception ex) {
+                            ErrorResponse errorResponse = ErrorResponse.builder()
+                                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                                    .errorMessage("Upload file fail")
+                                    .build();
+                            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                        }
+                    }
+                }
+                String imgUrl = urlList.stream()
+                        .collect(Collectors.joining(","));
+                food.setImgUrl(imgUrl);
+
+                //Add new video
+                if (multipartVideo != null && !multipartVideo.isEmpty()) {
+                    String newFilename = getNewVideoFileName(multipartVideo);
+                    String urlVideo = originUrl + newFilename;
+                    try {
+                        S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
+                        food.setVideoUrl(urlVideo);
+                    } catch (Exception ex) {
+                        ErrorResponse errorResponse = ErrorResponse.builder()
+                                .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                                .errorMessage("Upload file fail")
+                                .build();
+                        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    }
+                }
+                foodRepository.save(food);
+                return this.getProductDetailForShop(food.getId());
+            }
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                    .errorMessage("Food not found.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        } else if (productUpdate.getBasicForm().getCategory() == Category.ACCESSORY.getCategoryId()) {
+            Accessory accessory = accessoryRepository.findByIdAndShopOwner(
+                    productUpdate.getBasicForm().getId(), account.get().getShopOwner()
+            );
+            if (accessory != null) {
+                List<Long> tagIds = productUpdate.getDetailsForm().getTags().stream()
+                        .map(TagDto::getId)
+                        .toList();
+                List<Tag> tags = tagRepository.findByIdIn(tagIds);
+                List<Long> promotionShopIds = productUpdate.getSalesForm().getVoucher().stream()
+                        .map(PromotionShopDto::getId)
+                        .toList();
+                List<PromotionShop> promotionShops = promotionShopRepository.findAllById(promotionShopIds);
+                accessory.setName(productUpdate.getBasicForm().getName());
+                accessory.setOrigin(productUpdate.getFeature().getOrigin());
+                accessory.setDescription(productUpdate.getDetailsForm().getDescription());
+                accessory.setTypeAccessory(typeAccessoryRepository.findById(productUpdate.getDetailsForm().getTypeId()).get());
+                if (tags.size() > 0) {
+                    accessory.setTags(tags);
+                }
+                accessory.setPrice(productUpdate.getSalesForm().getPrice());
+                accessory.setQuantity(productUpdate.getSalesForm().getQuantity());
+                if (promotionShops.size() > 0) {
+                    accessory.setPromotionShops(promotionShops);
+                }
+                List<String> urlList = Arrays.asList(accessory.getImgUrl().split(","));
+                List<String> listImagesRemove = productUpdate.getListImages();
+                //Remove image
+                if (listImagesRemove.size() > 0) {
+                    //remove in DB
+                    listImagesRemove.forEach(urlList::remove);
+                    //remove in S3
+                    ResponseEntity<ErrorResponse> errorResponse = removeListImageInS3(listImagesRemove);
+                    if (errorResponse != null) {
+                        return errorResponse;
+                    }
+                }
+                String originUrl = appProperties.getS3().getUrl();
+                //Add new image
+                if (multipartImgList != null && !multipartImgList.isEmpty()) {
+                    for (MultipartFile multipartFile : multipartImgList) {
+                        String newFilename = getNewImageFileName(multipartFile);
+                        urlList.add(originUrl + newFilename);
+                        try {
+                            S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
+                        } catch (Exception ex) {
+                            ErrorResponse errorResponse = ErrorResponse.builder()
+                                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                                    .errorMessage("Upload file fail")
+                                    .build();
+                            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                        }
+                    }
+                }
+                String imgUrl = urlList.stream()
+                        .collect(Collectors.joining(","));
+                accessory.setImgUrl(imgUrl);
+
+                //Add new video
+                if (multipartVideo != null && !multipartVideo.isEmpty()) {
+                    String newFilename = getNewVideoFileName(multipartVideo);
+                    String urlVideo = originUrl + newFilename;
+                    try {
+                        S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
+                        accessory.setVideoUrl(urlVideo);
+                    } catch (Exception ex) {
+                        ErrorResponse errorResponse = ErrorResponse.builder()
+                                .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                                .errorMessage("Upload file fail")
+                                .build();
+                        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    }
+                }
+                accessoryRepository.save(accessory);
+                return this.getProductDetailForShop(accessory.getId());
+            }
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                    .errorMessage("Accessory not found.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        } else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                    .errorMessage("Not found this category id.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    private String getNewImageFileName(MultipartFile multipartFile) {
+        String contentType = multipartFile.getContentType();
+        String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
+        newFilename = "image/" + newFilename;
+        return newFilename;
+    }
+
+    private ResponseEntity<ErrorResponse> removeListImageInS3(List<String> listImagesRemove) {
+        for (String removeImg : listImagesRemove) {
+            try {
+                S3Utils.deleteFile("image/" + removeImg);
+            } catch (Exception ex) {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .errorMessage("Remove file fail")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+        }
+        return null;
     }
 
     private <T extends Product> JsonObject getFeatureBaseOnInstance(T product) {
@@ -742,7 +1026,7 @@ public class ProductServiceImpl implements ProductService {
         List<ProductStatus> productStatuses;
         if (Integer.parseInt(productFilter.getProductSearchInfo().getValue()) == 9) {
             productStatuses = ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER;
-        } else{
+        } else {
             productStatuses = Arrays.asList(ProductUpdateStatus.getProductUpdateStatusEnum(
                     Integer.parseInt(productFilter.getProductSearchInfo().getValue())
             ).getProductStatus());
@@ -1248,11 +1532,7 @@ public class ProductServiceImpl implements ProductService {
         if (account.get().getRole() == UserRole.SHOPOWNER) {
             if (multipartImgList != null && !multipartImgList.isEmpty()) {
                 for (MultipartFile multipartFile : multipartImgList) {
-                    String contentType = multipartFile.getContentType();
-                    log.info("contentType: {}", contentType);
-                    String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
-                    newFilename = "image/" + newFilename;
-                    log.info("newFilename: {}", newFilename);
+                    String newFilename = getNewImageFileName(multipartFile);
                     urlImgList.add(originUrl + newFilename);
                     try {
                         S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
@@ -1266,11 +1546,12 @@ public class ProductServiceImpl implements ProductService {
                 }
             }
 
+            String imgUrl = urlImgList.stream()
+                    .collect(Collectors.joining(","));
+
+
             if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                String contentType = multipartVideo.getContentType();
-                String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
-                newFilename = "video/" + newFilename;
-                log.info("FileName video: {}", newFilename);
+                String newFilename = getNewVideoFileName(multipartVideo);
                 urlVideo = originUrl + newFilename;
                 try {
                     S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
@@ -1282,9 +1563,6 @@ public class ProductServiceImpl implements ProductService {
                     return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
                 }
             }
-
-            String imgUrl = urlImgList.stream()
-                    .collect(Collectors.joining(","));
 
             log.info("productShopOwnerDto.toString() {}", productShopOwnerDto.toString());
             if (productShopOwnerDto.getCategoryId() == 1) {
@@ -1388,6 +1666,13 @@ public class ProductServiceImpl implements ProductService {
                 .errorMessage("Something went wrong!")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    private String getNewVideoFileName(MultipartFile multipartVideo) {
+        String contentType = multipartVideo.getContentType();
+        String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
+        newFilename = "video/" + newFilename;
+        return newFilename;
     }
 
     @Override

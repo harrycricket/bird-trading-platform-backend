@@ -4,16 +4,14 @@ import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.OrderStatusConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.*;
-import com.gangoffive.birdtradingplatform.entity.Account;
-import com.gangoffive.birdtradingplatform.entity.Order;
-import com.gangoffive.birdtradingplatform.entity.OrderDetail;
-import com.gangoffive.birdtradingplatform.entity.PromotionShop;
+import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.*;
 import com.gangoffive.birdtradingplatform.mapper.PromotionShopMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderRepository;
 import com.gangoffive.birdtradingplatform.repository.PromotionShopRepository;
+import com.gangoffive.birdtradingplatform.service.OrderDetailService;
 import com.gangoffive.birdtradingplatform.service.OrderService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
@@ -41,12 +39,24 @@ public class OrderServiceImpl implements OrderService {
     private final PromotionShopMapper promotionShopMapper;
     private final PromotionShopRepository promotionShopRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final OrderDetailService orderDetailService;
 
     @Override
     public ResponseEntity<?> getAllOrderByPackageOrderId(Long packageOrderId) {
-        List<Order> orders = orderRepository.findAllByPackageOrder_Id(packageOrderId);
-        
-        return null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Optional<Account> account = accountRepository.findByEmail(authentication.getName());
+        log.info("account.get().getId() {}", account.get().getId());
+        Optional<List<Order>> orders = orderRepository.findAllByPackageOrder_IdAndPackageOrder_Account(packageOrderId, account.get());
+//        log.info("orders {}", orders.get().size());
+        if (orders.isPresent() && orders.get().size() > 0) {
+            return ResponseEntity.ok(orders.get().stream().map(this::orderToOrderDto).collect(Collectors.toList()));
+        } else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                    .errorMessage("No have orders with package order.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        }
     }
 
     @Override
@@ -667,6 +677,32 @@ public class OrderServiceImpl implements OrderService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private OrderDto orderToOrderDto(Order order) {
+        ShopOwner shopOwner = order.getShopOwner();
+        AddressDto addressDto = AddressDto.builder()
+                .id(shopOwner.getAddress().getId())
+                .address(shopOwner.getAddress().getAddress())
+                .build();
+        ShopOwnerDto shopOwnerDto = ShopOwnerDto.builder()
+                .id(shopOwner.getId())
+                .shopName(shopOwner.getShopName())
+                .address(addressDto)
+                .imgUrl(shopOwner.getAvatarImgUrl())
+                .build();
+        List<OrderDetailDto> orderDetailsDto = order.getOrderDetails().stream()
+                .map(orderDetailService::orderDetailToOrderDetailDto)
+                .toList();
+        return OrderDto.builder()
+                .orderStatus(order.getStatus())
+                .shopOwner(shopOwnerDto)
+                .totalPriceProduct(order.getTotalPrice())
+                .orderDetails(orderDetailsDto)
+                .shippingFee(order.getShippingFee())
+                .createdDate(order.getCreatedDate())
+                .lastedUpdate(order.getLastedUpdate())
+                .build();
     }
 
     private OrderShopOwnerDto orderToOrderShopOwnerDto(Order order) {
