@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 @ToString
 public class BirdDto extends ProductDto{
-	private Integer age;
+	private int age;
 
     private Gender gender;
 
@@ -23,6 +23,4 @@ public class BirdDto extends ProductDto{
     private TypeBird type;
 
     private List<Tag> tags;
-
-
 }
