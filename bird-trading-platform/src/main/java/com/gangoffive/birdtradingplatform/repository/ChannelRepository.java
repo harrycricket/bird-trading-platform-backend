@@ -24,4 +24,7 @@ public interface ChannelRepository extends JpaRepository<Channel, Long> {
     @Transactional
     @Query(value = "Update tblChannel c Set c.lastedUpdate = ?1 Where c.id = ?2")
     int updateLastedUpdate (Date lastedUpdate, long id);
+
+    @Query(value = "Select c.shopOwner.id From tblChannel  c where c.account.id = ?1 ")
+    Page<Long> findListShopIdByUserId(long userId, Pageable pageable);
 }

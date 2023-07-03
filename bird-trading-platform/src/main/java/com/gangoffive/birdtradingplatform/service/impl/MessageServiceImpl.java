@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
+import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.MessageConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.MessageDto;
@@ -23,14 +24,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -54,7 +54,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public ResponseEntity<?> getListMessageByChannelId(long channelId, int pageNumber, long id, boolean isShop) {
-        PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_MESSAGE_SIZE,
+        PageRequest pageRequest = PageRequest.of(pageNumber, 10,
                 Sort.by(Sort.Direction.DESC, "timestamp"));
         var listMessage = messageRepository.findByChannel_Id(channelId, pageRequest);
         if(listMessage != null) {
@@ -121,6 +121,45 @@ public class MessageServiceImpl implements MessageService {
             }
         }
         return null;
+    }
+
+    @Override
+    public ResponseEntity<?> getTotalNumberUnreadMessageUser(long userid) {
+        var acc = accountRepository.findById(userid);
+        if(acc.isPresent()) {
+            List<Channel> channelList = acc.get().getChannels();
+            Long totalUnread = messageRepository.countByAccount_IdNotInAndStatusInAndChannelIn(Arrays.asList(userid), MessageConstant.STATUS_UNREAD, channelList);
+            JsonObject numberUnread = new JsonObject();
+            if(totalUnread != null){
+                numberUnread.addProperty("totalUnread", totalUnread);
+            }else {
+                numberUnread.addProperty("totalUnread", 0);
+            }
+            return ResponseEntity.ok(numberUnread.toString());
+        }else {
+            return new ResponseEntity<>(ErrorResponse.builder().errorCode("400").errorMessage("This shop have no shop").build(),
+                    HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getTotalNumberUnreadMessageShop(long shopid) {
+        var shop  = shopOwnerRepository.findById(shopid);
+        if(shop.isPresent()){
+            long accountID = shop.get().getAccount().getId();
+            Long totalUnread = messageRepository.countByAccount_IdNotInAndStatusInAndChannelIn(Arrays.asList(accountID),
+                    MessageConstant.STATUS_UNREAD, shop.get().getChannels());
+            JsonObject numberUnread = new JsonObject();
+            if(totalUnread != null){
+                numberUnread.addProperty("totalUnread", totalUnread);
+            }else {
+                numberUnread.addProperty("totalUnread", 0);
+            }
+            return ResponseEntity.ok(numberUnread.toString());
+        }else{
+            return new ResponseEntity<>(ErrorResponse.builder().errorCode("400").errorMessage("This shop have no shop").build(),
+                    HttpStatus.BAD_REQUEST);
+        }
     }
 
     private JsonObject createUserListWithUnread(Channel channel, long shopId) {

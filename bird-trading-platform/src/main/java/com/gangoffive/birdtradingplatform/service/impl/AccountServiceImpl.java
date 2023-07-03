@@ -66,7 +66,7 @@ public class AccountServiceImpl implements AccountService {
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                         .errorMessage("Upload file fail")
                         .build();
-                new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
             }
         }
         Optional<Account> editAccount = accountRepository.findByEmail(accountUpdateDto.getEmail());
@@ -239,6 +239,16 @@ public class AccountServiceImpl implements AccountService {
             }
         } else {
             throw new CustomRuntimeException("400", String.format("Cannot find account with id %d", userId));
+        }
+    }
+
+    @Override
+    public Account getAccountById(long userId) {
+        var acc = accountRepository.findById(userId);
+        if(acc.isPresent()) {
+            return acc.get();
+        }else {
+            throw new CustomRuntimeException("400", "Not found this account Id");
         }
     }
 }

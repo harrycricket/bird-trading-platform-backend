@@ -53,7 +53,7 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
             "AND ps.star >= ?4 " +
             "AND ps.discounted_price >= ?5 " +
             "AND ps.discounted_price <= ?6 " +
-            "AND b.is_deleted = 0 " +
+            "And b.status = 'ACTIVE' " +
             "AND b.quantity > 0 "
             ,
             nativeQuery = true)

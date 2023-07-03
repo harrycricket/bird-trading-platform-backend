@@ -10,11 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface ShopOwnerService {
-
-//    List<Product>
-
-    List<String> listShopDto(List<Long> listShopId, long userId);
-
     long getAccountIdByShopid(long shopId);
 
     List<LineChartDto> getDataLineChart(String dateFrom, int date);
