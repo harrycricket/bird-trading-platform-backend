@@ -9,7 +9,7 @@ import lombok.*;
 @Setter
 @ToString
 public class FeatureDto {
-    private Integer age;
+    private int age;
     private Gender gender;
     private String color;
     private double weight;
