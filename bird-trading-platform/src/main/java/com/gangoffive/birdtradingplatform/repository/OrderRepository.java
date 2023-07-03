@@ -1,9 +1,6 @@
 package com.gangoffive.birdtradingplatform.repository;
 
-import com.gangoffive.birdtradingplatform.entity.Bird;
-import com.gangoffive.birdtradingplatform.entity.Order;
-import com.gangoffive.birdtradingplatform.entity.PromotionShop;
-import com.gangoffive.birdtradingplatform.entity.ShopOwner;
+import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.OrderStatus;
 import com.gangoffive.birdtradingplatform.enums.PaymentMethod;
 import com.gangoffive.birdtradingplatform.enums.ProductStatus;
@@ -27,7 +24,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findAllByCreatedDateBetween(Date dateFrom, Date dateTo);
 
-    List<Order> findAllByPackageOrder_Id(Long id);
+    Optional<List<Order>> findAllByPackageOrder_IdAndPackageOrder_Account(Long id, Account account);
 
     Optional<Page<Order>> findByShopOwner_Id(Long id, Pageable pageable);
 

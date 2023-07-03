@@ -2,9 +2,7 @@ package com.gangoffive.birdtradingplatform.entity;
 
 import com.gangoffive.birdtradingplatform.enums.Gender;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +14,8 @@ import org.hibernate.annotations.SQLDelete;
 @Table(name = "tblBird")
 @NoArgsConstructor
 @AllArgsConstructor
+@Setter
+@Getter
 @ToString
 @SQLDelete(sql = "update tbl_Bird set is_deleted = true where product_id = ?")
 public class Bird extends Product {

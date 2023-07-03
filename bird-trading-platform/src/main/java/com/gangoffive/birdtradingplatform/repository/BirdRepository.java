@@ -11,6 +11,7 @@ package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.Bird;
 import com.gangoffive.birdtradingplatform.entity.Product;
+import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -90,4 +92,6 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
     Optional<Page<Bird>> findAllByShopOwner_IdAndStatus(
             Long shopOwnerId, ProductStatus productStatus, Pageable pageable
     );
+
+    Bird findByIdAndShopOwner(Long id, ShopOwner shopOwner);
 }

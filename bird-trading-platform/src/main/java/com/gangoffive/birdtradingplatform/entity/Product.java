@@ -3,7 +3,9 @@ package com.gangoffive.birdtradingplatform.entity;
 import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
@@ -14,6 +16,8 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 //@Where(clause = "is_deleted = false AND quantity > 0")
 //@EntityListeners(ProductEntityListener.class)
