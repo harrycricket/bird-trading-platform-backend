@@ -13,6 +13,8 @@ import java.util.List;
 @Table(name = "tblFood")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @ToString
 @SQLDelete(sql = "update tbl_Food set is_deleted = true where product_id = ?")
 public class Food extends Product {

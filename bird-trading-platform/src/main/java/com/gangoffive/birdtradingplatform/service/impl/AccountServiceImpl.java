@@ -66,7 +66,7 @@ public class AccountServiceImpl implements AccountService {
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                         .errorMessage("Upload file fail")
                         .build();
-                new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
             }
         }
         Optional<Account> editAccount = accountRepository.findByEmail(accountUpdateDto.getEmail());

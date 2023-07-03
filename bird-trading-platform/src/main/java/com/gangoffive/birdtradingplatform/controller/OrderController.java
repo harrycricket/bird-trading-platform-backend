@@ -26,7 +26,7 @@ public class OrderController {
     private final OrderService orderService;
     @GetMapping("orders")
     public ResponseEntity<?> getAllOrderByPackageOrderId(@RequestParam Long packageOrderId) {
-        return null;
+        return orderService.getAllOrderByPackageOrderId(packageOrderId);
     }
 
     @GetMapping("shop-owner/orders")

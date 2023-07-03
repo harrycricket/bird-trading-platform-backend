@@ -5,6 +5,7 @@ import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
+import com.gangoffive.birdtradingplatform.util.S3Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -96,7 +97,7 @@ public class ProductController {
     }
 
     @GetMapping("/shop-owner/products")
-    public ResponseEntity<?> getAllBirdOfShop (@RequestParam String data) {
+    public ResponseEntity<?> getAllProductOfShop(@RequestParam String data) {
         ProductShopOwnerFilterDto productShopOwnerFilter = JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class);
         log.info("{}", productShopOwnerFilter.toString());
         return productService.filterAllProductByShopOwner(productShopOwnerFilter);
@@ -105,5 +106,13 @@ public class ProductController {
     @GetMapping("/shop-owner/products/{productId}")
     public ResponseEntity<?> getProductDetailForShop(@PathVariable long productId) {
         return productService.getProductDetailForShop(productId);
+    }
+
+    @PutMapping("/shop-owner/products")
+    public ResponseEntity<?> updateProduct(
+            @RequestParam(value = "image", required = false) List<MultipartFile> multipartFiles,
+            @RequestParam(name = "video", required = false) MultipartFile multipartVideo,
+            @RequestPart(name = "data") ProductUpdateDto productUpdate) {
+        return productService.updateProduct(multipartFiles, multipartVideo, productUpdate);
     }
 }

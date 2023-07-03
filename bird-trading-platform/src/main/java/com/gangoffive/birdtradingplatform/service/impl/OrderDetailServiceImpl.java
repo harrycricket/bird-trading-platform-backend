@@ -3,6 +3,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.DateRangeDto;
+import com.gangoffive.birdtradingplatform.dto.OrderDetailDto;
 import com.gangoffive.birdtradingplatform.dto.OrderDetailShopOwnerDto;
 import com.gangoffive.birdtradingplatform.dto.OrderDetailShopOwnerFilterDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
@@ -783,6 +784,16 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         );
     }
 
+    @Override
+    public OrderDetailDto orderDetailToOrderDetailDto(OrderDetail orderDetail) {
+        return OrderDetailDto.builder()
+                .productId(orderDetail.getProduct().getId())
+                .productName(orderDetail.getProduct().getName())
+                .price(orderDetail.getPrice())
+                .quantity(orderDetail.getQuantity())
+                .productPromotionRate(orderDetail.getProductPromotionRate())
+                .build();
+    }
 
     private OrderDetailShopOwnerDto orderDetailToOrderDetailShopOwnerDto(OrderDetail orderDetail) {
         Review review = orderDetail.getReview();
