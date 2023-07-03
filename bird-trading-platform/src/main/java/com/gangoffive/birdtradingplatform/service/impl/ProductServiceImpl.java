@@ -651,25 +651,16 @@ public class ProductServiceImpl implements ProductService {
                     //remove in DB
                     listImagesRemove.forEach(urlList::remove);
                     //remove in S3
-                    for (String removeImg : listImagesRemove) {
-                        try {
-                            S3Utils.deleteFile("image/" + removeImg);
-                        } catch (Exception ex) {
-                            ErrorResponse errorResponse = ErrorResponse.builder()
-                                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                                    .errorMessage("Remove file fail")
-                                    .build();
-                            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-                        }
+                    ResponseEntity<ErrorResponse> errorResponse = removeListImageInS3(listImagesRemove);
+                    if (errorResponse != null) {
+                        return errorResponse;
                     }
                 }
                 String originUrl = appProperties.getS3().getUrl();
                 //Add new image
                 if (multipartImgList != null && !multipartImgList.isEmpty()) {
                     for (MultipartFile multipartFile : multipartImgList) {
-                        String contentType = multipartFile.getContentType();
-                        String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
-                        newFilename = "image/" + newFilename;
+                        String newFilename = getNewImageFileName(multipartFile);
                         urlList.add(originUrl + newFilename);
                         try {
                             S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
@@ -688,9 +679,7 @@ public class ProductServiceImpl implements ProductService {
 
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                    String contentType = multipartVideo.getContentType();
-                    String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
-                    newFilename = "video/" + newFilename;
+                    String newFilename = getNewVideoFileName(multipartVideo);
                     String urlVideo = originUrl + newFilename;
                     try {
                         S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
@@ -743,25 +732,16 @@ public class ProductServiceImpl implements ProductService {
                     //remove in DB
                     listImagesRemove.forEach(urlList::remove);
                     //remove in S3
-                    for (String removeImg : listImagesRemove) {
-                        try {
-                            S3Utils.deleteFile("image/" + removeImg);
-                        } catch (Exception ex) {
-                            ErrorResponse errorResponse = ErrorResponse.builder()
-                                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                                    .errorMessage("Remove file fail")
-                                    .build();
-                            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-                        }
+                    ResponseEntity<ErrorResponse> errorResponse = removeListImageInS3(listImagesRemove);
+                    if (errorResponse != null) {
+                        return errorResponse;
                     }
                 }
                 String originUrl = appProperties.getS3().getUrl();
                 //Add new image
                 if (multipartImgList != null && !multipartImgList.isEmpty()) {
                     for (MultipartFile multipartFile : multipartImgList) {
-                        String contentType = multipartFile.getContentType();
-                        String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
-                        newFilename = "image/" + newFilename;
+                        String newFilename = getNewImageFileName(multipartFile);
                         urlList.add(originUrl + newFilename);
                         try {
                             S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
@@ -780,9 +760,7 @@ public class ProductServiceImpl implements ProductService {
 
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                    String contentType = multipartVideo.getContentType();
-                    String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
-                    newFilename = "video/" + newFilename;
+                    String newFilename = getNewVideoFileName(multipartVideo);
                     String urlVideo = originUrl + newFilename;
                     try {
                         S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
@@ -835,25 +813,16 @@ public class ProductServiceImpl implements ProductService {
                     //remove in DB
                     listImagesRemove.forEach(urlList::remove);
                     //remove in S3
-                    for (String removeImg : listImagesRemove) {
-                        try {
-                            S3Utils.deleteFile("image/" + removeImg);
-                        } catch (Exception ex) {
-                            ErrorResponse errorResponse = ErrorResponse.builder()
-                                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                                    .errorMessage("Remove file fail")
-                                    .build();
-                            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-                        }
+                    ResponseEntity<ErrorResponse> errorResponse = removeListImageInS3(listImagesRemove);
+                    if (errorResponse != null) {
+                        return errorResponse;
                     }
                 }
                 String originUrl = appProperties.getS3().getUrl();
                 //Add new image
                 if (multipartImgList != null && !multipartImgList.isEmpty()) {
                     for (MultipartFile multipartFile : multipartImgList) {
-                        String contentType = multipartFile.getContentType();
-                        String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
-                        newFilename = "image/" + newFilename;
+                        String newFilename = getNewImageFileName(multipartFile);
                         urlList.add(originUrl + newFilename);
                         try {
                             S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
@@ -872,9 +841,7 @@ public class ProductServiceImpl implements ProductService {
 
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                    String contentType = multipartVideo.getContentType();
-                    String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
-                    newFilename = "video/" + newFilename;
+                    String newFilename = getNewVideoFileName(multipartVideo);
                     String urlVideo = originUrl + newFilename;
                     try {
                         S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
@@ -902,6 +869,28 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         }
+    }
+
+    private String getNewImageFileName(MultipartFile multipartFile) {
+        String contentType = multipartFile.getContentType();
+        String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
+        newFilename = "image/" + newFilename;
+        return newFilename;
+    }
+
+    private ResponseEntity<ErrorResponse> removeListImageInS3(List<String> listImagesRemove) {
+        for (String removeImg : listImagesRemove) {
+            try {
+                S3Utils.deleteFile("image/" + removeImg);
+            } catch (Exception ex) {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .errorMessage("Remove file fail")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+        }
+        return null;
     }
 
     private <T extends Product> JsonObject getFeatureBaseOnInstance(T product) {
@@ -1037,7 +1026,7 @@ public class ProductServiceImpl implements ProductService {
         List<ProductStatus> productStatuses;
         if (Integer.parseInt(productFilter.getProductSearchInfo().getValue()) == 9) {
             productStatuses = ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER;
-        } else{
+        } else {
             productStatuses = Arrays.asList(ProductUpdateStatus.getProductUpdateStatusEnum(
                     Integer.parseInt(productFilter.getProductSearchInfo().getValue())
             ).getProductStatus());
@@ -1543,11 +1532,7 @@ public class ProductServiceImpl implements ProductService {
         if (account.get().getRole() == UserRole.SHOPOWNER) {
             if (multipartImgList != null && !multipartImgList.isEmpty()) {
                 for (MultipartFile multipartFile : multipartImgList) {
-                    String contentType = multipartFile.getContentType();
-                    log.info("contentType: {}", contentType);
-                    String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
-                    newFilename = "image/" + newFilename;
-                    log.info("newFilename: {}", newFilename);
+                    String newFilename = getNewImageFileName(multipartFile);
                     urlImgList.add(originUrl + newFilename);
                     try {
                         S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
@@ -1566,10 +1551,7 @@ public class ProductServiceImpl implements ProductService {
 
 
             if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                String contentType = multipartVideo.getContentType();
-                String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
-                newFilename = "video/" + newFilename;
-                log.info("FileName video: {}", newFilename);
+                String newFilename = getNewVideoFileName(multipartVideo);
                 urlVideo = originUrl + newFilename;
                 try {
                     S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
@@ -1684,6 +1666,13 @@ public class ProductServiceImpl implements ProductService {
                 .errorMessage("Something went wrong!")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    private String getNewVideoFileName(MultipartFile multipartVideo) {
+        String contentType = multipartVideo.getContentType();
+        String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
+        newFilename = "video/" + newFilename;
+        return newFilename;
     }
 
     @Override
