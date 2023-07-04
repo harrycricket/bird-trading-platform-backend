@@ -29,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
@@ -786,12 +787,17 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     public OrderDetailDto orderDetailToOrderDetailDto(OrderDetail orderDetail) {
+        String imgUrl = orderDetail.getProduct().getImgUrl();
+        if (imgUrl.contains(",")) {
+            imgUrl = Arrays.stream(imgUrl.split(",")).findFirst().get();
+        }
         return OrderDetailDto.builder()
                 .productId(orderDetail.getProduct().getId())
                 .productName(orderDetail.getProduct().getName())
                 .price(orderDetail.getPrice())
                 .quantity(orderDetail.getQuantity())
                 .productPromotionRate(orderDetail.getProductPromotionRate())
+                .imgUrl(imgUrl)
                 .build();
     }
 

@@ -11,6 +11,7 @@ import lombok.*;
 public class OrderDetailDto {
     private Long productId;
     private String productName;
+    private String imgUrl;
     private int quantity;
     private double price;
     private double productPromotionRate;
