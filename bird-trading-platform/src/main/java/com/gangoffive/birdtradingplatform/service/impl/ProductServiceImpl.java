@@ -599,8 +599,12 @@ public class ProductServiceImpl implements ProductService {
             String listImages = gson.toJson(images);
             JsonArray imageArray = JsonParser.parseString(listImages).getAsJsonArray();
             json.add("listImages", imageArray);
-            json.addProperty("video", product.get().getVideoUrl());
-
+            String video = product.get().getVideoUrl();
+            if(product.get().getVideoUrl() == null || product.get().getVideoUrl().equals("NULL") ||
+                    product.get().getVideoUrl().isEmpty()) {
+                video = "";
+            }
+            json.addProperty("video", video);
             String jsonString = json.toString();
             return ResponseEntity.ok(jsonString);
         } else {
