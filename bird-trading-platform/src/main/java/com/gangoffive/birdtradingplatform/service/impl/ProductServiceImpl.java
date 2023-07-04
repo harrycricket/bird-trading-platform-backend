@@ -673,10 +673,11 @@ public class ProductServiceImpl implements ProductService {
                         }
                     }
                 }
+
                 String imgUrl = urlList.stream()
                         .collect(Collectors.joining(","));
                 bird.setImgUrl(imgUrl);
-
+                String oldVideoUrl = bird.getVideoUrl();
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
                     String newFilename = getNewVideoFileName(multipartVideo);
@@ -690,6 +691,12 @@ public class ProductServiceImpl implements ProductService {
                                 .errorMessage("Upload file fail")
                                 .build();
                         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    }
+                    if (oldVideoUrl != null || !oldVideoUrl.isEmpty()) {
+                        ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
+                        if (errorResponse != null) {
+                            return errorResponse;
+                        }
                     }
                 }
                 birdRepository.save(bird);
@@ -757,7 +764,7 @@ public class ProductServiceImpl implements ProductService {
                 String imgUrl = urlList.stream()
                         .collect(Collectors.joining(","));
                 food.setImgUrl(imgUrl);
-
+                String oldVideoUrl = food.getVideoUrl();
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
                     String newFilename = getNewVideoFileName(multipartVideo);
@@ -771,6 +778,12 @@ public class ProductServiceImpl implements ProductService {
                                 .errorMessage("Upload file fail")
                                 .build();
                         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    }
+                    if (oldVideoUrl != null || !oldVideoUrl.isEmpty()) {
+                        ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
+                        if (errorResponse != null) {
+                            return errorResponse;
+                        }
                     }
                 }
                 foodRepository.save(food);
@@ -839,6 +852,7 @@ public class ProductServiceImpl implements ProductService {
                         .collect(Collectors.joining(","));
                 accessory.setImgUrl(imgUrl);
 
+                String oldVideoUrl = accessory.getVideoUrl();
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
                     String newFilename = getNewVideoFileName(multipartVideo);
@@ -852,6 +866,12 @@ public class ProductServiceImpl implements ProductService {
                                 .errorMessage("Upload file fail")
                                 .build();
                         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    }
+                    if (oldVideoUrl != null || !oldVideoUrl.isEmpty()) {
+                        ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
+                        if (errorResponse != null) {
+                            return errorResponse;
+                        }
                     }
                 }
                 accessoryRepository.save(accessory);
@@ -878,10 +898,26 @@ public class ProductServiceImpl implements ProductService {
         return newFilename;
     }
 
+    private ResponseEntity<ErrorResponse> removeVideoInS3(String videoRemove) {
+        String originUrl = appProperties.getS3().getUrl();
+        try {
+            S3Utils.deleteFile(videoRemove.substring(originUrl.length()));
+        } catch (Exception ex) {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                    .errorMessage("Remove file fail")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+        return null;
+    }
+
     private ResponseEntity<ErrorResponse> removeListImageInS3(List<String> listImagesRemove) {
+        String originUrl = appProperties.getS3().getUrl();
         for (String removeImg : listImagesRemove) {
+            removeImg = removeImg.substring(originUrl.length());
             try {
-                S3Utils.deleteFile("image/" + removeImg);
+                S3Utils.deleteFile(removeImg);
             } catch (Exception ex) {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
