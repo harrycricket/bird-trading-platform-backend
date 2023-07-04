@@ -27,7 +27,8 @@ public abstract class Product {
     @SequenceGenerator(
             name = "product_id_seq",
             sequenceName = "product_id_seq",
-            allocationSize = 1
+            allocationSize = 1,
+            initialValue = 1
     )
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,

@@ -54,7 +54,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public ResponseEntity<?> getListMessageByChannelId(long channelId, int pageNumber, long id, boolean isShop) {
-        PageRequest pageRequest = PageRequest.of(pageNumber, 10,
+        PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_MESSAGE_SIZE,
                 Sort.by(Sort.Direction.DESC, "timestamp"));
         var listMessage = messageRepository.findByChannel_Id(channelId, pageRequest);
         if(listMessage != null) {
