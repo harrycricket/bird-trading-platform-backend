@@ -17,4 +17,11 @@ public class MyUtils {
     public static void main(String[] args) {
         System.out.println(MyUtils.generateSixRandomNumber());
     }
+
+    public static List<String> splitStringToList(String str, String pattern) {
+        if(str != null) {
+            return Arrays.asList(str.split(pattern));
+        }
+        return null;
+    }
 }
