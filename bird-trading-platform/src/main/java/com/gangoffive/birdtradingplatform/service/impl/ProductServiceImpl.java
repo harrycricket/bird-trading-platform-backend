@@ -646,10 +646,23 @@ public class ProductServiceImpl implements ProductService {
                 }
                 List<String> urlList = Arrays.asList(bird.getImgUrl().split(","));
                 List<String> listImagesRemove = productUpdate.getListImages();
+                List<String> updateUrlList = new ArrayList<>();
                 //Remove image
                 if (listImagesRemove.size() > 0) {
                     //remove in DB
-                    listImagesRemove.forEach(urlList::remove);
+                    listImagesRemove.forEach(image -> log.info("image remove {}", image));
+                    urlList.forEach(image -> log.info("image {}", image));
+                    for (int i = 0; i < urlList.size(); i++) {
+                        if (!listImagesRemove.contains(urlList.get(i))) {
+                            updateUrlList.add(urlList.get(i));
+                        }
+                    }
+//                    for (String urlImageRemove : listImagesRemove) {
+//                        urlList.remove(urlImageRemove);
+//                    }
+
+//                    listImagesRemove.forEach(urlList::remove);
+                    updateUrlList.forEach(image -> log.info("image after {}", image));
                     //remove in S3
                     ResponseEntity<ErrorResponse> errorResponse = removeListImageInS3(listImagesRemove);
                     if (errorResponse != null) {
@@ -661,7 +674,7 @@ public class ProductServiceImpl implements ProductService {
                 if (multipartImgList != null && !multipartImgList.isEmpty()) {
                     for (MultipartFile multipartFile : multipartImgList) {
                         String newFilename = getNewImageFileName(multipartFile);
-                        urlList.add(originUrl + newFilename);
+                        updateUrlList.add(originUrl + newFilename);
                         try {
                             S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
                         } catch (Exception ex) {
@@ -674,7 +687,9 @@ public class ProductServiceImpl implements ProductService {
                     }
                 }
 
-                String imgUrl = urlList.stream()
+                updateUrlList.forEach(image -> log.info("image after add new {}", image));
+
+                String imgUrl = updateUrlList.stream()
                         .collect(Collectors.joining(","));
                 bird.setImgUrl(imgUrl);
                 String oldVideoUrl = bird.getVideoUrl();
