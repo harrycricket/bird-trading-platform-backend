@@ -71,9 +71,6 @@ public class SecurityConfiguration {
 //            "api/v1/package-order",
             "/api/v1/promotions",
             "/ws/**", // websockets
-            "/api/v1/users/message/send",
-            "/api/v1/users/{userid}/get-channel", // config get channel must to delete
-            "/api/v1//users/{userid}/get-messages", // must delete to
             "/api/v1/types",
             "/api/v1/types/**",
 //            "/api/v1/shop-owner/promotion-shop", // Remember delete just for testing
@@ -82,7 +79,7 @@ public class SecurityConfiguration {
 //            "api/v1/shop-owner/**",
 //            "api/v1/shop-owner",
             "api/v1/admin/**",
-            "api/v1/ship/orders",
+            "api/v1/ship/**",
 //            "/favicon.ico",
 //            "/**/*.png",
 //            "/**/*.gif",

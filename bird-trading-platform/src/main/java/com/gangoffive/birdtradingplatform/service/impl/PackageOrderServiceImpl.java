@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.common.NotifiConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
@@ -12,10 +13,7 @@ import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.Currency;
 import com.gangoffive.birdtradingplatform.enums.*;
 import com.gangoffive.birdtradingplatform.repository.*;
-import com.gangoffive.birdtradingplatform.service.PackageOrderService;
-import com.gangoffive.birdtradingplatform.service.PaypalService;
-import com.gangoffive.birdtradingplatform.service.ProductService;
-import com.gangoffive.birdtradingplatform.service.PromotionPriceService;
+import com.gangoffive.birdtradingplatform.service.*;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
@@ -54,6 +52,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     private final OrderRepository orderRepository;
     private final PaypalService paypalService;
     private final PromotionPriceService promotionPriceService;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -441,6 +440,13 @@ public class PackageOrderServiceImpl implements PackageOrderService {
             Order saveOrder = orderRepository.save(order);
             orderList.add(saveOrder);
         });
+        //push notification for shop
+        List<Long> userIdOfShopList = shops.stream().map(shop -> shop.getAccount().getId()).toList();
+        NotificationDto notificationDto = new NotificationDto();
+        notificationDto.setRole(NotifiConstant.NOTI_SHOP_ROLE);
+        notificationDto.setName(NotifiConstant.NEW_ORDER_FOR_SHOP_OWNER_NAME);
+        notificationDto.setNotiText(NotifiConstant.NEW_ORDER_FOR_SHOP_OWNER_CONTENT);
+        notificationService.pushNotificationForListUserID(userIdOfShopList, notificationDto);
         return orderList;
     }
 
