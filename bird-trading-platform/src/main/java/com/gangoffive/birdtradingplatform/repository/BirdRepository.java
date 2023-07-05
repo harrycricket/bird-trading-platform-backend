@@ -31,8 +31,8 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
             "FROM `bird-trading-platform`.tbl_bird b " +
             "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
             "ON b.product_id = ps.product_id " +
-            "WHERE b.name LIKE %?1% " +
-            "AND b.type_id IN ?2 " +
+            "WHERE (MATCH(b.name) AGAINST (?1 IN NATURAL LANGUAGE MODE) OR b.name LIKE %?1%)" +
+            "AND (COALESCE(?2, b.type_id) = b.type_id OR ?2 IS NULL) " +
             "AND ps.star >= ?3 " +
             "AND ps.discounted_price >= ?4 " +
             "AND ps.discounted_price <= ?5 " +

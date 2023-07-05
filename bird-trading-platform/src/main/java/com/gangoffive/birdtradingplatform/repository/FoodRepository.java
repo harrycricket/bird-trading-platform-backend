@@ -26,8 +26,8 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             "FROM `bird-trading-platform`.tbl_food f " +
             "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
             "ON f.product_id = ps.product_id " +
-            "WHERE f.name LIKE %?1% " +
-            "AND f.type_id IN (?2) " +
+            "WHERE (MATCH(f.name) AGAINST (?1 IN NATURAL LANGUAGE MODE) OR f.name LIKE %?1%)" +
+            "AND (COALESCE(?2, f.type_id) = f.type_id OR ?2 IS NULL) " +
             "AND ps.star >= ?3 " +
             "AND ps.discounted_price >= ?4 " +
             "AND ps.discounted_price <= ?5 " +

@@ -26,8 +26,8 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "FROM `bird-trading-platform`.tbl_accessory a " +
             "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
             "ON a.product_id= ps.product_id " +
-            "where a.name LIKE %?1% " +
-            "And a.type_id in (?2) " +
+            "WHERE (MATCH(a.name) AGAINST (?1 IN NATURAL LANGUAGE MODE) OR a.name LIKE %?1%)" +
+            "AND (COALESCE(?2, a.type_id) = a.type_id OR ?2 IS NULL) " +
             "And ps.star >= ?3 " +
             "And ps.discounted_price >= ?4 " +
             "And ps.discounted_price <= ?5 " +
