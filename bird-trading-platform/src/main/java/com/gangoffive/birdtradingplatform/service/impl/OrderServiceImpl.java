@@ -100,7 +100,7 @@ public class OrderServiceImpl implements OrderService {
                 if(result == changeStatusListIdDto.getIds().size()) {
                     List<Long> userIdList = packageOrderRepository.findAllAccountIdByOrderIds(changeStatusListIdDto.getIds()).get();
                     NotificationDto noti = new NotificationDto();
-                    noti.setName((NotifiConstant.ORDER_NAME_NOTI));
+                    noti.setName((NotifiConstant.ORDER_NAME_NOTI_USER));
                     noti.setNotiText(orderStatus.getDescription());
                     noti.setRole("user");
                     boolean resultNe = notificationService.pushNotificationForListUserID(userIdList, noti);
@@ -694,6 +694,14 @@ public class OrderServiceImpl implements OrderService {
                 ) {
                     int result = orderRepository.updateStatusOfListId(status, changeStatusListIdDto.getIds());
                     if (result == changeStatusListIdDto.getIds().size()) {
+                        if(changeStatusListIdDto.getStatus() == OrderStatus.SHIPPED.getStatusCode()) {
+                            List<Long> userId = packageOrderRepository.findAllAccountIdByOrderIds(changeStatusListIdDto.getIds()).get();
+                            NotificationDto noti = new NotificationDto();
+                            noti.setName((NotifiConstant.ORDER_NAME_NOTI_USER));
+                            noti.setNotiText(status.getDescription());
+                            noti.setRole(NotifiConstant.NOTI_USER_ROLE);
+                            notificationService.pushNotificationForListUserID(userId, noti);
+                        }
                         return ResponseEntity.ok("Update success");
                     } else {
                         int numberUpdateFail = changeStatusListIdDto.getIds().size() - result;
