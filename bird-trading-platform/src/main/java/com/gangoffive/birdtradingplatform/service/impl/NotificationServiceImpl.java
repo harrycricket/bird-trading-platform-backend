@@ -44,7 +44,6 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public boolean saveNotify(Notification notification) {
         try {
-            log.info("co save ma");
             notificationRepository.save(notification);
             return true;
         }catch (Exception e){

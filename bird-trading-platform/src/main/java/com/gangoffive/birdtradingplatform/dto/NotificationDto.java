@@ -9,7 +9,6 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@Builder
 public class NotificationDto {
     private long id;
     private String notiText;

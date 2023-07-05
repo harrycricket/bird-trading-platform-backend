@@ -147,7 +147,6 @@ public class KafkaMessageConsumer {
 
         //save notification
         boolean result = notificationService.saveNotify(noti);
-        log.info("here ios result {}",result );
     }
 
 }
