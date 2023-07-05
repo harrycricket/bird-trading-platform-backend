@@ -103,8 +103,11 @@ public class OrderServiceImpl implements OrderService {
                     noti.setName((NotifiConstant.ORDER_NAME_NOTI));
                     noti.setNotiText(orderStatus.getDescription());
                     noti.setRole("user");
-                    notificationService.pushNotificationForListUserID(userIdList, noti);
-                    return ResponseEntity.ok("Update success");
+                    boolean resultNe = notificationService.pushNotificationForListUserID(userIdList, noti);
+                    if(resultNe)
+                        return ResponseEntity.ok("Update success");
+                    else
+                        return ResponseEntity.ok("Fail");
                 }else {
                     ErrorResponse errorResponse = ErrorResponse.builder()
                             .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))

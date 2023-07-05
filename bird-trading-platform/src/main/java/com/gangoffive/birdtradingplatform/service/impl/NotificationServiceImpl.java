@@ -89,8 +89,7 @@ public class NotificationServiceImpl implements NotificationService {
                 long accountOfShop = shopOwnerService.getAccountIdByShopid(id);
                 unreadNoti  = notificationRepository.countAllBySeenIsFalseAndAccount_IdAndRoleIs(accountOfShop, role);
             }
-            
-            log.info("here is number un read {}", unreadNoti);
+
             JsonObject result = new JsonObject();
             result.addProperty("unread", unreadNoti);
             return ResponseEntity.ok(result.toString());

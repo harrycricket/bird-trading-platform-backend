@@ -18,7 +18,7 @@ public interface PackageOrderRepository extends JpaRepository<PackageOrder, Long
 
     @Query(value = "SELECT DISTINCT pc.account.id " +
             "FROM tblPackage_Order pc " +
-            "JOIN tblOrder o ON pc.id = o.id " +
-            "WHERE o.id IN ?1")
-    Optional<List<Long>> findAllAccountIdByOrderIds(@Param("orderIds") List<Long> orderIds);
+            "JOIN tblOrder o ON pc.id = o.packageOrder.id " +
+            "WHERE o.id IN ?1", nativeQuery = false)
+    Optional<List<Long>> findAllAccountIdByOrderIds( List<Long> orderIds);
 }
