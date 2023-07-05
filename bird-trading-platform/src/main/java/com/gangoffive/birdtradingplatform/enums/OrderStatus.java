@@ -10,7 +10,7 @@ public enum OrderStatus {
     PENDING(0, "The order has been placed but not yet processed"),
     PROCESSING(1, "The order is being prepared for shipment"),
     SHIPPED(2, "The order has been shipped or handed over to the shipping carrier"),
-    SHIPPING(3, ""),
+    SHIPPING(3, "Your order on the way"),
     DELIVERED(4, "The order has been successfully delivered to the customer"),
 	CANCELLED(-1, "The order has been cancelled, either by the customer or by the system"),
     REFUNDED(-2, "The order has been refunded, indicating a reversal of payment");

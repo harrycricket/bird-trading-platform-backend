@@ -43,4 +43,10 @@ public class OrderController {
     public ResponseEntity<?> getAllOrderByShipper(@RequestParam int pageNumber) {
         return orderService.getAllOrderByShip(pageNumber);
     }
+
+    @PutMapping("ship/orders")
+    public ResponseEntity<?> updateStatusOfOrder(@RequestParam("token") String token,
+                                                 @RequestBody ChangeStatusListIdDto changeStatusListIdDto) {
+        return orderService.updateStatusOrderOfShipping(changeStatusListIdDto, token);
+    }
 }

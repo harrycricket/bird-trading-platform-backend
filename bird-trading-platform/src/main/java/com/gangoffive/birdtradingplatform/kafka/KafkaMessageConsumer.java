@@ -146,7 +146,8 @@ public class KafkaMessageConsumer {
         messagingTemplate.convertAndSend(destination, notification);
 
         //save notification
-        notificationService.saveNotify(noti);
+        boolean result = notificationService.saveNotify(noti);
+        log.info("here ios result {}",result );
     }
 
 }
