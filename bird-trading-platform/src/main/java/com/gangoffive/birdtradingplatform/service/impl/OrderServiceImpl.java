@@ -99,11 +99,10 @@ public class OrderServiceImpl implements OrderService {
                         changeStatusListIdDto.getIds());
                 if(result == changeStatusListIdDto.getIds().size()) {
                     List<Long> userIdList = packageOrderRepository.findAllAccountIdByOrderIds(changeStatusListIdDto.getIds()).get();
-                    NotificationDto noti = NotificationDto.builder()
-                            .name(NotifiConstant.ORDER_NAME_NOTI)
-                            .notiText(orderStatus.getDescription())
-                            .role("user")
-                            .build();
+                    NotificationDto noti = new NotificationDto();
+                    noti.setName((NotifiConstant.ORDER_NAME_NOTI));
+                    noti.setNotiText(orderStatus.getDescription());
+                    noti.setRole("user");
                     notificationService.pushNotificationForListUserID(userIdList, noti);
                     return ResponseEntity.ok("Update success");
                 }else {
