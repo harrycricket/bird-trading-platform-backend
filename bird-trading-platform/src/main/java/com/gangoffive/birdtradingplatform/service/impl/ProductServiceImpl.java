@@ -599,8 +599,12 @@ public class ProductServiceImpl implements ProductService {
             String listImages = gson.toJson(images);
             JsonArray imageArray = JsonParser.parseString(listImages).getAsJsonArray();
             json.add("listImages", imageArray);
-            json.addProperty("video", product.get().getVideoUrl());
-
+            String video = product.get().getVideoUrl();
+            if(product.get().getVideoUrl() == null || product.get().getVideoUrl().equals("NULL") ||
+                    product.get().getVideoUrl().isEmpty()) {
+                video = "";
+            }
+            json.addProperty("video", video);
             String jsonString = json.toString();
             return ResponseEntity.ok(jsonString);
         } else {
@@ -1532,15 +1536,13 @@ public class ProductServiceImpl implements ProductService {
     private PageNumberWrapper<Long> getAllIdBirdByFilter(ProductFilterDto filterDto) {
         filterDto = this.checkProductFilterDto(filterDto);
         PageRequest pageRequest = this.getSortDirect(filterDto);
-
+        List<String> listName = MyUtils.splitStringToList(filterDto.getName(), " ");
         Page<Long> pageAble = birdRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
                 filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(), pageRequest);
         PageNumberWrapper<Long> productDtoPageNumberWrapper = new PageNumberWrapper<>();
+        log.info("here is an list {}", pageAble.getContent());
         productDtoPageNumberWrapper.setLists(pageAble.getContent());
         productDtoPageNumberWrapper.setPageNumber(pageAble.getTotalPages());
-//        productDtoPageNumberWraper.setLists(pageAble);
-//        productDtoPageNumberWraper.setPageNumber(2);
-//        log.info("list id after filter {}",pageAble);
         return productDtoPageNumberWrapper;
     }
 
@@ -1571,10 +1573,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ProductFilterDto checkProductFilterDto(ProductFilterDto filterDto) {
-        if (filterDto.getListTypeId() == null)
-            filterDto.setListTypeId(typeAccessoryRepository.findAllId());
+        if (filterDto.getListTypeId() == null || filterDto.getListTypeId().size() == 0)
+            filterDto.setListTypeId(null);
         if (filterDto.getName() == null || filterDto.getName().isEmpty())
             filterDto.setName("%");
+        else
+            filterDto.setName(filterDto.getName().trim());
         if (filterDto.getHighestPrice() == 0.0)
             filterDto.setHighestPrice(999999999);
         if (filterDto.getStar() == 1)
@@ -1592,10 +1596,10 @@ public class ProductServiceImpl implements ProductService {
                 .orElse("Increase");
         if (sortDirect.equals("Increase")) {
             pageRequest = PageRequest.of(filterDto.getPageNumber() - 1, PagingAndSorting.DEFAULT_PAGE_SIZE,
-                    Sort.by(Sort.Direction.ASC, "price"));
+                    Sort.by(Sort.Direction.ASC, "discounted_price"));
         } else {
             pageRequest = PageRequest.of(filterDto.getPageNumber() - 1, PagingAndSorting.DEFAULT_PAGE_SIZE,
-                    Sort.by(Sort.Direction.DESC, "price"));
+                    Sort.by(Sort.Direction.DESC, "discounted_price"));
         }
         return pageRequest;
     }
@@ -1611,8 +1615,6 @@ public class ProductServiceImpl implements ProductService {
         } else if (filterDto.getCategory() == 3) {
             productDtoPageNumberWrapper = this.getAllIdAccessoryFilter(filterDto);
         }
-
-
         List<Product> listTemp = productRepository.findAllById(productDtoPageNumberWrapper.getLists());
         List<ProductDto> listdtos = this.listModelToDto(listTemp);
         String sortDirect = Optional.ofNullable(filterDto)
@@ -1625,7 +1627,7 @@ public class ProductServiceImpl implements ProductService {
                 Collections.sort(listdtos, new Comparator<ProductDto>() {
                     @Override
                     public int compare(ProductDto o1, ProductDto o2) {
-                        return (int) (o1.getPrice() - o2.getPrice());
+                        return (int) (o1.getDiscountedPrice() - o2.getDiscountedPrice());
                     }
                 });
             }
@@ -1635,7 +1637,7 @@ public class ProductServiceImpl implements ProductService {
                 Collections.sort(listdtos, new Comparator<ProductDto>() {
                     @Override
                     public int compare(ProductDto o1, ProductDto o2) {
-                        return (int) (-o1.getPrice() + o2.getPrice());
+                        return (int) (-o1.getDiscountedPrice() + o2.getDiscountedPrice());
                     }
                 });
             }
