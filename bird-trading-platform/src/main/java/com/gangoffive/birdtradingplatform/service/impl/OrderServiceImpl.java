@@ -1,16 +1,15 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.common.NotifiConstant;
 import com.gangoffive.birdtradingplatform.common.OrderStatusConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.*;
 import com.gangoffive.birdtradingplatform.mapper.PromotionShopMapper;
-import com.gangoffive.birdtradingplatform.repository.AccountRepository;
-import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
-import com.gangoffive.birdtradingplatform.repository.OrderRepository;
-import com.gangoffive.birdtradingplatform.repository.PromotionShopRepository;
+import com.gangoffive.birdtradingplatform.repository.*;
+import com.gangoffive.birdtradingplatform.service.NotificationService;
 import com.gangoffive.birdtradingplatform.service.OrderDetailService;
 import com.gangoffive.birdtradingplatform.service.OrderService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
@@ -40,7 +39,8 @@ public class OrderServiceImpl implements OrderService {
     private final PromotionShopRepository promotionShopRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final OrderDetailService orderDetailService;
-
+    private final NotificationService notificationService;
+    private final PackageOrderRepository packageOrderRepository;
     @Override
     public ResponseEntity<?> getAllOrderByPackageOrderId(Long packageOrderId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -85,6 +85,48 @@ public class OrderServiceImpl implements OrderService {
                 .errorMessage("Page number cannot less than 1")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<?> updateStatusOrderOfShipping(ChangeStatusListIdDto changeStatusListIdDto, String token) {
+        boolean condition = true; // do some thing to check token
+        if(condition) {
+            if(changeStatusListIdDto.getStatus() >= OrderStatus.SHIPPED.getStatusCode()
+                    || changeStatusListIdDto.getStatus() == OrderStatus.CANCELLED.getStatusCode()) {
+                OrderStatus orderStatus = OrderStatus.getOrderStatusBaseOnStatusCode(changeStatusListIdDto.getStatus());
+                int result  = orderRepository.updateStatusOfListId(
+                        orderStatus,
+                        changeStatusListIdDto.getIds());
+                if(result == changeStatusListIdDto.getIds().size()) {
+                    List<Long> userIdList = packageOrderRepository.findAllAccountIdByOrderIds(changeStatusListIdDto.getIds()).get();
+                    NotificationDto noti = NotificationDto.builder()
+                            .name(NotifiConstant.ORDER_NAME_NOTI)
+                            .notiText(orderStatus.getDescription())
+                            .role("user")
+                            .build();
+                    notificationService.pushNotificationForListUserID(userIdList, noti);
+                    return ResponseEntity.ok("Update success");
+                }else {
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                            .errorMessage(String.format("Update fail %d order", changeStatusListIdDto.getIds().size() - result))
+                            .build();
+                    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                }
+            }else{
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .errorMessage("Some thing went wrong!")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+        }else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                    .errorMessage("Token not valid!")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @Override

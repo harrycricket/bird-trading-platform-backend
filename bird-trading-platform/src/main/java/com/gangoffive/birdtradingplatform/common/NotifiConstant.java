@@ -7,4 +7,6 @@ public class NotifiConstant {
     public static final String NOTI_EVERYONE_ROLE = "everyone";
     public static final String NOTIFICATION_SEND = "Announcement to %s with message %s";
     public static final String NOTIFICATION_PUBLIC = "Announcement to everyone with message %s";
+
+    public static final String ORDER_NAME_NOTI = "YOUR ORDER";
 }
