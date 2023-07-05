@@ -17,4 +17,5 @@ public class ProductUpdateDto {
     private DetailProductFormDto detailsForm;
     private SaleProductFormDto salesForm;
     private List<String> listImages;
+    private boolean deleteVideo;
 }

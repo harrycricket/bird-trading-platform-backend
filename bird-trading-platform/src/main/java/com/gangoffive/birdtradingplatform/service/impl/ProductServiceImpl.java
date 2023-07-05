@@ -650,14 +650,29 @@ public class ProductServiceImpl implements ProductService {
                 }
                 List<String> urlList = Arrays.asList(bird.getImgUrl().split(","));
                 List<String> listImagesRemove = productUpdate.getListImages();
+                List<String> updateUrlList = new ArrayList<>();
                 //Remove image
                 if (listImagesRemove.size() > 0) {
+                    ResponseEntity<ErrorResponse> errorNotFoundLinkImage = getErrorResponseNotFoundLinkImage(urlList, listImagesRemove);
+                    if (errorNotFoundLinkImage != null)
+                        return errorNotFoundLinkImage;
                     //remove in DB
-                    listImagesRemove.forEach(urlList::remove);
+                    listImagesRemove.forEach(image -> log.info("image remove {}", image));
+                    urlList.forEach(image -> log.info("image {}", image));
+                    for (int i = 0; i < urlList.size(); i++) {
+                        if (!listImagesRemove.contains(urlList.get(i))) {
+                            updateUrlList.add(urlList.get(i));
+                        }
+                    }
+                    updateUrlList.forEach(image -> log.info("image after {}", image));
                     //remove in S3
                     ResponseEntity<ErrorResponse> errorResponse = removeListImageInS3(listImagesRemove);
                     if (errorResponse != null) {
                         return errorResponse;
+                    }
+                } else {
+                    for (String urlImage : urlList) {
+                        updateUrlList.add(urlImage);
                     }
                 }
                 String originUrl = appProperties.getS3().getUrl();
@@ -665,7 +680,7 @@ public class ProductServiceImpl implements ProductService {
                 if (multipartImgList != null && !multipartImgList.isEmpty()) {
                     for (MultipartFile multipartFile : multipartImgList) {
                         String newFilename = getNewImageFileName(multipartFile);
-                        urlList.add(originUrl + newFilename);
+                        updateUrlList.add(originUrl + newFilename);
                         try {
                             S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
                         } catch (Exception ex) {
@@ -678,10 +693,22 @@ public class ProductServiceImpl implements ProductService {
                     }
                 }
 
-                String imgUrl = urlList.stream()
+                updateUrlList.forEach(image -> log.info("image after add new {}", image));
+
+                String imgUrl = updateUrlList.stream()
                         .collect(Collectors.joining(","));
                 bird.setImgUrl(imgUrl);
                 String oldVideoUrl = bird.getVideoUrl();
+                //Only delete video
+                if (productUpdate.isDeleteVideo() && multipartVideo == null) {
+                    if (oldVideoUrl != null || !oldVideoUrl.isEmpty()) {
+                        ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
+                        if (errorResponse != null) {
+                            return errorResponse;
+                        }
+                    }
+                    bird.setVideoUrl(null);
+                }
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
                     String newFilename = getNewVideoFileName(multipartVideo);
@@ -738,14 +765,29 @@ public class ProductServiceImpl implements ProductService {
                 }
                 List<String> urlList = Arrays.asList(food.getImgUrl().split(","));
                 List<String> listImagesRemove = productUpdate.getListImages();
+                List<String> updateUrlList = new ArrayList<>();
                 //Remove image
                 if (listImagesRemove.size() > 0) {
+                    ResponseEntity<ErrorResponse> errorNotFoundLinkImage = getErrorResponseNotFoundLinkImage(urlList, listImagesRemove);
+                    if (errorNotFoundLinkImage != null)
+                        return errorNotFoundLinkImage;
                     //remove in DB
-                    listImagesRemove.forEach(urlList::remove);
+                    listImagesRemove.forEach(image -> log.info("image remove {}", image));
+                    urlList.forEach(image -> log.info("image {}", image));
+                    for (int i = 0; i < urlList.size(); i++) {
+                        if (!listImagesRemove.contains(urlList.get(i))) {
+                            updateUrlList.add(urlList.get(i));
+                        }
+                    }
+                    updateUrlList.forEach(image -> log.info("image after {}", image));
                     //remove in S3
                     ResponseEntity<ErrorResponse> errorResponse = removeListImageInS3(listImagesRemove);
                     if (errorResponse != null) {
                         return errorResponse;
+                    }
+                } else {
+                    for (String urlImage : urlList) {
+                        updateUrlList.add(urlImage);
                     }
                 }
                 String originUrl = appProperties.getS3().getUrl();
@@ -753,7 +795,7 @@ public class ProductServiceImpl implements ProductService {
                 if (multipartImgList != null && !multipartImgList.isEmpty()) {
                     for (MultipartFile multipartFile : multipartImgList) {
                         String newFilename = getNewImageFileName(multipartFile);
-                        urlList.add(originUrl + newFilename);
+                        updateUrlList.add(originUrl + newFilename);
                         try {
                             S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
                         } catch (Exception ex) {
@@ -765,10 +807,20 @@ public class ProductServiceImpl implements ProductService {
                         }
                     }
                 }
-                String imgUrl = urlList.stream()
+                String imgUrl = updateUrlList.stream()
                         .collect(Collectors.joining(","));
                 food.setImgUrl(imgUrl);
                 String oldVideoUrl = food.getVideoUrl();
+                //Only delete video
+                if (productUpdate.isDeleteVideo() && multipartVideo == null) {
+                    if (oldVideoUrl != null || !oldVideoUrl.isEmpty()) {
+                        ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
+                        if (errorResponse != null) {
+                            return errorResponse;
+                        }
+                    }
+                    food.setVideoUrl(null);
+                }
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
                     String newFilename = getNewVideoFileName(multipartVideo);
@@ -825,14 +877,29 @@ public class ProductServiceImpl implements ProductService {
                 }
                 List<String> urlList = Arrays.asList(accessory.getImgUrl().split(","));
                 List<String> listImagesRemove = productUpdate.getListImages();
+                List<String> updateUrlList = new ArrayList<>();
                 //Remove image
                 if (listImagesRemove.size() > 0) {
+                    ResponseEntity<ErrorResponse> errorNotFoundLinkImage = getErrorResponseNotFoundLinkImage(urlList, listImagesRemove);
+                    if (errorNotFoundLinkImage != null)
+                        return errorNotFoundLinkImage;
                     //remove in DB
-                    listImagesRemove.forEach(urlList::remove);
+                    listImagesRemove.forEach(image -> log.info("image remove {}", image));
+                    urlList.forEach(image -> log.info("image {}", image));
+                    for (int i = 0; i < urlList.size(); i++) {
+                        if (!listImagesRemove.contains(urlList.get(i))) {
+                            updateUrlList.add(urlList.get(i));
+                        }
+                    }
+                    updateUrlList.forEach(image -> log.info("image after {}", image));
                     //remove in S3
                     ResponseEntity<ErrorResponse> errorResponse = removeListImageInS3(listImagesRemove);
                     if (errorResponse != null) {
                         return errorResponse;
+                    }
+                } else {
+                    for (String urlImage : urlList) {
+                        updateUrlList.add(urlImage);
                     }
                 }
                 String originUrl = appProperties.getS3().getUrl();
@@ -840,7 +907,7 @@ public class ProductServiceImpl implements ProductService {
                 if (multipartImgList != null && !multipartImgList.isEmpty()) {
                     for (MultipartFile multipartFile : multipartImgList) {
                         String newFilename = getNewImageFileName(multipartFile);
-                        urlList.add(originUrl + newFilename);
+                        updateUrlList.add(originUrl + newFilename);
                         try {
                             S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
                         } catch (Exception ex) {
@@ -852,11 +919,21 @@ public class ProductServiceImpl implements ProductService {
                         }
                     }
                 }
-                String imgUrl = urlList.stream()
+                String imgUrl = updateUrlList.stream()
                         .collect(Collectors.joining(","));
                 accessory.setImgUrl(imgUrl);
 
                 String oldVideoUrl = accessory.getVideoUrl();
+                //Only delete video
+                if (productUpdate.isDeleteVideo() && multipartVideo == null) {
+                    if (oldVideoUrl != null || !oldVideoUrl.isEmpty()) {
+                        ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
+                        if (errorResponse != null) {
+                            return errorResponse;
+                        }
+                    }
+                    accessory.setVideoUrl(null);
+                }
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
                     String newFilename = getNewVideoFileName(multipartVideo);
@@ -893,6 +970,19 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         }
+    }
+
+    private static ResponseEntity<ErrorResponse> getErrorResponseNotFoundLinkImage(List<String> urlList, List<String> listImagesRemove) {
+        for (String imgRemove : listImagesRemove) {
+            if (!urlList.contains(imgRemove)) {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .errorMessage("No find image link to remove.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+        }
+        return null;
     }
 
     private String getNewImageFileName(MultipartFile multipartFile) {
