@@ -129,12 +129,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     )
             );
         } catch (AuthenticationException ex) {
-//            ErrorResponse error = new ErrorResponse().builder()
-//                    .errorCode(HttpStatus.UNAUTHORIZED.toString())
-//                    .errorMessage("Email or password not correct!")
-//                    .build();
-//            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
-            throw new AuthenticateException("Email or password not correct!");
+            ErrorResponse error = new ErrorResponse().builder()
+                    .errorCode(String.valueOf(HttpStatus.UNAUTHORIZED.value()))
+                    .errorMessage("Email or password not correct!")
+                    .build();
+            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+//            throw new AuthenticateException("Email or password not correct!");
         }
 
         var account = accountRepository.findByEmail(request.getEmail()).orElse(null);

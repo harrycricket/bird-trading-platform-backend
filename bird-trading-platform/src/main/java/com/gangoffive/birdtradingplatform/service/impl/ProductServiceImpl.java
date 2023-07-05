@@ -972,7 +972,7 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private static ResponseEntity<ErrorResponse> getErrorResponseNotFoundLinkImage(List<String> urlList, List<String> listImagesRemove) {
+    private ResponseEntity<ErrorResponse> getErrorResponseNotFoundLinkImage(List<String> urlList, List<String> listImagesRemove) {
         for (String imgRemove : listImagesRemove) {
             if (!urlList.contains(imgRemove)) {
                 ErrorResponse errorResponse = ErrorResponse.builder()

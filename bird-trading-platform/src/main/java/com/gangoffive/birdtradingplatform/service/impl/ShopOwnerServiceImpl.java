@@ -32,6 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,6 +63,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final ShopStaffRepository shopStaffRepository;
     private final ShopStaffMapper shopStaffMapper;
     private final AddressRepository addressRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
@@ -668,7 +670,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 if (!accountStaff.isPresent()) {
                     ShopStaff shopStaff = ShopStaff.builder()
                             .userName(createAccountSaffDto.getUserName())
-                            .password(createAccountSaffDto.getPassword())
+                            .password(passwordEncoder.encode(createAccountSaffDto.getPassword()))
                             .shopOwner(shopOwner)
                             .status(AccountStatus.VERIFY)
                             .build();
@@ -701,6 +703,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
     }
+
     public ResponseEntity<?> getShopStaff(int pageNumber){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<Account> account = accountRepository.findByEmail(email);

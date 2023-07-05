@@ -51,6 +51,7 @@ public class SecurityConfiguration {
             "/error",
             "/api/v1/users/register",
             "/api/v1/users/authenticate",
+            "/api/v1/staffs/authenticate",
             "/api/v1/users/reset-password",
             "/api/v1/users/verify/register",
             "/api/v1/users/verify/reset-password",
@@ -121,11 +122,11 @@ public class SecurityConfiguration {
                                 .requestMatchers("/api/v1/admin/**").hasAnyRole(ADMIN.name())
 
 //                                .requestMatchers(HttpMethod.POST, "/api/v1/package-order").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
-                                .requestMatchers(HttpMethod.GET, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_READ.getPermission())
-                                .requestMatchers(HttpMethod.POST, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
-                                .requestMatchers(HttpMethod.PUT, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_UPDATE.getPermission())
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_DELETE.getPermission())
-                                .requestMatchers("/api/v1/shopowner/**").hasAnyRole(SHOPOWNER.name())
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_READ.getPermission())
+                                .requestMatchers(HttpMethod.POST, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_UPDATE.getPermission())
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_DELETE.getPermission())
+                                .requestMatchers("/api/v1/shop-owner/**").hasAnyRole(SHOPOWNER.name())
 
 
                                 .requestMatchers(HttpMethod.GET, "/api/v1/user/**").hasAnyAuthority(USER_READ.getPermission())
@@ -135,8 +136,9 @@ public class SecurityConfiguration {
                                 .requestMatchers("/api/v1/user/**").hasAnyRole(USER.name())
 
 
-                                .requestMatchers(HttpMethod.GET, "/api/v1/shopstaff/**").hasAnyAuthority(SHOPSTAFF_READ.getPermission())
-                                .requestMatchers("/api/v1/shopstaff/**").hasAnyRole(SHOPSTAFF.name())
+                                .requestMatchers(HttpMethod.GET, "/api/v1/staff/**").hasAnyAuthority(SHOPSTAFF_READ.getPermission())
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/staff/**").hasAnyAuthority(SHOPSTAFF_UPDATE.getPermission())
+                                .requestMatchers("/api/v1/staff/**").hasAnyRole(SHOPSTAFF.name())
 
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").hasAnyAuthority(USER_UPDATE.getPermission(), SHOPSTAFF_UPDATE.getPermission(), SHOPOWNER_UPDATE.getPermission())
                                 .requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasAnyAuthority(USER_READ.getPermission(), SHOPSTAFF_READ.getPermission(), SHOPOWNER_READ.getPermission())

@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -20,11 +21,16 @@ import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class JwtService {
     private final AppProperties appProperties;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractAudience(String token) {
+        return extractClaim(token, Claims::getAudience);
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -45,8 +51,8 @@ public class JwtService {
         return generateToken(new HashMap<>(), userDetails);
     }
 
-    public String generateToken(UserDetails userDetails, String ...scopes) {
-        return generateToken(Map.of("scopes", scopes), userDetails);
+    public String generateToken(UserDetails userDetails, String ...staffAccount) {
+        return generateToken(Map.of("staffAccount", staffAccount), userDetails);
     }
 
     public String generateToken(UserDetails userDetails, List<String> scopes) {
@@ -78,6 +84,17 @@ public class JwtService {
             UserDetails userDetails,
             Long expiration
     ) {
+        if (extractClaims.containsKey("staffAccount")) {
+            return Jwts
+                    .builder()
+                    .setClaims(extractClaims)
+                    .setAudience(((String[]) extractClaims.get("staffAccount"))[0])
+                    .setSubject(userDetails.getUsername())
+                    .setIssuedAt(new Date(System.currentTimeMillis()))
+                    .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                    .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                    .compact();
+        }
         return Jwts
                 .builder()
                 .setClaims(extractClaims)

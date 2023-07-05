@@ -62,20 +62,23 @@ public class ShopOwnerController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<?>  getShopInfoById () {
-        return shopOwnerService.getShopInforByUserId ();
+    public ResponseEntity<?> getShopInfoById() {
+        return shopOwnerService.getShopInforByUserId();
     }
 
     @PostMapping("/create-staff")
-    public ResponseEntity<?> createAccountStaff(@RequestBody CreateAccountSaffDto createAccountSaffDto){
+    public ResponseEntity<?> createAccountStaff(@RequestBody CreateAccountSaffDto createAccountSaffDto) {
         return shopOwnerService.createAccountStaff(createAccountSaffDto);
     }
-    @GetMapping("/staffs/pages/{pagenumber}")
-    public ResponseEntity<?> getShopStaff(@PathVariable("pagenumber") int pageNumber){return shopOwnerService.getShopStaff(pageNumber);}
+
+    @GetMapping("/staffs/pages/{pageNumber}")
+    public ResponseEntity<?> getShopStaff(@PathVariable("pageNumber") int pageNumber) {
+        return shopOwnerService.getShopStaff(pageNumber);
+    }
 
     @PutMapping("/profile")
     public ResponseEntity<?> updateShopOwnerProfile(@RequestParam(name = "avatar", required = false) MultipartFile avatarImg,
-                                                    @RequestParam(name ="cover", required = false) MultipartFile coverImg,
+                                                    @RequestParam(name = "cover", required = false) MultipartFile coverImg,
                                                     @RequestPart(name = "data") ShopOwnerUpdateDto shopOwnerDto) {
         return shopOwnerService.updateShopOwnerProfile(avatarImg, coverImg, shopOwnerDto);
     }
