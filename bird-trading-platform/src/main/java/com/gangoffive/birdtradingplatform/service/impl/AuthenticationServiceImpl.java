@@ -130,7 +130,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             );
         } catch (AuthenticationException ex) {
             ErrorResponse error = new ErrorResponse().builder()
-                    .errorCode(String.valueOf(HttpStatus.UNAUTHORIZED.value()))
+                    .errorCode(HttpStatus.UNAUTHORIZED.toString())
                     .errorMessage("Email or password not correct!")
                     .build();
             return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
