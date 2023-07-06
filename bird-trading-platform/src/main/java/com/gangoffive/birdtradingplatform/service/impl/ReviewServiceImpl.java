@@ -56,7 +56,10 @@ public class ReviewServiceImpl implements ReviewService {
     public ResponseEntity<?> addNewReviewByOrderDetailId(List<MultipartFile> multipartFiles, ReviewDto review) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Optional<Account> account = accountRepository.findByEmail(authentication.getName());
-        Optional<OrderDetail> orderDetails = orderDetailRepository.findByIdAndOrder_PackageOrder_Account(review.getId(), account.get());
+        Optional<OrderDetail> orderDetails = orderDetailRepository.findByIdAndOrder_PackageOrder_Account(review.getOrderDetailId(), account.get());
+        log.info("review.getId(), {}", review.getId());
+        log.info("account.get() {}", account.get().getEmail());
+        log.info("orderDetails.isPresent() {}", orderDetails.isPresent());
         if (orderDetails.isPresent()) {
             Review reviewSave = new Review();
             reviewSave.setOrderDetail(orderDetails.get());
