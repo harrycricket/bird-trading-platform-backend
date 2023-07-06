@@ -14,6 +14,7 @@ import java.util.List;
 @Builder
 @ToString
 public class OrderDto {
+    private Long orderId;
     private OrderStatus orderStatus;
     private ShopOwnerDto shopOwner;
     private List<OrderDetailDto> orderDetails;

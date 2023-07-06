@@ -791,6 +791,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             imgUrl = Arrays.stream(imgUrl.split(",")).findFirst().get();
         }
         return OrderDetailDto.builder()
+                .orderDetailId(orderDetail.getId())
                 .productId(orderDetail.getProduct().getId())
                 .productName(orderDetail.getProduct().getName())
                 .price(orderDetail.getPrice())
