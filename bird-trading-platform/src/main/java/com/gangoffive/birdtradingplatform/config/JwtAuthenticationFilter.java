@@ -93,6 +93,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             userEmail = jwtService.extractUsername(jwt);
             audience = jwtService.extractAudience(jwt);
+            log.info("au {}", audience);
         } catch (Exception e) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
 

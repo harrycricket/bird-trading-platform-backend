@@ -104,7 +104,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewDto reviewToReviewDto(Review review) {
         if (!review.getImgUrl().isEmpty()) {
-            ReviewDto.builder()
+            return ReviewDto.builder()
                     .id(review.getId())
                     .orderDetailId(review.getOrderDetail().getId())
                     .productId(review.getOrderDetail().getProduct().getId())
