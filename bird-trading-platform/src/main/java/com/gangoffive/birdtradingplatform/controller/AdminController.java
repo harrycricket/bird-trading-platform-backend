@@ -4,6 +4,7 @@ package com.gangoffive.birdtradingplatform.controller;
 import com.gangoffive.birdtradingplatform.dto.DataBumpChartDto;
 import com.gangoffive.birdtradingplatform.dto.PaymentDto;
 import com.gangoffive.birdtradingplatform.dto.PayoutDto;
+import com.gangoffive.birdtradingplatform.dto.PieChartDto;
 import com.gangoffive.birdtradingplatform.service.AdminService;
 import com.gangoffive.birdtradingplatform.service.PaypalService;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,13 @@ public class AdminController {
     private final PaypalService paypalService;
 
     @GetMapping("admin/bump-chart")
-    public List<DataBumpChartDto> getAllOrder() {
+    public List<DataBumpChartDto> getDataBumpChartRankOfShop() {
         return adminService.dataBumpChartRankOfShop();
+    }
+
+    @GetMapping("admin/pie-chart")
+    public List<PieChartDto> getDataPieChartRankOfShop() {
+        return adminService.dataPieChartRankOfShop();
     }
 
     @PostMapping("admin/payout")
