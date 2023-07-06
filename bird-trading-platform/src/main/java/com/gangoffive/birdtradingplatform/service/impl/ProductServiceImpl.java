@@ -701,7 +701,7 @@ public class ProductServiceImpl implements ProductService {
                 String oldVideoUrl = bird.getVideoUrl();
                 //Only delete video
                 if (productUpdate.isDeleteVideo() && multipartVideo == null) {
-                    if (oldVideoUrl != null || !oldVideoUrl.isEmpty()) {
+                    if (oldVideoUrl != null && !oldVideoUrl.isEmpty()) {
                         ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
                         if (errorResponse != null) {
                             return errorResponse;
@@ -723,7 +723,7 @@ public class ProductServiceImpl implements ProductService {
                                 .build();
                         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
                     }
-                    if (oldVideoUrl != null || !oldVideoUrl.isEmpty()) {
+                    if (oldVideoUrl != null && !oldVideoUrl.isEmpty()) {
                         ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
                         if (errorResponse != null) {
                             return errorResponse;
@@ -813,7 +813,7 @@ public class ProductServiceImpl implements ProductService {
                 String oldVideoUrl = food.getVideoUrl();
                 //Only delete video
                 if (productUpdate.isDeleteVideo() && multipartVideo == null) {
-                    if (oldVideoUrl != null || !oldVideoUrl.isEmpty()) {
+                    if (oldVideoUrl != null && !oldVideoUrl.isEmpty()) {
                         ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
                         if (errorResponse != null) {
                             return errorResponse;
@@ -835,7 +835,7 @@ public class ProductServiceImpl implements ProductService {
                                 .build();
                         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
                     }
-                    if (oldVideoUrl != null || !oldVideoUrl.isEmpty()) {
+                    if (oldVideoUrl != null && !oldVideoUrl.isEmpty()) {
                         ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
                         if (errorResponse != null) {
                             return errorResponse;
@@ -926,7 +926,7 @@ public class ProductServiceImpl implements ProductService {
                 String oldVideoUrl = accessory.getVideoUrl();
                 //Only delete video
                 if (productUpdate.isDeleteVideo() && multipartVideo == null) {
-                    if (oldVideoUrl != null || !oldVideoUrl.isEmpty()) {
+                    if (oldVideoUrl != null && !oldVideoUrl.isEmpty()) {
                         ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
                         if (errorResponse != null) {
                             return errorResponse;
@@ -948,7 +948,7 @@ public class ProductServiceImpl implements ProductService {
                                 .build();
                         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
                     }
-                    if (oldVideoUrl != null || !oldVideoUrl.isEmpty()) {
+                    if (oldVideoUrl != null && !oldVideoUrl.isEmpty()) {
                         ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
                         if (errorResponse != null) {
                             return errorResponse;
