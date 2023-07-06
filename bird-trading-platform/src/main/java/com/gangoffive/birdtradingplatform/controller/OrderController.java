@@ -49,4 +49,9 @@ public class OrderController {
                                                  @RequestBody ChangeStatusListIdDto changeStatusListIdDto) {
         return orderService.updateStatusOrderOfShipping(changeStatusListIdDto, token);
     }
+
+    @GetMapping("shop-owner/order-detail/order/{orderId}")
+    public ResponseEntity<?> getAllOrderDetailByOrderId(@PathVariable Long orderId) {
+        return orderService.getAllOrderDetailByOrderId(orderId);
+    }
 }

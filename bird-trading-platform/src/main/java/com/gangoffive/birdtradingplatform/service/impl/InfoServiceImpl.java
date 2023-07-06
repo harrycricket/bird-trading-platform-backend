@@ -67,6 +67,7 @@ public class InfoServiceImpl implements InfoService {
             AuthenticationResponseDto authenticationResponseDto = AuthenticationResponseDto.builder()
                     .token(tokenDto)
                     .userInfo(userInfo)
+                    .role(account.get().getRole().ordinal() + 1)
                     .build();
             return ResponseEntity.ok().body(authenticationResponseDto);
         }

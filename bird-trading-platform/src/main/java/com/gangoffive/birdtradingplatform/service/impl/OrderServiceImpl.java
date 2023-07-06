@@ -89,7 +89,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public ResponseEntity<?> updateStatusOrderOfShipping(ChangeStatusListIdDto changeStatusListIdDto, String token) {
-        boolean condition = true; // do some thing to check token
+        boolean condition = true; // do something to check token
         if(condition) {
             if(changeStatusListIdDto.getStatus() >= OrderStatus.SHIPPED.getStatusCode()
                     || changeStatusListIdDto.getStatus() == OrderStatus.CANCELLED.getStatusCode()) {
@@ -126,6 +126,22 @@ public class OrderServiceImpl implements OrderService {
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                     .errorMessage("Token not valid!")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getAllOrderDetailByOrderId(Long id) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Account> account = accountRepository.findByEmail(email);
+        Optional<Order> order = orderRepository.findByShopOwnerAndId(account.get().getShopOwner(), id);
+        if (order.isPresent()) {
+            return ResponseEntity.ok(orderToOrderDto(order.get()));
+        } else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                    .errorMessage("Order id not correct.")
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }

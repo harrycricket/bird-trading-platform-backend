@@ -2,6 +2,8 @@ package com.gangoffive.birdtradingplatform.dto;
 
 import lombok.*;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -15,4 +17,5 @@ public class OrderDetailDto {
     private int quantity;
     private double price;
     private double productPromotionRate;
+    private List<PromotionShopDto> listPromotion;
 }
