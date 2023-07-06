@@ -20,7 +20,7 @@ public class OrderDto {
     private double totalPriceProduct;
     private double shippingFee;
     private PaymentMethod paymentMethod;
-    private String address;
+    private AddressInfoDto address;
     private Long createdDate;
     private Long lastedUpdate;
 }
