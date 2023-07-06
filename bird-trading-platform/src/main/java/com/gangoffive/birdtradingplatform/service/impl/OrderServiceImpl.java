@@ -768,8 +768,10 @@ public class OrderServiceImpl implements OrderService {
                 .totalPriceProduct(order.getTotalPrice())
                 .orderDetails(orderDetailsDto)
                 .shippingFee(order.getShippingFee())
-                .createdDate(order.getCreatedDate())
-                .lastedUpdate(order.getLastedUpdate())
+                .address(order.getPackageOrder().getShippingAddress().getAddress())
+                .paymentMethod(order.getPackageOrder().getPaymentMethod())
+                .createdDate(order.getCreatedDate().getTime())
+                .lastedUpdate(order.getLastedUpdate().getTime())
                 .build();
     }
 

@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.dto;
 
 import com.gangoffive.birdtradingplatform.enums.OrderStatus;
+import com.gangoffive.birdtradingplatform.enums.PaymentMethod;
 import lombok.*;
 
 import java.util.Date;
@@ -18,6 +19,8 @@ public class OrderDto {
     private List<OrderDetailDto> orderDetails;
     private double totalPriceProduct;
     private double shippingFee;
-    private Date createdDate;
-    private Date lastedUpdate;
+    private PaymentMethod paymentMethod;
+    private String address;
+    private Long createdDate;
+    private Long lastedUpdate;
 }
