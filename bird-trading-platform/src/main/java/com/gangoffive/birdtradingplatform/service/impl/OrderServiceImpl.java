@@ -7,6 +7,7 @@ import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.*;
+import com.gangoffive.birdtradingplatform.mapper.AddressMapper;
 import com.gangoffive.birdtradingplatform.mapper.PromotionShopMapper;
 import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.NotificationService;
@@ -41,6 +42,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderDetailService orderDetailService;
     private final NotificationService notificationService;
     private final PackageOrderRepository packageOrderRepository;
+    private final AddressMapper addressMapper;
     @Override
     public ResponseEntity<?> getAllOrderByPackageOrderId(Long packageOrderId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -768,7 +770,7 @@ public class OrderServiceImpl implements OrderService {
                 .totalPriceProduct(order.getTotalPrice())
                 .orderDetails(orderDetailsDto)
                 .shippingFee(order.getShippingFee())
-                .address(order.getPackageOrder().getShippingAddress().getAddress())
+                .address(addressMapper.toAddressInfoDto(order.getPackageOrder().getShippingAddress()))
                 .paymentMethod(order.getPackageOrder().getPaymentMethod())
                 .createdDate(order.getCreatedDate().getTime())
                 .lastedUpdate(order.getLastedUpdate().getTime())
