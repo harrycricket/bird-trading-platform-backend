@@ -765,6 +765,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(orderDetailService::orderDetailToOrderDetailDto)
                 .toList();
         return OrderDto.builder()
+                .orderId(order.getId())
                 .orderStatus(order.getStatus())
                 .shopOwner(shopOwnerDto)
                 .totalPriceProduct(order.getTotalPrice())

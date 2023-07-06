@@ -11,6 +11,7 @@ import java.util.List;
 @Builder
 @ToString
 public class OrderDetailDto {
+    private Long orderDetailId;
     private Long productId;
     private String productName;
     private String imgUrl;
