@@ -10,6 +10,7 @@ import com.gangoffive.birdtradingplatform.enums.ReviewRating;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
+import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.service.ReviewService;
 import com.gangoffive.birdtradingplatform.util.FileNameUtils;
 import com.gangoffive.birdtradingplatform.util.S3Utils;
@@ -36,6 +37,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final AccountRepository accountRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final AppProperties appProperties;
+    private final ProductSummaryService productSummaryService;
 
     @Override
     public ResponseEntity<?> getAllReviewByOrderId(Long orderId) {
@@ -88,6 +90,8 @@ public class ReviewServiceImpl implements ReviewService {
                     .collect(Collectors.joining(","));
             reviewSave.setImgUrl(imgUrl);
             Review save = reviewRepository.save(reviewSave);
+            productSummaryService.updateReviewTotal(save.getOrderDetail().getProduct());
+            productSummaryService.updateProductStar(save.getOrderDetail().getProduct());
             return ResponseEntity.ok(reviewToReviewDto(save));
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
