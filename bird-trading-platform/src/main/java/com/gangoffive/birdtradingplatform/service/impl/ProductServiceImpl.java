@@ -14,6 +14,7 @@ import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.service.PromotionPriceService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
+import com.gangoffive.birdtradingplatform.util.FileNameUtils;
 import com.gangoffive.birdtradingplatform.util.MyUtils;
 import com.gangoffive.birdtradingplatform.util.S3Utils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
@@ -679,7 +680,7 @@ public class ProductServiceImpl implements ProductService {
                 //Add new image
                 if (multipartImgList != null && !multipartImgList.isEmpty()) {
                     for (MultipartFile multipartFile : multipartImgList) {
-                        String newFilename = getNewImageFileName(multipartFile);
+                        String newFilename = FileNameUtils.getNewImageFileName(multipartFile);
                         updateUrlList.add(originUrl + newFilename);
                         try {
                             S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
@@ -711,7 +712,7 @@ public class ProductServiceImpl implements ProductService {
                 }
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                    String newFilename = getNewVideoFileName(multipartVideo);
+                    String newFilename = FileNameUtils.getNewVideoFileName(multipartVideo);
                     String urlVideo = originUrl + newFilename;
                     try {
                         S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
@@ -794,7 +795,7 @@ public class ProductServiceImpl implements ProductService {
                 //Add new image
                 if (multipartImgList != null && !multipartImgList.isEmpty()) {
                     for (MultipartFile multipartFile : multipartImgList) {
-                        String newFilename = getNewImageFileName(multipartFile);
+                        String newFilename = FileNameUtils.getNewImageFileName(multipartFile);
                         updateUrlList.add(originUrl + newFilename);
                         try {
                             S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
@@ -823,7 +824,7 @@ public class ProductServiceImpl implements ProductService {
                 }
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                    String newFilename = getNewVideoFileName(multipartVideo);
+                    String newFilename = FileNameUtils.getNewVideoFileName(multipartVideo);
                     String urlVideo = originUrl + newFilename;
                     try {
                         S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
@@ -906,7 +907,7 @@ public class ProductServiceImpl implements ProductService {
                 //Add new image
                 if (multipartImgList != null && !multipartImgList.isEmpty()) {
                     for (MultipartFile multipartFile : multipartImgList) {
-                        String newFilename = getNewImageFileName(multipartFile);
+                        String newFilename = FileNameUtils.getNewImageFileName(multipartFile);
                         updateUrlList.add(originUrl + newFilename);
                         try {
                             S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
@@ -936,7 +937,7 @@ public class ProductServiceImpl implements ProductService {
                 }
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                    String newFilename = getNewVideoFileName(multipartVideo);
+                    String newFilename = FileNameUtils.getNewVideoFileName(multipartVideo);
                     String urlVideo = originUrl + newFilename;
                     try {
                         S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
@@ -983,13 +984,6 @@ public class ProductServiceImpl implements ProductService {
             }
         }
         return null;
-    }
-
-    private String getNewImageFileName(MultipartFile multipartFile) {
-        String contentType = multipartFile.getContentType();
-        String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
-        newFilename = "image/" + newFilename;
-        return newFilename;
     }
 
     private ResponseEntity<ErrorResponse> removeVideoInS3(String videoRemove) {
@@ -1650,7 +1644,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ResponseEntity<?> addNewProduct(List<MultipartFile> multipartImgList, MultipartFile multipartVideo, ProductShopOwnerDto productShopOwnerDto) {
+    public ResponseEntity<?> addNewProduct(
+            List<MultipartFile> multipartImgList,
+            MultipartFile multipartVideo,
+            ProductShopOwnerDto productShopOwnerDto
+    ) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(username);
@@ -1660,7 +1658,7 @@ public class ProductServiceImpl implements ProductService {
         if (account.get().getRole() == UserRole.SHOPOWNER) {
             if (multipartImgList != null && !multipartImgList.isEmpty()) {
                 for (MultipartFile multipartFile : multipartImgList) {
-                    String newFilename = getNewImageFileName(multipartFile);
+                    String newFilename = FileNameUtils.getNewImageFileName(multipartFile);
                     urlImgList.add(originUrl + newFilename);
                     try {
                         S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
@@ -1679,7 +1677,7 @@ public class ProductServiceImpl implements ProductService {
 
 
             if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                String newFilename = getNewVideoFileName(multipartVideo);
+                String newFilename = FileNameUtils.getNewVideoFileName(multipartVideo);
                 urlVideo = originUrl + newFilename;
                 try {
                     S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
@@ -1794,13 +1792,6 @@ public class ProductServiceImpl implements ProductService {
                 .errorMessage("Something went wrong!")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    private String getNewVideoFileName(MultipartFile multipartVideo) {
-        String contentType = multipartVideo.getContentType();
-        String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
-        newFilename = "video/" + newFilename;
-        return newFilename;
     }
 
     @Override

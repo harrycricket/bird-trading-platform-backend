@@ -17,6 +17,7 @@ import com.gangoffive.birdtradingplatform.repository.AddressRepository;
 import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
 import com.gangoffive.birdtradingplatform.repository.VerifyTokenRepository;
 import com.gangoffive.birdtradingplatform.service.AccountService;
+import com.gangoffive.birdtradingplatform.util.FileNameUtils;
 import com.gangoffive.birdtradingplatform.util.S3Utils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -53,14 +54,10 @@ public class AccountServiceImpl implements AccountService {
         String originUrl = appProperties.getS3().getUrl();
         String urlImage = "";
         if (multipartImage != null && !multipartImage.isEmpty()) {
-            String contentType = multipartImage.getContentType();
-            log.info("contentType: {}", contentType);
-            String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
-            newFilename = "image/" + newFilename;
-            log.info("newFilename update account: {}", newFilename);
-            urlImage = originUrl + newFilename;
+            String newFileName = FileNameUtils.getNewImageFileName(multipartImage);
+            urlImage = originUrl + newFileName;
             try {
-                S3Utils.uploadFile(newFilename, multipartImage.getInputStream());
+                S3Utils.uploadFile(newFileName, multipartImage.getInputStream());
             } catch (Exception ex) {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
@@ -113,14 +110,10 @@ public class AccountServiceImpl implements AccountService {
             String originUrl = appProperties.getS3().getUrl();
             String urlImage = "";
             if (multipartImage != null && !multipartImage.isEmpty()) {
-                String contentType = multipartImage.getContentType();
-                log.info("contentType: {}", contentType);
-                String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
-                newFilename = "image/" + newFilename;
-                log.info("newFilename update account: {}", newFilename);
-                urlImage = originUrl + newFilename;
+                String newFileName = FileNameUtils.getNewImageFileName(multipartImage);
+                urlImage = originUrl + newFileName;
                 try {
-                    S3Utils.uploadFile(newFilename, multipartImage.getInputStream());
+                    S3Utils.uploadFile(newFileName, multipartImage.getInputStream());
                 } catch (Exception ex) {
                     ErrorResponse errorResponse = ErrorResponse.builder()
                             .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
