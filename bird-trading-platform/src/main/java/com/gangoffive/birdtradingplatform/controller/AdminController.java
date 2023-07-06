@@ -13,19 +13,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1/admin")
+@RequestMapping("api/v1")
 @RequiredArgsConstructor
 @Slf4j
 public class AdminController {
     private final AdminService adminService;
     private final PaypalService paypalService;
 
-    @GetMapping
+    @GetMapping("admin/bump-chart")
     public List<DataBumpChartDto> getAllOrder() {
         return adminService.dataBumpChartRankOfShop();
     }
 
-    @PostMapping("/payout")
+    @PostMapping("admin/payout")
     public void payout(@RequestBody PayoutDto payoutDto) {
         paypalService.createPayout(payoutDto);
     }

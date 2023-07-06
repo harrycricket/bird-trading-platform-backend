@@ -78,6 +78,7 @@ public class ShopStaffServiceImpl implements ShopStaffService {
                 AuthenticationResponseDto authenticationResponseDto = AuthenticationResponseDto.builder()
                         .userInfo(shopOwnerDto)
                         .token(TokenDto.builder().accessToken(token).build())
+                        .role(account.getRole().ordinal() + 1)
                         .build();
                 return ResponseEntity.ok(authenticationResponseDto);
             } else {
