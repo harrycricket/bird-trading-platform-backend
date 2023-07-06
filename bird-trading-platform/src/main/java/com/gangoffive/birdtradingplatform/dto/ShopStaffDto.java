@@ -11,6 +11,7 @@ import lombok.*;
 @Builder
 public class ShopStaffDto {
     private Long id;
+    private Long shopId;
     private String userName;
     private AccountStatus status;
 }

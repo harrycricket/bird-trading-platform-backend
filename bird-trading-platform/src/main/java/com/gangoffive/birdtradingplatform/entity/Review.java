@@ -3,16 +3,13 @@ package com.gangoffive.birdtradingplatform.entity;
 import java.util.Date;
 
 import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.gangoffive.birdtradingplatform.enums.ReviewRating;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString

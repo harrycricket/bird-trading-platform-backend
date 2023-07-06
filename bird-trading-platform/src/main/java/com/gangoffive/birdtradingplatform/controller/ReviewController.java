@@ -1,13 +1,15 @@
 package com.gangoffive.birdtradingplatform.controller;
 
+import com.gangoffive.birdtradingplatform.dto.ProductUpdateDto;
+import com.gangoffive.birdtradingplatform.dto.ReviewDto;
 import com.gangoffive.birdtradingplatform.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1")
@@ -20,4 +22,10 @@ public class ReviewController {
         return reviewService.getAllReviewByOrderId(orderId);
     }
 
+    @PostMapping("/users/reviews")
+    public ResponseEntity<?> updateProduct(
+            @RequestParam(value = "image", required = false) List<MultipartFile> multipartFiles,
+            @RequestPart(name = "data") ReviewDto review) {
+        return reviewService.addNewReviewByOrderDetailId(multipartFiles, review);
+    }
 }

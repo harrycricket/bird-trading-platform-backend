@@ -32,7 +32,9 @@ public interface ShopOwnerService {
     ResponseEntity getShopInforByUserId();
 
     long getShopIdByEmail(String email);
+
     ResponseEntity<?> createAccountStaff(CreateAccountSaffDto createAccountSaffDto);
+
     ResponseEntity<?> getShopStaff(int pageNumber);
 
     ResponseEntity<?> updateShopOwnerProfile(MultipartFile avatarImg, MultipartFile coverImg, ShopOwnerUpdateDto shopInfoDto);
