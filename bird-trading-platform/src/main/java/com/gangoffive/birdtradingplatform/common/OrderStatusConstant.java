@@ -11,7 +11,7 @@ public class OrderStatusConstant {
                     OrderStatus.SHIPPING, OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.REFUNDED);
 
     public static List<OrderStatus> VIEW_ORDER_STATUS_BY_SHIP =
-            Arrays.asList(OrderStatus.SHIPPED, OrderStatus.SHIPPING, OrderStatus.DELIVERED, OrderStatus.CANCELLED);
+            Arrays.asList(OrderStatus.SHIPPED, OrderStatus.SHIPPING, OrderStatus.CANCELLED);
     public static List<OrderStatus> UPDATE_ORDER_STATUS_USER =
             Arrays.asList(OrderStatus.CANCELLED);
     //co cancel hay k
