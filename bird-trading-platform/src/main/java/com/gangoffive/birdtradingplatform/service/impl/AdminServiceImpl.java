@@ -204,7 +204,7 @@ public class AdminServiceImpl implements AdminService {
             PieChartDto pieChartDto = PieChartDto.builder()
                     .id(shopOwner.getShopName())
                     .label(shopOwner.getShopName())
-                    .value(totalPrice)
+                    .value(Math.round(totalPrice * 100.0) / 100.0)
                     .build();
             pieChartDtoList.add(pieChartDto);
         }

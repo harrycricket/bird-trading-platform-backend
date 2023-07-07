@@ -9,6 +9,10 @@ import java.util.List;
 
 public interface ReviewService {
     ResponseEntity<?> getAllReviewByOrderId(Long orderId);
+
     ResponseEntity<?> addNewReviewByOrderDetailId(List<MultipartFile> multipartFiles, ReviewDto review);
+
     ReviewDto reviewToReviewDto(Review review);
+
+    ResponseEntity<?> getAllReviewByProductId(Long productId, int pageNumber);
 }
