@@ -395,7 +395,7 @@ public class OrderServiceImpl implements OrderService {
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found order have created date greater than or equal.")
+                .errorMessage("Not found order have lasted date between this range.")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
@@ -417,7 +417,7 @@ public class OrderServiceImpl implements OrderService {
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found order have created date greater than or equal.")
+                .errorMessage("Not found order have lasted date greater than or equal.")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
@@ -443,7 +443,7 @@ public class OrderServiceImpl implements OrderService {
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found order have created date greater than or equal.")
+                .errorMessage("Not found order have created date between this range.")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }

@@ -38,13 +38,8 @@ public class ReviewController {
         return reviewService.addNewReviewByOrderDetailId(multipartFiles, review);
     }
 
-//    @GetMapping("/shop-owner/reviews")
-//    public ResponseEntity<?> getAllReviewByShopOwner(@RequestParam String data) {
-//        return reviewService.getAllReviewByShopOwner(JsonUtil.INSTANCE.getObject(data, ReviewShopOwnerFilterDto.class));
-//    }
-
-    @PostMapping("/shop-owner/reviews")
-    public ResponseEntity<?> getAllReviewByShopOwner(@RequestBody ReviewShopOwnerFilterDto data) {
-        return reviewService.getAllReviewByShopOwner(data);
+    @GetMapping("/shop-owner/reviews")
+    public ResponseEntity<?> getAllReviewByShopOwner(@RequestParam String data) {
+        return reviewService.getAllReviewByShopOwner(JsonUtil.INSTANCE.getObject(data, ReviewShopOwnerFilterDto.class));
     }
 }

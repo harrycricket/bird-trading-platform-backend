@@ -14,7 +14,7 @@ public enum SortReviewColumn {
     ORDER_DETAIL_ID("orderDetailId", "orderDetail.id"),
     CUSTOMER_NAME("customerName", "account.fullName"),
     PRODUCT_NAME("productName", "orderDetail.product.name"),
-    RATING("rating", "rating.star"),
+    RATING("rating", "rating"),
     REVIEW_DATE("reviewDate", "reviewDate");
 
     private String field;
