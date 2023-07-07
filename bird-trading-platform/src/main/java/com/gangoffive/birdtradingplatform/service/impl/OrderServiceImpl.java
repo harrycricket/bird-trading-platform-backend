@@ -102,7 +102,7 @@ public class OrderServiceImpl implements OrderService {
                     NotificationDto noti = new NotificationDto();
                     noti.setName((NotifiConstant.ORDER_NAME_NOTI_USER));
                     noti.setNotiText(orderStatus.getDescription());
-                    noti.setRole("user");
+                    noti.setRole(NotifiConstant.NOTI_USER_ROLE);
                     boolean resultNe = notificationService.pushNotificationForListUserID(userIdList, noti);
                     if(resultNe)
                         return ResponseEntity.ok("Update success");
