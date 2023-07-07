@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public enum FilterReviewTable {
+public enum FieldReviewTable {
     ID("id"),
     ORDER_DETAIL_ID("orderDetailId"),
     CUSTOMER_NAME("customerName"),
