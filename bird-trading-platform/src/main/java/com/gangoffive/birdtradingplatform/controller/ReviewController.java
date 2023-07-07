@@ -1,8 +1,11 @@
 package com.gangoffive.birdtradingplatform.controller;
 
+import com.gangoffive.birdtradingplatform.dto.OrderShopOwnerFilterDto;
 import com.gangoffive.birdtradingplatform.dto.ProductUpdateDto;
 import com.gangoffive.birdtradingplatform.dto.ReviewDto;
+import com.gangoffive.birdtradingplatform.dto.ReviewShopOwnerFilterDto;
 import com.gangoffive.birdtradingplatform.service.ReviewService;
+import com.gangoffive.birdtradingplatform.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -33,5 +36,15 @@ public class ReviewController {
             @RequestParam(value = "image", required = false) List<MultipartFile> multipartFiles,
             @RequestPart(name = "data") ReviewDto review) {
         return reviewService.addNewReviewByOrderDetailId(multipartFiles, review);
+    }
+
+//    @GetMapping("/shop-owner/reviews")
+//    public ResponseEntity<?> getAllReviewByShopOwner(@RequestParam String data) {
+//        return reviewService.getAllReviewByShopOwner(JsonUtil.INSTANCE.getObject(data, ReviewShopOwnerFilterDto.class));
+//    }
+
+    @PostMapping("/shop-owner/reviews")
+    public ResponseEntity<?> getAllReviewByShopOwner(@RequestBody ReviewShopOwnerFilterDto data) {
+        return reviewService.getAllReviewByShopOwner(data);
     }
 }
