@@ -14,4 +14,6 @@ public interface OrderService {
     ResponseEntity<?> getAllOrderByShip(int pageNumber);
 
     ResponseEntity<?> updateStatusOrderOfShipping(ChangeStatusListIdDto changeStatusListIdDto, String token);
+
+    ResponseEntity<?> getAllOrderDetailByOrderId(Long id);
 }

@@ -11,7 +11,6 @@ import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.AuthProvider;
 import com.gangoffive.birdtradingplatform.enums.MailSenderStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
-import com.gangoffive.birdtradingplatform.exception.AuthenticateException;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
 import com.gangoffive.birdtradingplatform.mapper.AddressMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
@@ -35,7 +34,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -93,7 +91,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         StringBuilder emailContent = new StringBuilder();
         emailContent.append("Dear " + acc.getFullName() + ",\n");
         emailContent.append("Thank you for registering an account with our service. Please use the code to activate your account.\n");
-        emailContent.append("Verification code: " + randomToken +"\n");
+        emailContent.append("Verification code: " + randomToken + "\n");
         emailContent.append("This link will expire after 10 minutes.\n");
         emailContent.append("If you did not create an account or have any questions, please contact our support team.\n");
         emailContent.append("Best regards,\n");
@@ -129,12 +127,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     )
             );
         } catch (AuthenticationException ex) {
-//            ErrorResponse error = new ErrorResponse().builder()
-//                    .errorCode(HttpStatus.UNAUTHORIZED.toString())
-//                    .errorMessage("Email or password not correct!")
-//                    .build();
-//            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
-            throw new AuthenticateException("Email or password not correct!");
+            ErrorResponse error = new ErrorResponse().builder()
+                    .errorCode(HttpStatus.UNAUTHORIZED.toString())
+                    .errorMessage("Email or password not correct!")
+                    .build();
+            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+//            throw new AuthenticateException("Email or password not correct!");
         }
 
         var account = accountRepository.findByEmail(request.getEmail()).orElse(null);
@@ -228,18 +226,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private AuthenticationResponseDto getAuthenticationResponse(Account account, HttpServletResponse response) {
         var jwtToken = jwtService.generateToken(UserPrincipal.create(account));
         var refreshToken = account.getRefreshToken();
-        var addressDto = addressMapper.toDto(account.getAddress());
-//        if (refreshToken != null && !refreshToken.isEmpty()) {
-//            if (jwtService.isTokenExpired(refreshToken)) {
-//                refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
-//                account.setRefreshToken(refreshToken);
-//                accountRepository.save(account);
-//            }
-//        } else {
-            refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
-            account.setRefreshToken(refreshToken);
-            accountRepository.save(account);
-//        }
+        refreshToken = jwtService.generateRefreshToken(UserPrincipal.create(account));
+        account.setRefreshToken(refreshToken);
+        accountRepository.save(account);
         var tokenDto = TokenDto.builder()
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
@@ -266,6 +255,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return AuthenticationResponseDto.builder()
                 .token(tokenDto)
                 .userInfo(userInfo)
+                .role(account.getRole().ordinal() + 1)
                 .build();
     }
 }

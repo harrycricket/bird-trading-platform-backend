@@ -13,6 +13,7 @@ public class UserInfoDto {
     private String email;
     private UserRole role;
     private String fullName;
+    private String shopName;
     private String phoneNumber;
     private String imgUrl;
     private String address;

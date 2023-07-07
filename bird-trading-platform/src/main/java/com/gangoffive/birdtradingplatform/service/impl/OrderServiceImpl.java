@@ -7,6 +7,7 @@ import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.*;
+import com.gangoffive.birdtradingplatform.mapper.AddressMapper;
 import com.gangoffive.birdtradingplatform.mapper.PromotionShopMapper;
 import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.service.NotificationService;
@@ -41,6 +42,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderDetailService orderDetailService;
     private final NotificationService notificationService;
     private final PackageOrderRepository packageOrderRepository;
+    private final AddressMapper addressMapper;
     @Override
     public ResponseEntity<?> getAllOrderByPackageOrderId(Long packageOrderId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -89,7 +91,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public ResponseEntity<?> updateStatusOrderOfShipping(ChangeStatusListIdDto changeStatusListIdDto, String token) {
-        boolean condition = true; // do some thing to check token
+        boolean condition = true; // do something to check token
         if(condition) {
             if(changeStatusListIdDto.getStatus() >= OrderStatus.SHIPPED.getStatusCode()
                     || changeStatusListIdDto.getStatus() == OrderStatus.CANCELLED.getStatusCode()) {
@@ -126,6 +128,22 @@ public class OrderServiceImpl implements OrderService {
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                     .errorMessage("Token not valid!")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getAllOrderDetailByOrderId(Long id) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Account> account = accountRepository.findByEmail(email);
+        Optional<Order> order = orderRepository.findByShopOwnerAndId(account.get().getShopOwner(), id);
+        if (order.isPresent()) {
+            return ResponseEntity.ok(orderToOrderDto(order.get()));
+        } else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                    .errorMessage("Order id not correct.")
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
@@ -747,13 +765,16 @@ public class OrderServiceImpl implements OrderService {
                 .map(orderDetailService::orderDetailToOrderDetailDto)
                 .toList();
         return OrderDto.builder()
+                .orderId(order.getId())
                 .orderStatus(order.getStatus())
                 .shopOwner(shopOwnerDto)
                 .totalPriceProduct(order.getTotalPrice())
                 .orderDetails(orderDetailsDto)
                 .shippingFee(order.getShippingFee())
-                .createdDate(order.getCreatedDate())
-                .lastedUpdate(order.getLastedUpdate())
+                .address(addressMapper.toAddressInfoDto(order.getPackageOrder().getShippingAddress()))
+                .paymentMethod(order.getPackageOrder().getPaymentMethod())
+                .createdDate(order.getCreatedDate().getTime())
+                .lastedUpdate(order.getLastedUpdate().getTime())
                 .build();
     }
 

@@ -2,10 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
-import com.gangoffive.birdtradingplatform.dto.DateRangeDto;
-import com.gangoffive.birdtradingplatform.dto.OrderDetailDto;
-import com.gangoffive.birdtradingplatform.dto.OrderDetailShopOwnerDto;
-import com.gangoffive.birdtradingplatform.dto.OrderDetailShopOwnerFilterDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.Product;
@@ -13,6 +10,7 @@ import com.gangoffive.birdtradingplatform.entity.Review;
 import com.gangoffive.birdtradingplatform.enums.FieldOrderDetailTable;
 import com.gangoffive.birdtradingplatform.enums.Operator;
 import com.gangoffive.birdtradingplatform.enums.SortOrderDetailColumn;
+import com.gangoffive.birdtradingplatform.mapper.PromotionShopMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.service.OrderDetailService;
@@ -29,10 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +36,7 @@ import java.util.stream.Collectors;
 public class OrderDetailServiceImpl implements OrderDetailService {
     private final OrderDetailRepository orderDetailRepository;
     private final AccountRepository accountRepository;
+    private final PromotionShopMapper promotionShopMapper;
 
     @Override
     public ResponseEntity<?> getAllOrderByShopOwner(OrderDetailShopOwnerFilterDto orderDetailFilter) {
@@ -787,17 +783,22 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     public OrderDetailDto orderDetailToOrderDetailDto(OrderDetail orderDetail) {
+        List<PromotionShopDto> promotionsShopDto = orderDetail.getPromotionShops().stream()
+                .map(promotionShopMapper::modelToDto)
+                .toList();
         String imgUrl = orderDetail.getProduct().getImgUrl();
         if (imgUrl.contains(",")) {
             imgUrl = Arrays.stream(imgUrl.split(",")).findFirst().get();
         }
         return OrderDetailDto.builder()
+                .orderDetailId(orderDetail.getId())
                 .productId(orderDetail.getProduct().getId())
                 .productName(orderDetail.getProduct().getName())
                 .price(orderDetail.getPrice())
                 .quantity(orderDetail.getQuantity())
                 .productPromotionRate(orderDetail.getProductPromotionRate())
                 .imgUrl(imgUrl)
+                .listPromotion(promotionsShopDto)
                 .build();
     }
 

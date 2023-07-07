@@ -25,4 +25,6 @@ public interface ShopStaffRepository extends JpaRepository<ShopStaff, Long>{
     @Modifying
     @Query(value = "Update tblShop_Staff_Acc s Set s.status = ?1 where s.id In ?2 And s.shopOwner.id = ?3")
     int updateStatusWithShopId(AccountStatus accountStatus, List<Long> staffId, long shopId);
+
+    Optional<ShopStaff> findByUserNameAndShopOwner_Id(String userName, Long id);
 }

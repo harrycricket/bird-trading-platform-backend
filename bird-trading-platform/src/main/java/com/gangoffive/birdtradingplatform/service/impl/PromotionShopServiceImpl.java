@@ -37,7 +37,7 @@ public class PromotionShopServiceImpl implements PromotionShopService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(username);
-        var promotionShopList = promotionShopRepository.findByShopOwner_Id(account.get().getShopOwner().getId());
+        var promotionShopList = promotionShopRepository.findAllByShopOwner_Id(account.get().getShopOwner().getId());
         if (promotionShopList.isPresent()) {
             List<PromotionShopDto> result = promotionShopList.get().stream()
                     .map(a -> promotionShopMapper.modelToDto(a))

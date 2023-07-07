@@ -20,6 +20,8 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByShopOwner(ShopOwner shopOwner);
 
+    Optional<Order> findByShopOwnerAndId(ShopOwner shopOwner, Long id);
+
     List<Order> findByShopOwnerAndCreatedDateBetween(ShopOwner shopOwner, Date dateFrom, Date dateTo);
 
     List<Order> findAllByCreatedDateBetween(Date dateFrom, Date dateTo);

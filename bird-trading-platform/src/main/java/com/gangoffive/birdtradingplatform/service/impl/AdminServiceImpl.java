@@ -37,7 +37,7 @@ public class AdminServiceImpl implements AdminService {
     public List<DataBumpChartDto> dataBumpChartRankOfShop() {
         List<DataBumpChartDto> dataBumpChartDtoList = new ArrayList<>();
         List<ShopOwner> allShopOwnerWithRankOfEight = getAllShopOwnerWithRankOfEight();
-        log.info("allShopOwnerWithRankOfEight.get(0).getAccount() {}", allShopOwnerWithRankOfEight.get(0).getAccount().getEmail());
+//        log.info("allShopOwnerWithRankOfEight.get(0).getAccount() {}", allShopOwnerWithRankOfEight.get(0).getAccount().getEmail());
         //Rank of shop by price previous now one week
         Map<ShopOwner, Integer> shopOwnerWithRankPreviousOneWeek = getShopOwnerWithRankByWeek(allShopOwnerWithRankOfEight, 1);
         Map<ShopOwner, Integer> shopOwnerWithRankPreviousTwoWeek = getShopOwnerWithRankByWeek(allShopOwnerWithRankOfEight, 2);
@@ -204,7 +204,7 @@ public class AdminServiceImpl implements AdminService {
             PieChartDto pieChartDto = PieChartDto.builder()
                     .id(shopOwner.getShopName())
                     .label(shopOwner.getShopName())
-                    .value(totalPrice)
+                    .value(Math.round(totalPrice * 100.0) / 100.0)
                     .build();
             pieChartDtoList.add(pieChartDto);
         }

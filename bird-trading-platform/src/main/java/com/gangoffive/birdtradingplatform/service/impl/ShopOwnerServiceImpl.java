@@ -20,9 +20,9 @@ import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
+import com.gangoffive.birdtradingplatform.util.FileNameUtils;
 import com.gangoffive.birdtradingplatform.util.S3Utils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
-import com.google.gson.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,6 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,7 +44,10 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -62,6 +66,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final ShopStaffRepository shopStaffRepository;
     private final ShopStaffMapper shopStaffMapper;
     private final AddressRepository addressRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
@@ -77,7 +82,6 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         }
         return 0;
     }
-
 
 
     @Override
@@ -663,12 +667,12 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Optional<Account> accountShop = accountRepository.findByEmail(email);
             ShopOwner shopOwner = accountShop.get().getShopOwner();
-            if (shopOwner != null){
+            if (shopOwner != null) {
                 Optional<ShopStaff> accountStaff = shopStaffRepository.findByUserName(createAccountSaffDto.getUserName());
                 if (!accountStaff.isPresent()) {
                     ShopStaff shopStaff = ShopStaff.builder()
                             .userName(createAccountSaffDto.getUserName())
-                            .password(createAccountSaffDto.getPassword())
+                            .password(passwordEncoder.encode(createAccountSaffDto.getPassword()))
                             .shopOwner(shopOwner)
                             .status(AccountStatus.VERIFY)
                             .build();
@@ -685,7 +689,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                             .build();
                     return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
                 }
-            }else {
+            } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.CONFLICT))
                         .errorMessage("Shop is not exists.")
@@ -701,29 +705,30 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
     }
-    public ResponseEntity<?> getShopStaff(int pageNumber){
+
+    public ResponseEntity<?> getShopStaff(int pageNumber) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         ShopOwner shopOwner = account.get().getShopOwner();
-        if (shopOwner != null){
-            if(pageNumber > 0) {
+        if (shopOwner != null) {
+            if (pageNumber > 0) {
                 pageNumber--;
             }
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
-            Page<ShopStaff> lists = shopStaffRepository.findByShopOwner(shopOwner,pageRequest);
-            if (lists != null && lists.getContent().size() != 0){
+            Page<ShopStaff> lists = shopStaffRepository.findByShopOwner(shopOwner, pageRequest);
+            if (lists != null && lists.getContent().size() != 0) {
                 List<ShopStaffDto> listShopStaff = lists.stream().map(shopStaffMapper::modelToDto).toList();
                 PageNumberWrapper result = new PageNumberWrapper();
                 result.setLists(listShopStaff);
                 result.setPageNumber(lists.getTotalPages());
                 result.setTotalElement(lists.getTotalElements());
                 return ResponseEntity.ok(result);
-            }else {
+            } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                         .errorMessage("No list staff of shop " + shopOwner.getShopName() + ".")
                         .build();
-                return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
             }
 
         }
@@ -731,14 +736,14 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                 .errorMessage("Account " + account.get().getFullName() + " no shop.")
                 .build();
-       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @Override
     public ResponseEntity<?> updateShopOwnerProfile(MultipartFile avatarImg, MultipartFile coverImg, ShopOwnerUpdateDto shopUpdateDto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         var shop = shopOwnerRepository.findByAccount_Email(email);
-        if(shop.isPresent()) {
+        if (shop.isPresent()) {
             ShopOwner shopUpdate = shop.get();
             shopUpdate.setShopName(shopUpdateDto.getShopName());
             shopUpdate.setShopPhone(shopUpdateDto.getShopPhone());
@@ -746,9 +751,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             try {
                 String avatar = this.uploadImages(avatarImg);
                 String cover = this.uploadImages(coverImg);
-                if(!avatar.isEmpty())
+                if (!avatar.isEmpty())
                     shopUpdate.setAvatarImgUrl(avatar);
-                if(!cover.isEmpty())
+                if (!cover.isEmpty())
                     shopUpdate.setCoverImgUrl(cover);
                 Address address = shopUpdate.getAddress();
                 address.setAddress(shopUpdateDto.getAddress());
@@ -756,7 +761,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 shopUpdate = shopOwnerRepository.save(shopUpdate);
                 ShopInfoDto shopInfoDto = shopOwnerMapper.modelToShopInfoDto(shopUpdate);
                 return ResponseEntity.ok(shopInfoDto);
-            }catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
@@ -771,16 +776,15 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
     @Async
-    protected String uploadImages(MultipartFile img) throws IOException {
+    protected String uploadImages(MultipartFile multipartImage) throws IOException {
         String originUrl = appProperties.getS3().getUrl();
         String urlImage = "";
-        if (img != null && !img.isEmpty()) {
-            String contentType = img.getContentType();
-            String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
-            newFilename = "image/" + newFilename;
-            urlImage = originUrl + newFilename;
-            S3Utils.uploadFile(newFilename, img.getInputStream());
+        if (multipartImage != null && !multipartImage.isEmpty()) {
+            String newFileName = FileNameUtils.getNewImageFileName(multipartImage);
+            urlImage = originUrl + newFileName;
+            S3Utils.uploadFile(newFileName, multipartImage.getInputStream());
         }
         return urlImage;
     }
