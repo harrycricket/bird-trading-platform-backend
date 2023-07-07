@@ -12,6 +12,7 @@ import java.util.List;
 @ToString
 public class ReviewDto {
     private Long id;
+    private AccountReviewDto account;
     private Long orderDetailId;
     private Long productId;
     private String description;

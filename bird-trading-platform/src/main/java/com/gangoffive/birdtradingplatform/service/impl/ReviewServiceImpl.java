@@ -3,6 +3,8 @@ package com.gangoffive.birdtradingplatform.service.impl;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
+import com.gangoffive.birdtradingplatform.dto.AccountDto;
+import com.gangoffive.birdtradingplatform.dto.AccountReviewDto;
 import com.gangoffive.birdtradingplatform.dto.OrderDetailShopOwnerDto;
 import com.gangoffive.birdtradingplatform.dto.ReviewDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
@@ -10,6 +12,7 @@ import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.Review;
 import com.gangoffive.birdtradingplatform.enums.ReviewRating;
 import com.gangoffive.birdtradingplatform.enums.SortOrderDetailColumn;
+import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
@@ -45,6 +48,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final OrderDetailRepository orderDetailRepository;
     private final AppProperties appProperties;
     private final ProductSummaryService productSummaryService;
+    private final AccountMapper accountMapper;
 
     @Override
     public ResponseEntity<?> getAllReviewByOrderId(Long orderId) {
@@ -110,9 +114,16 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewDto reviewToReviewDto(Review review) {
+        Account account = review.getAccount();
+        AccountReviewDto accountReview = AccountReviewDto.builder()
+                .id(account.getId())
+                .fullName(account.getFullName())
+                .imgUrl(account.getImgUrl())
+                .build();
         if (!review.getImgUrl().isEmpty()) {
             return ReviewDto.builder()
                     .id(review.getId())
+                    .account(accountReview)
                     .orderDetailId(review.getOrderDetail().getId())
                     .productId(review.getOrderDetail().getProduct().getId())
                     .description(review.getComment())
@@ -123,6 +134,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
         return ReviewDto.builder()
                 .id(review.getId())
+                .account(accountReview)
                 .orderDetailId(review.getOrderDetail().getId())
                 .productId(review.getOrderDetail().getProduct().getId())
                 .description(review.getComment())
