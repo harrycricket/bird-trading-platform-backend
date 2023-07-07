@@ -17,6 +17,12 @@ import java.util.List;
 @Slf4j
 public class ReviewController {
     private final ReviewService reviewService;
+
+    @GetMapping("/users/reviews/products/{productId}")
+    public ResponseEntity<?> getAllReviewByProductId(@PathVariable Long productId, @RequestParam int pageNumber) {
+        return reviewService.getAllReviewByProductId(productId, pageNumber);
+    }
+
     @GetMapping("/users/orders/{orderId}/reviews")
     public ResponseEntity<?> getAllReviewByOrderId(@PathVariable Long orderId) {
         return reviewService.getAllReviewByOrderId(orderId);

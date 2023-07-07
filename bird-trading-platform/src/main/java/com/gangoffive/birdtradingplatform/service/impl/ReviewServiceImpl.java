@@ -1,12 +1,15 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
+import com.gangoffive.birdtradingplatform.dto.OrderDetailShopOwnerDto;
 import com.gangoffive.birdtradingplatform.dto.ReviewDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.Review;
 import com.gangoffive.birdtradingplatform.enums.ReviewRating;
+import com.gangoffive.birdtradingplatform.enums.SortOrderDetailColumn;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
@@ -14,8 +17,12 @@ import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.service.ReviewService;
 import com.gangoffive.birdtradingplatform.util.FileNameUtils;
 import com.gangoffive.birdtradingplatform.util.S3Utils;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -122,5 +129,34 @@ public class ReviewServiceImpl implements ReviewService {
                 .rating(review.getRating().getStar())
                 .reviewDate(review.getReviewDate().getTime())
                 .build();
+    }
+
+    @Override
+    public ResponseEntity<?> getAllReviewByProductId(Long productId, int pageNumber) {
+        if (pageNumber > 0) {
+            pageNumber--;
+            PageRequest pageRequest = PageRequest.of(
+                    pageNumber,
+                    PagingAndSorting.DEFAULT_PAGE_SIZE,
+                    Sort.by(Sort.Direction.DESC, "reviewDate")
+            );
+            Optional<Page<Review>> reviews = reviewRepository.findAllByOrderDetail_Product_Id(productId, pageRequest);
+            return getPageNumberWrapperWithReviews(reviews);
+        }
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                "Page number cannot less than 1");
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    private ResponseEntity<PageNumberWrapper<?>> getPageNumberWrapperWithReviews(Optional<Page<Review>> reviews) {
+        List<ReviewDto> reviewList = reviews.get().stream()
+                .map(this::reviewToReviewDto)
+                .toList();
+        PageNumberWrapper<ReviewDto> result = new PageNumberWrapper<>(
+                reviewList,
+                reviews.get().getTotalPages(),
+                reviews.get().getTotalElements()
+        );
+        return ResponseEntity.ok(result);
     }
 }
