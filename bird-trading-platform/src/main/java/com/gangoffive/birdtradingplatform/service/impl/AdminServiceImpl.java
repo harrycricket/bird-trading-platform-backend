@@ -91,7 +91,7 @@ public class AdminServiceImpl implements AdminService {
             bumpChartDtoList.add(bumpChartDto1);
             DataBumpChartDto dataBumpChartDto = DataBumpChartDto.builder()
                     .id(shopOwner.getShopName())
-                    .bumpChartDtoList(bumpChartDtoList)
+                    .data(bumpChartDtoList)
                     .build();
             dataBumpChartDtoList.add(dataBumpChartDto);
         }
