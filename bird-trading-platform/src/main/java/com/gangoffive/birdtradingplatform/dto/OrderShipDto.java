@@ -13,6 +13,9 @@ import java.util.List;
 @ToString
 public class OrderShipDto {
     private Long id;
+    private String fullName;
+    private String phoneNumber;
+    private String address;
     private double totalPrice;
     private OrderStatusDto orderStatus;
     private double shippingFee;

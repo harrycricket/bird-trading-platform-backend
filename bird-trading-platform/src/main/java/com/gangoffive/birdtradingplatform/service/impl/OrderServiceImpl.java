@@ -821,6 +821,9 @@ public class OrderServiceImpl implements OrderService {
                 .build();
         return OrderShipDto.builder()
                 .id(order.getId())
+                .fullName(order.getPackageOrder().getShippingAddress().getFullName())
+                .phoneNumber(order.getPackageOrder().getShippingAddress().getPhone())
+                .address(order.getPackageOrder().getShippingAddress().getAddress())
                 .totalPrice(order.getTotalPrice())
                 .orderStatus(orderStatus)
                 .shippingFee(order.getShippingFee())
