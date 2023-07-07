@@ -65,7 +65,8 @@ public class Account {
 	@Column(name = "full_name")
 	private String fullName;
 	
-	@Column(name = "img_url")
+	@Column(name = "img_url",
+			columnDefinition = "TEXT")
 	private String imgUrl;
 
 	@Column(name = "phone_number")

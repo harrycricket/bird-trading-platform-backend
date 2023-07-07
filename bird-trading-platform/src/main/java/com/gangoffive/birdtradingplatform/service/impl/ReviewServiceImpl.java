@@ -1,17 +1,18 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.common.OrderStatusConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
-import com.gangoffive.birdtradingplatform.dto.AccountDto;
-import com.gangoffive.birdtradingplatform.dto.AccountReviewDto;
-import com.gangoffive.birdtradingplatform.dto.OrderDetailShopOwnerDto;
-import com.gangoffive.birdtradingplatform.dto.ReviewDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
+import com.gangoffive.birdtradingplatform.entity.Order;
 import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 import com.gangoffive.birdtradingplatform.entity.Review;
 import com.gangoffive.birdtradingplatform.enums.ReviewRating;
+import com.gangoffive.birdtradingplatform.enums.SortOrderColumn;
 import com.gangoffive.birdtradingplatform.enums.SortOrderDetailColumn;
+import com.gangoffive.birdtradingplatform.enums.SortReviewColumn;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
@@ -113,7 +114,166 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewDto reviewToReviewDto(Review review) {
+    public ResponseEntity<?> getAllReviewByProductId(Long productId, int pageNumber) {
+        if (pageNumber > 0) {
+            pageNumber--;
+            PageRequest pageRequest = PageRequest.of(
+                    pageNumber,
+                    PagingAndSorting.DEFAULT_PAGE_SIZE,
+                    Sort.by(Sort.Direction.DESC, "reviewDate")
+            );
+            Optional<Page<Review>> reviews = reviewRepository.findAllByOrderDetail_Product_Id(productId, pageRequest);
+            return getPageNumberWrapperWithReviews(reviews, true, false);
+        }
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                "Page number cannot less than 1");
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<?> getAllReviewByShopOwner(ReviewShopOwnerFilterDto reviewFilter) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Optional<Account> account = accountRepository.findByEmail(authentication.getName());
+        Long shopId = account.get().getShopOwner().getId();
+        if (reviewFilter.getPageNumber() > 0) {
+            int pageNumber = reviewFilter.getPageNumber() - 1;
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
+            PageRequest pageRequestWithSort = null;
+            if (reviewFilter.getSortDirection() != null
+                    && !reviewFilter.getSortDirection().getSort().isEmpty()
+                    && !reviewFilter.getSortDirection().getField().isEmpty()
+            ) {
+                if (
+                        !SortReviewColumn.checkField(reviewFilter.getSortDirection().getField())
+                ) {
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                            .errorMessage("Not found this field in sort direction.")
+                            .build();
+                    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                }
+                if (reviewFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.ASC.name())) {
+                    pageRequestWithSort = getPageRequest(reviewFilter, pageNumber, Sort.Direction.ASC);
+                } else if (reviewFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.DESC.name())) {
+                    pageRequestWithSort = getPageRequest(reviewFilter, pageNumber, Sort.Direction.DESC);
+                } else {
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                            .errorMessage("Not found this direction.")
+                            .build();
+                    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                }
+            }
+
+            if (
+                    reviewFilter.getReviewSearchInfo().getField().isEmpty()
+                            && reviewFilter.getReviewSearchInfo().getValue().isEmpty()
+                            && reviewFilter.getReviewSearchInfo().getOperator().isEmpty()
+                            && reviewFilter.getSortDirection().getField().isEmpty()
+                            && reviewFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                log.info("all no");
+                return filterAllReviewAllFieldEmpty(shopId, pageRequest);
+            } else if (
+                    reviewFilter.getReviewSearchInfo().getField().isEmpty()
+                            && reviewFilter.getReviewSearchInfo().getValue().isEmpty()
+                            && reviewFilter.getReviewSearchInfo().getOperator().isEmpty()
+                            && !reviewFilter.getSortDirection().getField().isEmpty()
+                            && !reviewFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                log.info("with sort");
+                return filterAllReviewAllFieldEmpty(shopId, pageRequestWithSort);
+            }
+
+
+        } else {
+            ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                    "Page number cannot less than 1");
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+
+        PageRequest pageRequest = PageRequest.of(
+                reviewFilter.getPageNumber(),
+                PagingAndSorting.DEFAULT_PAGE_SIZE,
+                Sort.by(Sort.Direction.DESC, "reviewDate")
+        );
+        reviewRepository.findAllByOrderDetail_Product_ShopOwner_Id(shopId, pageRequest);
+        return null;
+    }
+
+    private ResponseEntity<?> filterAllReviewAllFieldEmpty(Long shopId, PageRequest pageRequest) {
+        Optional<Page<Review>> reviews = reviewRepository.findAllByOrderDetail_Product_ShopOwner_Id(
+                shopId,
+                pageRequest
+        );
+
+        if (reviews.isPresent()) {
+            return getPageNumberWrapperWithReviews(reviews, false, true);
+        } else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                    .errorMessage("Not found review in shop.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+    private PageRequest getPageRequest(
+            ReviewShopOwnerFilterDto reviewFilter,
+            int pageNumber,
+            Sort.Direction sortDirection)
+    {
+        return PageRequest.of(
+                pageNumber,
+                PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                Sort.by(sortDirection,
+                        SortReviewColumn.getColumnByField(reviewFilter.getSortDirection().getField())
+                )
+        );
+    }
+
+    private ResponseEntity<PageNumberWrapper<?>> getPageNumberWrapperWithReviews(
+            Optional<Page<Review>> reviews,
+            boolean isReviewDto,
+            boolean isReviewShopOwnerDto
+    ) {
+        if (isReviewDto) {
+            List<ReviewDto> reviewList = reviews.get().stream()
+                    .map(this::reviewToReviewDto)
+                    .toList();
+            PageNumberWrapper<ReviewDto> result = new PageNumberWrapper<>(
+                    reviewList,
+                    reviews.get().getTotalPages(),
+                    reviews.get().getTotalElements()
+            );
+            return ResponseEntity.ok(result);
+        } else if (isReviewShopOwnerDto) {
+            List<ReviewShopOwnerDto> reviewShopOwnerList = reviews.get().stream()
+                    .map(this::reviewToReviewShopOwnerDto)
+                    .toList();
+            PageNumberWrapper<ReviewShopOwnerDto> result = new PageNumberWrapper<>(
+                    reviewShopOwnerList,
+                    reviews.get().getTotalPages(),
+                    reviews.get().getTotalElements()
+            );
+            return ResponseEntity.ok(result);
+        }
+        return null;
+    }
+
+    private ReviewShopOwnerDto reviewToReviewShopOwnerDto(Review review) {
+        return ReviewShopOwnerDto.builder()
+                .id(review.getId())
+                .orderDetailId(review.getOrderDetail().getId())
+                .customerName(review.getAccount().getFullName())
+                .productName(review.getOrderDetail().getProduct().getName())
+                .rating(review.getRating().getStar())
+                .reviewDate(review.getReviewDate().getTime())
+                .build();
+    }
+
+    private ReviewDto reviewToReviewDto(Review review) {
         Account account = review.getAccount();
         AccountReviewDto accountReview = AccountReviewDto.builder()
                 .id(account.getId())
@@ -141,34 +301,5 @@ public class ReviewServiceImpl implements ReviewService {
                 .rating(review.getRating().getStar())
                 .reviewDate(review.getReviewDate().getTime())
                 .build();
-    }
-
-    @Override
-    public ResponseEntity<?> getAllReviewByProductId(Long productId, int pageNumber) {
-        if (pageNumber > 0) {
-            pageNumber--;
-            PageRequest pageRequest = PageRequest.of(
-                    pageNumber,
-                    PagingAndSorting.DEFAULT_PAGE_SIZE,
-                    Sort.by(Sort.Direction.DESC, "reviewDate")
-            );
-            Optional<Page<Review>> reviews = reviewRepository.findAllByOrderDetail_Product_Id(productId, pageRequest);
-            return getPageNumberWrapperWithReviews(reviews);
-        }
-        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
-                "Page number cannot less than 1");
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
-
-    private ResponseEntity<PageNumberWrapper<?>> getPageNumberWrapperWithReviews(Optional<Page<Review>> reviews) {
-        List<ReviewDto> reviewList = reviews.get().stream()
-                .map(this::reviewToReviewDto)
-                .toList();
-        PageNumberWrapper<ReviewDto> result = new PageNumberWrapper<>(
-                reviewList,
-                reviews.get().getTotalPages(),
-                reviews.get().getTotalElements()
-        );
-        return ResponseEntity.ok(result);
     }
 }

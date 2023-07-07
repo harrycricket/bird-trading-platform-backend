@@ -632,7 +632,6 @@ public class OrderServiceImpl implements OrderService {
             Long shopId,
             PageRequest pageRequest
     ) {
-
         Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_IdAndStatusIn(
                 shopId,
                 OrderStatusConstant.VIEW_ALL_ORDER_STATUS,

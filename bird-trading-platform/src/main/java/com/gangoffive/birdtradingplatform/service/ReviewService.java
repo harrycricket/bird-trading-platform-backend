@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.service;
 
 import com.gangoffive.birdtradingplatform.dto.ReviewDto;
+import com.gangoffive.birdtradingplatform.dto.ReviewShopOwnerFilterDto;
 import com.gangoffive.birdtradingplatform.entity.Review;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,7 +13,7 @@ public interface ReviewService {
 
     ResponseEntity<?> addNewReviewByOrderDetailId(List<MultipartFile> multipartFiles, ReviewDto review);
 
-    ReviewDto reviewToReviewDto(Review review);
-
     ResponseEntity<?> getAllReviewByProductId(Long productId, int pageNumber);
+
+    ResponseEntity<?> getAllReviewByShopOwner(ReviewShopOwnerFilterDto reviewFilter);
 }

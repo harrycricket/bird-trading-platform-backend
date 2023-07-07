@@ -17,4 +17,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Optional<List<Review>> findAllByAccountAndOrderDetail_Order_Id(Account account, Long id);
 
     Optional<Page<Review>> findAllByOrderDetail_Product_Id(Long productId, Pageable pageable);
+
+    Optional<Page<Review>> findAllByOrderDetail_Product_ShopOwner_Id(Long shopId, Pageable pageable);
 }
