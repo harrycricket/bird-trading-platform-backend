@@ -70,7 +70,7 @@ app:
 #    86400000
     refreshTokenExpiration: 604800000 # 7 days
   cors:
-    allowedOrigins: "http://localhost:3000,https://birdstore2nd.vercel.app,https://www.birdland2nd.store,https://admin.birdland2nd.store/,http://localhost:3001"
+    allowedOrigins: "http://localhost:3000,https://birdstore2nd.vercel.app,https://www.birdland2nd.store,https://admin.birdland2nd.store/,http://localhost:3001,https://shipping-demo-front-end.vercel.app/"
     allowedMethods: "*"
     allowedHeaders: "*"
     exposedHeaders: "*"
