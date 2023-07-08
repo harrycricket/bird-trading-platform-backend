@@ -1,33 +1,36 @@
-//
-//package com.gangoffive.birdtradingplatform.service;
-//
-//
-//import com.gangoffive.birdtradingplatform.dto.UserOrderDto;
-//import jakarta.transaction.Transactional;
-//import lombok.extern.slf4j.Slf4j;
+
+//import org.junit.jupiter.api.extension.ExtendWith;
+//import org.mockito.InjectMocks;
+//import org.mockito.junit.jupiter.MockitoExtension;
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.boot.test.context.SpringBootTest;
+//import org.springframework.context.annotation.ComponentScan;
 //import org.testng.Assert;
 //import org.testng.annotations.Test;
 //
 //import java.util.HashMap;
 //import java.util.Map;
-//
 //@SpringBootTest
 //@Test
 //@Slf4j
+//@ExtendWith(MockitoExtension.class)
+//@ComponentScan("com.gangoffive.birdtradingplatform.service.impl")
 //public class PackageOrderServiceTest {
+//    @InjectMocks
+//    private PackageOrderServiceImpl packageOrderService;
+
 //
 //    @Autowired
 //    private PackageOrderService packageOrderService;
 //
 //    public PackageOrderServiceTest() {
 //    }
-//
+//a
 //    @Test
 //    @Transactional
 //    public void checkPromotion() {
-//        System.out.println("hello");
+////        System.out.println("hello");
+////        accessoryService.findTopAccessories();
 //    }
 //
 //    @Test
