@@ -33,15 +33,16 @@ jobs:
            run: |
               echo $(pwd)
               echo $(ls -a)
-
-         - name: Build with Maven
-           run: mvn install
          - name: "Create env file"
            run: |
               echo "${{ secrets.ENV }}" > ./src/main/resources/.env
               echo $(pwd)
               echo $(ls -la "./src/main/resources/")
               echo $( "./src/main/resources/.env")
+
+         - name: Build with Maven
+           run: mvn install
+         
          - name: Build with Maven
            run: mvn --batch-mode --update-snapshots package
 

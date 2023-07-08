@@ -1,4 +1,3 @@
-
 package com.gangoffive.birdtradingplatform.service;
 
 
@@ -20,8 +19,17 @@ import java.util.Map;
 public class PackageOrderServiceTest extends AbstractTestNGSpringContextTests {
     @Autowired
     private PackageOrderService packageOrderService;
+
     public PackageOrderServiceTest() {
     }
+
+    @Test
+    @Transactional
+    public void check() {
+        boolean check = true;
+        Assert.assertTrue(check);
+    }
+
     @Test
     @Transactional
     public void checkProduct() {
@@ -36,8 +44,8 @@ public class PackageOrderServiceTest extends AbstractTestNGSpringContextTests {
     @Transactional
     public void checkUserOrder() {
         UserOrderDto userOrderDto = new UserOrderDto("1", "null", "1");
-//        boolean check = packageOrderService.checkUserOrderDto(userOrderDto);
-//        Assert.assertTrue(check);
+        boolean check = packageOrderService.checkUserOrderDto(userOrderDto);
+        Assert.assertTrue(check);
     }
 
 }
