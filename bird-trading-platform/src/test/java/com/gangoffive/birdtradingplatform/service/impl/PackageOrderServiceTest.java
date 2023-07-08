@@ -1,32 +1,33 @@
 //
-//package com.gangoffive.birdtradingplatform.service;
+//package com.gangoffive.birdtradingplatform.service.impl;
 //
 //
 //import com.gangoffive.birdtradingplatform.dto.UserOrderDto;
 //import jakarta.transaction.Transactional;
-//import lombok.AllArgsConstructor;
-//import lombok.RequiredArgsConstructor;
 //import lombok.extern.slf4j.Slf4j;
+//import org.junit.jupiter.api.extension.ExtendWith;
+//import org.mockito.InjectMocks;
+//import org.mockito.junit.jupiter.MockitoExtension;
+//import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.boot.test.context.SpringBootTest;
+//import org.springframework.context.annotation.ComponentScan;
 //import org.testng.Assert;
 //import org.testng.annotations.Test;
 //
 //import java.util.HashMap;
 //import java.util.Map;
-//
 //@SpringBootTest
 //@Slf4j
+//@ExtendWith(MockitoExtension.class)
+//@ComponentScan("com.gangoffive.birdtradingplatform.service.impl")
 //public class PackageOrderServiceTest {
-//    private final PackageOrderService packageOrderService;
-//
-//    public PackageOrderServiceTest(PackageOrderService packageOrderService) {
-//        this.packageOrderService = packageOrderService;
-//    }
-//
+//    @InjectMocks
+//    private PackageOrderServiceImpl packageOrderService;
 //    @Test
 //    @Transactional
 //    public void checkPromotion() {
-//        System.out.println("hello");
+////        System.out.println("hello");
+////        accessoryService.findTopAccessories();
 //    }
 //
 //    @Test
@@ -35,8 +36,8 @@
 //        Map<Long, Integer> productOrder = new HashMap<>();
 //        productOrder.put(1L, 1);
 //        productOrder.put(2L, 1);
-////        boolean check = packageOrderService.checkListProduct(productOrder);
-////        Assert.assertTrue(check);
+//        boolean check = packageOrderService.checkListProduct(productOrder);
+//        Assert.assertTrue(check);
 //    }
 //
 //    @Test

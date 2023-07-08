@@ -973,6 +973,35 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    @Override
+    public ResponseEntity<?> getProductRelevantBaseOnId(long productId) {
+        var product = productRepository.findById(productId);
+        if(product.isPresent()) {
+            PageRequest pageRequest = PageRequest.of(0, PagingAndSorting.DEFAULT_PAGE_SIZE);
+            List<Product> listProduct = new ArrayList<>();
+            List<Long> tagid;
+            if (product.get() instanceof Bird) {
+                tagid = ((Bird) product.get()).getTags().stream().map(a -> a.getId()).toList();
+                listProduct = birdRepository.findDistinctBirdsByTypeAndTagsSortedByTotalQuantity(((Bird) product.get()).getTypeBird().getId(),
+                        tagid, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest );
+            }
+            else if (product.get() instanceof Food) {
+                tagid = ((Food) product.get()).getTags().stream().map(a -> a.getId()).toList();
+                listProduct = foodRepository.findDistinctBirdsByTypeAndTagsSortedByTotalQuantity(((Food) product.get()).getTypeFood().getId(),
+                        tagid, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest );
+            } else {
+                tagid = ((Accessory) product.get()).getTags().stream().map(a -> a.getId()).toList();
+                listProduct = accessoryRepository.findDistinctBirdsByTypeAndTagsSortedByTotalQuantity(((Accessory) product.get()).getTypeAccessory().getId(),
+                        tagid, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest );
+            }
+
+            List<ProductCartDto> list =  listProduct.stream().map(this::productToProductCart).toList();
+            return ResponseEntity.ok(list);
+        }
+        return null;
+    }
+
+
     private ResponseEntity<ErrorResponse> getErrorResponseNotFoundLinkImage(List<String> urlList, List<String> listImagesRemove) {
         for (String imgRemove : listImagesRemove) {
             if (!urlList.contains(imgRemove)) {
