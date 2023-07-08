@@ -5,10 +5,7 @@ import com.gangoffive.birdtradingplatform.common.OrderStatusConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
-import com.gangoffive.birdtradingplatform.entity.Account;
-import com.gangoffive.birdtradingplatform.entity.Order;
-import com.gangoffive.birdtradingplatform.entity.OrderDetail;
-import com.gangoffive.birdtradingplatform.entity.Review;
+import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.*;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
@@ -293,6 +290,21 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 
+    @Override
+    public ResponseEntity<?> getReviewByReviewId(Long reviewId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Optional<Account> account = accountRepository.findByEmail(authentication.getName());
+        Long shopId = account.get().getShopOwner().getId();
+        Optional<Review> review = reviewRepository.findByIdAndOrderDetail_Product_ShopOwner_Id(reviewId, shopId);
+        if (review.isPresent()) {
+            return ResponseEntity.ok(reviewToReviewDetailShopOwnerDto(review.get()));
+        } else {
+            ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
+                    "Review id not found");
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        }
+    }
+
     private ResponseEntity<?> filterReviewByReviewDateFromTo(
             Long shopId,
             DateRangeDto dateRange,
@@ -519,6 +531,41 @@ public class ReviewServiceImpl implements ReviewService {
                 .orderDetailId(review.getOrderDetail().getId())
                 .customerName(review.getAccount().getFullName())
                 .productName(review.getOrderDetail().getProduct().getName())
+                .rating(review.getRating().getStar())
+                .reviewDate(review.getReviewDate().getTime())
+                .build();
+    }
+
+    private ReviewDetailShopOwnerDto reviewToReviewDetailShopOwnerDto(Review review) {
+        Account account = review.getAccount();
+        Address shippingAddress = review.getOrderDetail().getOrder().getPackageOrder().getShippingAddress();
+        AccountReviewDto accountReview = AccountReviewDto.builder()
+                .id(account.getId())
+                .fullName(account.getFullName())
+                .imgUrl(account.getImgUrl())
+                .address(shippingAddress.getAddress())
+                .phone(shippingAddress.getPhone())
+                .build();
+        if (!review.getImgUrl().isEmpty()) {
+            return ReviewDetailShopOwnerDto.builder()
+                    .id(review.getId())
+                    .account(accountReview)
+                    .orderDetailId(review.getOrderDetail().getId())
+                    .productId(review.getOrderDetail().getProduct().getId())
+                    .productName(review.getOrderDetail().getProduct().getName())
+                    .description(review.getComment())
+                    .rating(review.getRating().getStar())
+                    .imgUrl(Arrays.asList(review.getImgUrl().split(",")))
+                    .reviewDate(review.getReviewDate().getTime())
+                    .build();
+        }
+        return ReviewDetailShopOwnerDto.builder()
+                .id(review.getId())
+                .account(accountReview)
+                .orderDetailId(review.getOrderDetail().getId())
+                .productId(review.getOrderDetail().getProduct().getId())
+                .productName(review.getOrderDetail().getProduct().getName())
+                .description(review.getComment())
                 .rating(review.getRating().getStar())
                 .reviewDate(review.getReviewDate().getTime())
                 .build();
