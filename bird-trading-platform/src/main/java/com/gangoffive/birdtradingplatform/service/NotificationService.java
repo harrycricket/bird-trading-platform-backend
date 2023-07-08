@@ -15,4 +15,6 @@ public interface NotificationService {
     ResponseEntity<?> getUserUnreadNotification(long userid, UserRole user);
 
     boolean pushNotificationForListUserID(List<Long> userIdList, NotificationDto notificationDto);
+
+    boolean pushNotificationForAUserID(Long userId, NotificationDto notificationDto);
 }
