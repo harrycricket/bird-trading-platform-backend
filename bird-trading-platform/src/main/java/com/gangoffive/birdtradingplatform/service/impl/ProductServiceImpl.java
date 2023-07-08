@@ -1538,6 +1538,7 @@ public class ProductServiceImpl implements ProductService {
                     .imgUrl(MyUtils.toLists(product.getImgUrl(), ",").get(0))
                     .discountRate(this.CalculateSaleOff(product.getPromotionShops(), product.getPrice()))
                     .quantity(product.getQuantity())
+                    .star(this.CalculationRating(product.getOrderDetails()))
                     .build();
             productCartDto.setDiscountedPrice(this.CalculateDiscountedPrice(product.getPrice(),
                     productCartDto.getDiscountRate()));
