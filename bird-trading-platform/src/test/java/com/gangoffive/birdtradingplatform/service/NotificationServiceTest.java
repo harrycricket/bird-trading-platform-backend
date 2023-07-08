@@ -23,8 +23,8 @@ public class NotificationServiceTest {
         noti.setRole(NotifiConstant.NOTI_USER_ROLE);
         return noti;
     }
-    public Object[][] NotificationData() {
-        return new Object[][] =
-                {1, noti}
-    }
+//    public Object[][] NotificationData() {
+//        return new Object[][] =
+//                {1, noti}
+//    }
 }
