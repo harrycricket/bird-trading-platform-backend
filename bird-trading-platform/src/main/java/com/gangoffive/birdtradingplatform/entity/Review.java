@@ -25,10 +25,11 @@ public class Review {
 	private String comment;
 	
 	@Column(name = "rating")
-	@Enumerated(value = EnumType.STRING)
+	@Enumerated(value = EnumType.ORDINAL)
 	private ReviewRating rating;
 	
-	@Column(name = "img_url")
+	@Column(name = "img_url",
+			columnDefinition = "TEXT")
 	private String imgUrl;
 	
 	@Column(name = "review_date")

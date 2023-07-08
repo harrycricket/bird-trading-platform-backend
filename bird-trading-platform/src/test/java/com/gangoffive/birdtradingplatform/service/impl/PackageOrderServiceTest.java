@@ -1,10 +1,4 @@
-//
-//package com.gangoffive.birdtradingplatform.service.impl;
-//
-//
-//import com.gangoffive.birdtradingplatform.dto.UserOrderDto;
-//import jakarta.transaction.Transactional;
-//import lombok.extern.slf4j.Slf4j;
+
 //import org.junit.jupiter.api.extension.ExtendWith;
 //import org.mockito.InjectMocks;
 //import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,12 +11,21 @@
 //import java.util.HashMap;
 //import java.util.Map;
 //@SpringBootTest
+//@Test
 //@Slf4j
 //@ExtendWith(MockitoExtension.class)
 //@ComponentScan("com.gangoffive.birdtradingplatform.service.impl")
 //public class PackageOrderServiceTest {
 //    @InjectMocks
 //    private PackageOrderServiceImpl packageOrderService;
+
+//
+//    @Autowired
+//    private PackageOrderService packageOrderService;
+//
+//    public PackageOrderServiceTest() {
+//    }
+//a
 //    @Test
 //    @Transactional
 //    public void checkPromotion() {
