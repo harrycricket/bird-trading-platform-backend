@@ -1544,10 +1544,16 @@ public class ProductServiceImpl implements ProductService {
                     productCartDto.getDiscountRate()));
             if (product instanceof Bird) {
                 productCartDto.setCategoryId(Category.getCategoryIdByName(new BirdDto().getClass().getSimpleName()));
+                productCartDto.setTags(tagMapper.listModelToListDto(((Bird) product).getTags()));
+                productCartDto.setType(typeMapper.modelToDto(((Bird) product).getTypeBird()));
             } else if (product instanceof Food) {
                 productCartDto.setCategoryId(Category.getCategoryIdByName(new FoodDto().getClass().getSimpleName()));
+                productCartDto.setTags(tagMapper.listModelToListDto(((Food) product).getTags()));
+                productCartDto.setType(typeMapper.modelToDto(((Food) product).getTypeFood()));
             } else if (product instanceof Accessory) {
                 productCartDto.setCategoryId(Category.getCategoryIdByName(new AccessoryDto().getClass().getSimpleName()));
+                productCartDto.setTags(tagMapper.listModelToListDto(((Accessory) product).getTags()));
+                productCartDto.setType(typeMapper.modelToDto(((Accessory) product).getTypeAccessory()));
             }
             AddressDto address = addressMapper.toDto(product.getShopOwner().getAddress());
             ShopOwnerDto shopOwner = shopOwnerMapper.modelToDto(product.getShopOwner());
