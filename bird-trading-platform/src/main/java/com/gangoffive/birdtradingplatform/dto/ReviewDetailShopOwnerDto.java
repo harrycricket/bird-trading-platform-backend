@@ -13,6 +13,7 @@ import java.util.List;
 public class ReviewDetailShopOwnerDto {
     private Long id;
     private AccountReviewDto account;
+    private Long orderId;
     private Long orderDetailId;
     private Long productId;
     private String productName;
