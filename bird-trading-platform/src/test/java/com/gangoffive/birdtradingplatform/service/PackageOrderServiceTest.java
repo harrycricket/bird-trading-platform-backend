@@ -25,6 +25,13 @@ public class PackageOrderServiceTest extends AbstractTestNGSpringContextTests {
 
     @Test
     @Transactional
+    public void check() {
+        boolean check = true;
+        Assert.assertTrue(check);
+    }
+
+    @Test
+    @Transactional
     public void checkProduct() {
         Map<Long, Integer> productOrder = new HashMap<>();
         productOrder.put(1L, 1);
