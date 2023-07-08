@@ -37,6 +37,7 @@ resource "aws_instance" "bs2nd" {
     systemctl enable docker
   EOF
 }
+
 resource "aws_instance" "bs2nd_2" {
   ami             = var.ami_ubuntu
   instance_type   = var.size_instance

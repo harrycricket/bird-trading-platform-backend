@@ -7,6 +7,10 @@ resource "aws_eip_association" "eip-association-to-bs2nd" {
   instance_id   = aws_instance.bs2nd.id
   allocation_id = "eipalloc-0a25f2fa27a7221f5"
 }
+resource "aws_eip_association" "eip-association-to-bs2nd_2" {
+  instance_id   = aws_instance.bs2nd_2.id
+  allocation_id = "eipalloc-0324d56c4417b311c"
+}
 
 
 resource "aws_eip_association" "eip-association-to-kafka" {
