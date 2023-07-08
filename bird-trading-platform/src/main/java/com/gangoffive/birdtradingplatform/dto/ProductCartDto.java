@@ -3,6 +3,8 @@ package com.gangoffive.birdtradingplatform.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Builder
 @Data
 public class ProductCartDto {
@@ -16,4 +18,6 @@ public class ProductCartDto {
     protected int categoryId;
     private ShopOwnerDto shopOwner;
     private double star;
+    private List<TagDto> tags;
+    private TypeDto type;
 }
