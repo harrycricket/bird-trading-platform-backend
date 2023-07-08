@@ -62,5 +62,7 @@ public interface ProductService {
             MultipartFile multipartVideo,
             ProductUpdateDto productUpdate
     );
+
+    ResponseEntity<?> getProductRelevantBaseOnId(long productId);
 }
 

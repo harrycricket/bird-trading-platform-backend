@@ -9,14 +9,13 @@ package com.gangoffive.birdtradingplatform.repository;
  * @author Admins
  */
 
-import com.gangoffive.birdtradingplatform.entity.Bird;
-import com.gangoffive.birdtradingplatform.entity.Product;
-import com.gangoffive.birdtradingplatform.entity.ShopOwner;
+import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.swing.text.html.Option;
@@ -94,4 +93,15 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
     );
 
     Bird findByIdAndShopOwner(Long id, ShopOwner shopOwner);
+
+    @Query("SELECT b FROM Bird b WHERE b.id IN " +
+            "(SELECT DISTINCT b2.id FROM Bird b2 JOIN b2.productSummary ps JOIN b2.tags t " +
+            "WHERE b2.typeBird.id = :typeId OR t.id IN :tagIds OR TRUE = TRUE AND b2.quantity > 0 AND b2.status IN :status) " +
+            "ORDER BY b.productSummary.totalQuantityOrder DESC")
+    List<Product> findDistinctBirdsByTypeAndTagsSortedByTotalQuantity(@Param("typeId") long typeId,
+                                                                      @Param("tagIds") List<Long> tagIds,
+                                                                      @Param("status") List<ProductStatus> statusList,
+                                                                      Pageable pageable);
+
+
 }

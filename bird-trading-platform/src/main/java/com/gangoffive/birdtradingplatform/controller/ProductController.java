@@ -115,4 +115,9 @@ public class ProductController {
             @RequestPart(name = "data") ProductUpdateDto productUpdate) {
         return productService.updateProduct(multipartFiles, multipartVideo, productUpdate);
     }
+
+    @GetMapping("/products/{productId}/relevant")
+    public ResponseEntity<?> getProductRelevant(@PathVariable long productId) {
+        return productService.getProductRelevantBaseOnId(productId);
+    }
 }
