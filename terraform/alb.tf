@@ -8,9 +8,10 @@ resource "aws_lb_target_group" "my-tg" {
 
 
 
+
 resource "aws_lb_target_group_attachment" "attach-game-cd" {
   target_group_arn = aws_lb_target_group.my-tg.arn
-  target_id        = aws_instance.bs2nd.id
+  target_id        = [aws_instance.bs2nd.id, aws_instance.bs2nd_2.id]
   port = 80
 }
 
