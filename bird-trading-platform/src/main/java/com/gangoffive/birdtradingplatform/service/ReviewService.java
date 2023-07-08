@@ -16,4 +16,6 @@ public interface ReviewService {
     ResponseEntity<?> getAllReviewByProductId(Long productId, int pageNumber);
 
     ResponseEntity<?> getAllReviewByShopOwner(ReviewShopOwnerFilterDto reviewFilter);
+
+    ResponseEntity<?> getReviewByReviewId(Long reviewId);
 }

@@ -35,4 +35,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Optional<Page<Review>> findAllByReviewDateGreaterThanEqualAndOrderDetail_Product_ShopOwner_Id(Date reviewDate, Long shopId, Pageable pageable);
 
     Optional<Page<Review>> findAllByReviewDateBetweenAndOrderDetail_Product_ShopOwner_Id(Date reviewDateFrom, Date reviewDateTo, Long shopId, Pageable pageable);
+
+    Optional<Review> findByIdAndOrderDetail_Product_ShopOwner_Id(Long reviewId, Long shopId);
 }

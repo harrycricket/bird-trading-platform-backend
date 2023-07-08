@@ -42,4 +42,9 @@ public class ReviewController {
     public ResponseEntity<?> getAllReviewByShopOwner(@RequestParam String data) {
         return reviewService.getAllReviewByShopOwner(JsonUtil.INSTANCE.getObject(data, ReviewShopOwnerFilterDto.class));
     }
+
+    @GetMapping("/shop-owner/reviews/{reviewId}")
+    public ResponseEntity<?> getAllOrderDetailByOrderId(@PathVariable Long reviewId) {
+        return reviewService.getReviewByReviewId(reviewId);
+    }
 }
