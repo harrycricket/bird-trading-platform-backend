@@ -14,5 +14,7 @@ public class NotificationServiceTest {
     @Autowired
     private NotificationService notificationService;
 
-
+    public void NotificationData() {
+        
+    }
 }
