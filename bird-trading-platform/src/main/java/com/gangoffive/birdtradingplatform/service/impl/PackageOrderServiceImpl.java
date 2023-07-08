@@ -257,7 +257,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return true;
     }
 
-    private boolean checkTotalShopPrice(List<ItemByShopDto> itemsByShop) {
+    @Override
+    public boolean checkTotalShopPrice(List<ItemByShopDto> itemsByShop) {
         for (ItemByShopDto item: itemsByShop) {
             Map<Long, Integer> productQuantityMap = item.getListItems();
             if (item.getTotalShopPrice() != calculateTotalPriceOfAllProduct(productQuantityMap)) {
@@ -272,7 +273,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return true;
     }
 
-    private boolean checkSubTotal(double subTotal, Map<Long, Integer> productOrder) {
+    @Override
+    public boolean checkSubTotal(double subTotal, Map<Long, Integer> productOrder) {
         if (productOrder == null || productOrder.isEmpty()) {
             return false;
         }
@@ -284,7 +286,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return subTotal == calculateTotalPriceOfAllProduct(productOrder);
     }
 
-    private boolean checkTotalShippingFee(PackageOrderRequestDto packageOrder) {
+    @Override
+    public boolean checkTotalShippingFee(PackageOrderRequestDto packageOrder) {
         //Check when have promotion with type SHIPPING
         if (packageOrder.getCartInfo().getPromotionIds() != null && !packageOrder.getCartInfo().getPromotionIds().isEmpty()) {
             List<Promotion> promotions = findPromotions(packageOrder.getCartInfo().getPromotionIds());
@@ -316,7 +319,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return checkShippingFeeEachOrder && (Math.round(totalShip[0] * 100.0) / 100.0) == packageOrder.getCartInfo().getTotal().getShippingTotal();
     }
 
-    private boolean checkTotalDiscount(PackageOrderRequestDto packageOrder) {
+    @Override
+    public boolean checkTotalDiscount(PackageOrderRequestDto packageOrder) {
         //Check when have promotion with type DISCOUNT
         if (packageOrder.getCartInfo().getPromotionIds() != null && !packageOrder.getCartInfo().getPromotionIds().isEmpty()) {
             List<Promotion> promotions = findPromotions(packageOrder.getCartInfo().getPromotionIds());
@@ -340,7 +344,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         }
     }
 
-    private boolean checkTotalPayment(TotalOrderDto totalOrderDto) {
+    @Override
+    public boolean checkTotalPayment(TotalOrderDto totalOrderDto) {
         double totalPayment = totalOrderDto.getSubTotal() + totalOrderDto.getShippingTotal() - totalOrderDto.getPromotionFee();
         log.info("----------------------------checkTotalPayment()--------------------------------------------");
         log.info("totalOrderDto.getPaymentTotal() {}", totalOrderDto.getPaymentTotal());

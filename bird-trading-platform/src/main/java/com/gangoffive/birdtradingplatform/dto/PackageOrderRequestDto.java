@@ -8,6 +8,7 @@ import java.util.Map;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 @ToString
 public class PackageOrderRequestDto {
     private UserOrderDto userInfo;
