@@ -1,10 +1,10 @@
 package com.gangoffive.birdtradingplatform.service;
 
+import com.gangoffive.birdtradingplatform.dto.ItemByShopDto;
 import com.gangoffive.birdtradingplatform.dto.PackageOrderRequestDto;
+import com.gangoffive.birdtradingplatform.dto.TotalOrderDto;
 import com.gangoffive.birdtradingplatform.dto.UserOrderDto;
-import com.gangoffive.birdtradingplatform.entity.*;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +13,16 @@ public interface PackageOrderService {
     ResponseEntity<?> packageOrder(PackageOrderRequestDto packageOrder, String paymentId, String payerId);
 
     boolean checkPromotion(PackageOrderRequestDto packageOrder, Map<Long, Integer> productOrder);
+
+    boolean checkTotalShopPrice(List<ItemByShopDto> itemsByShop);
+
+    boolean checkSubTotal(double subTotal, Map<Long, Integer> productOrder);
+
+    boolean checkTotalShippingFee(PackageOrderRequestDto packageOrder);
+
+    boolean checkTotalDiscount(PackageOrderRequestDto packageOrder);
+
+    boolean checkTotalPayment(TotalOrderDto totalOrderDto);
 
     boolean checkListProduct(Map<Long, Integer> productOrder);
 
