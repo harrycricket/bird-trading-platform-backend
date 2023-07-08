@@ -8,6 +8,37 @@ on:
          - "dev/**"
    workflow_dispatch:
 jobs:
+
+   run_ansible_kafka:
+      name: runkafka
+      runs-on: ubuntu-latest
+      permissions:
+         id-token: write
+         contents: write
+      defaults:
+         run:
+            working-directory: ./ansible-kafka/
+      steps:
+         - name: Checkout repo
+           uses: actions/checkout@v3
+         - name: "Create env file"
+           run: |
+              mkdir ./files 
+              echo "${{ secrets.INVENTORY_KAFKA_SERVER }}" > ./inventory-kafka
+              echo "${{ secrets.PEM }}" > ./ansible-hosts-v2.pem
+              echo "${{ secrets.DOCKER_COMPOSE_FILE}}" > ./files/docker-compose.yml
+         - name: "Create env file"
+           run: |
+              sudo chmod 400 ./ansible-hosts-v2.pem
+         -  name: Run playbook
+            uses: dawidd6/action-ansible-playbook@v2
+            with:
+              playbook: run_kafka_docker.yml
+              directory: ./ansible-kafka/
+              options: |
+                 --inventory inventory-kafka
+            continue-on-error: true
+
    update_images:
       name: Build image
       runs-on: ubuntu-latest
@@ -46,10 +77,10 @@ jobs:
          - name: Build with Maven
            run: mvn --batch-mode --update-snapshots package
 
-         - name: Upload coverage reports to Codecov
-           uses: codecov/codecov-action@v3
-           env: 
-               CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+         # - name: Upload coverage reports to Codecov
+         #   uses: codecov/codecov-action@v3
+         #   env: 
+         #       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
          - name: Configure AWS credentials
            uses: aws-actions/configure-aws-credentials@v2
@@ -69,38 +100,9 @@ jobs:
            run: |
               docker build -t $REGISTRY/$REPOSITORY:latest .
               docker push $REGISTRY/$REPOSITORY:latest
-   run_ansible_kafka:
-      needs: update_images
-      name: runkafka
-      runs-on: ubuntu-latest
-      permissions:
-         id-token: write
-         contents: write
-      defaults:
-         run:
-            working-directory: ./ansible-kafka/
-      steps:
-         - name: Checkout repo
-           uses: actions/checkout@v3
-         - name: "Create env file"
-           run: |
-              mkdir ./files 
-              echo "${{ secrets.INVENTORY_KAFKA_SERVER }}" > ./inventory-kafka
-              echo "${{ secrets.PEM }}" > ./ansible-hosts-v2.pem
-              echo "${{ secrets.DOCKER_COMPOSE_FILE}}" > ./files/docker-compose.yml
-         - name: "Create env file"
-           run: |
-              sudo chmod 400 ./ansible-hosts-v2.pem
-         -  name: Run playbook
-            uses: dawidd6/action-ansible-playbook@v2
-            with:
-              playbook: run_kafka_docker.yml
-              directory: ./ansible-kafka/
-              options: |
-                 --inventory inventory-kafka
-            continue-on-error: true
+
    run_ansible_backend:
-      needs: run_ansible_kafka
+      needs: update_images
       name: update-docker-container
       runs-on: ubuntu-latest
       permissions:
