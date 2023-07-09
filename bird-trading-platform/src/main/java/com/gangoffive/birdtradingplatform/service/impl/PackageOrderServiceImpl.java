@@ -447,6 +447,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         });
         //push notification for shop
         List<Long> userIdOfShopList = shops.stream().map(shop -> shop.getAccount().getId()).toList();
+        log.info("Here is total shop {}", userIdOfShopList.size());
+        log.info("Here is account shopid {}", userIdOfShopList.toString());
         NotificationDto notificationDto = new NotificationDto();
         notificationDto.setRole(NotifiConstant.NOTI_SHOP_ROLE);
         notificationDto.setName(NotifiConstant.NEW_ORDER_FOR_SHOP_OWNER_NAME);
