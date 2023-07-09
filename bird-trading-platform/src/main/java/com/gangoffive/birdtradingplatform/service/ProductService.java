@@ -34,9 +34,6 @@ public interface ProductService {
 
     ResponseEntity<?> retrieveProductByShopId(long shopId, int pageNumber);
 
-    //ForSO it mean For Shop Owner
-    ResponseEntity<?> retrieveProductByShopIdForSO(int pageNumber);
-
     ResponseEntity<?> filter(ProductFilterDto filterDto);
 
     ResponseEntity<?> addNewProduct(
