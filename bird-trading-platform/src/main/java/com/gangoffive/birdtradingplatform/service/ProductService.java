@@ -50,7 +50,7 @@ public interface ProductService {
 
     ResponseEntity<?> updateListProductQuantity(List<ProductQuantityShopChangeDto> listProductChange);
 
-    ResponseEntity<?> filterAllProductByShopOwner(ProductShopOwnerFilterDto productFilter);
+    ResponseEntity<?> filterAllProduct(ProductShopOwnerFilterDto productFilter, boolean isShopOwner, boolean isAdmin);
 
     ResponseEntity<?> getProductDetailForShop(long productId);
 

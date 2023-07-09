@@ -112,14 +112,14 @@ public class PackageOrderServiceTest extends AbstractTestNGSpringContextTests {
         };
     }
 
-    @Test(dataProvider = "testCaseUserInfo", priority = 1)
+    @Test(dataProvider = "testCaseUserInfo")
     public void checkDataUserInfo(UserOrderDto userOrder, boolean expectedValue) {
         boolean actualValue = packageOrderService.checkUserOrderDto(userOrder);
         Assert.assertEquals(actualValue, expectedValue);
     }
 
 
-    @Test(dataProvider = "testCaseProduct",priority = 2)
+    @Test(dataProvider = "testCaseProduct")
     public void checkListProduct(Map<Long, Integer> mapProductQuantity, boolean expectedValue) {
         boolean actualValue = packageOrderService.checkListProduct(mapProductQuantity);
         Assert.assertEquals(actualValue, expectedValue);
@@ -131,35 +131,35 @@ public class PackageOrderServiceTest extends AbstractTestNGSpringContextTests {
         Assert.assertTrue(actualValue);
     }
 
-    @Test(priority = 4)
+    @Test
     @Transactional
     public void checkTotalShopPrice() {
         boolean actualValue = packageOrderService.checkTotalShopPrice(dataPackageOrderDto().getCartInfo().getItemsByShop());
         Assert.assertTrue(actualValue);
     }
 
-    @Test(priority = 5)
+    @Test
     @Transactional
     public void checkSubTotal() {
         double expectedValue = 679.42;
         Assert.assertTrue(packageOrderService.checkSubTotal(expectedValue, getMapProductQuantity()));
     }
 
-    @Test(priority = 6)
+    @Test
     @Transactional
     public void checkTotalShippingFee() {
         boolean actualValue = packageOrderService.checkTotalShippingFee(dataPackageOrderDto());
         Assert.assertTrue(actualValue);
     }
 
-    @Test(priority = 7)
+    @Test
     @Transactional
     public void checkTotalDiscount() {
         boolean actualValue = packageOrderService.checkTotalDiscount(dataPackageOrderDto());
         Assert.assertTrue(actualValue);
     }
 
-    @Test(priority = 8)
+    @Test
     @Transactional
     public void checkTotalPayment() {
         boolean actualValue = packageOrderService.checkTotalPayment(dataPackageOrderDto().getCartInfo().getTotal());

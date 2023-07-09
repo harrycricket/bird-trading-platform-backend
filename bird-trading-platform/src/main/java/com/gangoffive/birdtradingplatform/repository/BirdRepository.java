@@ -67,25 +67,48 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
             Long shopId, List<ProductStatus> productStatuses, Pageable pageable
     );
 
+    Optional<Page<Bird>> findAllByStatusIn(
+            List<ProductStatus> productStatuses, Pageable pageable
+    );
+
     Optional<Page<Bird>> findByIdAndShopOwner_IdAndStatusIn(
             Long birdId, Long shopId, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
+    Optional<Page<Bird>> findByIdAndStatusIn(
+            Long birdId, List<ProductStatus> productStatuses, Pageable pageable
     );
 
     Optional<Page<Bird>> findAllByNameLikeAndShopOwner_IdAndStatusIn(
             String name, Long shopId, List<ProductStatus> productStatuses, Pageable pageable
     );
 
+    Optional<Page<Bird>> findAllByNameLikeAndStatusIn(
+            String name, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
     Optional<Page<Bird>> findAllByShopOwner_IdAndTypeBird_IdInAndStatusIn(
             Long shopOwnerId, List<Long> typeBirdIds, List<ProductStatus> productStatuses, Pageable pageable
     );
 
+    Optional<Page<Bird>> findAllByTypeBird_IdInAndStatusIn(
+            List<Long> typeBirdIds, List<ProductStatus> productStatuses, Pageable pageable
+    );
 
     Optional<Page<Bird>> findAllByShopOwner_IdAndPriceGreaterThanEqualAndStatusIn(
             Long shopOwnerId, double price, List<ProductStatus> productStatuses, Pageable pageable
     );
 
+    Optional<Page<Bird>> findAllByPriceGreaterThanEqualAndStatusIn(
+            double price, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
     Optional<Page<Bird>> findAllByShopOwner_IdAndProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
             Long shopOwnerId, double discountedPrice, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
+    Optional<Page<Bird>> findAllByProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
+            double discountedPrice, List<ProductStatus> productStatuses, Pageable pageable
     );
 
     Optional<Page<Bird>> findAllByShopOwner_IdAndStatus(

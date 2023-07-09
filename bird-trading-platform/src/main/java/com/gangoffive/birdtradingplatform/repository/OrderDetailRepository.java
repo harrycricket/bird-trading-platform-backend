@@ -27,6 +27,10 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             PromotionShop promotionShop, Long shopId, List<OrderStatus> orderStatuses
     );
 
+    Optional<List<OrderDetail>> findAllByPromotionShopsContainingAndOrder_StatusIn(
+            PromotionShop promotionShop, List<OrderStatus> orderStatuses
+    );
+
     Optional<Page<OrderDetail>> findAllByOrder_ShopOwner_Id(
             Long shopOwner, Pageable pageable
     );

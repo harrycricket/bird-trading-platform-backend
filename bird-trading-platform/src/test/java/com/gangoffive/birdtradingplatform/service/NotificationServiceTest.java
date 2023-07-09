@@ -2,13 +2,11 @@ package com.gangoffive.birdtradingplatform.service;
 
 import com.gangoffive.birdtradingplatform.common.NotifiConstant;
 import com.gangoffive.birdtradingplatform.dto.NotificationDto;
-import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
@@ -17,7 +15,7 @@ import org.testng.annotations.Test;
 @SpringBootTest
 @Test
 @Slf4j
-public class NotificationServiceTest  extends AbstractTestNGSpringContextTests {
+public class NotificationServiceTest extends AbstractTestNGSpringContextTests {
     @Autowired
     private NotificationService notificationService;
 
@@ -48,12 +46,12 @@ public class NotificationServiceTest  extends AbstractTestNGSpringContextTests {
 
     @DataProvider(name = "notificationData")
     public Object[][] notificationData() {
-        return new Object[][] {
+        return new Object[][]{
                 // Test case 1
-                { 1L, notiDataSuccess(), true },
-                { 1L, notiDataSuccess(), true },
+                {1L, notiDataSuccess(), true},
+                {1L, notiDataSuccess(), true},
                 // Test case 2
-                { 1L, notiDataFail(), false },
+                {1L, notiDataFail(), false},
                 // Add more test cases as needed
         };
     }
