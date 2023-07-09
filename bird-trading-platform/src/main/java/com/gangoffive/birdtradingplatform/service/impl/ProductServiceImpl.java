@@ -239,32 +239,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ResponseEntity<?> retrieveProductByShopIdForSO(int pageNumber) {
-        String email = "YamamotoEmi37415@gmail.com";
-        var account = accountRepository.findByEmail(email);
-        if (account.isPresent()) {
-            long shopId = account.get().getId();
-            if (pageNumber > 0) {
-                --pageNumber;
-            }
-            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
-                    Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
-            Optional<Page<Product>> pageAble = productRepository.findByShopOwner_IdAndStatusIn(shopId,
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
-
-            if (pageAble.isPresent()) {
-                List<ProductShopDto> result = pageAble.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWrapper<ProductShopDto> pageNumberWrapper = new PageNumberWrapper<>();
-                pageNumberWrapper.setPageNumber(pageAble.get().getTotalPages());
-                pageNumberWrapper.setLists(result);
-                return ResponseEntity.ok(pageNumberWrapper);
-            }
-        }
-        return new ResponseEntity<>(ErrorResponse.builder().errorMessage(ResponseCode.NOT_FOUND_THIS_PRODUCT_SHOP_ID.toString())
-                .errorCode(HttpStatus.NOT_FOUND.name()).build(), HttpStatus.NOT_FOUND);
-    }
-
-    @Override
     public ProductShopDto productToProductShopDto(Product product) {
         if (product != null) {
             ProductShopDto productShopDto;
@@ -284,6 +258,7 @@ public class ProductServiceImpl implements ProductService {
                 productShopDto = new ProductShopDto();
             }
             productShopDto.setId(product.getId());
+            productShopDto.setShopId(product.getShopOwner().getId());
             productShopDto.setName(product.getName());
             productShopDto.setPrice(product.getPrice());
             productShopDto.setDiscountedPrice(CalculateDiscountedPrice(product.getPrice(), promotionPriceService.CalculateSaleOff(product.getPromotionShops(), product.getPrice())));

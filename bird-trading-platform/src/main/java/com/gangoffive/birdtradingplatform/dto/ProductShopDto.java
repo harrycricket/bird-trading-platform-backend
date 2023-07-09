@@ -9,11 +9,11 @@ import lombok.*;
 @ToString
 public class ProductShopDto<T> {
     private long id;
+    private long shopId;
     private String name;
     private int category;
     private double price;
     private double discountedPrice;
-    //    private List<PromotionShopDto> listDiscount;
     private int quantity;
     private T type;
     private int status;
