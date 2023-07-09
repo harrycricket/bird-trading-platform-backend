@@ -109,6 +109,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public boolean pushNotificationForListUserID(List<Long> userIdList, NotificationDto notificationDto){
+        boolean result = true;
         for(long id : userIdList) {
             notificationDto.setReceiveId(id);
             notificationDto.setId(System.currentTimeMillis());
@@ -120,13 +121,12 @@ public class NotificationServiceImpl implements NotificationService {
             try  {
                 SendResult<String, String> response = future.get();
                 log.info("Record metadata: {}", response.getRecordMetadata());
-                return true;
             }catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-                return false;
+                result = false;
             }
         }
-        return true;
+        return result;
     }
 
     @Override
