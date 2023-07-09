@@ -112,54 +112,54 @@ public class PackageOrderServiceTest extends AbstractTestNGSpringContextTests {
         };
     }
 
-    @Test(dataProvider = "testCaseUserInfo")
+    @Test(dataProvider = "testCaseUserInfo", priority = 1)
     public void checkDataUserInfo(UserOrderDto userOrder, boolean expectedValue) {
         boolean actualValue = packageOrderService.checkUserOrderDto(userOrder);
         Assert.assertEquals(actualValue, expectedValue);
     }
 
 
-    @Test(dataProvider = "testCaseProduct")
+    @Test(dataProvider = "testCaseProduct",priority = 2)
     public void checkListProduct(Map<Long, Integer> mapProductQuantity, boolean expectedValue) {
         boolean actualValue = packageOrderService.checkListProduct(mapProductQuantity);
         Assert.assertEquals(actualValue, expectedValue);
     }
 
-    @Test
+    @Test(priority = 3)
     public void checkDataPromotion() {
         boolean actualValue = packageOrderService.checkPromotion(dataPackageOrderDto(), getMapProductQuantity());
         Assert.assertTrue(actualValue);
     }
 
-    @Test
+    @Test(priority = 4)
     @Transactional
     public void checkTotalShopPrice() {
         boolean actualValue = packageOrderService.checkTotalShopPrice(dataPackageOrderDto().getCartInfo().getItemsByShop());
         Assert.assertTrue(actualValue);
     }
 
-    @Test
+    @Test(priority = 5)
     @Transactional
     public void checkSubTotal() {
         double expectedValue = 679.42;
         Assert.assertTrue(packageOrderService.checkSubTotal(expectedValue, getMapProductQuantity()));
     }
 
-    @Test
+    @Test(priority = 6)
     @Transactional
     public void checkTotalShippingFee() {
         boolean actualValue = packageOrderService.checkTotalShippingFee(dataPackageOrderDto());
         Assert.assertTrue(actualValue);
     }
 
-    @Test
+    @Test(priority = 7)
     @Transactional
     public void checkTotalDiscount() {
         boolean actualValue = packageOrderService.checkTotalDiscount(dataPackageOrderDto());
         Assert.assertTrue(actualValue);
     }
 
-    @Test
+    @Test(priority = 8)
     @Transactional
     public void checkTotalPayment() {
         boolean actualValue = packageOrderService.checkTotalPayment(dataPackageOrderDto().getCartInfo().getTotal());
