@@ -397,16 +397,18 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
             if (isCalcReview) {
                 Optional<List<Review>> reviews = reviewRepository.findAllByReviewDateBetweenAndOrderDetail_Product_ShopOwner(
-                        Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant()),
-                        Date.from(date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()), account.getShopOwner()
+                        Date.from(date.atStartOfDay(ZoneId.of("Asia/Bangkok")).toInstant()),
+                        Date.from(date.plusDays(1).atStartOfDay(ZoneId.of("Asia/Bangkok")).toInstant()), account.getShopOwner()
                 );
                 List<OrderDetail> orderDetailList = reviews.get().stream().map(Review::getOrderDetail).toList();
                 List<OrderDetail> listOrderDetailFilter = orderDetailList.stream()
                         .filter(
                                 orderDetail -> productClass.isInstance(orderDetail.getProduct())
                         ).toList();
-                log.info("dateFrom {}", Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-                log.info("dateTo {}", Date.from(date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                log.info("dateFrom {}", Date.from(date.atStartOfDay(ZoneId.of("Asia/Bangkok")).toInstant()));
+                log.info("dateTo {}", Date.from(date.plusDays(1).atStartOfDay(ZoneId.of("Asia/Bangkok")).toInstant()));
+                log.info("review {}", reviews.get().size());
+                log.info("class {}", productClass.getName());
                 if (reviews.isPresent()) {
                     totalReview = listOrderDetailFilter.size();
                 }
