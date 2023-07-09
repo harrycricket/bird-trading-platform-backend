@@ -13,6 +13,7 @@ import java.util.List;
 @Getter
 public enum FieldOrderTable {
     ID("id"),
+    SHOP_ID("shopId"),
     ORDER_STATUS("orderStatus"),
     PAYMENT_METHOD("paymentMethod"),
     PROMOTION_SHOP("promotionsShop"),

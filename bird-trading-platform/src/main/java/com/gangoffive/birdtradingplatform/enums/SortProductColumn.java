@@ -9,6 +9,7 @@ import java.util.Arrays;
 @Getter
 public enum SortProductColumn {
     ID("id", "id"),
+    SHOP_ID("shopId", "shopOwner.id"),
     NAME("name", "name"),
     PRICE("price", "price"),
     DISCOUNTED_PRICE("discountedPrice", "productSummary.discountedPrice"),

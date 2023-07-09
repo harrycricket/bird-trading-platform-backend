@@ -8,7 +8,6 @@ package com.gangoffive.birdtradingplatform.repository;
 import com.gangoffive.birdtradingplatform.entity.Accessory;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.entity.ShopOwner;
-import com.gangoffive.birdtradingplatform.entity.Tag;
 import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -54,7 +53,6 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "And ps.discounted_price <= ?6 " +
             "And a.quantity > 0 " +
             "And a.status = 'ACTIVE' ", nativeQuery = true)
-
     Page<Long> idFilterShop(Long idShop, String name, List<Long> listTypeId, double star,
                             double lowestPrice, double highestPrice, Pageable pageable);
 
@@ -64,26 +62,50 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             Long shopId, List<ProductStatus> productStatuses, Pageable pageable
     );
 
+    Optional<Page<Accessory>> findAllByStatusIn(
+            List<ProductStatus> productStatuses, Pageable pageable
+    );
 
     Optional<Page<Accessory>> findByIdAndShopOwner_IdAndStatusIn(
             Long accessoryId, Long shopId, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
+    Optional<Page<Accessory>> findByIdAndStatusIn(
+            Long accessoryId, List<ProductStatus> productStatuses, Pageable pageable
     );
 
     Optional<Page<Accessory>> findAllByNameLikeAndShopOwner_IdAndStatusIn(
             String name, Long shopId, List<ProductStatus> productStatuses, Pageable pageable
     );
 
+    Optional<Page<Accessory>> findAllByNameLikeAndStatusIn(
+            String name, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
     Optional<Page<Accessory>> findAllByShopOwner_IdAndTypeAccessory_IdInAndStatusIn(
             Long shopOwnerId, List<Long> typeAccessoryIds, List<ProductStatus> productStatuses, Pageable pageable
     );
+
+    Optional<Page<Accessory>> findAllByTypeAccessory_IdInAndStatusIn(
+            List<Long> typeAccessoryIds, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
 
 
     Optional<Page<Accessory>> findAllByShopOwner_IdAndPriceGreaterThanEqualAndStatusIn(
             Long shopOwnerId, double price, List<ProductStatus> productStatuses, Pageable pageable
     );
 
+    Optional<Page<Accessory>> findAllByPriceGreaterThanEqualAndStatusIn(
+            double price, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
     Optional<Page<Accessory>> findAllByShopOwner_IdAndProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
             Long shopOwnerId, double discountedPrice, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
+    Optional<Page<Accessory>> findAllByProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
+            double discountedPrice, List<ProductStatus> productStatuses, Pageable pageable
     );
 
     Optional<Page<Accessory>> findAllByShopOwner_IdAndStatus(
