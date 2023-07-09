@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="All Test Suite">
-    <test verbose="2" preserve-order="true" name="PackageOrderServiceTest">
+<suite name="All Test Suite" parallel="methods" thread-count="8">
+    <test name="PackageOrderServiceTest">
         <classes>
             <class name="com.gangoffive.birdtradingplatform.service.PackageOrderServiceTest"></class>
             <class name="com.gangoffive.birdtradingplatform.service.NotificationServiceTest"></class>
