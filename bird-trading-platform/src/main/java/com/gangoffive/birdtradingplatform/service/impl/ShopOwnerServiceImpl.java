@@ -44,10 +44,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -67,6 +64,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final ShopStaffMapper shopStaffMapper;
     private final AddressRepository addressRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ReviewRepository reviewRepository;
 
 
     @Override
@@ -379,26 +377,41 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             double totalPrice = 0;
             double totalQuantity = 0;
             double totalReview = 0;
-            for (Order order : listOrderOfProduct) {
-                if (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(date)) {
-                    log.info("order.getCreatedDate().toInstant().atZone(ZoneId.of(\"Asia/Bangkok\")) {}", order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")));
-                    for (OrderDetail orderDetail : listOrderDetailOfProduct) {
-                        if (orderDetail.getOrder().equals(order)) {
-                            if (isCalcPrice) {
-                                totalPrice += orderDetail.getPrice() * orderDetail.getQuantity();
-                            }
-                            if (isCalcQuantity) {
-                                totalQuantity++;
-                            }
-                            if (isCalcReview) {
-                                if (orderDetail.getReview() != null) {
-                                    totalReview++;
+            if (isCalcPrice || isCalcQuantity) {
+                for (Order order : listOrderOfProduct) {
+                    if (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(date)) {
+                        log.info("order.getCreatedDate().toInstant().atZone(ZoneId.of(\"Asia/Bangkok\")) {}", order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")));
+                        for (OrderDetail orderDetail : listOrderDetailOfProduct) {
+                            if (orderDetail.getOrder().equals(order)) {
+                                if (isCalcPrice) {
+                                    totalPrice += orderDetail.getPrice() * orderDetail.getQuantity();
+                                }
+                                if (isCalcQuantity) {
+                                    totalQuantity++;
                                 }
                             }
                         }
                     }
                 }
             }
+
+            if (isCalcReview) {
+                Optional<List<Review>> reviews = reviewRepository.findAllByReviewDateBetweenAndOrderDetail_Product_ShopOwner(
+                        Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                        Date.from(date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()), account.getShopOwner()
+                );
+                List<OrderDetail> orderDetailList = reviews.get().stream().map(Review::getOrderDetail).toList();
+                List<OrderDetail> listOrderDetailFilter = orderDetailList.stream()
+                        .filter(
+                                orderDetail -> productClass.isInstance(orderDetail.getProduct())
+                        ).toList();
+                log.info("dateFrom {}", Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                log.info("dateTo {}", Date.from(date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                if (reviews.isPresent()) {
+                    totalReview = listOrderDetailFilter.size();
+                }
+            }
+
             DecimalFormat decimalFormat = new DecimalFormat("#.00");
             String formattedTotalPrice = decimalFormat.format(totalPrice);
             log.info("formattedTotalPrice {}", formattedTotalPrice);
