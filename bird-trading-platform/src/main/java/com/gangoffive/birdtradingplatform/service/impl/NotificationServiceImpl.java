@@ -109,8 +109,30 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public boolean pushNotificationForListUserID(List<Long> userIdList, NotificationDto notificationDto){
+        boolean result = true;
         for(long id : userIdList) {
             notificationDto.setReceiveId(id);
+            notificationDto.setId(System.currentTimeMillis());
+            notificationDto.setSeen(false);
+            notificationDto.setNotiDate(new Date());
+            String notification = JsonUtil.INSTANCE.getJsonString(notificationDto);
+            CompletableFuture<SendResult<String, String>> future =
+                    kafkaTemplate.send(KafkaConstant.KAFKA_PRIVATE_NOTIFICATION, notification);
+            try  {
+                SendResult<String, String> response = future.get();
+                log.info("Record metadata: {}", response.getRecordMetadata());
+            }catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+                result = false;
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public boolean pushNotificationForAUserID(Long userId, NotificationDto notificationDto) {
+        if(notificationDto.getRole().equals(NotifiConstant.NOTI_USER_ROLE) || notificationDto.getRole().equals(NotifiConstant.NOTI_SHOP_ROLE)){
+            notificationDto.setReceiveId(userId);
             notificationDto.setId(System.currentTimeMillis());
             notificationDto.setSeen(false);
             notificationDto.setNotiDate(new Date());
@@ -126,25 +148,6 @@ public class NotificationServiceImpl implements NotificationService {
                 return false;
             }
         }
-        return true;
-    }
-
-    @Override
-    public boolean pushNotificationForAUserID(Long userId, NotificationDto notificationDto) {
-        notificationDto.setReceiveId(userId);
-        notificationDto.setId(System.currentTimeMillis());
-        notificationDto.setSeen(false);
-        notificationDto.setNotiDate(new Date());
-        String notification = JsonUtil.INSTANCE.getJsonString(notificationDto);
-        CompletableFuture<SendResult<String, String>> future =
-                kafkaTemplate.send(KafkaConstant.KAFKA_PRIVATE_NOTIFICATION, notification);
-        try  {
-            SendResult<String, String> response = future.get();
-            log.info("Record metadata: {}", response.getRecordMetadata());
-            return true;
-        }catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return false;
-        }
+        return false;
     }
 }
