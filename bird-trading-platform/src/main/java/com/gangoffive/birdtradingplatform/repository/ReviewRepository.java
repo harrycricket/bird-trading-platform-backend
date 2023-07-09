@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Review;
+import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.enums.ReviewRating;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,4 +38,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Optional<Page<Review>> findAllByReviewDateBetweenAndOrderDetail_Product_ShopOwner_Id(Date reviewDateFrom, Date reviewDateTo, Long shopId, Pageable pageable);
 
     Optional<Review> findByIdAndOrderDetail_Product_ShopOwner_Id(Long reviewId, Long shopId);
+
+    Optional<List<Review>> findAllByReviewDateBetweenAndOrderDetail_Product_ShopOwner(Date dateFrom, Date dateTo, ShopOwner shopOwner);
 }
