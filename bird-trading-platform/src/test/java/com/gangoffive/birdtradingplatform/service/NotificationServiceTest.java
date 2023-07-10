@@ -3,6 +3,7 @@ package com.gangoffive.birdtradingplatform.service;
 import com.gangoffive.birdtradingplatform.common.NotifiConstant;
 import com.gangoffive.birdtradingplatform.dto.NotificationDto;
 import com.google.gson.JsonObject;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -62,4 +63,11 @@ public class NotificationServiceTest extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(result, expectedResult);
     }
 
+    @Test(dependsOnMethods = "testPushNotificationForAUserID")
+    public void testUnreadNotification() throws InterruptedException {
+        Thread.sleep(8000);
+        ResponseEntity<?> result = notificationService.getUserUnreadNotification(1l, UserRole.USER);
+        notificationService.getNotifications(1l, 0 ,UserRole.USER);
+        Assert.assertEquals(result, resultNotification());
+    }
 }
