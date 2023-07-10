@@ -330,7 +330,7 @@ public class ProductServiceImpl implements ProductService {
                 SecurityContextHolder.getContext().getAuthentication().getName()
         );
         Long shopId = null;
-        if (account.isPresent()) {
+        if (account.isPresent() && isShopOwner) {
              shopId = account.get().getShopOwner().getId();
         }
         log.info("productFilter.getPageNumber() {}", productFilter.getPageNumber());

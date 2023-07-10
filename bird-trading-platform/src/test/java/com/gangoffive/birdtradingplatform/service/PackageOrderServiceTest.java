@@ -127,14 +127,18 @@ public class PackageOrderServiceTest extends AbstractTestNGSpringContextTests {
 
     @Test
     public void checkDataPromotion() {
-        boolean actualValue = packageOrderService.checkPromotion(dataPackageOrderDto(), getMapProductQuantity());
+        boolean actualValue = packageOrderService.checkPromotion(
+                dataPackageOrderDto(), getMapProductQuantity()
+        );
         Assert.assertTrue(actualValue);
     }
 
     @Test
     @Transactional
     public void checkTotalShopPrice() {
-        boolean actualValue = packageOrderService.checkTotalShopPrice(dataPackageOrderDto().getCartInfo().getItemsByShop());
+        boolean actualValue = packageOrderService.checkTotalShopPrice(
+                dataPackageOrderDto().getCartInfo().getItemsByShop()
+        );
         Assert.assertTrue(actualValue);
     }
 
@@ -162,7 +166,9 @@ public class PackageOrderServiceTest extends AbstractTestNGSpringContextTests {
     @Test
     @Transactional
     public void checkTotalPayment() {
-        boolean actualValue = packageOrderService.checkTotalPayment(dataPackageOrderDto().getCartInfo().getTotal());
+        boolean actualValue = packageOrderService.checkTotalPayment(
+                dataPackageOrderDto().getCartInfo().getTotal()
+        );
         Assert.assertTrue(actualValue);
     }
 }
