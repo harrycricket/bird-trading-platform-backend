@@ -60,7 +60,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/v1/info/",
             "/api/v1/users/get-cookie",
             "/api/v1/promotions",
-            "/api/v1/products/top-product"
+            "/api/v1/products/top-product",
+            "/api/v1/types/birds",
+            "/api/v1/types/foods",
+            "/api/v1/types/accessories",
+            "/api/v1/reviews/products",
     };
 
     @Override

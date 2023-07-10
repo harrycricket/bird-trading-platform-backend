@@ -21,7 +21,7 @@ import java.util.List;
 public class ReviewController {
     private final ReviewService reviewService;
 
-    @GetMapping("/users/reviews/products/{productId}")
+    @GetMapping("/reviews/products/{productId}")
     public ResponseEntity<?> getAllReviewByProductId(@PathVariable Long productId, @RequestParam int pageNumber) {
         return reviewService.getAllReviewByProductId(productId, pageNumber);
     }

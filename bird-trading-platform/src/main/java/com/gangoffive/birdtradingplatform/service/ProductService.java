@@ -20,9 +20,9 @@ public interface ProductService {
 
     List<ProductDto> findProductByName(String name);
 
-    List<ProductDto> retrieveTopProduct();
+    List<ProductCartDto> retrieveTopProduct();
 
-    List<ProductDto> listModelToDto(List<Product> products);
+    List<ProductCartDto> listModelToDto(List<Product> products);
 
     ResponseEntity<?> retrieveProductById(Long id);
 
@@ -34,6 +34,8 @@ public interface ProductService {
 
     ResponseEntity<?> retrieveProductByShopId(long shopId, int pageNumber);
 
+    ProductCartDto productToProductCart(Product product);
+
     ResponseEntity<?> filter(ProductFilterDto filterDto);
 
     ResponseEntity<?> addNewProduct(
@@ -41,8 +43,6 @@ public interface ProductService {
             MultipartFile multipartVideo,
             ProductShopOwnerDto productShopOwnerDto
     );
-
-    public ResponseEntity<?> filterByShop(ShopFilterDto shopFilterDto);
 
     ProductShopDto productToProductShopDto(Product product);
 

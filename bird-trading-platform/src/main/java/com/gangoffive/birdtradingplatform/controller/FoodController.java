@@ -38,7 +38,7 @@ public class FoodController {
     }
 
     @GetMapping("foods/top-product")
-    public List<FoodDto> findTopFood() {
+    public ResponseEntity<?> findTopFood() {
         return foodService.findTopFood();
     }
 

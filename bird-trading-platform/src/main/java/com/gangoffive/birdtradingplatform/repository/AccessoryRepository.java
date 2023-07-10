@@ -32,10 +32,11 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "And ps.star >= ?3 " +
             "And ps.discounted_price >= ?4 " +
             "And ps.discounted_price <= ?5 " +
+            "And (COALESCE(?6, a.shop_id) = a.shop_id OR ?6 IS NULL) " +
             "And a.status = 'ACTIVE' " +
             "And a.quantity > 0 ", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
-                        double lowestPrice, double highestPrice, Pageable pageable);
+                        double lowestPrice, double highestPrice, Long id ,Pageable pageable);
 
     Page<Accessory> findAllByQuantityGreaterThanAndStatusIn(int quantity, List<ProductStatus> productStatuses, Pageable pageable);
 
