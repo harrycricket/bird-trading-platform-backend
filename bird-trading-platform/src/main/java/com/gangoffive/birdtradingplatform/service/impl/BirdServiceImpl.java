@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
+import com.gangoffive.birdtradingplatform.dto.ProductCartDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.dto.ProductShopDto;
 import com.gangoffive.birdtradingplatform.entity.*;
@@ -121,13 +122,14 @@ public class BirdServiceImpl implements BirdService {
     }
 
     @Override
-    public List<BirdDto> findTopBirdProduct() {
+    public ResponseEntity<?> findTopBirdProduct() {
         List<Bird> listBirds = birdRepository.findAllById(productSummaryService.getIdTopBird());
         if (listBirds != null) {
-            List<BirdDto> birdDtos = listBirds.stream().map(bird -> (BirdDto) productService.ProductToDto(bird)).toList();
-            return birdDtos;
+//            List<BirdDto> birdDtos = listBirds.stream().map(bird -> (BirdDto) productService.ProductToDto(bird)).toList();
+            List<ProductCartDto> birdDtos = listBirds.stream().map(bird -> productService.productToProductCart(bird)).toList();
+            return ResponseEntity.ok(birdDtos);
         }
-        return null;
+        return new ResponseEntity<>("Not found top products", HttpStatus.BAD_REQUEST);
     }
 
     @Override

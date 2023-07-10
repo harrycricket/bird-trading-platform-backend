@@ -35,10 +35,11 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
             "AND ps.star >= ?3 " +
             "AND ps.discounted_price >= ?4 " +
             "AND ps.discounted_price <= ?5 " +
+            "And (COALESCE(?6, b.shop_id) = b.shop_id OR ?6 IS NULL) " +
             "And b.status = 'ACTIVE' " +
             "And b.quantity > 0 ", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listType, double star,
-                        double lowestPrice, double highestPrice, Pageable pageable);
+                        double lowestPrice, double highestPrice, Long shopId,Pageable pageable);
 
     Page<Bird> findAllByQuantityGreaterThanAndStatusIn(int quantity, List<ProductStatus> productStatuses, Pageable pageable);
 

@@ -39,7 +39,7 @@ public class ProductController {
 
     @GetMapping("/products/top-product")
     public ResponseEntity<?> retrieveTopProduct() {
-        List<ProductDto> result = productService.retrieveTopProduct();
+        List<ProductCartDto> result = productService.retrieveTopProduct();
         if(result == null){
             ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
                     "Not found product top product: ");
@@ -68,12 +68,6 @@ public class ProductController {
         log.info("dto {}", productFilterDto);
         return productService.filter(productFilterDto);
     }
-    @GetMapping("/products/filter-shop")
-    public ResponseEntity<?> filterByShop(ShopFilterDto shopFilterDto){
-        log.info("dto {}", shopFilterDto);
-        return productService.filterByShop(shopFilterDto);
-    }
-
 
     @PostMapping("/shop-owner/products")
     public ResponseEntity<?> addNewProduct(

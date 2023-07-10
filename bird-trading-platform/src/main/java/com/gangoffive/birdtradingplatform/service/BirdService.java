@@ -19,7 +19,7 @@ public interface BirdService {
 
     void deleteBirdById(Long id);
 
-    List<BirdDto> findTopBirdProduct();
+    ResponseEntity<?> findTopBirdProduct();
 
     ResponseEntity<?> getAllBirdByShop(int pageNumber);
 

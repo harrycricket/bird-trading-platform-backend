@@ -18,7 +18,7 @@ public interface AccessoryService {
 
     void deleteAccessoryById(Long id);
 
-    List<AccessoryDto> findTopAccessories();
+    ResponseEntity<?> findTopAccessories();
 
     ResponseEntity<?> getAllAccessoryByShop(int pageNumber);
 }

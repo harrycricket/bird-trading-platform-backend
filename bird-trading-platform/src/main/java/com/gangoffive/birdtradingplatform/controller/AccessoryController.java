@@ -37,7 +37,7 @@ public class AccessoryController {
     }
 
     @GetMapping("accessories/top-product")
-    public List<AccessoryDto> findTopAccessories() {
+    public ResponseEntity<?> findTopAccessories() {
         return accessoryService.findTopAccessories();
     }
 

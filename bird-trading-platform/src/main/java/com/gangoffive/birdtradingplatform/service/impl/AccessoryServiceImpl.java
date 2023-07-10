@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
+import com.gangoffive.birdtradingplatform.dto.ProductCartDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.dto.ProductShopDto;
 import com.gangoffive.birdtradingplatform.entity.Accessory;
@@ -120,11 +121,11 @@ public class AccessoryServiceImpl implements AccessoryService {
     }
 
     @Override
-    public List<AccessoryDto> findTopAccessories() {
+    public ResponseEntity<?> findTopAccessories() {
         List<Accessory> lists = accessoryRepository.findAllById(productSummaryService.getIdTopAccessories());
         if (lists != null) {
-            List<AccessoryDto> listDto = lists.stream().map(accessory -> (AccessoryDto) productService.ProductToDto(accessory)).toList();
-            return listDto;
+            List<ProductCartDto> listDto = lists.stream().map(accessory ->  productService.productToProductCart(accessory)).toList();
+            return ResponseEntity.ok(listDto);
         }
         return null;
     }
