@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.service;
 
 import com.gangoffive.birdtradingplatform.common.NotifiConstant;
 import com.gangoffive.birdtradingplatform.dto.NotificationDto;
+import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.google.gson.JsonObject;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +68,7 @@ public class NotificationServiceTest extends AbstractTestNGSpringContextTests {
     public void testUnreadNotification() throws InterruptedException {
         Thread.sleep(8000);
         ResponseEntity<?> result = notificationService.getUserUnreadNotification(1l, UserRole.USER);
-        notificationService.getNotifications(1l, 0 ,UserRole.USER);
+        notificationService.getNotifications(1l, 0 , UserRole.USER);
         Assert.assertEquals(result, resultNotification());
     }
 }
