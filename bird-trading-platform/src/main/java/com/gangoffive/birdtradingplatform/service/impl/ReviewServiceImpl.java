@@ -546,7 +546,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .address(shippingAddress.getAddress())
                 .phone(shippingAddress.getPhone())
                 .build();
-        if (!review.getImgUrl().isEmpty()) {
+        if (review.getImgUrl() != null  && !review.getImgUrl().isEmpty()) {
             return ReviewDetailShopOwnerDto.builder()
                     .id(review.getId())
                     .account(accountReview)
@@ -580,7 +580,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .fullName(account.getFullName())
                 .imgUrl(account.getImgUrl())
                 .build();
-        if (!review.getImgUrl().isEmpty()) {
+        if (review.getImgUrl() != null  && !review.getImgUrl().isEmpty()) {
             return ReviewDto.builder()
                     .id(review.getId())
                     .account(accountReview)

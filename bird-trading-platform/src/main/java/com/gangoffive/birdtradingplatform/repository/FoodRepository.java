@@ -32,10 +32,11 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             "AND ps.star >= ?3 " +
             "AND ps.discounted_price >= ?4 " +
             "AND ps.discounted_price <= ?5 " +
+            "And (COALESCE(?6, f.shop_id) = f.shop_id OR ?6 IS NULL) " +
             "And f.status = 'ACTIVE' " +
             "And f.quantity > 0 ", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
-                        double lowestPrice, double hightPrice, Pageable pageable);
+                        double lowestPrice, double hightPrice, Long shopId ,Pageable pageable);
 
     Page<Food> findAllByQuantityGreaterThanAndStatusIn(int quantity, List<ProductStatus> productStatuses, Pageable pageable);
 

@@ -19,7 +19,7 @@ public interface FoodService {
 
     void deleteFoodById(Long id);
 
-    List<FoodDto> findTopFood();
+    ResponseEntity<?> findTopFood();
 
     ResponseEntity<?> getFoodByShop(int pageNumber);
 }
