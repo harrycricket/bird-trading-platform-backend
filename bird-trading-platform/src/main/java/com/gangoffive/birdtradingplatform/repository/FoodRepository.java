@@ -5,7 +5,9 @@
  */
 package com.gangoffive.birdtradingplatform.repository;
 
-import com.gangoffive.birdtradingplatform.entity.*;
+import com.gangoffive.birdtradingplatform.entity.Food;
+import com.gangoffive.birdtradingplatform.entity.Product;
+import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +34,6 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             "AND ps.discounted_price <= ?5 " +
             "And f.status = 'ACTIVE' " +
             "And f.quantity > 0 ", nativeQuery = true)
-
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
                         double lowestPrice, double hightPrice, Pageable pageable);
 
@@ -61,25 +62,48 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             Long shopId, List<ProductStatus> productStatuses, Pageable pageable
     );
 
+    Optional<Page<Food>> findAllByStatusIn(
+            List<ProductStatus> productStatuses, Pageable pageable
+    );
+
     Optional<Page<Food>> findByIdAndShopOwner_IdAndStatusIn(
             Long foodId, Long shopId, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
+    Optional<Page<Food>> findByIdAndStatusIn(
+            Long foodId, List<ProductStatus> productStatuses, Pageable pageable
     );
 
     Optional<Page<Food>> findAllByNameLikeAndShopOwner_IdAndStatusIn(
             String name, Long shopId, List<ProductStatus> productStatuses, Pageable pageable
     );
 
+    Optional<Page<Food>> findAllByNameLikeAndStatusIn(
+            String name, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
     Optional<Page<Food>> findAllByShopOwner_IdAndTypeFood_IdInAndStatusIn(
             Long shopOwnerId, List<Long> typeFoodIds, List<ProductStatus> productStatuses, Pageable pageable
     );
 
+    Optional<Page<Food>> findAllByTypeFood_IdInAndStatusIn(
+            List<Long> typeFoodIds, List<ProductStatus> productStatuses, Pageable pageable
+    );
 
     Optional<Page<Food>> findAllByShopOwner_IdAndPriceGreaterThanEqualAndStatusIn(
             Long shopOwnerId, double price, List<ProductStatus> productStatuses, Pageable pageable
     );
 
+    Optional<Page<Food>> findAllByPriceGreaterThanEqualAndStatusIn(
+            double price, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
     Optional<Page<Food>> findAllByShopOwner_IdAndProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
             Long shopOwnerId, double discountedPrice, List<ProductStatus> productStatuses, Pageable pageable
+    );
+
+    Optional<Page<Food>> findAllByProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
+            double discountedPrice, List<ProductStatus> productStatuses, Pageable pageable
     );
 
     Optional<Page<Food>> findAllByShopOwner_IdAndStatus(

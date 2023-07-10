@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 public interface OrderService {
     ResponseEntity<?> getAllOrderByPackageOrderId(Long packageOrderId);
 
-    ResponseEntity<?> getAllOrderByShopOwner(OrderShopOwnerFilterDto orderShopOwnerFilter);
+    ResponseEntity<?> filterAllOrder(OrderShopOwnerFilterDto orderShopOwnerFilter, boolean isShopOwner, boolean isAdmin);
 
     ResponseEntity<?> updateStatusOfListOrder(ChangeStatusListIdDto changeStatusListIdDto);
 

@@ -56,20 +56,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public ResponseEntity<?> register(AccountDto accountDto) {
         if (accountDto.getMatchingPassword().equals(accountDto.getPassword())) {
             Optional<Account> temp = accountRepository.findByEmail(accountDto.getEmail());
+            log.info("temp.isPresent() {}", temp.isPresent());
             if (!temp.isPresent()) {
                 if (!emailService.isEmailExist(accountDto.getEmail())) {
                     return new ResponseEntity<>(ErrorResponse.builder()
                             .errorCode(HttpStatus.NOT_FOUND.name())
                             .errorMessage("The mail is not found!").build(), HttpStatus.NOT_FOUND);
                 }
-                return sendMailAndSaveAccount(accountDto);
+                return sendMailAndSaveAccount(accountDto, false);
             } else {
                 if (temp.get().getStatus().equals(AccountStatus.VERIFY)) {
                     return new ResponseEntity<>(ErrorResponse.builder()
                             .errorCode(HttpStatus.CONFLICT.name())
                             .errorMessage("The email has already been used!").build(), HttpStatus.CONFLICT);
                 } else {
-                    return sendMailAndSaveAccount(accountDto);
+                    return sendMailAndSaveAccount(accountDto, true);
                 }
             }
         }
@@ -78,12 +79,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .errorMessage("Something went wrong!").build(), HttpStatus.BAD_REQUEST);
     }
 
-    private ResponseEntity<?> sendMailAndSaveAccount(AccountDto accountDto) {
+    private ResponseEntity<?> sendMailAndSaveAccount(AccountDto accountDto, boolean isAlreadyHaveAccount) {
         Account acc = accountMapper.toModel(accountDto);
-        acc.setPassword(passwordEncoder.encode(accountDto.getPassword()));
-        acc.setRole(UserRole.USER);
-        acc.setStatus(AccountStatus.NOT_VERIFY);
-        acc.setProvider(AuthProvider.local);
+        Optional<Account> account = null;
+        if (isAlreadyHaveAccount) {
+            account = accountRepository.findByEmail(accountDto.getEmail());
+            account.get().setPassword(passwordEncoder.encode(accountDto.getPassword()));
+            account.get().setFullName(accountDto.getFullName());
+            account.get().setPhoneNumber(accountDto.getPhoneNumber());
+        } else {
+            acc.setPassword(passwordEncoder.encode(accountDto.getPassword()));
+            acc.setRole(UserRole.USER);
+            acc.setStatus(AccountStatus.NOT_VERIFY);
+            acc.setProvider(AuthProvider.local);
+        }
 
         //sending mail to verify
         int randomToken = MyUtils.generateSixRandomNumber();
@@ -99,7 +108,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         VerifyToken verifyToken = new VerifyToken();
         verifyToken.setToken(randomToken);
-        verifyToken.setAccount(acc);
+        if (isAlreadyHaveAccount) {
+            verifyToken.setAccount(account.get());
+        } else {
+            verifyToken.setAccount(acc);
+        }
+
         verifyToken.setRevoked(false);
         verifyToken.setExpired(new Date(System.currentTimeMillis() + expiration));
         verifyToken.setRevoked(false);
@@ -111,7 +125,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .errorCode(HttpStatus.NOT_FOUND.name())
                     .errorMessage("The mail is not found!").build(), HttpStatus.NOT_FOUND);
         }
-        accountRepository.save(acc);
+        if (isAlreadyHaveAccount) {
+            accountRepository.save(account.get());
+        } else {
+            accountRepository.save(acc);
+        }
         //save token
         verifyTokenRepository.save(verifyToken);
         return ResponseEntity.ok("Register Successfully!");
@@ -164,6 +182,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public ResponseEntity<?> resetPassword(ResetPasswordDto resetPasswordDto) {
         Optional<Account> account = accountRepository.findByEmail(resetPasswordDto.getEmail());
         if (account.isPresent()) {
+            if (account.get().getProvider().equals(AuthProvider.google)) {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .errorMessage("Your account register with google.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
             if (
                     resetPasswordDto.getEmail() != null
                             && resetPasswordDto.getVerifyId() == null

@@ -5,7 +5,6 @@ import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
-import com.gangoffive.birdtradingplatform.util.S3Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -100,7 +99,7 @@ public class ProductController {
     public ResponseEntity<?> getAllProductOfShop(@RequestParam String data) {
         ProductShopOwnerFilterDto productShopOwnerFilter = JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class);
         log.info("{}", productShopOwnerFilter.toString());
-        return productService.filterAllProductByShopOwner(productShopOwnerFilter);
+        return productService.filterAllProduct(productShopOwnerFilter, true, false);
     }
 
     @GetMapping("/shop-owner/products/{productId}")

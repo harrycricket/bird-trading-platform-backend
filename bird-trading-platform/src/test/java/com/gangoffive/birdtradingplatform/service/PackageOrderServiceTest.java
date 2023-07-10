@@ -125,7 +125,7 @@ public class PackageOrderServiceTest extends AbstractTestNGSpringContextTests {
         Assert.assertEquals(actualValue, expectedValue);
     }
 
-    @Test
+    @Test(priority = 3)
     public void checkDataPromotion() {
         boolean actualValue = packageOrderService.checkPromotion(dataPackageOrderDto(), getMapProductQuantity());
         Assert.assertTrue(actualValue);

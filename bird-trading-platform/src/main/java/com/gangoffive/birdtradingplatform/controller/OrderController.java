@@ -23,7 +23,7 @@ public class OrderController {
 
     @GetMapping("shop-owner/orders")
     public ResponseEntity<?> getAllOrderByShopOwner(@RequestParam String data) {
-        return orderService.getAllOrderByShopOwner(JsonUtil.INSTANCE.getObject(data, OrderShopOwnerFilterDto.class));
+        return orderService.filterAllOrder(JsonUtil.INSTANCE.getObject(data, OrderShopOwnerFilterDto.class), true, false);
     }
 
     @PutMapping("shop-owner/orders")
