@@ -50,10 +50,10 @@ public class NotificationServiceTest extends AbstractTestNGSpringContextTests {
     public Object[][] notificationData() {
         return new Object[][]{
                 // Test case 1
-                {1L, notiDataSuccess(), true},
-                {1L, notiDataSuccess(), true},
+                {12L, notiDataSuccess(), true},
+                {12L, notiDataSuccess(), true},
                 // Test case 2
-                {1L, notiDataFail(), false},
+                {12L, notiDataFail(), false},
                 // Add more test cases as needed
         };
     }
@@ -67,8 +67,8 @@ public class NotificationServiceTest extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods = "testPushNotificationForAUserID")
     public void testUnreadNotification() throws InterruptedException {
         Thread.sleep(8000);
-        ResponseEntity<?> result = notificationService.getUserUnreadNotification(1l, UserRole.USER);
-        notificationService.getNotifications(1l, 0 , UserRole.USER);
+        ResponseEntity<?> result = notificationService.getUserUnreadNotification(12l, UserRole.USER);
+        notificationService.getNotifications(12l, 0 , UserRole.USER);
         Assert.assertEquals(result, resultNotification());
     }
 }
