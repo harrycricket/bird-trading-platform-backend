@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
-public class ShopOwnerSearchInfoDto {
+public class SearchInfoDto {
     private Long id;
     private String field;
     private String value;

@@ -65,54 +65,111 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         if (paymentId != null && payerId != null) {
             return handleSuccessPayment(packageOrder, productWithQuantityMap, account.get(), paymentId, payerId);
         }
-        log.info("-------------------------checkUserOrderDto(packageOrder.getUserInfo())-----------------------------------------------");
-        log.info("{}", checkUserOrderDto(packageOrder.getUserInfo()));
-        log.info("-------------------------checkListProduct(productWithQuantityMap)-----------------------------------------------");
-        log.info("{}", checkListProduct(productWithQuantityMap));
-        log.info("-------------------------checkPromotion(packageOrder, productWithQuantityMap)-----------------------------------------------");
-        log.info("{}", checkPromotion(packageOrder, productWithQuantityMap));
-        log.info("-------------------------checkTotalShopPrice(packageOrder.getCartInfo().getItemsByShop())-----------------------------------------------");
-        log.info("{}", checkTotalShopPrice(packageOrder.getCartInfo().getItemsByShop()));
-        log.info("-------------------------checkSubTotal(packageOrder.getCartInfo().getTotal().getSubTotal(), productWithQuantityMap)----------------------");
-        log.info("{}", checkSubTotal(packageOrder.getCartInfo().getTotal().getSubTotal(), productWithQuantityMap));
-        log.info("-------------------------checkTotalShippingFee(packageOrder)-----------------------------------------------");
-        log.info("{}", checkTotalShippingFee(packageOrder));
-        log.info("-------------------------checkTotalDiscount(packageOrder)-----------------------------------------------");
-        log.info("{}", checkTotalDiscount(packageOrder));
-        log.info("-------------------------checkTotalPayment(packageOrder.getCartInfo().getTotal())-----------------------------------------------");
-        log.info("{}", checkTotalPayment(packageOrder.getCartInfo().getTotal()));
-        if (
-                checkUserOrderDto(packageOrder.getUserInfo())
-                        && checkListProduct(productWithQuantityMap)
-                        && checkPromotion(packageOrder, productWithQuantityMap)
-                        && checkTotalShopPrice(packageOrder.getCartInfo().getItemsByShop())
-                        && checkSubTotal(packageOrder.getCartInfo().getTotal().getSubTotal(), productWithQuantityMap)
-                        && checkTotalShippingFee(packageOrder)
-                        && checkTotalDiscount(packageOrder)
-                        && checkTotalPayment(packageOrder.getCartInfo().getTotal())
-        ) {
-            PaymentMethod paymentMethod = packageOrder.getCartInfo().getPaymentMethod();
-            if (paymentMethod.equals(PaymentMethod.PAYPAL)) {
-                return handleInitialPayment(packageOrder, account.get());
-            } else if (paymentMethod.equals(PaymentMethod.DELIVERY)) {
-                Long packageOrderId = saveAll(packageOrder, paymentId, account.get(), productWithQuantityMap);
-                SuccessResponse successResponse = SuccessResponse.builder()
-                        .successCode(String.valueOf(HttpStatus.OK.value()))
-                        .successMessage("Order successfully. packageOrderId=" + packageOrderId)
-                        .build();
-                return new ResponseEntity<>(successResponse, HttpStatus.OK);
+
+        if (checkUserOrderDto(packageOrder.getUserInfo())) {
+            if (checkListProduct(productWithQuantityMap)) {
+                if (checkPromotion(packageOrder, productWithQuantityMap)) {
+                    if (checkTotalShopPrice(packageOrder.getCartInfo().getItemsByShop())) {
+                        if (checkSubTotal(packageOrder.getCartInfo().getTotal().getSubTotal(), productWithQuantityMap)) {
+                            if (checkTotalShippingFee(packageOrder)) {
+                                if (checkTotalDiscount(packageOrder)) {
+                                    if (checkTotalPayment(packageOrder.getCartInfo().getTotal())) {
+                                        PaymentMethod paymentMethod = packageOrder.getCartInfo().getPaymentMethod();
+                                        if (paymentMethod.equals(PaymentMethod.PAYPAL)) {
+                                            return handleInitialPayment(packageOrder, account.get());
+                                        } else if (paymentMethod.equals(PaymentMethod.DELIVERY)) {
+                                            Long packageOrderId = saveAll(packageOrder, paymentId, account.get(), productWithQuantityMap);
+                                            SuccessResponse successResponse = SuccessResponse.builder()
+                                                    .successCode(String.valueOf(HttpStatus.OK.value()))
+                                                    .successMessage("Order successfully. packageOrderId=" + packageOrderId)
+                                                    .build();
+                                            return new ResponseEntity<>(successResponse, HttpStatus.OK);
+                                        } else {
+                                            ErrorResponse error = new ErrorResponse(String.valueOf(HttpStatus.NOT_FOUND.value()),
+                                                    "Something went wrong with payment method");
+                                            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+                                        }
+                                    } else {
+                                        ErrorResponse error = new ErrorResponse(
+                                                String.valueOf(HttpStatus.NOT_ACCEPTABLE.value()),
+                                                "Something went wrong in total payment.");
+                                        return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
+                                    }
+                                } else {
+                                    ErrorResponse error = new ErrorResponse(
+                                            String.valueOf(HttpStatus.NOT_ACCEPTABLE.value()),
+                                            "Something went wrong in total discount.");
+                                    return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
+                                }
+                            } else {
+                                ErrorResponse error = new ErrorResponse(
+                                        String.valueOf(HttpStatus.NOT_ACCEPTABLE.value()),
+                                        "Something went wrong in total shipping fee.");
+                                return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
+                            }
+                        } else {
+                            ErrorResponse error = new ErrorResponse(
+                                    String.valueOf(HttpStatus.NOT_ACCEPTABLE.value()),
+                                    "Something went wrong in subtotal order.");
+                            return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
+                        }
+                    } else {
+                        ErrorResponse error = new ErrorResponse(
+                                String.valueOf(HttpStatus.NOT_ACCEPTABLE.value()),
+                                "Something went wrong in total shop price.");
+                        return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
+                    }
+                } else {
+                    ErrorResponse error = new ErrorResponse(
+                            String.valueOf(HttpStatus.NOT_ACCEPTABLE.value()),
+                            "Something went wrong in list promotions.");
+                    return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
+                }
             } else {
-                ErrorResponse error = new ErrorResponse(String.valueOf(HttpStatus.NOT_FOUND.value()),
-                        "Something went wrong");
-                return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+                ErrorResponse error = new ErrorResponse(
+                        String.valueOf(HttpStatus.NOT_ACCEPTABLE.value()),
+                        "Something went wrong in list product(Out of stock).");
+                return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
             }
         } else {
             ErrorResponse error = new ErrorResponse(
                     String.valueOf(HttpStatus.NOT_ACCEPTABLE.value()),
-                    "Something went wrong");
-            log.info("here");
+                    "Something went wrong in your info.");
             return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
         }
+
+//        if (
+//                checkUserOrderDto(packageOrder.getUserInfo())
+//                        && checkListProduct(productWithQuantityMap)
+//                        && checkPromotion(packageOrder, productWithQuantityMap)
+//                        && checkTotalShopPrice(packageOrder.getCartInfo().getItemsByShop())
+//                        && checkSubTotal(packageOrder.getCartInfo().getTotal().getSubTotal(), productWithQuantityMap)
+//                        && checkTotalShippingFee(packageOrder)
+//                        && checkTotalDiscount(packageOrder)
+//                        && checkTotalPayment(packageOrder.getCartInfo().getTotal())
+//        ) {
+//            PaymentMethod paymentMethod = packageOrder.getCartInfo().getPaymentMethod();
+//            if (paymentMethod.equals(PaymentMethod.PAYPAL)) {
+//                return handleInitialPayment(packageOrder, account.get());
+//            } else if (paymentMethod.equals(PaymentMethod.DELIVERY)) {
+//                Long packageOrderId = saveAll(packageOrder, paymentId, account.get(), productWithQuantityMap);
+//                SuccessResponse successResponse = SuccessResponse.builder()
+//                        .successCode(String.valueOf(HttpStatus.OK.value()))
+//                        .successMessage("Order successfully. packageOrderId=" + packageOrderId)
+//                        .build();
+//                return new ResponseEntity<>(successResponse, HttpStatus.OK);
+//            } else {
+//                ErrorResponse error = new ErrorResponse(String.valueOf(HttpStatus.NOT_FOUND.value()),
+//                        "Something went wrong");
+//                return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+//            }
+//        } else {
+//            ErrorResponse error = new ErrorResponse(
+//                    String.valueOf(HttpStatus.NOT_ACCEPTABLE.value()),
+//                    "Something went wrong");
+//            log.info("here");
+//            return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
+//        }
     }
 
     @Override

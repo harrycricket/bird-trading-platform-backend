@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.entity;
 
 
+import com.gangoffive.birdtradingplatform.enums.ShopOwnerStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -44,8 +45,8 @@ public class ShopOwner {
 	private String coverImgUrl;
 
 	
-	@Column(name = "active")
-	private Boolean active;
+	@Enumerated(EnumType.STRING)
+	private ShopOwnerStatus status;
 	
 	@Column(name = " created_date")
 	@CreationTimestamp
@@ -95,9 +96,6 @@ public class ShopOwner {
         this.description = description;
     }
 
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
 
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;

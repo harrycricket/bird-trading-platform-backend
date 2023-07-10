@@ -16,6 +16,7 @@ import com.gangoffive.birdtradingplatform.service.PromotionPriceService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.FileNameUtils;
 import com.gangoffive.birdtradingplatform.util.MyUtils;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import com.gangoffive.birdtradingplatform.util.S3Utils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.gangoffive.birdtradingplatform.wrapper.ProductDetailWrapper;
@@ -393,7 +394,7 @@ public class ProductServiceImpl implements ProductService {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterProductByIdEqual(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.SHOP_ID.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -403,7 +404,7 @@ public class ProductServiceImpl implements ProductService {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterProductByShopIdEqual(productFilter, pageRequest, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.SHOP_ID.getField())
                     && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -411,7 +412,7 @@ public class ProductServiceImpl implements ProductService {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterProductByShopIdEqual(productFilter, pageRequest, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.NAME.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -421,7 +422,7 @@ public class ProductServiceImpl implements ProductService {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByNameLike(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.NAME.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -429,7 +430,7 @@ public class ProductServiceImpl implements ProductService {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByNameLike(productFilter, shopId, pageRequestWithSort, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.TYPE.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -439,7 +440,7 @@ public class ProductServiceImpl implements ProductService {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByTypeNameLike(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.TYPE.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -447,7 +448,7 @@ public class ProductServiceImpl implements ProductService {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterProductByTypeNameLike(productFilter, shopId, pageRequestWithSort, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.PRICE.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -457,7 +458,7 @@ public class ProductServiceImpl implements ProductService {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterProductByPriceGreaterThanOrEqual(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.PRICE.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -465,7 +466,7 @@ public class ProductServiceImpl implements ProductService {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterProductByPriceGreaterThanOrEqual(productFilter, shopId, pageRequestWithSort, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.DISCOUNTED_PRICE.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -475,7 +476,7 @@ public class ProductServiceImpl implements ProductService {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterProductByDiscountedPriceGreaterThanOrEqual(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.DISCOUNTED_PRICE.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -483,7 +484,7 @@ public class ProductServiceImpl implements ProductService {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterProductByDiscountedPriceGreaterThanOrEqual(productFilter, shopId, pageRequestWithSort, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.STATUS.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -493,7 +494,7 @@ public class ProductServiceImpl implements ProductService {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterProductByStatusEqual(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.STATUS.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -501,7 +502,7 @@ public class ProductServiceImpl implements ProductService {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterProductByStatusEqual(productFilter, shopId, pageRequestWithSort, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
@@ -565,14 +566,6 @@ public class ProductServiceImpl implements ProductService {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
                 .errorMessage("Not found this shop id.")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-    }
-
-    private ResponseEntity<ErrorResponse> getErrorResponseNotFoundOperator() {
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found this operator.")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }

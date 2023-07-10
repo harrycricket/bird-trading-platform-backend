@@ -13,10 +13,7 @@ import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.service.ReviewService;
-import com.gangoffive.birdtradingplatform.util.DateUtils;
-import com.gangoffive.birdtradingplatform.util.FileNameUtils;
-import com.gangoffive.birdtradingplatform.util.JsonUtil;
-import com.gangoffive.birdtradingplatform.util.S3Utils;
+import com.gangoffive.birdtradingplatform.util.*;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -185,7 +182,7 @@ public class ReviewServiceImpl implements ReviewService {
                 if (reviewFilter.getReviewSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterReviewByIdEqual(reviewFilter, shopId, pageRequest);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     reviewFilter.getReviewSearchInfo().getField().equals(FieldReviewTable.ORDER_DETAIL_ID.getField())
                             && !reviewFilter.getReviewSearchInfo().getValue().isEmpty()
@@ -193,7 +190,7 @@ public class ReviewServiceImpl implements ReviewService {
                 if (reviewFilter.getReviewSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterReviewByOrderDetailIdEqual(reviewFilter, shopId, pageRequest);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     reviewFilter.getReviewSearchInfo().getField().equals(FieldReviewTable.CUSTOMER_NAME.getField())
                             && !reviewFilter.getReviewSearchInfo().getValue().isEmpty()
@@ -203,7 +200,7 @@ public class ReviewServiceImpl implements ReviewService {
                 if (reviewFilter.getReviewSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterReviewByCustomerNameContain(reviewFilter, shopId, pageRequest);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     reviewFilter.getReviewSearchInfo().getField().equals(FieldReviewTable.CUSTOMER_NAME.getField())
                             && !reviewFilter.getReviewSearchInfo().getValue().isEmpty()
@@ -211,7 +208,7 @@ public class ReviewServiceImpl implements ReviewService {
                 if (reviewFilter.getReviewSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterReviewByCustomerNameContain(reviewFilter, shopId, pageRequestWithSort);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     reviewFilter.getReviewSearchInfo().getField().equals(FieldReviewTable.PRODUCT_NAME.getField())
                             && !reviewFilter.getReviewSearchInfo().getValue().isEmpty()
@@ -221,7 +218,7 @@ public class ReviewServiceImpl implements ReviewService {
                 if (reviewFilter.getReviewSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterReviewByProductNameContain(reviewFilter, shopId, pageRequest);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     reviewFilter.getReviewSearchInfo().getField().equals(FieldReviewTable.PRODUCT_NAME.getField())
                             && !reviewFilter.getReviewSearchInfo().getValue().isEmpty()
@@ -229,7 +226,7 @@ public class ReviewServiceImpl implements ReviewService {
                 if (reviewFilter.getReviewSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterReviewByProductNameContain(reviewFilter, shopId, pageRequestWithSort);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     reviewFilter.getReviewSearchInfo().getField().equals(FieldReviewTable.RATING.getField())
                             && !reviewFilter.getReviewSearchInfo().getValue().isEmpty()
@@ -239,7 +236,7 @@ public class ReviewServiceImpl implements ReviewService {
                 if (reviewFilter.getReviewSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterReviewByRatingGreaterThanOrEqual(reviewFilter, shopId, pageRequest);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     reviewFilter.getReviewSearchInfo().getField().equals(FieldReviewTable.RATING.getField())
                             && !reviewFilter.getReviewSearchInfo().getValue().isEmpty()
@@ -247,7 +244,7 @@ public class ReviewServiceImpl implements ReviewService {
                 if (reviewFilter.getReviewSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterReviewByRatingGreaterThanOrEqual(reviewFilter, shopId, pageRequestWithSort);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     reviewFilter.getReviewSearchInfo().getField().equals(FieldReviewTable.REVIEW_DATE.getField())
                             && !reviewFilter.getReviewSearchInfo().getValue().isEmpty()
@@ -262,7 +259,7 @@ public class ReviewServiceImpl implements ReviewService {
                         return filterReviewByReviewDateFromTo(shopId, dateRange, pageRequest);
                     }
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     reviewFilter.getReviewSearchInfo().getField().equals(FieldReviewTable.REVIEW_DATE.getField())
                             && !reviewFilter.getReviewSearchInfo().getValue().isEmpty()
@@ -275,7 +272,7 @@ public class ReviewServiceImpl implements ReviewService {
                         return filterReviewByReviewDateFromTo(shopId, dateRange, pageRequestWithSort);
                     }
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
@@ -515,14 +512,6 @@ public class ReviewServiceImpl implements ReviewService {
             return ResponseEntity.ok(result);
         }
         return null;
-    }
-
-    private ResponseEntity<ErrorResponse> getErrorResponseNotFoundOperator() {
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found this operator.")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     private ReviewShopOwnerDto reviewToReviewShopOwnerDto(Review review) {

@@ -2,10 +2,7 @@ package com.gangoffive.birdtradingplatform.controller;
 
 
 import com.gangoffive.birdtradingplatform.dto.*;
-import com.gangoffive.birdtradingplatform.service.AdminService;
-import com.gangoffive.birdtradingplatform.service.OrderService;
-import com.gangoffive.birdtradingplatform.service.PaypalService;
-import com.gangoffive.birdtradingplatform.service.ProductService;
+import com.gangoffive.birdtradingplatform.service.*;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +20,8 @@ public class AdminController {
     private final PaypalService paypalService;
     private final ProductService productService;
     private final OrderService orderService;
+    private final ShopOwnerService shopOwnerService;
+    private final AccountService accountService;
 
     @GetMapping("admin/bump-chart")
     public List<DataBumpChartDto> getDataBumpChartRankOfShop() {
@@ -49,5 +48,15 @@ public class AdminController {
     @GetMapping("/admin/orders")
     public ResponseEntity<?> getAllOrder(@RequestParam String data) {
         return orderService.filterAllOrder(JsonUtil.INSTANCE.getObject(data, OrderShopOwnerFilterDto.class), false, true);
+    }
+
+    @GetMapping("/admin/shop-owner-account")
+    public ResponseEntity<?> getAllShopOwner(@RequestParam String data) {
+        return shopOwnerService.filterAllShopOwner(JsonUtil.INSTANCE.getObject(data, ShopOwnerAccountFilterDto.class));
+    }
+
+    @GetMapping("/admin/user-account")
+    public ResponseEntity<?> getAllUser(@RequestParam String data) {
+        return accountService.filterAllUserAccount(JsonUtil.INSTANCE.getObject(data, UserAccountFilterDto.class));
     }
 }
