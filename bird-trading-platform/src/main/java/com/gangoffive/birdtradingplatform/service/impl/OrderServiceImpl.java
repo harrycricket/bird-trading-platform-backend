@@ -154,7 +154,7 @@ public class OrderServiceImpl implements OrderService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         Long shopId = null;
-        if (account.isPresent()) {
+        if (account.isPresent() && isShopOwner) {
             shopId = account.get().getShopOwner().getId();
         }
         if (orderFilter.getPageNumber() > 0) {
