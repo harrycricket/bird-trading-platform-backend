@@ -49,13 +49,13 @@ public class KafkaMessageConsumer {
         }
     }
 
-    @KafkaListener(topics = KafkaConstant.KAFKA_PUBLIC_NOTIFICATION, groupId = KafkaConstant.KAFKA_GROUP_ID)
+//    @KafkaListener(topics = KafkaConstant.KAFKA_PUBLIC_NOTIFICATION, groupId = KafkaConstant.KAFKA_GROUP_ID)
     public void consumeNotificationPublic(String notification) {
         NotificationDto noti = JsonUtil.INSTANCE.getObject(notification, NotificationDto.class);
 
     }
 
-    @KafkaListener(topics = KafkaConstant.KAFKA_PRIVATE_NOTIFICATION, groupId = KafkaConstant.KAFKA_GROUP_ID)
+//    @KafkaListener(topics = KafkaConstant.KAFKA_PRIVATE_NOTIFICATION, groupId = KafkaConstant.KAFKA_GROUP_ID)
     public void consumeNotificationPrivate(String notification) {
         NotificationDto noti = JsonUtil.INSTANCE.getObject(notification, NotificationDto.class);
         this.sendNotificationPrivate(noti);

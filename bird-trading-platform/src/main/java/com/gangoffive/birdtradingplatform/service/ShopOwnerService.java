@@ -38,4 +38,6 @@ public interface ShopOwnerService {
     ResponseEntity<?> getShopStaff(int pageNumber);
 
     ResponseEntity<?> updateShopOwnerProfile(MultipartFile avatarImg, MultipartFile coverImg, ShopOwnerUpdateDto shopInfoDto);
+
+    ResponseEntity<?> filterAllShopOwner(ShopOwnerAccountFilterDto shopOwnerAccountFilter);
 }

@@ -7,10 +7,7 @@ import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
-import com.gangoffive.birdtradingplatform.enums.AccountStatus;
-import com.gangoffive.birdtradingplatform.enums.ColorChart;
-import com.gangoffive.birdtradingplatform.enums.ResponseCode;
-import com.gangoffive.birdtradingplatform.enums.UserRole;
+import com.gangoffive.birdtradingplatform.enums.*;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
 import com.gangoffive.birdtradingplatform.mapper.ShopStaffMapper;
@@ -19,14 +16,13 @@ import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
-import com.gangoffive.birdtradingplatform.util.DateUtils;
-import com.gangoffive.birdtradingplatform.util.FileNameUtils;
-import com.gangoffive.birdtradingplatform.util.S3Utils;
+import com.gangoffive.birdtradingplatform.util.*;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -790,6 +786,403 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 .errorMessage("Some thing went wrong!")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<?> filterAllShopOwner(ShopOwnerAccountFilterDto shopOwnerAccountFilter) {
+        if (shopOwnerAccountFilter.getPageNumber() > 0) {
+            int pageNumber = shopOwnerAccountFilter.getPageNumber() - 1;
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
+            PageRequest pageRequestWithSort = null;
+            if (shopOwnerAccountFilter.getSortDirection() != null
+                    && !shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+                    && !shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+            ) {
+                if (
+                        !SortShopOwnerAccountColumn.checkField(shopOwnerAccountFilter.getSortDirection().getField())
+                ) {
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                            .errorMessage("Not found this field in sort direction.")
+                            .build();
+                    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                }
+                if (shopOwnerAccountFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.ASC.name())) {
+                    pageRequestWithSort = getPageRequest(shopOwnerAccountFilter, pageNumber, Sort.Direction.ASC);
+                } else if (shopOwnerAccountFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.DESC.name())) {
+                    pageRequestWithSort = getPageRequest(shopOwnerAccountFilter, pageNumber, Sort.Direction.DESC);
+                } else {
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                            .errorMessage("Not found this direction.")
+                            .build();
+                    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                }
+            }
+
+            if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().isEmpty()
+                            && shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                return filterAllShopOwnerAccountAllFieldEmpty(pageRequest);
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().isEmpty()
+                            && shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().isEmpty()
+                            && !shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && !shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                return filterAllShopOwnerAccountAllFieldEmpty(pageRequestWithSort);
+            }
+
+            if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.ID.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterShopOwnerAccountByIdEqual(shopOwnerAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.EMAIL.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByEmailContain(shopOwnerAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.EMAIL.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByEmailContain(shopOwnerAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.SHOP_NAME.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByShopNameContain(shopOwnerAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.SHOP_NAME.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByShopNameContain(shopOwnerAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.SHOP_PHONE.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByShopPhoneContain(shopOwnerAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.SHOP_PHONE.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByShopPhoneContain(shopOwnerAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.ADDRESS.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByAddressContain(shopOwnerAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.ADDRESS.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByAddressContain(shopOwnerAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.STATUS.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterShopOwnerAccountByStatusEqual(shopOwnerAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.STATUS.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterShopOwnerAccountByStatusEqual(shopOwnerAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.CREATED_DATE.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterShopOwnerAccountByCreatedDateGreaterThanOrEqual(dateRange, pageRequest);
+                    } else {
+                        return filterShopOwnerAccountByCreatedDateFromTo(dateRange, pageRequest);
+                    }
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.CREATED_DATE.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterShopOwnerAccountByCreatedDateGreaterThanOrEqual(dateRange, pageRequest);
+                    } else {
+                        return filterShopOwnerAccountByCreatedDateFromTo(dateRange, pageRequest);
+                    }
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            }
+
+            return null;
+        } else {
+            ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                    "Page number cannot less than 1");
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByCreatedDateFromTo(
+            DateRangeDto dateRange, PageRequest pageRequest
+    ) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(DateUtils.timeInMillisecondToDate(dateRange.getDateTo()));
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByCreatedDateBetween(
+                DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
+                calendar.getTime(),
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found shop owner have created date from to.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByCreatedDateGreaterThanOrEqual(
+            DateRangeDto dateRange, PageRequest pageRequest
+    ) {
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByCreatedDateGreaterThanEqual(
+                DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found shop owner have created date greater than or equal.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByStatusEqual(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter, PageRequest pageRequest) {
+        List<ShopOwnerStatus> shopOwnerStatuses;
+        if (Integer.parseInt(shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue()) == 9) {
+            shopOwnerStatuses = List.of(ShopOwnerStatus.values());
+        } else {
+            shopOwnerStatuses = Arrays.asList(
+                    ShopOwnerStatus.getAccountStatus(
+                            Integer.parseInt(shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue())
+                    )
+            );
+        }
+
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByStatusIn(
+                shopOwnerStatuses,
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found this status.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByAddressContain(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByAddress_AddressLike(
+                "%" + shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue() + "%",
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found shop owner have contain this address.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByShopPhoneContain(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByShopPhoneLike(
+                "%" + shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue() + "%",
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found shop owner have contain this shop phone.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByShopNameContain(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByShopNameLike(
+                "%" + shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue() + "%",
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found shop owner have contain this shop name.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByEmailContain(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByAccount_EmailLike(
+                "%" + shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue() + "%",
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found shop owner have contain this email.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByIdEqual(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findById(
+                Long.valueOf(shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue()),
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found this shop owner id.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterAllShopOwnerAccountAllFieldEmpty(PageRequest pageRequest) {
+        Page<ShopOwner> shopOwners = shopOwnerRepository.findAll(
+                pageRequest
+        );
+
+        if (!shopOwners.isEmpty()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners);
+        } else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                    .errorMessage("Not found shop owner account.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    private ResponseEntity<?> getPageNumberWrapperWithShopOwnerAccount(Page<ShopOwner> shopOwners) {
+        List<ShopOwnerAccountDto> shopOwnerAccounts = shopOwners.stream()
+                .map(this::shopOwnerToShopOwnerAccountDto)
+                .collect(Collectors.toList());
+        PageNumberWrapper<ShopOwnerAccountDto> result = new PageNumberWrapper<>(
+                shopOwnerAccounts,
+                shopOwners.getTotalPages(),
+                shopOwners.getTotalElements()
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    private ShopOwnerAccountDto shopOwnerToShopOwnerAccountDto(ShopOwner shopOwner) {
+        return ShopOwnerAccountDto.builder()
+                .id(shopOwner.getId())
+                .email(shopOwner.getAccount().getEmail())
+                .shopName(shopOwner.getShopName())
+                .shopPhone(shopOwner.getShopPhone())
+                .address(shopOwner.getAddress().getAddress())
+                .status(shopOwner.getStatus())
+                .createdDate(shopOwner.getCreatedDate().getTime())
+                .build();
+    }
+
+    private PageRequest getPageRequest(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter,
+            int pageNumber, Sort.Direction sortDirection
+    ) {
+        return PageRequest.of(
+                pageNumber,
+                PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                Sort.by(sortDirection,
+                        SortShopOwnerAccountColumn.getColumnByField(shopOwnerAccountFilter.getSortDirection().getField())
+                )
+        );
     }
 
     @Async
