@@ -4,6 +4,7 @@
     <test name="PackageOrderServiceTest">
         <classes>
             <class name="com.gangoffive.birdtradingplatform.service.PackageOrderServiceTest"></class>
+            <class name="com.gangoffive.birdtradingplatform.service.NotificationServiceTest"></class>
         </classes>
     </test>
 </suite>
