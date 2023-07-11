@@ -28,7 +28,8 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
             "ON f.product_id = ps.product_id " +
             "WHERE (MATCH(f.name) AGAINST (?1 IN NATURAL LANGUAGE MODE) OR f.name LIKE %?1%)" +
-            "AND (COALESCE(?2, f.type_id) = f.type_id OR ?2 IS NULL) " +
+//            "AND (COALESCE(?2, f.type_id) IN (?2) OR ?2 IS NULL) " +
+            "AND (f.type_id IN (?2) OR ?7 IS NULL) " +
             "AND ps.star >= ?3 " +
             "AND ps.discounted_price >= ?4 " +
             "AND ps.discounted_price <= ?5 " +
@@ -36,7 +37,7 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
             "And f.status = 'ACTIVE' " +
             "And f.quantity > 0 ", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
-                        double lowestPrice, double hightPrice, Long shopId ,Pageable pageable);
+                        double lowestPrice, double hightPrice, Long shopId, Long typeId, Pageable pageable);
 
     Page<Food> findAllByQuantityGreaterThanAndStatusIn(int quantity, List<ProductStatus> productStatuses, Pageable pageable);
 
