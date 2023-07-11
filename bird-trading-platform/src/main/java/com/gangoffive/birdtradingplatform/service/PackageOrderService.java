@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gangoffive.birdtradingplatform.dto.ItemByShopDto;
 import com.gangoffive.birdtradingplatform.dto.PackageOrderRequestDto;
 import com.gangoffive.birdtradingplatform.dto.TotalOrderDto;
@@ -29,5 +30,5 @@ public interface PackageOrderService {
     boolean checkUserOrderDto(UserOrderDto userOrder);
 
     ResponseEntity<?> viewAllPackageOrderByAccountId(int pageNumber);
-
+    double getShippingFeeByDistance(double distance) throws JsonProcessingException;
 }
