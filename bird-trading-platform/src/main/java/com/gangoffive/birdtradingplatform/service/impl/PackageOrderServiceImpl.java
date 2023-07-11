@@ -104,7 +104,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                             } else {
                                 ErrorResponse error = new ErrorResponse(
                                         String.valueOf(HttpStatus.NOT_ACCEPTABLE.value()),
-                                        "Something went wrong in total shipping fee.");
+                                        "Shipping not support this location.");
                                 return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
                             }
                         } else {
@@ -362,6 +362,9 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 .allMatch(item -> {
                     try {
                         double shippingFeeWithDistance = getShippingFeeByDistance(item.getDistance());
+                        if (shippingFeeWithDistance == -1) {
+                            return false;
+                        }
                         totalShip[0] += shippingFeeWithDistance;
                         return item.getShippingFee() == shippingFeeWithDistance;
                     } catch (JsonProcessingException e) {
@@ -723,7 +726,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
             Double shippingFee = (Double) jsonMap.get("shippingFee");
             return shippingFee;
         } else {
-            throw new RuntimeException();
+            return -1;
         }
     }
 
