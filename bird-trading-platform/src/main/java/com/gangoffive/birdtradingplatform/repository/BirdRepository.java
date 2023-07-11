@@ -31,15 +31,16 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
             "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
             "ON b.product_id = ps.product_id " +
             "WHERE (MATCH(b.name) AGAINST (?1 IN NATURAL LANGUAGE MODE) OR b.name LIKE %?1%)" +
-            "AND (COALESCE(?2, b.type_id) = b.type_id OR ?2 IS NULL) " +
+//            "AND (COALESCE(?2 ,b.type_id ) = b.type_id OR ?2 IS NULL) " +
+            "AND (b.type_id IN (?2) OR ?7 IS NULL) " +
             "AND ps.star >= ?3 " +
             "AND ps.discounted_price >= ?4 " +
             "AND ps.discounted_price <= ?5 " +
-            "And (COALESCE(?6, b.shop_id) = b.shop_id OR ?6 IS NULL) " +
-            "And b.status = 'ACTIVE' " +
-            "And b.quantity > 0 ", nativeQuery = true)
-    Page<Long> idFilter(String name, List<Long> listType, double star,
-                        double lowestPrice, double highestPrice, Long shopId,Pageable pageable);
+            "AND (COALESCE(?6, b.shop_id) = b.shop_id OR ?6 IS NULL) " +
+            "AND b.status = 'ACTIVE' " +
+            "AND b.quantity > 0 ", nativeQuery = true)
+    Page<Long> idFilter(String name,  List<Long> listType, double star,
+                        double lowestPrice, double highestPrice, Long shopId, Long typeId ,Pageable pageable);
 
     Page<Bird> findAllByQuantityGreaterThanAndStatusIn(int quantity, List<ProductStatus> productStatuses, Pageable pageable);
 

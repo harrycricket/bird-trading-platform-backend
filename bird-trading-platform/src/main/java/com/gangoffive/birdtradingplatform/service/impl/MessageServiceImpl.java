@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -104,23 +103,17 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public String getListUserInChannel(int pageNumber) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        var acc = accountRepository.findByEmail(email);
-        if(acc.isPresent()) {
-            try {
-                long shopId = acc.get().getShopOwner().getId();
-                PageRequest page = PageRequest.of(pageNumber, MessageConstant.CHANNEL_PAGING_SIZE,
-                        Sort.by(Sort.Direction.DESC, "lastedUpdate"));
-                Page<Channel> channels = channelRepository.findByShopOwner_Id(shopId, page);
-                List<JsonObject> result = channels.getContent().stream()
-                        .map(a -> this.createUserListWithUnread(a, acc.get().getShopOwner().getId())).toList();
-                return this.createPageNumberWarrpper(result, channels.getTotalPages()).toString();
-            }catch (Exception e) {
-                throw new CustomRuntimeException("400", "Have no channel");
-            }
+    public String getListUserInChannel(int pageNumber, long shopId) {
+        try {
+            PageRequest page = PageRequest.of(pageNumber, MessageConstant.CHANNEL_PAGING_SIZE,
+                    Sort.by(Sort.Direction.DESC, "lastedUpdate"));
+            Page<Channel> channels = channelRepository.findByShopOwner_Id(shopId, page);
+            List<JsonObject> result = channels.getContent().stream()
+                    .map(a -> this.createUserListWithUnread(a, shopId)).toList();
+            return this.createPageNumberWarrpper(result, channels.getTotalPages()).toString();
+        }catch (Exception e) {
+            throw new CustomRuntimeException("400", "Have no channel");
         }
-        return null;
     }
 
     @Override

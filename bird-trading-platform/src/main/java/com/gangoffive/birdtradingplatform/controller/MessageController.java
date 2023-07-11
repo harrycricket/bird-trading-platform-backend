@@ -73,7 +73,7 @@ public class MessageController {
 
     @GetMapping("/shop-owner/{shopId}/channels")
     public String getUserInChannel(@PathVariable long shopId, @RequestParam("pagenumber") int pageNumber) {
-        return messageService.getListUserInChannel(pageNumber);
+        return messageService.getListUserInChannel(pageNumber, shopId);
     }
 
     @GetMapping("/shop-owner/{shopId}/messages")

@@ -28,7 +28,8 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
             "ON a.product_id= ps.product_id " +
             "WHERE (MATCH(a.name) AGAINST (?1 IN NATURAL LANGUAGE MODE) OR a.name LIKE %?1%)" +
-            "AND (COALESCE(?2, a.type_id) = a.type_id OR ?2 IS NULL) " +
+//            "AND (COALESCE(?2, a.type_id) IN (?2) OR ?2 IS NULL) " +
+            "AND (a.type_id IN (?2) OR ?7 IS NULL) " +
             "And ps.star >= ?3 " +
             "And ps.discounted_price >= ?4 " +
             "And ps.discounted_price <= ?5 " +
@@ -36,7 +37,7 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
             "And a.status = 'ACTIVE' " +
             "And a.quantity > 0 ", nativeQuery = true)
     Page<Long> idFilter(String name, List<Long> listTypeId, double star,
-                        double lowestPrice, double highestPrice, Long id ,Pageable pageable);
+                        double lowestPrice, double highestPrice, Long id, Long typeId, Pageable pageable);
 
     Page<Accessory> findAllByQuantityGreaterThanAndStatusIn(int quantity, List<ProductStatus> productStatuses, Pageable pageable);
 
