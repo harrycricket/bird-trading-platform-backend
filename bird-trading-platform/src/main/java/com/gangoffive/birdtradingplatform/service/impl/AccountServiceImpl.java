@@ -565,6 +565,9 @@ public class AccountServiceImpl implements AccountService {
                 .status(account.getStatus())
                 .createdDate(account.getCreatedDate().getTime())
                 .build();
+        if (account.getImgUrl() != null) {
+            userAccount.setAvtUrl(account.getImgUrl());
+        }
         if (account.getFullName() != null) {
             userAccount.setFullName(account.getFullName());
         }

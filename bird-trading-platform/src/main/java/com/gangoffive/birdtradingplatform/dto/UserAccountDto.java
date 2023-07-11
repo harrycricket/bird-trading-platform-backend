@@ -12,6 +12,7 @@ import lombok.*;
 public class UserAccountDto {
     private Long id;
     private String email;
+    private String avtUrl;
     private String fullName;
     private String phoneNumber;
     private String address;

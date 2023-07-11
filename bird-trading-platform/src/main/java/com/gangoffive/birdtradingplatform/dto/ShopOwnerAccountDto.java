@@ -13,6 +13,7 @@ public class ShopOwnerAccountDto {
     private Long id;
     private String email;
     private String shopName;
+    private String avtUrl;
     private String shopPhone;
     private String address;
     private ShopOwnerStatus status;

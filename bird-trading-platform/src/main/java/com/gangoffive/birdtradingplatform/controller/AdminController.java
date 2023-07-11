@@ -65,9 +65,4 @@ public class AdminController {
     public ResponseEntity<?> getAllPackageOrder(@RequestParam String data) {
         return packageOrderService.filterAllPackageOrder(JsonUtil.INSTANCE.getObject(data, PackageOrderAdminFilterDto.class));
     }
-
-    @PostMapping("/admin/package-order")
-    public ResponseEntity<?> getAllPackageOrder(@RequestBody PackageOrderAdminFilterDto data) {
-        return packageOrderService.filterAllPackageOrder(data);
-    }
 }
