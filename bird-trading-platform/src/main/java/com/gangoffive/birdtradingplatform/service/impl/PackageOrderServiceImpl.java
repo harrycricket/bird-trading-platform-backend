@@ -56,6 +56,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     private final PaypalService paypalService;
     private final PromotionPriceService promotionPriceService;
     private final NotificationService notificationService;
+    private final ProductSummaryService productSummaryService;
 
     @Override
     @Transactional
@@ -82,6 +83,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                                             return handleInitialPayment(packageOrder, account.get());
                                         } else if (paymentMethod.equals(PaymentMethod.DELIVERY)) {
                                             Long packageOrderId = saveAll(packageOrder, paymentId, null, account.get(), productWithQuantityMap);
+                                            updateTotalOrderOfListProduct(productWithQuantityMap.keySet().stream().toList());
                                             SuccessResponse successResponse = SuccessResponse.builder()
                                                     .successCode(String.valueOf(HttpStatus.OK.value()))
                                                     .successMessage("Order successfully. packageOrderId=" + packageOrderId)
@@ -1098,6 +1100,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     return new ResponseEntity<>(error, HttpStatus.EXPECTATION_FAILED);
                 } else {
                     String payerEmail = payment.getPayer().getPayerInfo().getEmail();
+                    updateTotalOrderOfListProduct(productOrder.keySet().stream().toList());
                     packageOrderId = saveAll(packageOrderRequestDto, paymentId, payerEmail, account, productOrder);
                 }
                 SuccessResponse successResponse = SuccessResponse.builder()
@@ -1191,6 +1194,15 @@ public class PackageOrderServiceImpl implements PackageOrderService {
             return -1;
         }
         return -1;
+    }
+
+    private boolean updateTotalOrderOfListProduct(List<Long> ids) {
+        ids.forEach(id -> {
+            Product product = new Bird();
+            product.setId(id);
+            productSummaryService.updateTotalQuantityOrder(product);
+        });
+        return true;
     }
 
     private PackageOrderAdminDto packageOrderToPackageOrderAdminDto(PackageOrder packageOrder) {
