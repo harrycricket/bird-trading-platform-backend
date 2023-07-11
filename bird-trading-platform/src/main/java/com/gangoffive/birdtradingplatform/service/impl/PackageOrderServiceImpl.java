@@ -708,26 +708,31 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(
-                builder.toUriString(),
-                HttpMethod.GET,
-                entity,
-                String.class);
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.GET,
+                    entity,
+                    String.class);
 
-        if (response.getStatusCode() == HttpStatus.OK) {
-            String responseBody = response.getBody();
+            if (response.getStatusCode() == HttpStatus.OK) {
+                String responseBody = response.getBody();
 
-            // Parse the JSON response
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> jsonMap = objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {
-            });
+                // Parse the JSON response
+                ObjectMapper objectMapper = new ObjectMapper();
+                Map<String, Object> jsonMap = objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {
+                });
 
-            // Access the 'shippingFee' field
-            Double shippingFee = (Double) jsonMap.get("shippingFee");
-            return shippingFee;
-        } else {
+                // Access the 'shippingFee' field
+                Double shippingFee = (Double) jsonMap.get("shippingFee");
+                return shippingFee;
+            } else if (response.getStatusCode() == HttpStatus.NOT_ACCEPTABLE) {
+                return -1;
+            }
+        } catch (Exception ex) {
             return -1;
         }
+        return -1;
     }
 
     private PackageOrderDto packageOrderToPackageOrderDto(PackageOrder packageOrder) {
