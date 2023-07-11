@@ -49,13 +49,13 @@ public class NotificationController {
         return notificationService.getUserUnreadNotification(userid, UserRole.USER);
     }
 
-    @GetMapping("/shop-owner/{shopid}/notifications")
-    public ResponseEntity<?> getNotificationShop (@PathVariable("shopid") long shopId, @RequestParam int pagenumber) {
+    @GetMapping("/shop-owner/{shopId}/notifications")
+    public ResponseEntity<?> getNotificationShop (@PathVariable("shopId") long shopId, @RequestParam int pagenumber) {
         return notificationService.getNotifications(shopId, pagenumber, UserRole.SHOPOWNER);
     }
 
-    @GetMapping("/shop-owner/{shopid}/notifications/unread")
-    public ResponseEntity<?> getUnreadNotificationShop (@PathVariable("shopid") long shopId) {
+    @GetMapping("/shop-owner/{shopId}/notifications/unread")
+    public ResponseEntity<?> getUnreadNotificationShop (@PathVariable("shopId") long shopId) {
         return notificationService.getUserUnreadNotification(shopId, UserRole.SHOPOWNER);
     }
 

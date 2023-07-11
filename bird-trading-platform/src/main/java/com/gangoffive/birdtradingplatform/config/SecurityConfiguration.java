@@ -114,36 +114,46 @@ public class SecurityConfiguration {
                         auth -> auth.requestMatchers(WHITE_LIST_URLS)
                                 .permitAll()
 
+                                // Admin endpoints
                                 .requestMatchers(HttpMethod.GET, "/api/v1/admin/**").hasAnyAuthority(ADMIN_READ.getPermission())
                                 .requestMatchers(HttpMethod.POST, "/api/v1/admin/**").hasAnyAuthority(ADMIN_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/admin/**").hasAnyAuthority(ADMIN_UPDATE.getPermission())
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/admin/**").hasAnyAuthority(ADMIN_DELETE.getPermission())
                                 .requestMatchers("/api/v1/admin/**").hasAnyRole(ADMIN.name())
 
-//                                .requestMatchers(HttpMethod.POST, "/api/v1/package-order").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
+                                // Shop owner endpoints
                                 .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_READ.getPermission())
                                 .requestMatchers(HttpMethod.POST, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_UPDATE.getPermission())
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_DELETE.getPermission())
                                 .requestMatchers("/api/v1/shop-owner/**").hasAnyRole(SHOPOWNER.name())
 
-
+                                // Staff endpoints
                                 .requestMatchers(HttpMethod.GET, "/api/v1/user/**").hasAnyAuthority(USER_READ.getPermission())
                                 .requestMatchers(HttpMethod.POST, "/api/v1/user/**").hasAnyAuthority(USER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/user/**").hasAnyAuthority(USER_UPDATE.getPermission())
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/user/**").hasAnyAuthority(USER_DELETE.getPermission())
                                 .requestMatchers("/api/v1/user/**").hasAnyRole(USER.name())
 
-
+                                // Users endpoints
                                 .requestMatchers(HttpMethod.GET, "/api/v1/staff/**").hasAnyAuthority(SHOPSTAFF_READ.getPermission())
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/staff/**").hasAnyAuthority(SHOPSTAFF_UPDATE.getPermission())
                                 .requestMatchers("/api/v1/staff/**").hasAnyRole(SHOPSTAFF.name())
 
+                                // Users endpoints
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").hasAnyAuthority(USER_UPDATE.getPermission(), SHOPSTAFF_UPDATE.getPermission(), SHOPOWNER_UPDATE.getPermission())
                                 .requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasAnyAuthority(USER_READ.getPermission(), SHOPSTAFF_READ.getPermission(), SHOPOWNER_READ.getPermission())
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasAnyAuthority(SHOPOWNER_DELETE.getPermission(), USER_DELETE.getPermission())
                                 .requestMatchers("/api/v1/users/**").hasAnyRole(USER.name(), SHOPSTAFF.name(), SHOPOWNER.name())
 
+                                // Allow access for staff and shop owners to the two specific endpoints
+                                .requestMatchers(HttpMethod.GET, "/shop-owner/{shopId}/notifications").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
+                                .requestMatchers(HttpMethod.GET, "/shop-owner/{shopId}/notifications/unread").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
+                                .requestMatchers(HttpMethod.GET, "/shop-owner/{shopId}/channels").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
+                                .requestMatchers(HttpMethod.GET, "/shop-owner/{shopId}/messages").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
+                                .requestMatchers(HttpMethod.GET, "/shop-owner/{shopId}/messages/unread").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
+
+                                // Default authentication for any other request
                                 .anyRequest()
                                 .authenticated()
                 )
