@@ -78,7 +78,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                                         if (paymentMethod.equals(PaymentMethod.PAYPAL)) {
                                             return handleInitialPayment(packageOrder, account.get());
                                         } else if (paymentMethod.equals(PaymentMethod.DELIVERY)) {
-                                            Long packageOrderId = saveAll(packageOrder, paymentId, account.get(), productWithQuantityMap);
+                                            Long packageOrderId = saveAll(packageOrder, paymentId, null, account.get(), productWithQuantityMap);
                                             SuccessResponse successResponse = SuccessResponse.builder()
                                                     .successCode(String.valueOf(HttpStatus.OK.value()))
                                                     .successMessage("Order successfully. packageOrderId=" + packageOrderId)
@@ -570,13 +570,17 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return orderDetails;
     }
 
-    private Long saveAll(PackageOrderRequestDto packageOrderRequestDto, String paymentId, Account account, Map<Long, Integer> productOrder) {
+    private Long saveAll(
+            PackageOrderRequestDto packageOrderRequestDto, String paymentId, String payerEmail,
+            Account account, Map<Long, Integer> productOrder
+    ) {
         Transaction transaction = Transaction.builder()
                 .amount(packageOrderRequestDto.getCartInfo().getTotal().getPaymentTotal())
                 .status(TransactionStatus.PROCESSING)
                 .build();
         if (packageOrderRequestDto.getCartInfo().getPaymentMethod().equals(PaymentMethod.PAYPAL)) {
             transaction.setPaypalId(paymentId);
+            transaction.setPaypalEmail(payerEmail);
             transaction.setStatus(TransactionStatus.SUCCESS);
         }
         Transaction saveTransaction = transactionRepository.save(transaction);
@@ -640,7 +644,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                             "paymentId " + paymentId + " already exist.");
                     return new ResponseEntity<>(error, HttpStatus.EXPECTATION_FAILED);
                 } else {
-                    packageOrderId = saveAll(packageOrderRequestDto, paymentId, account, productOrder);
+                    String payerEmail = payment.getPayer().getPayerInfo().getEmail();
+                    packageOrderId = saveAll(packageOrderRequestDto, paymentId, payerEmail, account, productOrder);
                 }
                 SuccessResponse successResponse = SuccessResponse.builder()
                         .successCode(String.valueOf(HttpStatus.OK.value()))
