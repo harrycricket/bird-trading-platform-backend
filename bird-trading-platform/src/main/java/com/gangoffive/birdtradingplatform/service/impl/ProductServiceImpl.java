@@ -1869,9 +1869,11 @@ public class ProductServiceImpl implements ProductService {
         if (filterDto.getHighestPrice() == 0.0)
             filterDto.setHighestPrice(999999999);
         if (filterDto.getStar() == 1)
-            filterDto.setStar(0.0);
-        if (filterDto.getLowestPrice() == 0.0)
+            filterDto.setStar(0.0);        if (filterDto.getLowestPrice() == 0.0)
             filterDto.setLowestPrice(-1);
+        if(filterDto.getShopId() == -1 )
+            filterDto.setShopId(null)
+;
         return filterDto;
     }
 
