@@ -8,7 +8,7 @@ import lombok.*;
 @Setter
 @ToString
 public class ReviewShopOwnerFilterDto {
-    private ShopOwnerSearchInfoDto reviewSearchInfo;
+    private SearchInfoDto reviewSearchInfo;
     private SortDirectionDto sortDirection;
     private int pageNumber;
 }

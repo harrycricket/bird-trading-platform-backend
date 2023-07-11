@@ -9,7 +9,7 @@ import lombok.*;
 @ToString
 public class ProductShopOwnerFilterDto {
     private int category;
-    private ShopOwnerSearchInfoDto productSearchInfo;
+    private SearchInfoDto productSearchInfo;
     private SortDirectionDto sortDirection;
     private int pageNumber;
 }

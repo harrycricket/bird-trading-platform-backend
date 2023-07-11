@@ -83,8 +83,8 @@ public class MessageController {
         return messageService.getListMessageByChannelId(channelID ,pageNumber , shopId, true);
     }
 
-    @GetMapping("/shop-owner/{shopid}/messages/unread")
-    public ResponseEntity<?> getNumberUnreadMessageShop (@PathVariable long shopid) {
-        return messageService.getTotalNumberUnreadMessageShop(shopid);
+    @GetMapping("/shop-owner/{shopId}/messages/unread")
+    public ResponseEntity<?> getNumberUnreadMessageShop (@PathVariable long shopId) {
+        return messageService.getTotalNumberUnreadMessageShop(shopId);
     }
 }

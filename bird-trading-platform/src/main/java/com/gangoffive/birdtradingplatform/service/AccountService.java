@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.service;
 
 import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
 import com.gangoffive.birdtradingplatform.dto.RegisterShopOwnerDto;
+import com.gangoffive.birdtradingplatform.dto.UserAccountFilterDto;
 import com.gangoffive.birdtradingplatform.dto.VerifyRequestDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import org.springframework.http.ResponseEntity;
@@ -20,4 +21,6 @@ public interface AccountService {
     public List<Long> getAllChanelByUserId (long userId);
 
     Account getAccountById(long userId);
+
+    ResponseEntity<?> filterAllUserAccount(UserAccountFilterDto userAccountFilter);
 }
