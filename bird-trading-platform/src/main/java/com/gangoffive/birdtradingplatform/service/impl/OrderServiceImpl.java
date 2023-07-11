@@ -218,6 +218,24 @@ public class OrderServiceImpl implements OrderService {
                 }
                 return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
+                    orderFilter.getOrderSearchInfo().getField().equals(FieldOrderTable.SHOP_ID.getField())
+                            && !orderFilter.getOrderSearchInfo().getValue().isEmpty()
+                            && orderFilter.getSortDirection().getField().isEmpty()
+                            && orderFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterOrderByShopIdEqual(orderFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    orderFilter.getOrderSearchInfo().getField().equals(FieldOrderTable.SHOP_ID.getField())
+                            && !orderFilter.getOrderSearchInfo().getValue().isEmpty()
+            ) {
+                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterOrderByShopIdEqual(orderFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
                     orderFilter.getOrderSearchInfo().getField().equals(FieldOrderTable.ORDER_STATUS.getField())
                             && !orderFilter.getOrderSearchInfo().getValue().isEmpty()
                             && orderFilter.getSortDirection().getField().isEmpty()
@@ -376,6 +394,22 @@ public class OrderServiceImpl implements OrderService {
                     "Page number cannot less than 1");
             return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private ResponseEntity<?> filterOrderByShopIdEqual(OrderShopOwnerFilterDto orderFilter, PageRequest pageRequest) {
+        Optional<Page<Order>> orders = orderRepository.findAllByShopOwner_Id(
+                Long.valueOf(orderFilter.getOrderSearchInfo().getValue()),
+                pageRequest
+        );
+
+        if (orders.isPresent()) {
+            return getPageNumberWrapperWithOrders(orders, true, false);
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found order in this shop.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     private ResponseEntity<?> filterOrderByLastedDateFromTo(
