@@ -696,7 +696,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 .collect(Collectors.toList());
     }
 
-    public double getShippingFeeByDistance(double distance) throws JsonProcessingException {
+    private double getShippingFeeByDistance(double distance) throws JsonProcessingException {
         RestTemplate restTemplate = new RestTemplate();
         String apiUrl = appProperties.getShip().getUrl();
 
