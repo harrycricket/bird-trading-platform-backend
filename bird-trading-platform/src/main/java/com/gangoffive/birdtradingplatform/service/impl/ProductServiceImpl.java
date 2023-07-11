@@ -1872,6 +1872,8 @@ public class ProductServiceImpl implements ProductService {
             filterDto.setStar(0.0);
         if (filterDto.getLowestPrice() == 0.0)
             filterDto.setLowestPrice(-1);
+        if(filterDto.getShopId() == null || filterDto.getShopId() == -1 )
+            filterDto.setShopId(null);
         return filterDto;
     }
 
