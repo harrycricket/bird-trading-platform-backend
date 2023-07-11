@@ -1165,6 +1165,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 .id(shopOwner.getId())
                 .email(shopOwner.getAccount().getEmail())
                 .shopName(shopOwner.getShopName())
+                .avtUrl(shopOwner.getAvatarImgUrl())
                 .shopPhone(shopOwner.getShopPhone())
                 .address(shopOwner.getAddress().getAddress())
                 .status(shopOwner.getStatus())
