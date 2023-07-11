@@ -1,12 +1,10 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.dto.PromotionDto;
-import com.gangoffive.birdtradingplatform.dto.PromotionShopDto;
 import com.gangoffive.birdtradingplatform.entity.Promotion;
 import com.gangoffive.birdtradingplatform.mapper.PromotionMapper;
 import com.gangoffive.birdtradingplatform.repository.PromotionRepository;
 import com.gangoffive.birdtradingplatform.service.PromotionService;
-import com.gangoffive.birdtradingplatform.util.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

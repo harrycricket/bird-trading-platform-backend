@@ -22,6 +22,7 @@ public class AdminController {
     private final OrderService orderService;
     private final ShopOwnerService shopOwnerService;
     private final AccountService accountService;
+    private final PackageOrderService packageOrderService;
 
     @GetMapping("admin/bump-chart")
     public List<DataBumpChartDto> getDataBumpChartRankOfShop() {
@@ -58,5 +59,15 @@ public class AdminController {
     @GetMapping("/admin/user-account")
     public ResponseEntity<?> getAllUser(@RequestParam String data) {
         return accountService.filterAllUserAccount(JsonUtil.INSTANCE.getObject(data, UserAccountFilterDto.class));
+    }
+
+    @GetMapping("/admin/package-order")
+    public ResponseEntity<?> getAllPackageOrder(@RequestParam String data) {
+        return packageOrderService.filterAllPackageOrder(JsonUtil.INSTANCE.getObject(data, PackageOrderAdminFilterDto.class));
+    }
+
+    @PostMapping("/admin/package-order")
+    public ResponseEntity<?> getAllPackageOrder(@RequestBody PackageOrderAdminFilterDto data) {
+        return packageOrderService.filterAllPackageOrder(data);
     }
 }
