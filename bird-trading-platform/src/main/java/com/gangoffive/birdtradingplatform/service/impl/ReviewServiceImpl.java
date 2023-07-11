@@ -44,7 +44,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final OrderDetailRepository orderDetailRepository;
     private final AppProperties appProperties;
     private final ProductSummaryService productSummaryService;
-    private final AccountMapper accountMapper;
+
 
     @Override
     public ResponseEntity<?> getAllReviewByOrderId(Long orderId) {
