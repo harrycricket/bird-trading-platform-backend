@@ -14,6 +14,7 @@ import java.util.List;
 @Slf4j
 public class TypeAccessoryServiceImpl implements TypeAccessoryService {
     private final TypeAccessoryRepository typeAccessoryRepository;
+
     @Override
     public List<TypeAccessory> getAllTypeAccessory() {
         return typeAccessoryRepository.findAll();

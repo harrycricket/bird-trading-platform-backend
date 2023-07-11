@@ -1,9 +1,6 @@
 package com.gangoffive.birdtradingplatform.service;
 
-import com.gangoffive.birdtradingplatform.dto.ItemByShopDto;
-import com.gangoffive.birdtradingplatform.dto.PackageOrderRequestDto;
-import com.gangoffive.birdtradingplatform.dto.TotalOrderDto;
-import com.gangoffive.birdtradingplatform.dto.UserOrderDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -30,4 +27,5 @@ public interface PackageOrderService {
 
     ResponseEntity<?> viewAllPackageOrderByAccountId(int pageNumber);
 
+    ResponseEntity<?> filterAllPackageOrder(PackageOrderAdminFilterDto packageOrderFilter);
 }

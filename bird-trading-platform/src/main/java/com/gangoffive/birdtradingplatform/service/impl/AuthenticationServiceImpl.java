@@ -20,6 +20,7 @@ import com.gangoffive.birdtradingplatform.service.AuthenticationService;
 import com.gangoffive.birdtradingplatform.service.EmailService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.util.MyUtils;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -59,24 +60,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.info("temp.isPresent() {}", temp.isPresent());
             if (!temp.isPresent()) {
                 if (!emailService.isEmailExist(accountDto.getEmail())) {
-                    return new ResponseEntity<>(ErrorResponse.builder()
-                            .errorCode(HttpStatus.NOT_FOUND.name())
-                            .errorMessage("The mail is not found!").build(), HttpStatus.NOT_FOUND);
+                    return ResponseUtils.getErrorResponseNotFound("The mail is not found!");
                 }
                 return sendMailAndSaveAccount(accountDto, false);
             } else {
                 if (temp.get().getStatus().equals(AccountStatus.VERIFY)) {
-                    return new ResponseEntity<>(ErrorResponse.builder()
-                            .errorCode(HttpStatus.CONFLICT.name())
-                            .errorMessage("The email has already been used!").build(), HttpStatus.CONFLICT);
+                    return ResponseUtils.getErrorResponseConflict("The email has already been used!");
                 } else {
                     return sendMailAndSaveAccount(accountDto, true);
                 }
             }
         }
-        return new ResponseEntity<>(ErrorResponse.builder()
-                .errorCode(HttpStatus.BAD_REQUEST.name())
-                .errorMessage("Something went wrong!").build(), HttpStatus.BAD_REQUEST);
+        return ResponseUtils.getErrorResponseBadRequest("Something went wrong!");
     }
 
     private ResponseEntity<?> sendMailAndSaveAccount(AccountDto accountDto, boolean isAlreadyHaveAccount) {
@@ -121,9 +116,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         try {
             emailService.sendSimpleEmail(accountDto.getEmail(), emailContent.toString(), emailSubject);
         } catch (Exception e) {
-            return new ResponseEntity<>(ErrorResponse.builder()
-                    .errorCode(HttpStatus.NOT_FOUND.name())
-                    .errorMessage("The mail is not found!").build(), HttpStatus.NOT_FOUND);
+            return ResponseUtils.getErrorResponseNotFound("The mail is not found!");
         }
         if (isAlreadyHaveAccount) {
             accountRepository.save(account.get());
