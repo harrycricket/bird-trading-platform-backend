@@ -1825,8 +1825,10 @@ public class ProductServiceImpl implements ProductService {
         filterDto = this.checkProductFilterDto(filterDto);
         PageRequest pageRequest = this.getSortDirect(filterDto);
         List<String> listName = MyUtils.splitStringToList(filterDto.getName(), " ");
+
         Page<Long> pageAble = birdRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
-                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(),filterDto.getShopId(), pageRequest);
+                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(),filterDto.getShopId()
+                ,filterDto.getCheckListTypeId() ,pageRequest);
         PageNumberWrapper<Long> productDtoPageNumberWrapper = new PageNumberWrapper<>();
         productDtoPageNumberWrapper.setLists(pageAble.getContent());
         productDtoPageNumberWrapper.setPageNumber(pageAble.getTotalPages());
@@ -1838,7 +1840,8 @@ public class ProductServiceImpl implements ProductService {
         PageRequest pageRequest = this.getSortDirect(filterDto);
 
         Page<Long> pageAble = foodRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
-                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(), filterDto.getShopId(), pageRequest);
+                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(), filterDto.getShopId()
+                ,filterDto.getCheckListTypeId() ,pageRequest);
         PageNumberWrapper<Long> productDtoPageNumberWrapper = new PageNumberWrapper<>();
         productDtoPageNumberWrapper.setLists(pageAble.getContent());
         productDtoPageNumberWrapper.setPageNumber(pageAble.getTotalPages());
@@ -1851,7 +1854,8 @@ public class ProductServiceImpl implements ProductService {
         PageRequest pageRequest = this.getSortDirect(filterDto);
 
         Page<Long> pageAble = accessoryRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
-                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(), filterDto.getShopId() ,pageRequest);
+                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(), filterDto.getShopId()
+                ,filterDto.getCheckListTypeId() ,pageRequest);
         PageNumberWrapper<Long> productDtoPageNumberWrapper = new PageNumberWrapper<>();
         productDtoPageNumberWrapper.setLists(pageAble.getContent());
         productDtoPageNumberWrapper.setPageNumber(pageAble.getTotalPages());
@@ -1860,8 +1864,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ProductFilterDto checkProductFilterDto(ProductFilterDto filterDto) {
-        if (filterDto.getListTypeId() == null || filterDto.getListTypeId().size() == 0)
+        if (filterDto.getListTypeId() == null || filterDto.getListTypeId().size() == 0){
             filterDto.setListTypeId(null);
+            filterDto.setCheckListTypeId(null);
+        }else{
+            filterDto.setCheckListTypeId(1l);
+        }
+
         if (filterDto.getName() == null || filterDto.getName().isEmpty())
             filterDto.setName("%");
         else
