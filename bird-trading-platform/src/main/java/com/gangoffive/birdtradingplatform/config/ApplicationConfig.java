@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.config;
 
 import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.ShopOwnerStatus;
+import com.gangoffive.birdtradingplatform.exception.AuthenticateException;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +19,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Arrays;
-
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
@@ -35,17 +34,20 @@ public class ApplicationConfig {
                 var tmp = accountRepository.findByEmail(username)
                         .orElseThrow(
                                 () -> new UsernameNotFoundException("Not found this email"));
-                    if (tmp.getShopOwner() != null) {
-                        if (!tmp.getShopOwner().getStatus().equals(ShopOwnerStatus.BAN)) {
-                            return UserPrincipal.create(tmp);
-                        } else {
-                            throw new UsernameNotFoundException("Email user ban");
-                        }
-                    } else if (tmp.getStatus().equals(AccountStatus.BANNED)) {
-                        throw new UsernameNotFoundException("Email shop ban");
+                log.info("tmp.getStatus() {}", tmp.getStatus());
+                if (tmp.getShopOwner() != null) {
+                    if (tmp.getStatus().equals(AccountStatus.BANNED)) {
+                        throw new AuthenticateException("Email user ban");
+                    } else if (tmp.getShopOwner().getStatus().equals(ShopOwnerStatus.BAN)) {
+                        throw new AuthenticateException("Email shop ban");
                     } else {
                         return UserPrincipal.create(tmp);
                     }
+                } else if (tmp.getStatus().equals(AccountStatus.BANNED)) {
+                    throw new AuthenticateException("Email user ban");
+                } else {
+                    return UserPrincipal.create(tmp);
+                }
             }
         };
     }
