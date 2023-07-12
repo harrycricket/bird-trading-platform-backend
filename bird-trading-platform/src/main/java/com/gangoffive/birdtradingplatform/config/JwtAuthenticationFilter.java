@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.ShopStaff;
+import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.repository.ShopStaffRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
@@ -140,14 +141,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UserDetailsService staffDetailsService = new UserDetailsService() {
                 @Override
                 public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                    Optional<ShopStaff> staff = shopStaffRepository.findByUserName(username);
-                    Account account = new Account();
-                    account.setId(staff.get().getId());
-                    account.setEmail(staff.get().getUserName());
-                    account.setRole(UserRole.SHOPSTAFF);
-                    account.setPassword(staff.get().getPassword());
-                    var user = UserPrincipal.create(account);
-                    return user;
+                    ShopStaff staff = shopStaffRepository.findByUserName(username)
+                            .orElseThrow(() -> new UsernameNotFoundException("Not found this staff account."));
+                    if (staff.getStatus().equals(AccountStatus.BANNED)) {
+                        throw new UsernameNotFoundException("Staff account ban.");
+                    } else {
+                        Account account = new Account();
+                        account.setId(staff.getId());
+                        account.setEmail(staff.getUserName());
+                        account.setRole(UserRole.SHOPSTAFF);
+                        account.setPassword(staff.getPassword());
+                        return UserPrincipal.create(account);
+                    }
                 }
             };
             UserDetails staffDetails = staffDetailsService.loadUserByUsername(userEmail);

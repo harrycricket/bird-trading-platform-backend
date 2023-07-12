@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class AccountController {
 
     private final AccountService accountService;
-    private final ShopOwnerService shopOwnerService;
 
     @PutMapping("/users/update-profile")
     public ResponseEntity<?> updateProfile(
