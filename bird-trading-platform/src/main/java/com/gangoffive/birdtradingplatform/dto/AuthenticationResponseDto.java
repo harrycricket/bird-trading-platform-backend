@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthenticationResponseDto {
+public class AuthenticationResponseDto <T> {
     private TokenDto token;
-    private UserInfoDto userInfo;
+    private T userInfo;
+    private String imgUrlStaff;
+    private int role;
 }

@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
+import com.gangoffive.birdtradingplatform.dto.ProductCartDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
 import com.gangoffive.birdtradingplatform.dto.ProductShopDto;
 import com.gangoffive.birdtradingplatform.entity.Accessory;
@@ -18,6 +19,7 @@ import com.gangoffive.birdtradingplatform.repository.TagRepository;
 import com.gangoffive.birdtradingplatform.service.AccessoryService;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -67,9 +69,7 @@ public class AccessoryServiceImpl implements AccessoryService {
                 PageNumberWrapper<ProductDto> pageNumberWrapper = new PageNumberWrapper<>(list, pageAble.get().getTotalPages());
                 return ResponseEntity.ok(pageNumberWrapper);
             } else {
-                ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
-                        "Not found product in shop.");
-                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+                return ResponseUtils.getErrorResponseNotFound("Not found product in shop.");
             }
         }
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
@@ -91,9 +91,7 @@ public class AccessoryServiceImpl implements AccessoryService {
             PageNumberWrapper<AccessoryDto> result = new PageNumberWrapper<>(accessories, pageAble.getTotalPages());
             return ResponseEntity.ok(result);
         }
-        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
-                "Page number cannot less than 1");
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        return ResponseUtils.getErrorResponseBadRequestPageNumber();
     }
 
     @Override
@@ -120,11 +118,11 @@ public class AccessoryServiceImpl implements AccessoryService {
     }
 
     @Override
-    public List<AccessoryDto> findTopAccessories() {
+    public ResponseEntity<?> findTopAccessories() {
         List<Accessory> lists = accessoryRepository.findAllById(productSummaryService.getIdTopAccessories());
         if (lists != null) {
-            List<AccessoryDto> listDto = lists.stream().map(accessory -> (AccessoryDto) productService.ProductToDto(accessory)).toList();
-            return listDto;
+            List<ProductCartDto> listDto = lists.stream().map(accessory ->  productService.productToProductCart(accessory)).toList();
+            return ResponseEntity.ok(listDto);
         }
         return null;
     }

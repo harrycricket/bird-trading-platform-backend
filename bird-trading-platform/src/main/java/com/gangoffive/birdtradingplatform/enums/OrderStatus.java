@@ -10,9 +10,9 @@ public enum OrderStatus {
     PENDING(0, "The order has been placed but not yet processed"),
     PROCESSING(1, "The order is being prepared for shipment"),
     SHIPPED(2, "The order has been shipped or handed over to the shipping carrier"),
-    SHIPPING(3, ""),
+    SHIPPING(3, "Your order on the way"),
     DELIVERED(4, "The order has been successfully delivered to the customer"),
-	CANCELLED(-1, "The order has been cancelled, either by the customer or by the system"),
+    CANCELLED(-1, "The order has been cancelled, either by the customer or by the system"),
     REFUNDED(-2, "The order has been refunded, indicating a reversal of payment");
     private int statusCode;
     private String description;
@@ -30,12 +30,12 @@ public enum OrderStatus {
         return description;
     }
 
-    public static OrderStatus getOrderStatusBaseOnStatusCode (int statusCode) {
+    public static OrderStatus getOrderStatusBaseOnStatusCode(int statusCode) {
         List<OrderStatus> listStatus = Arrays.asList(OrderStatus.values());
         try {
             OrderStatus result = listStatus.stream().filter(sta -> sta.getStatusCode() == statusCode).findFirst().get();
             return result;
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new CustomRuntimeException(HttpStatus.NOT_FOUND.name(), "Not found this status");
         }
     }

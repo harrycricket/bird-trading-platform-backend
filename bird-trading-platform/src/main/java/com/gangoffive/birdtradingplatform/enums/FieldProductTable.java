@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 public enum FieldProductTable {
     ID("id"),
+    SHOP_ID("shopId"),
     NAME("name"),
     TYPE("type"),
     PRICE("price"),

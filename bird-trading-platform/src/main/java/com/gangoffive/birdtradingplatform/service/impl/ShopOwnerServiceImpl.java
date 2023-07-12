@@ -7,10 +7,7 @@ import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
-import com.gangoffive.birdtradingplatform.enums.AccountStatus;
-import com.gangoffive.birdtradingplatform.enums.ColorChart;
-import com.gangoffive.birdtradingplatform.enums.ResponseCode;
-import com.gangoffive.birdtradingplatform.enums.UserRole;
+import com.gangoffive.birdtradingplatform.enums.*;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
 import com.gangoffive.birdtradingplatform.mapper.ShopStaffMapper;
@@ -19,19 +16,19 @@ import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
-import com.gangoffive.birdtradingplatform.util.DateUtils;
-import com.gangoffive.birdtradingplatform.util.S3Utils;
+import com.gangoffive.birdtradingplatform.util.*;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
-import com.google.gson.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,16 +59,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final ShopStaffRepository shopStaffRepository;
     private final ShopStaffMapper shopStaffMapper;
     private final AddressRepository addressRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final ReviewRepository reviewRepository;
 
-    @Override
-    public List<String> listShopDto(List<Long> listShopId, long userId) {
-        var listShop = shopOwnerRepository.findAllById(listShopId);
-        if (listShop != null && !listShop.isEmpty()) {
-            List<String> list = listShop.stream().map(shop -> this.shopOwnerToDtoWithUnread(shop, userId)).toList();
-            return list;
-        }
-        return null;
-    }
 
     @Override
     public long getAccountIdByShopid(long shopId) {
@@ -87,24 +77,6 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         return 0;
     }
 
-    private String shopOwnerToDtoWithUnread(ShopOwner shopOwner, long userId) {
-        ShopOwnerDto shopOwnerDto = shopOwnerMapper.modelToDto(shopOwner);
-//        String shopDtoJson = JsonUtil.INSTANCE.getJsonString(shopOwner);
-        Gson gson = new GsonBuilder()
-                .disableHtmlEscaping()
-                .create();
-        String shopDtoJson = gson.toJson(shopOwnerDto, ShopOwnerDto.class);
-
-        JsonParser parser = new JsonParser();
-
-        JsonElement shopElement = parser.parse(shopDtoJson);
-        JsonObject jsonObject = shopElement.getAsJsonObject();
-        //get out channel id
-        int unread = channelService.getMessageUnreadByUserAndShop(userId, shopOwner.getId());
-        jsonObject.addProperty("unread", unread);
-        return jsonObject.toString();
-
-    }
 
     @Override
     public List<LineChartDto> getDataLineChart(String dateFrom, int date) {
@@ -401,26 +373,43 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             double totalPrice = 0;
             double totalQuantity = 0;
             double totalReview = 0;
-            for (Order order : listOrderOfProduct) {
-                if (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(date)) {
-                    log.info("order.getCreatedDate().toInstant().atZone(ZoneId.of(\"Asia/Bangkok\")) {}", order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")));
-                    for (OrderDetail orderDetail : listOrderDetailOfProduct) {
-                        if (orderDetail.getOrder().equals(order)) {
-                            if (isCalcPrice) {
-                                totalPrice += orderDetail.getPrice() * orderDetail.getQuantity();
-                            }
-                            if (isCalcQuantity) {
-                                totalQuantity++;
-                            }
-                            if (isCalcReview) {
-                                if (orderDetail.getReview() != null) {
-                                    totalReview++;
+            if (isCalcPrice || isCalcQuantity) {
+                for (Order order : listOrderOfProduct) {
+                    if (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(date)) {
+                        log.info("order.getCreatedDate().toInstant().atZone(ZoneId.of(\"Asia/Bangkok\")) {}", order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")));
+                        for (OrderDetail orderDetail : listOrderDetailOfProduct) {
+                            if (orderDetail.getOrder().equals(order)) {
+                                if (isCalcPrice) {
+                                    totalPrice += orderDetail.getPrice() * orderDetail.getQuantity();
+                                }
+                                if (isCalcQuantity) {
+                                    totalQuantity++;
                                 }
                             }
                         }
                     }
                 }
             }
+
+            if (isCalcReview) {
+                Optional<List<Review>> reviews = reviewRepository.findAllByReviewDateBetweenAndOrderDetail_Product_ShopOwner(
+                        Date.from(date.atStartOfDay(ZoneId.of("Asia/Bangkok")).toInstant()),
+                        Date.from(date.plusDays(1).atStartOfDay(ZoneId.of("Asia/Bangkok")).toInstant()), account.getShopOwner()
+                );
+                List<OrderDetail> orderDetailList = reviews.get().stream().map(Review::getOrderDetail).toList();
+                List<OrderDetail> listOrderDetailFilter = orderDetailList.stream()
+                        .filter(
+                                orderDetail -> productClass.isInstance(orderDetail.getProduct())
+                        ).toList();
+                log.info("dateFrom {}", Date.from(date.atStartOfDay(ZoneId.of("Asia/Bangkok")).toInstant()));
+                log.info("dateTo {}", Date.from(date.plusDays(1).atStartOfDay(ZoneId.of("Asia/Bangkok")).toInstant()));
+                log.info("review {}", reviews.get().size());
+                log.info("class {}", productClass.getName());
+                if (reviews.isPresent()) {
+                    totalReview = listOrderDetailFilter.size();
+                }
+            }
+
             DecimalFormat decimalFormat = new DecimalFormat("#.00");
             String formattedTotalPrice = decimalFormat.format(totalPrice);
             log.info("formattedTotalPrice {}", formattedTotalPrice);
@@ -689,12 +678,12 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             Optional<Account> accountShop = accountRepository.findByEmail(email);
             ShopOwner shopOwner = accountShop.get().getShopOwner();
-            if (shopOwner != null){
+            if (shopOwner != null) {
                 Optional<ShopStaff> accountStaff = shopStaffRepository.findByUserName(createAccountSaffDto.getUserName());
                 if (!accountStaff.isPresent()) {
                     ShopStaff shopStaff = ShopStaff.builder()
                             .userName(createAccountSaffDto.getUserName())
-                            .password(createAccountSaffDto.getPassword())
+                            .password(passwordEncoder.encode(createAccountSaffDto.getPassword()))
                             .shopOwner(shopOwner)
                             .status(AccountStatus.VERIFY)
                             .build();
@@ -711,7 +700,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                             .build();
                     return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
                 }
-            }else {
+            } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.CONFLICT))
                         .errorMessage("Shop is not exists.")
@@ -727,29 +716,30 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
     }
-    public ResponseEntity<?> getShopStaff(int pageNumber){
+
+    public ResponseEntity<?> getShopStaff(int pageNumber) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<Account> account = accountRepository.findByEmail(email);
         ShopOwner shopOwner = account.get().getShopOwner();
-        if (shopOwner != null){
-            if(pageNumber > 0) {
+        if (shopOwner != null) {
+            if (pageNumber > 0) {
                 pageNumber--;
             }
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
-            Page<ShopStaff> lists = shopStaffRepository.findByShopOwner(shopOwner,pageRequest);
-            if (lists != null && lists.getContent().size() != 0){
+            Page<ShopStaff> lists = shopStaffRepository.findByShopOwner(shopOwner, pageRequest);
+            if (lists != null && lists.getContent().size() != 0) {
                 List<ShopStaffDto> listShopStaff = lists.stream().map(shopStaffMapper::modelToDto).toList();
                 PageNumberWrapper result = new PageNumberWrapper();
                 result.setLists(listShopStaff);
                 result.setPageNumber(lists.getTotalPages());
                 result.setTotalElement(lists.getTotalElements());
                 return ResponseEntity.ok(result);
-            }else {
+            } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                         .errorMessage("No list staff of shop " + shopOwner.getShopName() + ".")
                         .build();
-                return new ResponseEntity<>(errorResponse,HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
             }
 
         }
@@ -757,14 +747,14 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                 .errorMessage("Account " + account.get().getFullName() + " no shop.")
                 .build();
-       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @Override
     public ResponseEntity<?> updateShopOwnerProfile(MultipartFile avatarImg, MultipartFile coverImg, ShopOwnerUpdateDto shopUpdateDto) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         var shop = shopOwnerRepository.findByAccount_Email(email);
-        if(shop.isPresent()) {
+        if (shop.isPresent()) {
             ShopOwner shopUpdate = shop.get();
             shopUpdate.setShopName(shopUpdateDto.getShopName());
             shopUpdate.setShopPhone(shopUpdateDto.getShopPhone());
@@ -772,9 +762,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             try {
                 String avatar = this.uploadImages(avatarImg);
                 String cover = this.uploadImages(coverImg);
-                if(!avatar.isEmpty())
+                if (!avatar.isEmpty())
                     shopUpdate.setAvatarImgUrl(avatar);
-                if(!cover.isEmpty())
+                if (!cover.isEmpty())
                     shopUpdate.setCoverImgUrl(cover);
                 Address address = shopUpdate.getAddress();
                 address.setAddress(shopUpdateDto.getAddress());
@@ -782,7 +772,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 shopUpdate = shopOwnerRepository.save(shopUpdate);
                 ShopInfoDto shopInfoDto = shopOwnerMapper.modelToShopInfoDto(shopUpdate);
                 return ResponseEntity.ok(shopInfoDto);
-            }catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
@@ -797,16 +787,413 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
+    @Override
+    public ResponseEntity<?> filterAllShopOwner(ShopOwnerAccountFilterDto shopOwnerAccountFilter) {
+        if (shopOwnerAccountFilter.getPageNumber() > 0) {
+            int pageNumber = shopOwnerAccountFilter.getPageNumber() - 1;
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
+            PageRequest pageRequestWithSort = null;
+            if (shopOwnerAccountFilter.getSortDirection() != null
+                    && !shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+                    && !shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+            ) {
+                if (
+                        !SortShopOwnerAccountColumn.checkField(shopOwnerAccountFilter.getSortDirection().getField())
+                ) {
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                            .errorMessage("Not found this field in sort direction.")
+                            .build();
+                    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                }
+                if (shopOwnerAccountFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.ASC.name())) {
+                    pageRequestWithSort = getPageRequest(shopOwnerAccountFilter, pageNumber, Sort.Direction.ASC);
+                } else if (shopOwnerAccountFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.DESC.name())) {
+                    pageRequestWithSort = getPageRequest(shopOwnerAccountFilter, pageNumber, Sort.Direction.DESC);
+                } else {
+                    ErrorResponse errorResponse = ErrorResponse.builder()
+                            .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                            .errorMessage("Not found this direction.")
+                            .build();
+                    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                }
+            }
+
+            if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().isEmpty()
+                            && shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                return filterAllShopOwnerAccountAllFieldEmpty(pageRequest);
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().isEmpty()
+                            && shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().isEmpty()
+                            && !shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && !shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                return filterAllShopOwnerAccountAllFieldEmpty(pageRequestWithSort);
+            }
+
+            if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.ID.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterShopOwnerAccountByIdEqual(shopOwnerAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.EMAIL.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByEmailContain(shopOwnerAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.EMAIL.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByEmailContain(shopOwnerAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.SHOP_NAME.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByShopNameContain(shopOwnerAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.SHOP_NAME.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByShopNameContain(shopOwnerAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.SHOP_PHONE.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByShopPhoneContain(shopOwnerAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.SHOP_PHONE.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByShopPhoneContain(shopOwnerAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.ADDRESS.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByAddressContain(shopOwnerAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.ADDRESS.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterShopOwnerAccountByAddressContain(shopOwnerAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.STATUS.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterShopOwnerAccountByStatusEqual(shopOwnerAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.STATUS.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterShopOwnerAccountByStatusEqual(shopOwnerAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.CREATED_DATE.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
+                            && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterShopOwnerAccountByCreatedDateGreaterThanOrEqual(dateRange, pageRequest);
+                    } else {
+                        return filterShopOwnerAccountByCreatedDateFromTo(dateRange, pageRequest);
+                    }
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().equals(FieldShopOwnerAccountTable.CREATED_DATE.getField())
+                            && !shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()
+            ) {
+                if (shopOwnerAccountFilter.getShopOwnerSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterShopOwnerAccountByCreatedDateGreaterThanOrEqual(dateRange, pageRequest);
+                    } else {
+                        return filterShopOwnerAccountByCreatedDateFromTo(dateRange, pageRequest);
+                    }
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            }
+
+            return null;
+        } else {
+            ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
+                    "Page number cannot less than 1");
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByCreatedDateFromTo(
+            DateRangeDto dateRange, PageRequest pageRequest
+    ) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(DateUtils.timeInMillisecondToDate(dateRange.getDateTo()));
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByCreatedDateBetween(
+                DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
+                calendar.getTime(),
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found shop owner have created date from to.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByCreatedDateGreaterThanOrEqual(
+            DateRangeDto dateRange, PageRequest pageRequest
+    ) {
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByCreatedDateGreaterThanEqual(
+                DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found shop owner have created date greater than or equal.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByStatusEqual(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter, PageRequest pageRequest) {
+        List<ShopOwnerStatus> shopOwnerStatuses;
+        if (Integer.parseInt(shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue()) == 9) {
+            shopOwnerStatuses = List.of(ShopOwnerStatus.values());
+        } else {
+            shopOwnerStatuses = Arrays.asList(
+                    ShopOwnerStatus.getAccountStatus(
+                            Integer.parseInt(shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue())
+                    )
+            );
+        }
+
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByStatusIn(
+                shopOwnerStatuses,
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found this status.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByAddressContain(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByAddress_AddressLike(
+                "%" + shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue() + "%",
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found shop owner have contain this address.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByShopPhoneContain(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByShopPhoneLike(
+                "%" + shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue() + "%",
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found shop owner have contain this shop phone.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByShopNameContain(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByShopNameLike(
+                "%" + shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue() + "%",
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found shop owner have contain this shop name.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByEmailContain(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findByAccount_EmailLike(
+                "%" + shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue() + "%",
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found shop owner have contain this email.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterShopOwnerAccountByIdEqual(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<ShopOwner>> shopOwners = shopOwnerRepository.findById(
+                Long.valueOf(shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue()),
+                pageRequest
+        );
+
+        if (shopOwners.isPresent()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners.get());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found this shop owner id.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    private ResponseEntity<?> filterAllShopOwnerAccountAllFieldEmpty(PageRequest pageRequest) {
+        Page<ShopOwner> shopOwners = shopOwnerRepository.findAll(
+                pageRequest
+        );
+
+        if (!shopOwners.isEmpty()) {
+            return getPageNumberWrapperWithShopOwnerAccount(shopOwners);
+        } else {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                    .errorMessage("Not found shop owner account.")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    private ResponseEntity<?> getPageNumberWrapperWithShopOwnerAccount(Page<ShopOwner> shopOwners) {
+        List<ShopOwnerAccountDto> shopOwnerAccounts = shopOwners.stream()
+                .map(this::shopOwnerToShopOwnerAccountDto)
+                .collect(Collectors.toList());
+        PageNumberWrapper<ShopOwnerAccountDto> result = new PageNumberWrapper<>(
+                shopOwnerAccounts,
+                shopOwners.getTotalPages(),
+                shopOwners.getTotalElements()
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    private ShopOwnerAccountDto shopOwnerToShopOwnerAccountDto(ShopOwner shopOwner) {
+        return ShopOwnerAccountDto.builder()
+                .id(shopOwner.getId())
+                .email(shopOwner.getAccount().getEmail())
+                .shopName(shopOwner.getShopName())
+                .avtUrl(shopOwner.getAvatarImgUrl())
+                .shopPhone(shopOwner.getShopPhone())
+                .address(shopOwner.getAddress().getAddress())
+                .status(shopOwner.getStatus())
+                .createdDate(shopOwner.getCreatedDate().getTime())
+                .build();
+    }
+
+    private PageRequest getPageRequest(
+            ShopOwnerAccountFilterDto shopOwnerAccountFilter,
+            int pageNumber, Sort.Direction sortDirection
+    ) {
+        return PageRequest.of(
+                pageNumber,
+                PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                Sort.by(sortDirection,
+                        SortShopOwnerAccountColumn.getColumnByField(shopOwnerAccountFilter.getSortDirection().getField())
+                )
+        );
+    }
+
     @Async
-    protected String uploadImages(MultipartFile img) throws IOException {
+    protected String uploadImages(MultipartFile multipartImage) throws IOException {
         String originUrl = appProperties.getS3().getUrl();
         String urlImage = "";
-        if (img != null && !img.isEmpty()) {
-            String contentType = img.getContentType();
-            String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
-            newFilename = "image/" + newFilename;
-            urlImage = originUrl + newFilename;
-            S3Utils.uploadFile(newFilename, img.getInputStream());
+        if (multipartImage != null && !multipartImage.isEmpty()) {
+            String newFileName = FileNameUtils.getNewImageFileName(multipartImage);
+            urlImage = originUrl + newFileName;
+            S3Utils.uploadFile(newFileName, multipartImage.getInputStream());
         }
         return urlImage;
     }

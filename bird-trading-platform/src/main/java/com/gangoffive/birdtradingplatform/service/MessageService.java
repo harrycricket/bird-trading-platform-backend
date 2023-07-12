@@ -10,5 +10,9 @@ public interface MessageService {
 
     boolean maskAllSeen(long senderId, long channelId);
 
-    String getListUserInChannel(int pageNumber);
+    String getListUserInChannel(int pageNumber, long shopId);
+
+    ResponseEntity<?> getTotalNumberUnreadMessageUser(long userid);
+
+    ResponseEntity<?> getTotalNumberUnreadMessageShop(long shopid);
 }

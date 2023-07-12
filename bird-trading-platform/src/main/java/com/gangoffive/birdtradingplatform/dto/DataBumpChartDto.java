@@ -12,5 +12,5 @@ import java.util.List;
 @ToString
 public class DataBumpChartDto {
     private String id;
-    private List<BumpChartDto> bumpChartDtoList;
+    private List<BumpChartDto> data;
 }

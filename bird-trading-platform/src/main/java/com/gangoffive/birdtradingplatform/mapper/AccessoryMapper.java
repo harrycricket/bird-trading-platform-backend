@@ -1,7 +1,9 @@
 package com.gangoffive.birdtradingplatform.mapper;
 
 import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
+import com.gangoffive.birdtradingplatform.dto.CardProductDto;
 import com.gangoffive.birdtradingplatform.entity.Accessory;
+import com.gangoffive.birdtradingplatform.entity.Product;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,4 +19,6 @@ public interface AccessoryMapper {
 
     @InheritInverseConfiguration
     Accessory toModel(AccessoryDto accessoryDto);
+
+    CardProductDto productToCardProduct(Product product);
 }

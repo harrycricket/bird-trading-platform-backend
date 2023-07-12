@@ -20,23 +20,29 @@ public interface ProductService {
 
     List<ProductDto> findProductByName(String name);
 
-    List<ProductDto> retrieveTopProduct();
+    List<ProductCartDto> retrieveTopProduct();
 
-    List<ProductDto> listModelToDto(List<Product> products);
+    List<ProductCartDto> listModelToDto(List<Product> products);
 
     ResponseEntity<?> retrieveProductById(Long id);
+
     double CalculateDiscountedPrice(double price, double saleOff);
+
     ProductDto ProductToDto(Product product);
+
     ResponseEntity<?> retrieveProductByListId(long[] ids);
 
     ResponseEntity<?> retrieveProductByShopId(long shopId, int pageNumber);
 
-    //ForSO it mean For Shop Owner
-    ResponseEntity<?> retrieveProductByShopIdForSO(int pageNumber);
+    ProductCartDto productToProductCart(Product product);
+
     ResponseEntity<?> filter(ProductFilterDto filterDto);
 
-    ResponseEntity<?> addNewProduct(List<MultipartFile> multipartImgList, MultipartFile multipartVideo, ProductShopOwnerDto productShopOwnerDto);
-    public ResponseEntity<?> filterByShop(ShopFilterDto shopFilterDto);
+    ResponseEntity<?> addNewProduct(
+            List<MultipartFile> multipartImgList,
+            MultipartFile multipartVideo,
+            ProductShopOwnerDto productShopOwnerDto
+    );
 
     ProductShopDto productToProductShopDto(Product product);
 
@@ -44,8 +50,16 @@ public interface ProductService {
 
     ResponseEntity<?> updateListProductQuantity(List<ProductQuantityShopChangeDto> listProductChange);
 
-    ResponseEntity<?> filterAllProductByShopOwner(ProductShopOwnerFilterDto productFilter);
+    ResponseEntity<?> filterAllProduct(ProductShopOwnerFilterDto productFilter, boolean isShopOwner, boolean isAdmin);
 
     ResponseEntity<?> getProductDetailForShop(long productId);
+
+    ResponseEntity<?> updateProduct(
+            List<MultipartFile> multipartImgList,
+            MultipartFile multipartVideo,
+            ProductUpdateDto productUpdate
+    );
+
+    ResponseEntity<?> getProductRelevantBaseOnId(long productId);
 }
 

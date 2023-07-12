@@ -25,3 +25,4 @@ RemoteSystemsTempFiles/
 
 
 bird-trading-platform/src/main/resources/.env
+bird-trading-platform/test-output

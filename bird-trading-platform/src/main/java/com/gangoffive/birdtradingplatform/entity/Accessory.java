@@ -12,6 +12,8 @@ import java.util.List;
 @Table(name = "tblAccessory")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @ToString
 @SQLDelete(sql = "update tbl_Accessory set is_deleted = true where product_id = ?")
 public class Accessory extends Product {

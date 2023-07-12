@@ -34,6 +34,8 @@ Modify the CI/CD configuration files based on your deployment requirements.
 Start the application: mvn spring-boot:run
 The backend application will start running on the specified port, and you can access it via the provided API endpoints.
 
+![CI/CD](img/ci_cd.jpg "CI/CD")
+
 ## Database Design
 The physical ERD illustrates the structure of the database tables and their relationships in the bird trading project. It represents the entities, their attributes, and the relationships between them.
 Here is our physical ERD (Entity-Relationship Diagram):

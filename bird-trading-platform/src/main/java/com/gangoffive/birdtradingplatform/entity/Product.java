@@ -3,10 +3,11 @@ package com.gangoffive.birdtradingplatform.entity;
 import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.annotations.Where;
 
 import java.util.Date;
 import java.util.List;
@@ -14,6 +15,8 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 //@Where(clause = "is_deleted = false AND quantity > 0")
 //@EntityListeners(ProductEntityListener.class)
@@ -23,7 +26,8 @@ public abstract class Product {
     @SequenceGenerator(
             name = "product_id_seq",
             sequenceName = "product_id_seq",
-            allocationSize = 1
+            allocationSize = 1,
+            initialValue = 1
     )
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
@@ -74,6 +78,7 @@ public abstract class Product {
             foreignKey = @ForeignKey(name = "FK_PRODUCT_SHOP_OWNER")
     )
     protected ShopOwner shopOwner;
+
     @ManyToMany(mappedBy = "products")
     protected List<PromotionShop> promotionShops;
 

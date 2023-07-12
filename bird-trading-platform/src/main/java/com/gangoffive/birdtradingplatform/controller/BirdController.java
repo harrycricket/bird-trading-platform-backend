@@ -40,7 +40,7 @@ public class BirdController {
     }
 
     @GetMapping("birds/top-product")
-    public List<BirdDto> findTopBird() {
+    public ResponseEntity<?> findTopBird() {
         return birdService.findTopBirdProduct();
     }
 
