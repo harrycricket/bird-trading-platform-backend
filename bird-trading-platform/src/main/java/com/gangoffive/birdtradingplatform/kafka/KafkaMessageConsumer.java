@@ -21,9 +21,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-import java.util.UUID;
-
 
 @Component
 @Slf4j
@@ -72,7 +69,7 @@ public class KafkaMessageConsumer {
         message.setId(System.currentTimeMillis());
         if(message.getSenderName().equalsIgnoreCase(MessageConstant.MESSAGE_SHOP_ROLE)) {
             receiveId = userID;
-            senderId = shopOwnerService.getAccountIdByShopid(shopId);
+            senderId = shopOwnerService.getAccountIdByShopId(shopId);
             //Set user id is id of account shop owner
             message.setUserID(senderId);
             //check user cannot send to their shop
@@ -83,7 +80,7 @@ public class KafkaMessageConsumer {
         }else if (message.getSenderName().equalsIgnoreCase(MessageConstant.MESSAGE_USER_ROLE)) {
             senderId = userID;
             receiveId = shopId;
-            long accountShopId = shopOwnerService.getAccountIdByShopid(shopId);
+            long accountShopId = shopOwnerService.getAccountIdByShopId(shopId);
             Account acc =  accountService.getAccountById(userID);
             //check user cannot send to their shop
             if(senderId == accountShopId) {

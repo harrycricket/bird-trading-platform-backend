@@ -395,6 +395,19 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    @Override
+    public ResponseEntity<?> updateListUserAccountStatus(ChangeStatusListIdDto changeStatusListIdDto) {
+        AccountStatus accountStatus = AccountStatus.getAccountStatus(changeStatusListIdDto.getStatus());
+        try {
+            int numberStatusChange = accountRepository.updateListAccountStatus(
+                    accountStatus, changeStatusListIdDto.getIds()
+            );
+            return ResponseEntity.ok("Update " + numberStatusChange + " user account status successfully.");
+        } catch (Exception ex) {
+            return ResponseUtils.getErrorResponseBadRequest("Update list user account fail.");
+        }
+    }
+
     private ResponseEntity<?> filterUserAccountByCreatedDateFromTo(
             DateRangeDto dateRange, PageRequest pageRequest
     ) {
