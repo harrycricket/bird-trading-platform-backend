@@ -79,7 +79,7 @@ public class SecurityConfiguration {
 //            "/api/v1/shop-owner/product", // Remember delete just for testing
 //            "api/v1/shop-owner/**",
 //            "api/v1/shop-owner",
-//            "/api/v1/admin/**",
+            "/api/v1/admin/**",
             "/api/v1/ship/**",
             "/api/v1/reviews/products/**",
 //            "/favicon.ico",

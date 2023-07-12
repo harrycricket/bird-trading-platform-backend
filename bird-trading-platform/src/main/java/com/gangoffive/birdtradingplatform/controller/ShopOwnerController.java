@@ -91,6 +91,6 @@ public class ShopOwnerController {
 
     @PutMapping("/admin/shop-owner/status")
     public ResponseEntity<?> updateListShopOwnerAccountStatus(@RequestBody ChangeStatusListIdDto changeStatusListIdDto) {
-        return accountService.updateListUserAccountStatus(changeStatusListIdDto);
+        return shopOwnerService.updateListShopOwnerAccountStatus(changeStatusListIdDto);
     }
 }

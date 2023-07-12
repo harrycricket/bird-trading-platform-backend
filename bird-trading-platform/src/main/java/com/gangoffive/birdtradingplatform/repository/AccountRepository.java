@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.enums.AccountStatus;
+import com.gangoffive.birdtradingplatform.enums.UserRole;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,21 +23,23 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     Optional<Account> findByShopOwner_Id(long id);
 
-    Optional<Page<Account>> findById(Long accountId, Pageable pageable);
+    Optional<Page<Account>> findAllByRoleIn(List<UserRole> userRole, Pageable pageable);
 
-    Optional<Page<Account>> findByEmailLike(String email, Pageable pageable);
+    Optional<Page<Account>> findByIdAndRoleIn(Long accountId, List<UserRole> userRole, Pageable pageable);
 
-    Optional<Page<Account>> findByFullNameLike(String fullName, Pageable pageable);
+    Optional<Page<Account>> findByEmailLikeAndRoleIn(String email, List<UserRole> userRole, Pageable pageable);
 
-    Optional<Page<Account>> findByPhoneNumberLike(String phone, Pageable pageable);
+    Optional<Page<Account>> findByFullNameLikeAndRoleIn(String fullName, List<UserRole> userRole, Pageable pageable);
 
-    Optional<Page<Account>> findByAddress_AddressLike(String address, Pageable pageable);
+    Optional<Page<Account>> findByPhoneNumberLikeAndRoleIn(String phone, List<UserRole> userRole, Pageable pageable);
 
-    Optional<Page<Account>> findByStatusIn(List<AccountStatus> statuses, Pageable pageable);
+    Optional<Page<Account>> findByAddress_AddressLikeAndRoleIn(String address, List<UserRole> userRole, Pageable pageable);
 
-    Optional<Page<Account>> findByCreatedDateGreaterThanEqual(Date dateFrom, Pageable pageable);
+    Optional<Page<Account>> findByStatusInAndRoleIn(List<AccountStatus> statuses, List<UserRole> userRole, Pageable pageable);
 
-    Optional<Page<Account>> findByCreatedDateBetween(Date dateFrom, Date dateTo, Pageable pageable);
+    Optional<Page<Account>> findByCreatedDateGreaterThanEqualAndRoleIn(Date dateFrom, List<UserRole> userRole, Pageable pageable);
+
+    Optional<Page<Account>> findByCreatedDateBetweenAndRoleIn(Date dateFrom, Date dateTo, List<UserRole> userRole, Pageable pageable);
 
     @Modifying
     @Transactional
