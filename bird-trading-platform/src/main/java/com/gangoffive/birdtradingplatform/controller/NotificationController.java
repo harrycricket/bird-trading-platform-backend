@@ -26,17 +26,7 @@ public class NotificationController {
 
     @PostMapping("/noti/send")
     public ResponseEntity<?> sendNotification (@RequestBody NotificationDto notificationDto) {
-        String notification = JsonUtil.INSTANCE.getJsonString(notificationDto);
-        CompletableFuture<SendResult<String, String>> future =
-                kafkaTemplate.send(KafkaConstant.KAFKA_PRIVATE_NOTIFICATION, notification);
-        try  {
-            SendResult<String, String> response = future.get();
-            log.info("Record metadata: {}", response.getRecordMetadata());
-            return new ResponseEntity<>(HttpStatus.OK);
-        }catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+       return notificationService.handleSendNotification(notificationDto);
     }
 
     @GetMapping("/users/{userid}/notifications")

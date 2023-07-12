@@ -1,9 +1,11 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.common.KafkaConstant;
 import com.gangoffive.birdtradingplatform.common.MessageConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.MessageDto;
+import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Channel;
 import com.gangoffive.birdtradingplatform.entity.Message;
 import com.gangoffive.birdtradingplatform.enums.MessageStatus;
@@ -15,6 +17,7 @@ import com.gangoffive.birdtradingplatform.repository.MessageRepository;
 import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
 import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.MessageService;
+import com.gangoffive.birdtradingplatform.util.JsonUtil;
 import com.google.gson.Gson;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.google.gson.JsonObject;
@@ -26,10 +29,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +48,7 @@ public class MessageServiceImpl implements MessageService {
     private final ShopOwnerRepository shopOwnerRepository;
     private final ChannelService channelService;
     private final ChannelRepository channelRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
     @Override
     public boolean saveMessage(Message message) {
         try{
@@ -153,6 +161,78 @@ public class MessageServiceImpl implements MessageService {
             return new ResponseEntity<>(ErrorResponse.builder().errorCode("400").errorMessage("This shop have no shop").build(),
                     HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @Override
+    public ResponseEntity<?> handleSendMessage(MessageDto message) {
+        long userID = message.getUserID();
+        long shopId = message.getShopID();
+        long senderId = 0;
+        long receiveId = 0;
+        saveMessage(message);
+        message.setId(System.currentTimeMillis());
+        if(message.getSenderName().equalsIgnoreCase(MessageConstant.MESSAGE_SHOP_ROLE)) {
+            receiveId = userID;
+//            //Set user id is id of account shop owner
+//            message.setUserID(senderId);
+            //check user cannot send to their shop
+            if(senderId == receiveId) {
+                throw new CustomRuntimeException("400", "You cannot send message for your shop!");
+            }
+            this.sendMessage(message);
+        }else if (message.getSenderName().equalsIgnoreCase(MessageConstant.MESSAGE_USER_ROLE)) {
+            senderId = userID;
+            long accountShopId = shopOwnerRepository.findById(shopId).get().getAccount().getId();
+            Account acc =  accountRepository.findById(senderId).get();
+            //check user cannot send to their shop
+            if(senderId == accountShopId) {
+                throw new CustomRuntimeException("400", "You cannot send message for your shop!");
+            }
+            message.setUserAvatar(acc.getImgUrl());
+            message.setUserName(acc.getFullName());
+            this.sendMessage(message);
+        } else {
+            throw new CustomRuntimeException("400","Sender name not correct!");
+        }
+        return ResponseEntity.ok("OKe");
+    }
+    @Async
+    void sendMessage(MessageDto messageDto) {
+        String message = JsonUtil.INSTANCE.getJsonString(messageDto);
+        CompletableFuture<SendResult<String, String>> future =
+                kafkaTemplate.send(KafkaConstant.KAFKA_PRIVATE_CHAT, message);
+        try  {
+            SendResult<String, String> response = future.get();
+            log.info("Record metadata: {}", response.getRecordMetadata());
+        }catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveMessage(MessageDto message) {
+        long senderId = 0;
+        if (message.getSenderName().equalsIgnoreCase(MessageConstant.MESSAGE_SHOP_ROLE)) {
+            senderId = message.getShopID();
+        }else{
+            senderId = message.getUserID();
+        }
+        //save to database
+        Channel channel = channelService.getAndSaveChannel(message.getUserID(),message.getShopID());
+        Message messTemp = messageMapper.dtoToModle(message);
+        //set channel
+        messTemp.setChannel(channel);
+        //set account
+        Account acc = new Account();
+        acc.setId(senderId);
+        messTemp.setAccount(acc);
+        channelService.setLastedUpdateTime(channel.getId());
+        //save message
+        messageRepository.save(messTemp);
+        //update time of channel id
+
+        //mask all other message to read;
+        maskAllSeen(senderId,channel.getId());
+        log.info(String.format("Message like %s",message.toString()));
     }
 
     private JsonObject createUserListWithUnread(Channel channel, long shopId) {

@@ -5,11 +5,13 @@ import com.gangoffive.birdtradingplatform.common.KafkaConstant;
 import com.gangoffive.birdtradingplatform.common.NotifiConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.NotificationDto;
+import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Notification;
 import com.gangoffive.birdtradingplatform.enums.ResponseCode;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.NotificationMapper;
+import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.NotificationRepository;
 import com.gangoffive.birdtradingplatform.service.NotificationService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
@@ -25,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -41,6 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationMapper notificationMapper;
     private final ShopOwnerService shopOwnerService;
     private final KafkaTemplate kafkaTemplate;
+    private final AccountRepository accountRepository;
     @Override
     public boolean saveNotify(Notification notification) {
         try {
@@ -148,6 +152,47 @@ public class NotificationServiceImpl implements NotificationService {
                 return false;
             }
         }
+        return false;
+    }
+
+    @Override
+    public ResponseEntity<?> handleSendNotification(NotificationDto notification) {
+                Notification noti = notificationMapper.dtoToModel(notification);
+        notification.setId(System.currentTimeMillis());
+        log.info("Here is noti after mapper {}", notification);
+        //check send to shop or account
+        Account acc = new Account();
+        acc.setId(notification.getReceiveId());
+        noti.setAccount(acc);
+        if(notification.getRole().equalsIgnoreCase(NotifiConstant.NOTI_SHOP_ROLE)) {
+            //take out the shop id base on account id
+            long shopID = accountRepository.findById(notification.getReceiveId()).get().getShopOwner().getId();
+            notification.setReceiveId(shopID);
+            this.sendNotification(notification);
+        } else if(notification.getRole().equalsIgnoreCase(NotifiConstant.NOTI_USER_ROLE)){
+            this.sendNotification(notification);
+        }
+
+
+        //save notification
+//        boolean result = notificationService.saveNotify(noti);
+        return null;
+    }
+
+    @Async
+    void sendNotification(NotificationDto notificationDto) {
+        String notification = JsonUtil.INSTANCE.getJsonString(notificationDto);
+        CompletableFuture<SendResult<String, String>> future =
+                kafkaTemplate.send(KafkaConstant.KAFKA_PRIVATE_NOTIFICATION, notification);
+        try  {
+            SendResult<String, String> response = future.get();
+            log.info("Record metadata: {}", response.getRecordMetadata());
+        }catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean saveNotification(NotificationDto notificationDto) {
         return false;
     }
 }

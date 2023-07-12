@@ -17,4 +17,6 @@ public interface NotificationService {
     boolean pushNotificationForListUserID(List<Long> userIdList, NotificationDto notificationDto);
 
     boolean pushNotificationForAUserID(Long userId, NotificationDto notificationDto);
+
+    ResponseEntity<?> handleSendNotification(NotificationDto notificationDto);
 }
