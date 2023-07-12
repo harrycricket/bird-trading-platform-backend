@@ -46,4 +46,9 @@ public class OrderController {
     public ResponseEntity<?> getAllOrderDetailByOrderId(@PathVariable Long orderId) {
         return orderService.getAllOrderDetailByOrderId(orderId);
     }
+
+    @GetMapping("/admin/orders")
+    public ResponseEntity<?> getAllOrder(@RequestParam String data) {
+        return orderService.filterAllOrder(JsonUtil.INSTANCE.getObject(data, OrderShopOwnerFilterDto.class), false, true);
+    }
 }

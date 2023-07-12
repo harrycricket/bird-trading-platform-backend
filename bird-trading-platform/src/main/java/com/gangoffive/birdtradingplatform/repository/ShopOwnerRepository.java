@@ -2,9 +2,12 @@ package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.enums.ShopOwnerStatus;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
@@ -32,4 +35,9 @@ public interface ShopOwnerRepository extends JpaRepository<ShopOwner, Long> {
     Optional<Page<ShopOwner>> findByCreatedDateGreaterThanEqual(Date dateFrom, Pageable pageable);
 
     Optional<Page<ShopOwner>> findByCreatedDateBetween(Date dateFrom, Date dateTo, Pageable pageable);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE tblShop_Owner_Acc s SET s.status = ?1 WHERE s.id in ?2")
+    int updateListShopOwnerStatus(ShopOwnerStatus shopOwnerStatus, List<Long> ids);
 }

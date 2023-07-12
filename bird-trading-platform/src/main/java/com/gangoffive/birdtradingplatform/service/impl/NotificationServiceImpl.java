@@ -62,7 +62,7 @@ public class NotificationServiceImpl implements NotificationService {
             listNotifications = notificationRepository.findAllByNotiDateAfterAndAccount_IdAndRoleIs(new Date(timeAfter7SevenDay)
                     ,id , role, page);
         }else {
-            long accountIdOfShop = shopOwnerService.getAccountIdByShopid(id);
+            long accountIdOfShop = shopOwnerService.getAccountIdByShopId(id);
             listNotifications = notificationRepository.findAllByNotiDateAfterAndAccount_IdAndRoleIs(new Date(timeAfter7SevenDay)
                     ,accountIdOfShop , role, page);
         }
@@ -86,7 +86,7 @@ public class NotificationServiceImpl implements NotificationService {
                 //get unread noto
                 unreadNoti  = notificationRepository.countAllBySeenIsFalseAndAccount_IdAndRoleIs(id, role);
             }else {
-                long accountOfShop = shopOwnerService.getAccountIdByShopid(id);
+                long accountOfShop = shopOwnerService.getAccountIdByShopId(id);
                 unreadNoti  = notificationRepository.countAllBySeenIsFalseAndAccount_IdAndRoleIs(accountOfShop, role);
             }
 

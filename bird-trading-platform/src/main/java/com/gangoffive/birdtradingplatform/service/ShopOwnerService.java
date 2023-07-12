@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface ShopOwnerService {
-    long getAccountIdByShopid(long shopId);
+    long getAccountIdByShopId(long shopId);
 
     List<LineChartDto> getDataLineChart(String dateFrom, int date);
 
@@ -29,7 +29,7 @@ public interface ShopOwnerService {
 
     ResponseEntity<?> redirectToShopOwner();
 
-    ResponseEntity getShopInforByUserId();
+    ResponseEntity<?> getShopInfoByUserId();
 
     long getShopIdByEmail(String email);
 
@@ -40,4 +40,6 @@ public interface ShopOwnerService {
     ResponseEntity<?> updateShopOwnerProfile(MultipartFile avatarImg, MultipartFile coverImg, ShopOwnerUpdateDto shopInfoDto);
 
     ResponseEntity<?> filterAllShopOwner(ShopOwnerAccountFilterDto shopOwnerAccountFilter);
+
+    ResponseEntity<?> updateListShopOwnerAccountStatus(ChangeStatusListIdDto changeStatusListIdDto);
 }
