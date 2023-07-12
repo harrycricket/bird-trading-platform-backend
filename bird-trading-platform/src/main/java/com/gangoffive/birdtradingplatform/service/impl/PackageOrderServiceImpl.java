@@ -1206,6 +1206,9 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     }
 
     private PackageOrderAdminDto packageOrderToPackageOrderAdminDto(PackageOrder packageOrder) {
+        List<Order> orders = packageOrder.getOrders();
+        int countSuccess = (int) orders.stream().filter(order -> order.getStatus().equals(OrderStatus.SHIPPED)).count();
+
         return PackageOrderAdminDto.builder()
                 .id(packageOrder.getId())
                 .accountId(packageOrder.getAccount().getId())
@@ -1218,6 +1221,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 .fullName(packageOrder.getShippingAddress().getFullName())
                 .phoneNumber(packageOrder.getShippingAddress().getPhone())
                 .address(packageOrder.getShippingAddress().getAddress())
+                .statusOrders(countSuccess + "/" + orders.size())
                 .build();
     }
 

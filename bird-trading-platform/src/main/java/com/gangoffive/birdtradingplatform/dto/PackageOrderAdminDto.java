@@ -19,6 +19,7 @@ public class PackageOrderAdminDto {
     private double totalPayment;
     private Long createdDateTransaction;
     private Long lastedUpdateTransaction;
+    private String statusOrders;
     private String fullName;
     private String phoneNumber;
     private String address;
