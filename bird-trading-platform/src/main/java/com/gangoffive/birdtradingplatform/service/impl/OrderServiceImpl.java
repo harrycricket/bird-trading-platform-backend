@@ -91,7 +91,7 @@ public class OrderServiceImpl implements OrderService {
                         orderStatus,
                         changeStatusListIdDto.getIds());
                 if (result == changeStatusListIdDto.getIds().size()) {
-                    Optional<List<Transaction>> transactions = transactionRepository.findAllByOrder_IdAndOrder_Status(
+                    Optional<List<Transaction>> transactions = transactionRepository.findAllByOrder_IdInAndOrder_Status(
                             changeStatusListIdDto.getIds(), OrderStatus.DELIVERED);
                     transactions.ifPresent(
                             transactionList -> transactionList.forEach(transaction -> transaction.setStatus(TransactionStatus.SUCCESS))
