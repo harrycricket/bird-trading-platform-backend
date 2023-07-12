@@ -44,6 +44,8 @@ public class OrderServiceImpl implements OrderService {
     private final NotificationService notificationService;
     private final PackageOrderRepository packageOrderRepository;
     private final AddressMapper addressMapper;
+    private final TransactionRepository transactionRepository;
+
     @Override
     public ResponseEntity<?> getAllOrderByPackageOrderId(Long packageOrderId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -54,11 +56,7 @@ public class OrderServiceImpl implements OrderService {
         if (orders.isPresent() && orders.get().size() > 0) {
             return ResponseEntity.ok(orders.get().stream().map(this::orderToOrderDto).collect(Collectors.toList()));
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                    .errorMessage("No have orders with package order.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            return ResponseUtils.getErrorResponseNotFound("No have orders with package order.");
         }
     }
 
@@ -77,55 +75,53 @@ public class OrderServiceImpl implements OrderService {
             if (allOrdersForShip.isPresent()) {
                 return getPageNumberWrapperWithOrders(allOrdersForShip, false, true);
             }
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                    .errorMessage("No have order.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            return ResponseUtils.getErrorResponseNotFound("No have order.");
         }
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                .errorMessage("Page number cannot less than 1")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return ResponseUtils.getErrorResponseBadRequestPageNumber();
     }
 
     @Override
     public ResponseEntity<?> updateStatusOrderOfShipping(ChangeStatusListIdDto changeStatusListIdDto, String token) {
         boolean condition = true; // do something to check token
-        if(condition) {
-            if(changeStatusListIdDto.getStatus() >= OrderStatus.SHIPPED.getStatusCode()
+        if (condition) {
+            if (changeStatusListIdDto.getStatus() >= OrderStatus.SHIPPED.getStatusCode()
                     || changeStatusListIdDto.getStatus() == OrderStatus.CANCELLED.getStatusCode()) {
                 OrderStatus orderStatus = OrderStatus.getOrderStatusBaseOnStatusCode(changeStatusListIdDto.getStatus());
-                int result  = orderRepository.updateStatusOfListId(
+                int result = orderRepository.updateStatusOfListId(
                         orderStatus,
                         changeStatusListIdDto.getIds());
-                if(result == changeStatusListIdDto.getIds().size()) {
+                if (result == changeStatusListIdDto.getIds().size()) {
+                    Optional<List<Transaction>> transactions = transactionRepository.findAllByOrder_IdInAndOrder_Status(
+                            changeStatusListIdDto.getIds(), OrderStatus.DELIVERED);
+                    transactions.ifPresent(
+                            transactionList -> transactionList.forEach(transaction -> transaction.setStatus(TransactionStatus.SUCCESS))
+                    );
+
                     List<Long> userIdList = packageOrderRepository.findAllAccountIdByOrderIds(changeStatusListIdDto.getIds()).get();
                     NotificationDto noti = new NotificationDto();
                     noti.setName((NotifiConstant.ORDER_NAME_NOTI_USER));
                     noti.setNotiText(orderStatus.getDescription());
                     noti.setRole(NotifiConstant.NOTI_USER_ROLE);
                     boolean resultNe = notificationService.pushNotificationForListUserID(userIdList, noti);
-                    if(resultNe)
+                    if (resultNe)
                         return ResponseEntity.ok("Update success");
                     else
                         return ResponseEntity.ok("Fail");
-                }else {
+                } else {
                     ErrorResponse errorResponse = ErrorResponse.builder()
                             .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                             .errorMessage(String.format("Update fail %d order", changeStatusListIdDto.getIds().size() - result))
                             .build();
                     return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
                 }
-            }else{
+            } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                         .errorMessage("Some thing went wrong!")
                         .build();
                 return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
             }
-        }else {
+        } else {
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
                     .errorMessage("Token not valid!")
@@ -218,10 +214,31 @@ public class OrderServiceImpl implements OrderService {
                 }
                 return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
+                    orderFilter.getOrderSearchInfo().getField().equals(FieldOrderTable.PACKAGE_ORDER_ID.getField())
+                            && !orderFilter.getOrderSearchInfo().getValue().isEmpty()
+                            && orderFilter.getSortDirection().getField().isEmpty()
+                            && orderFilter.getSortDirection().getSort().isEmpty()
+                            && isAdmin
+            ) {
+                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterOrderByPackageOrderIdIdEqual(orderFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    orderFilter.getOrderSearchInfo().getField().equals(FieldOrderTable.PACKAGE_ORDER_ID.getField())
+                            && !orderFilter.getOrderSearchInfo().getValue().isEmpty()
+                            && isAdmin
+            ) {
+                if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterOrderByPackageOrderIdIdEqual(orderFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
                     orderFilter.getOrderSearchInfo().getField().equals(FieldOrderTable.SHOP_ID.getField())
                             && !orderFilter.getOrderSearchInfo().getValue().isEmpty()
                             && orderFilter.getSortDirection().getField().isEmpty()
                             && orderFilter.getSortDirection().getSort().isEmpty()
+                            && isAdmin
             ) {
                 if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterOrderByShopIdEqual(orderFilter, pageRequest);
@@ -230,6 +247,7 @@ public class OrderServiceImpl implements OrderService {
             } else if (
                     orderFilter.getOrderSearchInfo().getField().equals(FieldOrderTable.SHOP_ID.getField())
                             && !orderFilter.getOrderSearchInfo().getValue().isEmpty()
+                            && isAdmin
             ) {
                 if (orderFilter.getOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterOrderByShopIdEqual(orderFilter, pageRequestWithSort);
@@ -394,6 +412,23 @@ public class OrderServiceImpl implements OrderService {
                     "Page number cannot less than 1");
             return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private ResponseEntity<?> filterOrderByPackageOrderIdIdEqual(
+            OrderShopOwnerFilterDto orderFilter, PageRequest pageRequest) {
+        Optional<Page<Order>> orders = orderRepository.findAllByPackageOrder_Id(
+                Long.valueOf(orderFilter.getOrderSearchInfo().getValue()),
+                pageRequest
+        );
+
+        if (orders.isPresent()) {
+            return getPageNumberWrapperWithOrders(orders, true, false);
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
+                .errorMessage("Not found order with this package order id.")
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     private ResponseEntity<?> filterOrderByShopIdEqual(OrderShopOwnerFilterDto orderFilter, PageRequest pageRequest) {
@@ -844,7 +879,7 @@ public class OrderServiceImpl implements OrderService {
                 ) {
                     int result = orderRepository.updateStatusOfListId(status, changeStatusListIdDto.getIds());
                     if (result == changeStatusListIdDto.getIds().size()) {
-                        if(changeStatusListIdDto.getStatus() == OrderStatus.SHIPPED.getStatusCode()) {
+                        if (changeStatusListIdDto.getStatus() == OrderStatus.SHIPPED.getStatusCode()) {
                             List<Long> userId = packageOrderRepository.findAllAccountIdByOrderIds(changeStatusListIdDto.getIds()).get();
                             NotificationDto noti = new NotificationDto();
                             noti.setName((NotifiConstant.ORDER_NAME_NOTI_USER));
@@ -931,6 +966,7 @@ public class OrderServiceImpl implements OrderService {
         });
         return OrderShopOwnerDto.builder()
                 .id(order.getId())
+                .packageOrderId(order.getPackageOrder().getId())
                 .shopId(order.getShopOwner().getId())
                 .totalPrice(order.getTotalPrice())
                 .orderStatus(orderStatus)

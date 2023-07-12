@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.ShopStaff;
+import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
+import com.gangoffive.birdtradingplatform.exception.AuthenticateException;
 import com.gangoffive.birdtradingplatform.repository.ShopStaffRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.JwtService;
@@ -123,31 +125,58 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 //            return;
         }
         if (userEmail != null && audience == null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            try {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (Exception e) {
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+
+                // Create the error response JSON object
+                ErrorResponse errorResponse = ErrorResponse
+                        .builder()
+                        .errorMessage(e.getMessage())
+                        .errorCode(String.valueOf(HttpStatus.UNAUTHORIZED.value()))
+                        .build();
+
+                // Convert the error response to JSON
+                ObjectMapper objectMapper = new ObjectMapper();
+                String jsonErrorResponse = objectMapper.writeValueAsString(errorResponse);
+
+                // Set the response content type to application/json
+                response.setContentType("application/json");
+
+                // Write the JSON error response to the response body
+                response.getWriter().write(jsonErrorResponse);
+                response.getWriter().flush();
+                return;
             }
         }
         if (userEmail != null && audience != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetailsService staffDetailsService = new UserDetailsService() {
                 @Override
                 public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                    Optional<ShopStaff> staff = shopStaffRepository.findByUserName(username);
-                    Account account = new Account();
-                    account.setId(staff.get().getId());
-                    account.setEmail(staff.get().getUserName());
-                    account.setRole(UserRole.SHOPSTAFF);
-                    account.setPassword(staff.get().getPassword());
-                    var user = UserPrincipal.create(account);
-                    return user;
+                    ShopStaff staff = shopStaffRepository.findByUserName(username)
+                            .orElseThrow(() -> new UsernameNotFoundException("Not found this staff account."));
+                    if (staff.getStatus().equals(AccountStatus.BANNED)) {
+                        throw new AuthenticateException("Staff account ban.");
+                    } else {
+                        Account account = new Account();
+                        account.setId(staff.getId());
+                        account.setEmail(staff.getUserName());
+                        account.setRole(UserRole.SHOPSTAFF);
+                        account.setPassword(staff.getPassword());
+                        return UserPrincipal.create(account);
+                    }
                 }
             };
             UserDetails staffDetails = staffDetailsService.loadUserByUsername(userEmail);

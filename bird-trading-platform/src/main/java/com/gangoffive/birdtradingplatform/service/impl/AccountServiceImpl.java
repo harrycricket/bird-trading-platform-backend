@@ -3,6 +3,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.common.RoleConstant;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
@@ -55,11 +56,7 @@ public class AccountServiceImpl implements AccountService {
             try {
                 S3Utils.uploadFile(newFileName, multipartImage.getInputStream());
             } catch (Exception ex) {
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                        .errorMessage("Upload file fail")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                return ResponseUtils.getErrorResponseBadRequest("Upload file fail");
             }
         }
         Optional<Account> editAccount = accountRepository.findByEmail(accountUpdateDto.getEmail());
@@ -111,11 +108,7 @@ public class AccountServiceImpl implements AccountService {
                 try {
                     S3Utils.uploadFile(newFileName, multipartImage.getInputStream());
                 } catch (Exception ex) {
-                    ErrorResponse errorResponse = ErrorResponse.builder()
-                            .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                            .errorMessage("Upload file fail")
-                            .build();
-                    new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    return ResponseUtils.getErrorResponseBadRequest("Upload file fail");
                 }
             }
             ShopOwner shopOwner = ShopOwner.builder()
@@ -142,11 +135,7 @@ public class AccountServiceImpl implements AccountService {
                     .build();
             return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.CONFLICT))
-                    .errorMessage("Account already have shop account.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+            return ResponseUtils.getErrorResponseConflict("Account already have shop account.");
         }
     }
 
@@ -168,11 +157,8 @@ public class AccountServiceImpl implements AccountService {
                 Date expireDate = tokenRepo.get().getExpired();
                 Date timeNow = new Date();
                 if (timeNow.after(expireDate)) {
-                    ErrorResponse errorResponse = ErrorResponse.builder()
-                            .errorCode(HttpStatus.BAD_REQUEST.toString())
-                            .errorMessage("This code has already expired. Please regenerate the code to continue the verification")
-                            .build();
-                    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    return ResponseUtils.getErrorResponseBadRequest("This code has already expired." +
+                            " Please regenerate the code to continue the verification");
                 }
                 if (!isResetPassword) {
                     account.get().setStatus(AccountStatus.VERIFY);
@@ -187,16 +173,9 @@ public class AccountServiceImpl implements AccountService {
 
                 return new ResponseEntity<>(successResponse, HttpStatus.OK);
             }
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(HttpStatus.BAD_REQUEST.toString())
-                    .errorMessage("This verify code has already used!").build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            return ResponseUtils.getErrorResponseBadRequest("This verify code has already used!");
         }
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(HttpStatus.NOT_FOUND.toString())
-                .errorMessage("Not found code. Code not true")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return ResponseUtils.getErrorResponseBadRequest("Not found code. Code not true");
     }
 
     @Override
@@ -254,22 +233,14 @@ public class AccountServiceImpl implements AccountService {
                 if (
                         !SortUserAccountColumn.checkField(userAccountFilter.getSortDirection().getField())
                 ) {
-                    ErrorResponse errorResponse = ErrorResponse.builder()
-                            .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                            .errorMessage("Not found this field in sort direction.")
-                            .build();
-                    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                    return ResponseUtils.getErrorResponseNotFoundSortColumn();
                 }
                 if (userAccountFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.ASC.name())) {
                     pageRequestWithSort = getPageRequest(userAccountFilter, pageNumber, Sort.Direction.ASC);
                 } else if (userAccountFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.DESC.name())) {
                     pageRequestWithSort = getPageRequest(userAccountFilter, pageNumber, Sort.Direction.DESC);
                 } else {
-                    ErrorResponse errorResponse = ErrorResponse.builder()
-                            .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                            .errorMessage("Not found this direction.")
-                            .build();
-                    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                    return ResponseUtils.getErrorResponseNotFoundSortDirection();
                 }
             }
 
@@ -417,13 +388,24 @@ public class AccountServiceImpl implements AccountService {
                     }
                 }
                 return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else {
+                return ResponseUtils.getErrorResponseBadRequest("User account filter is not correct.");
             }
-
-            return null;
         } else {
-            ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
-                    "Page number cannot less than 1");
-            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+            return ResponseUtils.getErrorResponseBadRequestPageNumber();
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> updateListUserAccountStatus(ChangeStatusListIdDto changeStatusListIdDto) {
+        AccountStatus accountStatus = AccountStatus.getAccountStatus(changeStatusListIdDto.getStatus());
+        try {
+            int numberStatusChange = accountRepository.updateListAccountStatus(
+                    accountStatus, changeStatusListIdDto.getIds()
+            );
+            return ResponseEntity.ok("Update " + numberStatusChange + " user account status successfully.");
+        } catch (Exception ex) {
+            return ResponseUtils.getErrorResponseBadRequest("Update list user account fail.");
         }
     }
 
@@ -433,38 +415,32 @@ public class AccountServiceImpl implements AccountService {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(DateUtils.timeInMillisecondToDate(dateRange.getDateTo()));
         calendar.add(Calendar.DAY_OF_MONTH, 1);
-        Optional<Page<Account>> accounts = accountRepository.findByCreatedDateBetween(
+        Optional<Page<Account>> accounts = accountRepository.findByCreatedDateBetweenAndRoleIn(
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
                 calendar.getTime(),
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
         if (accounts.isPresent()) {
             return getPageNumberWrapperWithUserAccount(accounts.get());
         }
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found account have created date from to.")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return ResponseUtils.getErrorResponseNotFound("Not found account have created date from to.");
     }
 
     private ResponseEntity<?> filterUserAccountByCreatedDateGreaterThanOrEqual(
             DateRangeDto dateRange, PageRequest pageRequest
     ) {
-        Optional<Page<Account>> accounts = accountRepository.findByCreatedDateGreaterThanEqual(
+        Optional<Page<Account>> accounts = accountRepository.findByCreatedDateGreaterThanEqualAndRoleIn(
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
         if (accounts.isPresent()) {
             return getPageNumberWrapperWithUserAccount(accounts.get());
         }
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found account have created date greater than or equal.")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return ResponseUtils.getErrorResponseNotFound("Not found account have created date greater than or equal.");
     }
 
     private ResponseEntity<?> filterUserAccountByStatusEqual(
@@ -481,124 +457,103 @@ public class AccountServiceImpl implements AccountService {
             );
         }
 
-        Optional<Page<Account>> accounts = accountRepository.findByStatusIn(
+        Optional<Page<Account>> accounts = accountRepository.findByStatusInAndRoleIn(
                 accountStatuses,
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
         if (accounts.isPresent()) {
             return getPageNumberWrapperWithUserAccount(accounts.get());
         }
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found this status.")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return ResponseUtils.getErrorResponseNotFound("Not found this status.");
     }
 
     private ResponseEntity<?> filterUserAccountByAddressContain(
             UserAccountFilterDto userAccountFilter, PageRequest pageRequest
     ) {
-        Optional<Page<Account>> accounts = accountRepository.findByAddress_AddressLike(
+        Optional<Page<Account>> accounts = accountRepository.findByAddress_AddressLikeAndRoleIn(
                 "%" + userAccountFilter.getUserSearchInfo().getValue() + "%",
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
         if (accounts.isPresent()) {
             return getPageNumberWrapperWithUserAccount(accounts.get());
         }
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found account have contain this address.")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return ResponseUtils.getErrorResponseNotFound("Not found account have contain this address.");
     }
 
     private ResponseEntity<?> filterUserAccountByPhoneNumberContain(
             UserAccountFilterDto userAccountFilter, PageRequest pageRequest
     ) {
-        Optional<Page<Account>> accounts = accountRepository.findByPhoneNumberLike(
+        Optional<Page<Account>> accounts = accountRepository.findByPhoneNumberLikeAndRoleIn(
                 "%" + userAccountFilter.getUserSearchInfo().getValue() + "%",
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
         if (accounts.isPresent()) {
             return getPageNumberWrapperWithUserAccount(accounts.get());
         }
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found account have contain this phone number.")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return ResponseUtils.getErrorResponseNotFound("Not found account have contain this phone number.");
     }
 
     private ResponseEntity<?> filterUserAccountByFullNameContain(
             UserAccountFilterDto userAccountFilter, PageRequest pageRequest
     ) {
-        Optional<Page<Account>> accounts = accountRepository.findByFullNameLike(
+        Optional<Page<Account>> accounts = accountRepository.findByFullNameLikeAndRoleIn(
                 "%" + userAccountFilter.getUserSearchInfo().getValue() + "%",
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
         if (accounts.isPresent()) {
             return getPageNumberWrapperWithUserAccount(accounts.get());
         }
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found account have contain this full name.")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return ResponseUtils.getErrorResponseNotFound("Not found account have contain this full name.");
     }
 
     private ResponseEntity<?> filterUserAccountByEmailContain(
             UserAccountFilterDto userAccountFilter, PageRequest pageRequest
     ) {
-        Optional<Page<Account>> accounts = accountRepository.findByEmailLike(
+        Optional<Page<Account>> accounts = accountRepository.findByEmailLikeAndRoleIn(
                 "%" + userAccountFilter.getUserSearchInfo().getValue() + "%",
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
         if (accounts.isPresent()) {
             return getPageNumberWrapperWithUserAccount(accounts.get());
         }
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found account have contain this email.")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return ResponseUtils.getErrorResponseNotFound("Not found account have contain this email.");
     }
 
     private ResponseEntity<?> filterUserAccountByIdEqual(
             UserAccountFilterDto userAccountFilter, PageRequest pageRequest
     ) {
-        Optional<Page<Account>> accounts = accountRepository.findById(
+        Optional<Page<Account>> accounts = accountRepository.findByIdAndRoleIn(
                 Long.valueOf(userAccountFilter.getUserSearchInfo().getValue()),
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
         if (accounts.isPresent()) {
             return getPageNumberWrapperWithUserAccount(accounts.get());
         }
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found this account id.")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return ResponseUtils.getErrorResponseNotFound("Not found this account id.");
     }
 
     private ResponseEntity<?> filterAllUserAccountAllFieldEmpty(PageRequest pageRequest) {
-        Page<Account> accounts = accountRepository.findAll(
+        Optional<Page<Account>> accounts = accountRepository.findAllByRoleIn(
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
-        if (!accounts.isEmpty()) {
-            return getPageNumberWrapperWithUserAccount(accounts);
+        if (accounts.isPresent()) {
+            return getPageNumberWrapperWithUserAccount(accounts.get());
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                    .errorMessage("Not found account.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            return ResponseUtils.getErrorResponseNotFound("Not found account.");
         }
     }
 
@@ -612,7 +567,6 @@ public class AccountServiceImpl implements AccountService {
                 accounts.getTotalElements()
         );
         return ResponseEntity.ok(result);
-
     }
 
     private PageRequest getPageRequest(
@@ -634,6 +588,9 @@ public class AccountServiceImpl implements AccountService {
                 .status(account.getStatus())
                 .createdDate(account.getCreatedDate().getTime())
                 .build();
+        if (account.getImgUrl() != null) {
+            userAccount.setAvtUrl(account.getImgUrl());
+        }
         if (account.getFullName() != null) {
             userAccount.setFullName(account.getFullName());
         }

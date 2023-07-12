@@ -18,10 +18,6 @@ import java.util.List;
 public class AdminController {
     private final AdminService adminService;
     private final PaypalService paypalService;
-    private final ProductService productService;
-    private final OrderService orderService;
-    private final ShopOwnerService shopOwnerService;
-    private final AccountService accountService;
 
     @GetMapping("admin/bump-chart")
     public List<DataBumpChartDto> getDataBumpChartRankOfShop() {
@@ -38,25 +34,4 @@ public class AdminController {
         paypalService.createPayout(payoutDto);
     }
 
-    @GetMapping("/admin/products")
-    public ResponseEntity<?> getAllProduct(@RequestParam String data) {
-        ProductShopOwnerFilterDto productShopOwnerFilter = JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class);
-        log.info("{}", productShopOwnerFilter.toString());
-        return productService.filterAllProduct(productShopOwnerFilter, false, true);
-    }
-
-    @GetMapping("/admin/orders")
-    public ResponseEntity<?> getAllOrder(@RequestParam String data) {
-        return orderService.filterAllOrder(JsonUtil.INSTANCE.getObject(data, OrderShopOwnerFilterDto.class), false, true);
-    }
-
-    @GetMapping("/admin/shop-owner-account")
-    public ResponseEntity<?> getAllShopOwner(@RequestParam String data) {
-        return shopOwnerService.filterAllShopOwner(JsonUtil.INSTANCE.getObject(data, ShopOwnerAccountFilterDto.class));
-    }
-
-    @GetMapping("/admin/user-account")
-    public ResponseEntity<?> getAllUser(@RequestParam String data) {
-        return accountService.filterAllUserAccount(JsonUtil.INSTANCE.getObject(data, UserAccountFilterDto.class));
-    }
 }

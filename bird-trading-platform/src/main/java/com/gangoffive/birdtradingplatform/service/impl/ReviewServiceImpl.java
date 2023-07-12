@@ -1,12 +1,17 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
-import com.gangoffive.birdtradingplatform.common.OrderStatusConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
-import com.gangoffive.birdtradingplatform.entity.*;
-import com.gangoffive.birdtradingplatform.enums.*;
+import com.gangoffive.birdtradingplatform.entity.Account;
+import com.gangoffive.birdtradingplatform.entity.Address;
+import com.gangoffive.birdtradingplatform.entity.OrderDetail;
+import com.gangoffive.birdtradingplatform.entity.Review;
+import com.gangoffive.birdtradingplatform.enums.FieldReviewTable;
+import com.gangoffive.birdtradingplatform.enums.Operator;
+import com.gangoffive.birdtradingplatform.enums.ReviewRating;
+import com.gangoffive.birdtradingplatform.enums.SortReviewColumn;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
@@ -39,7 +44,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final OrderDetailRepository orderDetailRepository;
     private final AppProperties appProperties;
     private final ProductSummaryService productSummaryService;
-    private final AccountMapper accountMapper;
+
 
     @Override
     public ResponseEntity<?> getAllReviewByOrderId(Long orderId) {
@@ -474,8 +479,7 @@ public class ReviewServiceImpl implements ReviewService {
     private PageRequest getPageRequest(
             ReviewShopOwnerFilterDto reviewFilter,
             int pageNumber,
-            Sort.Direction sortDirection)
-    {
+            Sort.Direction sortDirection) {
         return PageRequest.of(
                 pageNumber,
                 PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
@@ -535,7 +539,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .address(shippingAddress.getAddress())
                 .phone(shippingAddress.getPhone())
                 .build();
-        if (review.getImgUrl() != null  && !review.getImgUrl().isEmpty()) {
+        if (review.getImgUrl() != null && !review.getImgUrl().isEmpty()) {
             return ReviewDetailShopOwnerDto.builder()
                     .id(review.getId())
                     .account(accountReview)
@@ -569,7 +573,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .fullName(account.getFullName())
                 .imgUrl(account.getImgUrl())
                 .build();
-        if (review.getImgUrl() != null  && !review.getImgUrl().isEmpty()) {
+        if (review.getImgUrl() != null && !review.getImgUrl().isEmpty()) {
             return ReviewDto.builder()
                     .id(review.getId())
                     .account(accountReview)

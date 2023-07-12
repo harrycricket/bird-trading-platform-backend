@@ -116,4 +116,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     );
 
     Optional<Page<Order>> findAllByShopOwner_Id(Long shopId, Pageable pageable);
+
+    Optional<Page<Order>> findAllByPackageOrder_Id(Long packageOrderId, Pageable pageable);
 }

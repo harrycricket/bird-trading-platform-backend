@@ -109,6 +109,12 @@ public class ProductController {
         return productService.updateProduct(multipartFiles, multipartVideo, productUpdate);
     }
 
+    @GetMapping("/admin/products")
+    public ResponseEntity<?> getAllProduct(@RequestParam String data) {
+        ProductShopOwnerFilterDto productShopOwnerFilter = JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class);
+        return productService.filterAllProduct(productShopOwnerFilter, false, true);
+    }
+
     @GetMapping("/products/{productId}/relevant")
     public ResponseEntity<?> getProductRelevant(@PathVariable long productId) {
         return productService.getProductRelevantBaseOnId(productId);
