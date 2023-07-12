@@ -1207,8 +1207,12 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 
     private PackageOrderAdminDto packageOrderToPackageOrderAdminDto(PackageOrder packageOrder) {
         List<Order> orders = packageOrder.getOrders();
-        int countSuccess = (int) orders.stream().filter(order -> order.getStatus().equals(OrderStatus.SHIPPED)).count();
-
+        int countSuccess;
+        if (packageOrder.getTransaction().getStatus().equals(TransactionStatus.SUCCESS)) {
+            countSuccess = orders.size();
+        } else {
+            countSuccess = (int) orders.stream().filter(order -> order.getStatus().equals(OrderStatus.SHIPPED)).count()
+        }
         return PackageOrderAdminDto.builder()
                 .id(packageOrder.getId())
                 .accountId(packageOrder.getAccount().getId())
