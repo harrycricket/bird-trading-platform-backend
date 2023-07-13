@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.LOCKED)
+@ResponseStatus(HttpStatus.UNAUTHORIZED)
 public class AuthenticateException extends AuthenticationException {
     public AuthenticateException(String message) {
         super(message);

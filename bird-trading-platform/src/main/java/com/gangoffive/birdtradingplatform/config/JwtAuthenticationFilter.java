@@ -191,13 +191,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void responseExceptionWithJson(HttpServletResponse response, String e) throws IOException {
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        HttpStatus status;
+        if(e.contains("ban")) {
+            status = HttpStatus.LOCKED;
+        } else {
+            status = HttpStatus.UNAUTHORIZED;
+        }
+        response.setStatus(status.value());
 
         // Create the error response JSON object
         ErrorResponse errorResponse = ErrorResponse
                 .builder()
                 .errorMessage(e)
-                .errorCode(String.valueOf(HttpStatus.UNAUTHORIZED.value()))
+                .errorCode(String.valueOf(status.value()))
                 .build();
 
         // Convert the error response to JSON
