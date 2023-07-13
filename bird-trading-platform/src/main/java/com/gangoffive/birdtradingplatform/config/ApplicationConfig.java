@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.config;
 
+import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.ShopOwnerStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
@@ -30,17 +31,21 @@ public class ApplicationConfig {
     public UserDetailsService userDetailsService() {
 
         return username -> {
-            var tmp = accountRepository.findByEmail(username)
+            var account = accountRepository.findByEmail(username)
                     .orElseThrow(
                             () -> new UsernameNotFoundException("Not found this email"));
-            log.info("tmp.getStatus() {}", tmp.getStatus());
-            if (tmp.getStatus().equals(AccountStatus.BANNED)) {
+            if (account.getStatus().equals(AccountStatus.BANNED)) {
                 throw new AuthenticateException("Email user ban");
             } else {
-                if (tmp.getRole().equals(UserRole.SHOPOWNER)) {
+                if (account.getRole().equals(UserRole.SHOPOWNER)) {
+                    Account tmp = new Account();
+                    tmp.setId(account.getId());
+                    tmp.setEmail(account.getEmail());
+                    tmp.setPassword(account.getPassword());
                     tmp.setRole(UserRole.USER);
+                    return UserPrincipal.create(account);
                 }
-                return UserPrincipal.create(tmp);
+                return UserPrincipal.create(account);
             }
         };
     }
