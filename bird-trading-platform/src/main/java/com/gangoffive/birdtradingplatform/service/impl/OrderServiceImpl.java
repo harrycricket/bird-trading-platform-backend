@@ -133,9 +133,21 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public ResponseEntity<?> getAllOrderDetailByOrderId(Long id) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Optional<Account> account = accountRepository.findByEmail(email);
-        Optional<Order> order = orderRepository.findByShopOwnerAndId(account.get().getShopOwner(), id);
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Account> account = accountRepository.findByEmail(username);
+        ShopOwner shopOwner;
+        if (account.isPresent()) {
+            shopOwner = account.get().getShopOwner();
+        } else {
+            Optional<ShopStaff> shopStaff = shopStaffRepository.findByUserName(username);
+            if (shopStaff.isPresent()) {
+                shopOwner = shopStaff.get().getShopOwner();
+            } else {
+                return ResponseUtils.getErrorResponseBadRequest("Not have account");
+            }
+        }
+
+        Optional<Order> order = orderRepository.findByShopOwnerAndId(shopOwner, id);
         if (order.isPresent()) {
             return ResponseEntity.ok(orderToOrderDto(order.get()));
         } else {
