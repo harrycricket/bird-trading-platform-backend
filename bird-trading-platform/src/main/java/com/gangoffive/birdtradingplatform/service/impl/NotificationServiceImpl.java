@@ -16,6 +16,7 @@ import com.gangoffive.birdtradingplatform.repository.NotificationRepository;
 import com.gangoffive.birdtradingplatform.service.NotificationService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
@@ -155,11 +156,11 @@ public class NotificationServiceImpl implements NotificationService {
         } else if(notification.getRole().equalsIgnoreCase(NotifiConstant.NOTI_USER_ROLE)){
             this.sendNotification(notification);
         }else {
-            throw new CustomRuntimeException("400","Receive name not correct!");
+            return ResponseUtils.getErrorResponseBadRequest("Receive name not correct!");
         }
         //save notification
         saveNotify(noti);
-        return null;
+        return ResponseEntity.ok("Oke");
     }
 
     @Async
