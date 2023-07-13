@@ -3,6 +3,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.common.RoleConstant;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
@@ -395,15 +396,29 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    @Override
+    public ResponseEntity<?> updateListUserAccountStatus(ChangeStatusListIdDto changeStatusListIdDto) {
+        AccountStatus accountStatus = AccountStatus.getAccountStatus(changeStatusListIdDto.getStatus());
+        try {
+            int numberStatusChange = accountRepository.updateListAccountStatus(
+                    accountStatus, changeStatusListIdDto.getIds()
+            );
+            return ResponseEntity.ok("Update " + numberStatusChange + " user account status successfully.");
+        } catch (Exception ex) {
+            return ResponseUtils.getErrorResponseBadRequest("Update list user account fail.");
+        }
+    }
+
     private ResponseEntity<?> filterUserAccountByCreatedDateFromTo(
             DateRangeDto dateRange, PageRequest pageRequest
     ) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(DateUtils.timeInMillisecondToDate(dateRange.getDateTo()));
         calendar.add(Calendar.DAY_OF_MONTH, 1);
-        Optional<Page<Account>> accounts = accountRepository.findByCreatedDateBetween(
+        Optional<Page<Account>> accounts = accountRepository.findByCreatedDateBetweenAndRoleIn(
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
                 calendar.getTime(),
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
@@ -416,8 +431,9 @@ public class AccountServiceImpl implements AccountService {
     private ResponseEntity<?> filterUserAccountByCreatedDateGreaterThanOrEqual(
             DateRangeDto dateRange, PageRequest pageRequest
     ) {
-        Optional<Page<Account>> accounts = accountRepository.findByCreatedDateGreaterThanEqual(
+        Optional<Page<Account>> accounts = accountRepository.findByCreatedDateGreaterThanEqualAndRoleIn(
                 DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
@@ -441,8 +457,9 @@ public class AccountServiceImpl implements AccountService {
             );
         }
 
-        Optional<Page<Account>> accounts = accountRepository.findByStatusIn(
+        Optional<Page<Account>> accounts = accountRepository.findByStatusInAndRoleIn(
                 accountStatuses,
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
@@ -455,8 +472,9 @@ public class AccountServiceImpl implements AccountService {
     private ResponseEntity<?> filterUserAccountByAddressContain(
             UserAccountFilterDto userAccountFilter, PageRequest pageRequest
     ) {
-        Optional<Page<Account>> accounts = accountRepository.findByAddress_AddressLike(
+        Optional<Page<Account>> accounts = accountRepository.findByAddress_AddressLikeAndRoleIn(
                 "%" + userAccountFilter.getUserSearchInfo().getValue() + "%",
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
@@ -469,8 +487,9 @@ public class AccountServiceImpl implements AccountService {
     private ResponseEntity<?> filterUserAccountByPhoneNumberContain(
             UserAccountFilterDto userAccountFilter, PageRequest pageRequest
     ) {
-        Optional<Page<Account>> accounts = accountRepository.findByPhoneNumberLike(
+        Optional<Page<Account>> accounts = accountRepository.findByPhoneNumberLikeAndRoleIn(
                 "%" + userAccountFilter.getUserSearchInfo().getValue() + "%",
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
@@ -483,8 +502,9 @@ public class AccountServiceImpl implements AccountService {
     private ResponseEntity<?> filterUserAccountByFullNameContain(
             UserAccountFilterDto userAccountFilter, PageRequest pageRequest
     ) {
-        Optional<Page<Account>> accounts = accountRepository.findByFullNameLike(
+        Optional<Page<Account>> accounts = accountRepository.findByFullNameLikeAndRoleIn(
                 "%" + userAccountFilter.getUserSearchInfo().getValue() + "%",
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
@@ -497,8 +517,9 @@ public class AccountServiceImpl implements AccountService {
     private ResponseEntity<?> filterUserAccountByEmailContain(
             UserAccountFilterDto userAccountFilter, PageRequest pageRequest
     ) {
-        Optional<Page<Account>> accounts = accountRepository.findByEmailLike(
+        Optional<Page<Account>> accounts = accountRepository.findByEmailLikeAndRoleIn(
                 "%" + userAccountFilter.getUserSearchInfo().getValue() + "%",
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
@@ -511,8 +532,9 @@ public class AccountServiceImpl implements AccountService {
     private ResponseEntity<?> filterUserAccountByIdEqual(
             UserAccountFilterDto userAccountFilter, PageRequest pageRequest
     ) {
-        Optional<Page<Account>> accounts = accountRepository.findById(
+        Optional<Page<Account>> accounts = accountRepository.findByIdAndRoleIn(
                 Long.valueOf(userAccountFilter.getUserSearchInfo().getValue()),
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
@@ -523,12 +545,13 @@ public class AccountServiceImpl implements AccountService {
     }
 
     private ResponseEntity<?> filterAllUserAccountAllFieldEmpty(PageRequest pageRequest) {
-        Page<Account> accounts = accountRepository.findAll(
+        Optional<Page<Account>> accounts = accountRepository.findAllByRoleIn(
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
                 pageRequest
         );
 
-        if (!accounts.isEmpty()) {
-            return getPageNumberWrapperWithUserAccount(accounts);
+        if (accounts.isPresent()) {
+            return getPageNumberWrapperWithUserAccount(accounts.get());
         } else {
             return ResponseUtils.getErrorResponseNotFound("Not found account.");
         }

@@ -182,6 +182,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .build();
                 return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
             }
+            if (account.get().getStatus().equals(AccountStatus.NOT_VERIFY)) {
+                return ResponseUtils.getErrorResponseBadRequest("Your account is not verify.");
+            }
             if (
                     resetPasswordDto.getEmail() != null
                             && resetPasswordDto.getVerifyId() == null

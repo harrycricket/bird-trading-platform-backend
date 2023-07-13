@@ -64,7 +64,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
 
     @Override
-    public long getAccountIdByShopid(long shopId) {
+    public long getAccountIdByShopId(long shopId) {
         var shop = shopOwnerRepository.findById(shopId);
         if (shop.isPresent()) {
             Account acc = shop.get().getAccount();
@@ -481,7 +481,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     }
 
     @Override
-    public ResponseEntity<?> getShopInforByUserId() {
+    public ResponseEntity<?> getShopInfoByUserId() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         log.info("email {}", email);
 //        email = "YamamotoEmi37415@gmail.com"; //just for test after must delete
@@ -971,6 +971,19 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
                     "Page number cannot less than 1");
             return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> updateListShopOwnerAccountStatus(ChangeStatusListIdDto changeStatusListIdDto) {
+        ShopOwnerStatus shopOwnerStatus = ShopOwnerStatus.getAccountStatus(changeStatusListIdDto.getStatus());
+        try {
+            int numberStatusChange = shopOwnerRepository.updateListShopOwnerStatus(
+                    shopOwnerStatus, changeStatusListIdDto.getIds()
+            );
+            return ResponseEntity.ok("Update " + numberStatusChange + " shop owner account status successfully.");
+        } catch (Exception ex) {
+            return ResponseUtils.getErrorResponseBadRequest("Update list shop owner account fail.");
         }
     }
 

@@ -44,6 +44,7 @@ public class OrderServiceImpl implements OrderService {
     private final NotificationService notificationService;
     private final PackageOrderRepository packageOrderRepository;
     private final AddressMapper addressMapper;
+    private final TransactionRepository transactionRepository;
 
     @Override
     public ResponseEntity<?> getAllOrderByPackageOrderId(Long packageOrderId) {
@@ -90,6 +91,12 @@ public class OrderServiceImpl implements OrderService {
                         orderStatus,
                         changeStatusListIdDto.getIds());
                 if (result == changeStatusListIdDto.getIds().size()) {
+                    Optional<List<Transaction>> transactions = transactionRepository.findAllByOrder_IdInAndOrder_Status(
+                            changeStatusListIdDto.getIds(), OrderStatus.DELIVERED);
+                    transactions.ifPresent(
+                            transactionList -> transactionList.forEach(transaction -> transaction.setStatus(TransactionStatus.SUCCESS))
+                    );
+
                     List<Long> userIdList = packageOrderRepository.findAllAccountIdByOrderIds(changeStatusListIdDto.getIds()).get();
                     NotificationDto noti = new NotificationDto();
                     noti.setName((NotifiConstant.ORDER_NAME_NOTI_USER));

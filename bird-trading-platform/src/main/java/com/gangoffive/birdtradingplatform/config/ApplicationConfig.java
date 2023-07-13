@@ -1,7 +1,8 @@
 package com.gangoffive.birdtradingplatform.config;
 
-import com.gangoffive.birdtradingplatform.entity.Account;
-import com.gangoffive.birdtradingplatform.exception.BadRequestException;
+import com.gangoffive.birdtradingplatform.enums.AccountStatus;
+import com.gangoffive.birdtradingplatform.enums.ShopOwnerStatus;
+import com.gangoffive.birdtradingplatform.exception.AuthenticateException;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,9 +31,23 @@ public class ApplicationConfig {
         return new UserDetailsService() {
             @Override
             public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                var tmp = accountRepository.findByEmail(username);
-                var user = UserPrincipal.create(tmp.get());
-                return user;
+                var tmp = accountRepository.findByEmail(username)
+                        .orElseThrow(
+                                () -> new UsernameNotFoundException("Not found this email"));
+                log.info("tmp.getStatus() {}", tmp.getStatus());
+                if (tmp.getShopOwner() != null) {
+                    if (tmp.getStatus().equals(AccountStatus.BANNED)) {
+                        throw new AuthenticateException("Email user ban");
+                    } else if (tmp.getShopOwner().getStatus().equals(ShopOwnerStatus.BAN)) {
+                        throw new AuthenticateException("Email shop ban");
+                    } else {
+                        return UserPrincipal.create(tmp);
+                    }
+                } else if (tmp.getStatus().equals(AccountStatus.BANNED)) {
+                    throw new AuthenticateException("Email user ban");
+                } else {
+                    return UserPrincipal.create(tmp);
+                }
             }
         };
     }
@@ -48,7 +62,7 @@ public class ApplicationConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-            return config.getAuthenticationManager();
+        return config.getAuthenticationManager();
     }
 
     @Bean
