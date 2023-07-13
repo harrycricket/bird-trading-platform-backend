@@ -45,6 +45,7 @@ public class OrderServiceImpl implements OrderService {
     private final PackageOrderRepository packageOrderRepository;
     private final AddressMapper addressMapper;
     private final TransactionRepository transactionRepository;
+    private final ShopStaffRepository shopStaffRepository;
 
     @Override
     public ResponseEntity<?> getAllOrderByPackageOrderId(Long packageOrderId) {
@@ -148,11 +149,20 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public ResponseEntity<?> filterAllOrder(OrderShopOwnerFilterDto orderFilter, boolean isShopOwner, boolean isAdmin) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Optional<Account> account = accountRepository.findByEmail(email);
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Account> account = accountRepository.findByEmail(username);
         Long shopId = null;
         if (account.isPresent() && isShopOwner) {
             shopId = account.get().getShopOwner().getId();
+        } else if (account.isEmpty() && isShopOwner) {
+            Optional<ShopStaff> shopStaff = shopStaffRepository.findByUserName(username);
+            if (shopStaff.isPresent()) {
+                shopId = shopStaff.get().getShopOwner().getId();
+            } else {
+                return ResponseUtils.getErrorResponseBadRequest("Not have account");
+            }
+        } else {
+            return ResponseUtils.getErrorResponseBadRequest("Not have account");
         }
         if (orderFilter.getPageNumber() > 0) {
             int pageNumber = orderFilter.getPageNumber() - 1;
