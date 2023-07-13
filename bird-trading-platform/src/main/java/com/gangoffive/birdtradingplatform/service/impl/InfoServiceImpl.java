@@ -37,15 +37,15 @@ public class InfoServiceImpl implements InfoService {
             throw new AuthenticateException("Not correct token to access");
         }
         String email;
-        String audience;
+        String staffUserName;
         try {
             email = jwtService.extractUsername(token);
-            audience = jwtService.extractAudience(token);
+            staffUserName = jwtService.extractStaffUsername(token);
         } catch (Exception ex) {
             throw new AuthenticateException("Not correct token to access");
         }
         if (!jwtService.isTokenExpired(token)) {
-            if (audience == null || audience.isEmpty()) {
+            if (staffUserName == null || staffUserName.isEmpty()) {
                 Optional<Account> account = accountRepository.findByEmail(email);
                 UserPrincipal userPrincipal = UserPrincipal.create(account.get());
                 String refreshToken = jwtService.generateRefreshToken(userPrincipal);
@@ -73,7 +73,7 @@ public class InfoServiceImpl implements InfoService {
                         .build();
                 return ResponseEntity.ok().body(authenticationResponseDto);
             } else {
-                Optional<ShopStaff> staffAccount = shopStaffRepository.findByUserName(audience);
+                Optional<ShopStaff> staffAccount = shopStaffRepository.findByUserName(staffUserName);
                 TokenDto tokenDto = TokenDto.builder()
                         .accessToken(token)
                         .build();

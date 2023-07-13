@@ -465,18 +465,18 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         String username = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(username);
         if (account.get().getRole().equals(UserRole.SHOPOWNER)) {
-            String token = jwtService.generateToken(UserPrincipal.create(account.get()));
-            SuccessResponse successResponse = SuccessResponse.builder()
-                    .successCode(String.valueOf(HttpStatus.OK.value()))
-                    .successMessage("get-token?token=" + token)
-                    .build();
-            return new ResponseEntity<>(successResponse, HttpStatus.OK);
+            if (account.get().getShopOwner().getStatus().equals(ShopOwnerStatus.ACTIVE)) {
+                String token = jwtService.generateTokenShopOwner(UserPrincipal.create(account.get()), account.get().getShopOwner().getId());
+                SuccessResponse successResponse = SuccessResponse.builder()
+                        .successCode(String.valueOf(HttpStatus.OK.value()))
+                        .successMessage("get-token?token=" + token)
+                        .build();
+                return new ResponseEntity<>(successResponse, HttpStatus.OK);
+            } else {
+                return ResponseUtils.getErrorResponseNotAcceptable("Your shop account is ban.");
+            }
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                    .errorMessage("You don't have permission to access.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            return ResponseUtils.getErrorResponseBadRequest("You don't have permission to access.");
         }
     }
 

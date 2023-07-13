@@ -70,7 +70,7 @@ public class ShopStaffServiceImpl implements ShopStaffService {
                 account.setEmail(staff.get().getUserName());
                 account.setRole(UserRole.SHOPSTAFF);
                 account.setPassword(staff.get().getShopOwner().getAccount().getPassword());
-                String token = jwtService.generateToken(UserPrincipal.create(account), staff.get().getUserName());
+                String token = jwtService.generateTokenStaff(UserPrincipal.create(account), staff.get().getUserName());
                 ShopInfoDto shopOwnerDto = shopOwnerMapper.modelToShopInfoDto(staff.get().getShopOwner());
                 AuthenticationResponseDto authenticationResponseDto = AuthenticationResponseDto.builder()
                         .userInfo(shopOwnerDto)
