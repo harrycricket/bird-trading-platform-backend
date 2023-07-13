@@ -35,7 +35,6 @@ public class InfoServiceImpl implements InfoService {
 
     @Override
     public ResponseEntity<?> getUserInfo(String token) {
-        log.info("token {}", token);
         if (token == null || token.isEmpty()) {
             throw new AuthenticateException("Not correct token to access");
         }
@@ -46,9 +45,8 @@ public class InfoServiceImpl implements InfoService {
             log.info("email {}", email);
             staffUserName = jwtService.extractStaffUsername(token);
         } catch (Exception ex) {
-            throw new AuthenticateException("Not correct token to access");
+            throw new AuthenticateException("Can not extract token.");
         }
-        log.info("jwtService.isTokenExpired(token) {}", jwtService.isTokenExpired(token));
         if (!jwtService.isTokenExpired(token)) {
             if (staffUserName == null || staffUserName.isEmpty()) {
                 Optional<Account> account = accountRepository.findByEmail(email);
