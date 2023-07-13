@@ -6,6 +6,7 @@ import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.ShopStaff;
 import com.gangoffive.birdtradingplatform.enums.AccountStatus;
+import com.gangoffive.birdtradingplatform.enums.ShopOwnerStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
 import com.gangoffive.birdtradingplatform.repository.ShopStaffRepository;
@@ -13,6 +14,7 @@ import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.service.ShopStaffService;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -65,6 +67,12 @@ public class ShopStaffServiceImpl implements ShopStaffService {
         Optional<ShopStaff> staff = shopStaffRepository.findByUserNameAndShopOwner_Id(request.getUsername(), request.getShopId());
         if (staff.isPresent()) {
             if (passwordEncoder.matches(request.getPassword(), staff.get().getPassword())) {
+                if (staff.get().getStatus().equals(AccountStatus.BANNED)) {
+                    return ResponseUtils.getErrorResponseLocked("Staff account has been banned.");
+                }
+                if (staff.get().getShopOwner().getStatus().equals(ShopOwnerStatus.BAN)) {
+                    return ResponseUtils.getErrorResponseLocked("Shop owner account has been banned.");
+                }
                 Account account = new Account();
                 account.setId(staff.get().getId());
                 account.setEmail(staff.get().getUserName());

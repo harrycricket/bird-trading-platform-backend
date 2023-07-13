@@ -134,7 +134,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     Account account = accountRepository.findByEmail(username)
                             .orElseThrow(() -> new UsernameNotFoundException("Not found this account."));
                     if (account.getShopOwner().getStatus().equals(ShopOwnerStatus.BAN)) {
-                        throw new AuthenticateException("Shop account ban.");
+                        throw new AuthenticateException("Shop account has been banned..");
                     } else {
                         return UserPrincipal.create(account);
                     }
@@ -165,7 +165,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     ShopStaff staff = shopStaffRepository.findByUserName(username)
                             .orElseThrow(() -> new UsernameNotFoundException("Not found this staff account."));
                     if (staff.getStatus().equals(AccountStatus.BANNED)) {
-                        throw new AuthenticateException("Staff account ban.");
+                        throw new AuthenticateException("Staff account has been banned.");
+                    } else if (staff.getShopOwner().getStatus().equals(ShopOwnerStatus.BAN)) {
+                        throw new AuthenticateException("Shop owner account has been banned.");
                     } else {
                         Account account = new Account();
                         account.setId(staff.getId());
@@ -198,7 +200,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void responseExceptionWithJson(HttpServletResponse response, String e) throws IOException {
         HttpStatus status;
-        if(e.contains("ban")) {
+        if(e.contains("banned")) {
             status = HttpStatus.LOCKED;
         } else {
             status = HttpStatus.UNAUTHORIZED;
