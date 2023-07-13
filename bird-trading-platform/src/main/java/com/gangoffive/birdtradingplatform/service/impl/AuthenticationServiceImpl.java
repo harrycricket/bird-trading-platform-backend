@@ -164,7 +164,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (account.getStatus().equals(AccountStatus.BANNED)) {
             ErrorResponse error = ErrorResponse.builder()
                     .errorCode(HttpStatus.LOCKED.toString())
-                    .errorMessage("Email banned!")
+                    .errorMessage("Email has been banned.")
                     .build();
             return new ResponseEntity<>(error, HttpStatus.LOCKED);
         }
