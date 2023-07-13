@@ -119,16 +119,7 @@ public class NotificationServiceImpl implements NotificationService {
             notificationDto.setId(System.currentTimeMillis());
             notificationDto.setSeen(false);
             notificationDto.setNotiDate(new Date());
-            String notification = JsonUtil.INSTANCE.getJsonString(notificationDto);
-            CompletableFuture<SendResult<String, String>> future =
-                    kafkaTemplate.send(KafkaConstant.KAFKA_PRIVATE_NOTIFICATION, notification);
-            try  {
-                SendResult<String, String> response = future.get();
-                log.info("Record metadata: {}", response.getRecordMetadata());
-            }catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-                result = false;
-            }
+            this.handleSendNotification(notificationDto);
         }
         return result;
     }
