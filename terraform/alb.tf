@@ -64,7 +64,20 @@ resource "aws_lb_listener" "my-listener" {
   port              = "443"
   protocol          = "HTTPS"
   certificate_arn   = aws_acm_certificate.acm_bs2nd.arn
-
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.my-tg.arn
+  }
+}
+resource "aws_lb_listener" "my-listener-kafka" {
+  load_balancer_arn = aws_lb.bs2nd.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  certificate_arn   = aws_acm_certificate.acm_bs2nd.arn
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.kafka-tg.arn
+  }
 }
 resource "aws_lb_listener_rule" "back-end" {
   listener_arn = aws_lb_listener.http.arn
@@ -130,7 +143,7 @@ resource "aws_lb_listener_rule" "kafka" {
   # }
 }
 resource "aws_lb_listener_rule" "kafka-v2" {
-  listener_arn = aws_lb_listener.my-listener.arn
+  listener_arn = aws_lb_listener.my-listener-kafka.arn
   priority     = 100
 
   action {
