@@ -151,7 +151,7 @@ public class OrderServiceImpl implements OrderService {
     public ResponseEntity<?> filterAllOrder(OrderShopOwnerFilterDto orderFilter, boolean isShopOwner, boolean isAdmin) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<Account> account = accountRepository.findByEmail(username);
-        Long shopId = null;
+        Long shopId;
         if (account.isPresent() && isShopOwner) {
             shopId = account.get().getShopOwner().getId();
         } else if (account.isEmpty() && isShopOwner) {
@@ -874,16 +874,27 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public ResponseEntity<?> updateStatusOfListOrder(ChangeStatusListIdDto changeStatusListIdDto) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        Optional<Account> account = accountRepository.findByEmail(email);
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Account> account = accountRepository.findByEmail(username);
+        Long shopId;
+        if (account.isPresent()) {
+            shopId = account.get().getShopOwner().getId();
+        } else {
+            Optional<ShopStaff> shopStaff = shopStaffRepository.findByUserName(username);
+            if (shopStaff.isPresent()) {
+                shopId = shopStaff.get().getShopOwner().getId();
+            } else {
+                return ResponseUtils.getErrorResponseBadRequest("Not have account");
+            }
+        }
+
         if (changeStatusListIdDto != null) {
             OrderStatus status = OrderStatus.getOrderStatusBaseOnStatusCode(changeStatusListIdDto.getStatus());
             if (OrderStatusConstant.UPDATE_ORDER_STATUS_SHOP_OWNER.contains(status)) {
                 if (
                         orderRepository.checkIfOrderIdsBelongToShopId(
                                 changeStatusListIdDto.getIds(),
-                                account.get().getShopOwner().getId(),
+                                shopId,
                                 changeStatusListIdDto.getIds().size()
                         )
                 ) {
@@ -904,25 +915,13 @@ public class OrderServiceImpl implements OrderService {
                                 .errorMessage(String.format("Update fail %d orders", numberUpdateFail)).build(), HttpStatus.BAD_REQUEST);
                     }
                 } else {
-                    ErrorResponse errorResponse = ErrorResponse.builder()
-                            .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                            .errorMessage("Have order not of your shop.")
-                            .build();
-                    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    return ResponseUtils.getErrorResponseBadRequest("Have order not of your shop.");
                 }
             } else {
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                        .errorMessage("This status can not change for shop owner")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                return ResponseUtils.getErrorResponseBadRequest("This status can not change for shop owner");
             }
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                    .errorMessage("List change status is null.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            return ResponseUtils.getErrorResponseBadRequest("List change status is null.");
         }
     }
 
