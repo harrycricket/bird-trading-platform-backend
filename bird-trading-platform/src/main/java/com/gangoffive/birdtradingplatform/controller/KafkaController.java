@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class KafkaController {
     @GetMapping("kafka/test")
     public String getKafka() {
-        return "Here is kafka";
+        return "Here is bs2nd";
     }
 
 }
