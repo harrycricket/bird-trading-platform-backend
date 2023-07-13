@@ -158,33 +158,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        if (userEmail != null && staffUserName != null && shopOwnerId == null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetailsService staffDetailsService = username -> {
-                ShopStaff staff = shopStaffRepository.findByUserName(username)
-                        .orElseThrow(() -> new UsernameNotFoundException("Not found this staff account."));
-                if (staff.getStatus().equals(AccountStatus.BANNED)) {
-                    throw new AuthenticateException("Staff account ban.");
-                } else {
-                    Account account = new Account();
-                    account.setId(staff.getId());
-                    account.setEmail(staff.getUserName());
-                    account.setRole(UserRole.SHOPSTAFF);
-                    account.setPassword(staff.getPassword());
-                    return UserPrincipal.create(account);
-                }
-            };
-            UserDetails staffDetails = staffDetailsService.loadUserByUsername(userEmail);
+        if (userEmail != null && staffUserName != null
+                && shopOwnerId == null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                UserDetailsService staffDetailsService = username -> {
+                    ShopStaff staff = shopStaffRepository.findByUserName(username)
+                            .orElseThrow(() -> new UsernameNotFoundException("Not found this staff account."));
+                    if (staff.getStatus().equals(AccountStatus.BANNED)) {
+                        throw new AuthenticateException("Staff account ban.");
+                    } else {
+                        Account account = new Account();
+                        account.setId(staff.getId());
+                        account.setEmail(staff.getUserName());
+                        account.setRole(UserRole.SHOPSTAFF);
+                        account.setPassword(staff.getPassword());
+                        return UserPrincipal.create(account);
+                    }
+                };
+                UserDetails staffDetails = staffDetailsService.loadUserByUsername(userEmail);
 
-            if (jwtService.isTokenValid(jwt, staffDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        staffDetails,
-                        null,
-                        staffDetails.getAuthorities()
-                );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (jwtService.isTokenValid(jwt, staffDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            staffDetails,
+                            null,
+                            staffDetails.getAuthorities()
+                    );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (Exception e) {
+                responseExceptionWithJson(response, e.getMessage());
+                return;
             }
         }
         filterChain.doFilter(request, response);
