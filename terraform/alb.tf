@@ -124,7 +124,7 @@ resource "aws_lb_listener_rule" "kafka" {
 
   condition {
     path_pattern {
-      values = ["/ws/*"]
+      values = ["/kafka/*"]
     }
   }
   # condition {
@@ -144,7 +144,7 @@ resource "aws_lb_listener_rule" "kafka-v2" {
 
   condition {
     path_pattern {
-      values = ["/ws/*"]
+      values = ["/kafka/*"]
     }
   }
   # condition {
