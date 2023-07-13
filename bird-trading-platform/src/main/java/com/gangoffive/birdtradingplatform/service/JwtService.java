@@ -29,8 +29,12 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public String extractAudience(String token) {
-        return extractClaim(token, Claims::getAudience);
+    public String extractStaffUsername(String token) {
+        return extractClaim(token, claims -> claims.get("staffUsername", String.class));
+    }
+
+    public Long extractShopOwnerId(String token) {
+        return extractClaim(token, claims -> claims.get("shopOwnerId", Long.class));
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -51,8 +55,12 @@ public class JwtService {
         return generateToken(new HashMap<>(), userDetails);
     }
 
-    public String generateToken(UserDetails userDetails, String ...staffAccount) {
-        return generateToken(Map.of("staffAccount", staffAccount), userDetails);
+    public String generateTokenStaff(UserDetails userDetails, String staffUserName) {
+        return generateToken(Map.of("staffUsername", staffUserName), userDetails);
+    }
+
+    public String generateTokenShopOwner(UserDetails userDetails, Long shopOwnerId) {
+        return generateToken(Map.of("shopOwnerId", shopOwnerId), userDetails);
     }
 
     public String generateToken(UserDetails userDetails, List<String> scopes) {
@@ -84,17 +92,6 @@ public class JwtService {
             UserDetails userDetails,
             Long expiration
     ) {
-        if (extractClaims.containsKey("staffAccount")) {
-            return Jwts
-                    .builder()
-                    .setClaims(extractClaims)
-                    .setAudience(((String[]) extractClaims.get("staffAccount"))[0])
-                    .setSubject(userDetails.getUsername())
-                    .setIssuedAt(new Date(System.currentTimeMillis()))
-                    .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                    .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-                    .compact();
-        }
         return Jwts
                 .builder()
                 .setClaims(extractClaims)
@@ -103,7 +100,6 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
-
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {

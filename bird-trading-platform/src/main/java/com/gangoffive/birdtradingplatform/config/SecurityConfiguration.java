@@ -123,6 +123,7 @@ public class SecurityConfiguration {
                                 .requestMatchers("/api/v1/admin/**").hasAnyRole(ADMIN.name())
 
                                 // Allow access for staff and shop owners to the two specific endpoints
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/orders").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
                                 .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/{shopId}/notifications").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
                                 .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/{shopId}/notifications/unread").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
                                 .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/{shopId}/channels").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())

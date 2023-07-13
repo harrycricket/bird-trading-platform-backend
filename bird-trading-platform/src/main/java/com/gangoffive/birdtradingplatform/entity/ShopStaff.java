@@ -36,4 +36,8 @@ public class ShopStaff {
 			,foreignKey = @ForeignKey(name = "FK_SHOP_STAFF_SHOP")
 			)
 	private ShopOwner shopOwner;
+
+	@OneToMany(mappedBy = "shopStaff")
+	private List<LogOrder> logOrder;
+
 }

@@ -19,6 +19,7 @@ import java.util.Optional;
 @Repository
 public interface ShopStaffRepository extends JpaRepository<ShopStaff, Long>{
     Optional<ShopStaff> findByUserName(String userName);
+
     Page<ShopStaff> findByShopOwner(ShopOwner shopOwner, Pageable pageable);
 
     @Transactional
