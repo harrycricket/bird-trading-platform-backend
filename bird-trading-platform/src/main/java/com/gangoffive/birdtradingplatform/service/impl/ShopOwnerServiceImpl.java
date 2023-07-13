@@ -473,7 +473,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                         .build();
                 return new ResponseEntity<>(successResponse, HttpStatus.OK);
             } else {
-                return ResponseUtils.getErrorResponseNotAcceptable("Your shop account is ban.");
+                return ResponseUtils.getErrorResponseLocked("Your shop account is ban.");
             }
         } else {
             return ResponseUtils.getErrorResponseBadRequest("You don't have permission to access.");
