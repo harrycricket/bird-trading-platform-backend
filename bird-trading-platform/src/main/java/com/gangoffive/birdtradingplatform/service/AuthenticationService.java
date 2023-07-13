@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 public interface AuthenticationService {
     ResponseEntity<?> register(AccountDto accountDto);
+
     ResponseEntity<?> authenticate(AuthenticationRequestDto request, HttpServletResponse response);
 
     ResponseEntity<?> resetPassword(ResetPasswordDto resetPasswordDto);
