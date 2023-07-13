@@ -135,31 +135,23 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public boolean pushNotificationForAUserID(Long userId, NotificationDto notificationDto) {
-        if(notificationDto.getRole().equals(NotifiConstant.NOTI_USER_ROLE) || notificationDto.getRole().equals(NotifiConstant.NOTI_SHOP_ROLE)){
+        if(notificationDto.getRole().equals(NotifiConstant.NOTI_USER_ROLE)
+                || notificationDto.getRole().equals(NotifiConstant.NOTI_SHOP_ROLE)){
             notificationDto.setReceiveId(userId);
             notificationDto.setId(System.currentTimeMillis());
             notificationDto.setSeen(false);
             notificationDto.setNotiDate(new Date());
-            String notification = JsonUtil.INSTANCE.getJsonString(notificationDto);
-            CompletableFuture<SendResult<String, String>> future =
-                    kafkaTemplate.send(KafkaConstant.KAFKA_PRIVATE_NOTIFICATION, notification);
-            try  {
-                SendResult<String, String> response = future.get();
-                log.info("Record metadata: {}", response.getRecordMetadata());
-                return true;
-            }catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-                return false;
-            }
+            this.handleSendNotification(notificationDto);
+        }else {
+            return false;
         }
-        return false;
+        return true;
     }
 
     @Override
     public ResponseEntity<?> handleSendNotification(NotificationDto notification) {
-                Notification noti = notificationMapper.dtoToModel(notification);
+        Notification noti = notificationMapper.dtoToModel(notification);
         notification.setId(System.currentTimeMillis());
-        log.info("Here is noti after mapper {}", notification);
         //check send to shop or account
         Account acc = new Account();
         acc.setId(notification.getReceiveId());
@@ -171,11 +163,11 @@ public class NotificationServiceImpl implements NotificationService {
             this.sendNotification(notification);
         } else if(notification.getRole().equalsIgnoreCase(NotifiConstant.NOTI_USER_ROLE)){
             this.sendNotification(notification);
+        }else {
+            throw new CustomRuntimeException("400","Receive name not correct!");
         }
-
-
         //save notification
-//        boolean result = notificationService.saveNotify(noti);
+        saveNotify(noti);
         return null;
     }
 
