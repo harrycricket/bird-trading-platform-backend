@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.config;
 
 import com.gangoffive.birdtradingplatform.enums.AccountStatus;
 import com.gangoffive.birdtradingplatform.enums.ShopOwnerStatus;
+import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.AuthenticateException;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
@@ -28,26 +29,18 @@ public class ApplicationConfig {
     @Bean
     public UserDetailsService userDetailsService() {
 
-        return new UserDetailsService() {
-            @Override
-            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                var tmp = accountRepository.findByEmail(username)
-                        .orElseThrow(
-                                () -> new UsernameNotFoundException("Not found this email"));
-                log.info("tmp.getStatus() {}", tmp.getStatus());
-                if (tmp.getShopOwner() != null) {
-                    if (tmp.getStatus().equals(AccountStatus.BANNED)) {
-                        throw new AuthenticateException("Email user ban");
-                    } else if (tmp.getShopOwner().getStatus().equals(ShopOwnerStatus.BAN)) {
-                        throw new AuthenticateException("Email shop ban");
-                    } else {
-                        return UserPrincipal.create(tmp);
-                    }
-                } else if (tmp.getStatus().equals(AccountStatus.BANNED)) {
-                    throw new AuthenticateException("Email user ban");
-                } else {
-                    return UserPrincipal.create(tmp);
+        return username -> {
+            var tmp = accountRepository.findByEmail(username)
+                    .orElseThrow(
+                            () -> new UsernameNotFoundException("Not found this email"));
+            log.info("tmp.getStatus() {}", tmp.getStatus());
+            if (tmp.getStatus().equals(AccountStatus.BANNED)) {
+                throw new AuthenticateException("Email user ban");
+            } else {
+                if (tmp.getRole().equals(UserRole.SHOPOWNER)) {
+                    tmp.setRole(UserRole.USER);
                 }
+                return UserPrincipal.create(tmp);
             }
         };
     }

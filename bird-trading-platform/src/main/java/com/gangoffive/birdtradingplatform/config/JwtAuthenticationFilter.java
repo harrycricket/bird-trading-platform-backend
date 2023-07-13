@@ -3,10 +3,14 @@ package com.gangoffive.birdtradingplatform.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.entity.Account;
+import com.gangoffive.birdtradingplatform.entity.ShopOwner;
 import com.gangoffive.birdtradingplatform.entity.ShopStaff;
 import com.gangoffive.birdtradingplatform.enums.AccountStatus;
+import com.gangoffive.birdtradingplatform.enums.ShopOwnerStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.AuthenticateException;
+import com.gangoffive.birdtradingplatform.repository.AccountRepository;
+import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
 import com.gangoffive.birdtradingplatform.repository.ShopStaffRepository;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.JwtService;
@@ -39,6 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final ShopStaffRepository shopStaffRepository;
+    private final AccountRepository accountRepository;
     private static final String[] WHITE_LIST_URLS = {
             "/api/v1/auth/",
             "/auth/",
@@ -83,14 +88,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-//        if (request.getServletPath().contains("/api/v1/auth")) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String jwt;
         String userEmail;
-        String audience;
+        String staffUserName;
+        Long shopOwnerId;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -98,33 +100,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
         try {
             userEmail = jwtService.extractUsername(jwt);
-            audience = jwtService.extractAudience(jwt);
-            log.info("au {}", audience);
+            staffUserName = jwtService.extractStaffUsername(jwt);
+            shopOwnerId = jwtService.extractShopOwnerId(jwt);
+            log.info("staffUserName {}", staffUserName);
         } catch (Exception e) {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-
-            // Create the error response JSON object
-            ErrorResponse errorResponse = ErrorResponse
-                                                        .builder()
-                                                        .errorMessage("Invalid token")
-                                                        .errorCode(String.valueOf(HttpStatus.UNAUTHORIZED.value()))
-                                                        .build();
-
-            // Convert the error response to JSON
-            ObjectMapper objectMapper = new ObjectMapper();
-            String jsonErrorResponse = objectMapper.writeValueAsString(errorResponse);
-
-            // Set the response content type to application/json
-            response.setContentType("application/json");
-
-            // Write the JSON error response to the response body
-            response.getWriter().write(jsonErrorResponse);
-            response.getWriter().flush();
+            responseExceptionWithJson(response, "Invalid token");
             return;
-//            filterChain.doFilter(request, response);
-//            return;
         }
-        if (userEmail != null && audience == null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (userEmail != null && staffUserName == null && shopOwnerId == null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
                 if (jwtService.isTokenValid(jwt, userDetails)) {
@@ -139,44 +122,54 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             } catch (Exception e) {
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
-
-                // Create the error response JSON object
-                ErrorResponse errorResponse = ErrorResponse
-                        .builder()
-                        .errorMessage(e.getMessage())
-                        .errorCode(String.valueOf(HttpStatus.UNAUTHORIZED.value()))
-                        .build();
-
-                // Convert the error response to JSON
-                ObjectMapper objectMapper = new ObjectMapper();
-                String jsonErrorResponse = objectMapper.writeValueAsString(errorResponse);
-
-                // Set the response content type to application/json
-                response.setContentType("application/json");
-
-                // Write the JSON error response to the response body
-                response.getWriter().write(jsonErrorResponse);
-                response.getWriter().flush();
+                responseExceptionWithJson(response, e.getMessage());
                 return;
             }
         }
-        if (userEmail != null && audience != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetailsService staffDetailsService = new UserDetailsService() {
-                @Override
-                public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                    ShopStaff staff = shopStaffRepository.findByUserName(username)
-                            .orElseThrow(() -> new UsernameNotFoundException("Not found this staff account."));
-                    if (staff.getStatus().equals(AccountStatus.BANNED)) {
-                        throw new AuthenticateException("Staff account ban.");
+
+        if (userEmail != null && staffUserName == null && shopOwnerId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                UserDetailsService shopOwnerDetailsService = username -> {
+                    Account account = accountRepository.findByEmail(username)
+                            .orElseThrow(() -> new UsernameNotFoundException("Not found this account."));
+                    if (account.getShopOwner().getStatus().equals(ShopOwnerStatus.BAN)) {
+                        throw new AuthenticateException("Shop account ban.");
                     } else {
-                        Account account = new Account();
-                        account.setId(staff.getId());
-                        account.setEmail(staff.getUserName());
-                        account.setRole(UserRole.SHOPSTAFF);
-                        account.setPassword(staff.getPassword());
                         return UserPrincipal.create(account);
                     }
+                };
+                UserDetails userDetails = shopOwnerDetailsService.loadUserByUsername(userEmail);
+
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (Exception e) {
+                responseExceptionWithJson(response, e.getMessage());
+                return;
+            }
+        }
+
+        if (userEmail != null && staffUserName != null && shopOwnerId == null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetailsService staffDetailsService = username -> {
+                ShopStaff staff = shopStaffRepository.findByUserName(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("Not found this staff account."));
+                if (staff.getStatus().equals(AccountStatus.BANNED)) {
+                    throw new AuthenticateException("Staff account ban.");
+                } else {
+                    Account account = new Account();
+                    account.setId(staff.getId());
+                    account.setEmail(staff.getUserName());
+                    account.setRole(UserRole.SHOPSTAFF);
+                    account.setPassword(staff.getPassword());
+                    return UserPrincipal.create(account);
                 }
             };
             UserDetails staffDetails = staffDetailsService.loadUserByUsername(userEmail);
@@ -194,5 +187,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private void responseExceptionWithJson(HttpServletResponse response, String e) throws IOException {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+
+        // Create the error response JSON object
+        ErrorResponse errorResponse = ErrorResponse
+                .builder()
+                .errorMessage(e)
+                .errorCode(String.valueOf(HttpStatus.UNAUTHORIZED.value()))
+                .build();
+
+        // Convert the error response to JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonErrorResponse = objectMapper.writeValueAsString(errorResponse);
+
+        // Set the response content type to application/json
+        response.setContentType("application/json");
+
+        // Write the JSON error response to the response body
+        response.getWriter().write(jsonErrorResponse);
+        response.getWriter().flush();
     }
 }
