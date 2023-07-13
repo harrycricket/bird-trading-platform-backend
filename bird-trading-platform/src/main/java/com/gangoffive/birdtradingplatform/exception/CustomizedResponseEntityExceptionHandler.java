@@ -39,15 +39,14 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
     @ExceptionHandler(CustomRuntimeException.class)
     public ResponseEntity<ErrorResponse> handleCustomException(CustomRuntimeException ex) {
         ErrorResponse errorResponse = new ErrorResponse(ex.getErrorCode(), ex.getErrorMessage());
-
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(AuthenticateException.class)
     public ResponseEntity<ApiError> handleAuthenticateException(AuthenticateException ex, HttpServletRequest request) {
         ApiError errorDetails = new ApiError(request.getRequestURI(),
-                ex.getMessage(), HttpStatus.LOCKED.value(), LocalDateTime.now());
-        return new ResponseEntity<>(errorDetails, HttpStatus.LOCKED);
+                ex.getMessage(), HttpStatus.UNAUTHORIZED.value(), LocalDateTime.now());
+        return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(SignatureException.class)
