@@ -29,6 +29,14 @@ public class ResponseUtils {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_ACCEPTABLE);
     }
 
+    public static ResponseEntity<?> getErrorResponseLocked(String message) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errorCode(String.valueOf(HttpStatus.LOCKED.value()))
+                .errorMessage(message)
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.LOCKED);
+    }
+
     public static ResponseEntity<?> getErrorResponseConflict(String message) {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.CONFLICT.value()))

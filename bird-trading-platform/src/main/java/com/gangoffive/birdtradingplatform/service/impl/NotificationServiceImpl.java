@@ -16,6 +16,7 @@ import com.gangoffive.birdtradingplatform.repository.NotificationRepository;
 import com.gangoffive.birdtradingplatform.service.NotificationService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
@@ -119,16 +120,7 @@ public class NotificationServiceImpl implements NotificationService {
             notificationDto.setId(System.currentTimeMillis());
             notificationDto.setSeen(false);
             notificationDto.setNotiDate(new Date());
-            String notification = JsonUtil.INSTANCE.getJsonString(notificationDto);
-            CompletableFuture<SendResult<String, String>> future =
-                    kafkaTemplate.send(KafkaConstant.KAFKA_PRIVATE_NOTIFICATION, notification);
-            try  {
-                SendResult<String, String> response = future.get();
-                log.info("Record metadata: {}", response.getRecordMetadata());
-            }catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-                result = false;
-            }
+            this.handleSendNotification(notificationDto);
         }
         return result;
     }
@@ -164,11 +156,11 @@ public class NotificationServiceImpl implements NotificationService {
         } else if(notification.getRole().equalsIgnoreCase(NotifiConstant.NOTI_USER_ROLE)){
             this.sendNotification(notification);
         }else {
-            throw new CustomRuntimeException("400","Receive name not correct!");
+            return ResponseUtils.getErrorResponseBadRequest("Receive name not correct!");
         }
         //save notification
         saveNotify(noti);
-        return null;
+        return ResponseEntity.ok("Oke");
     }
 
     @Async
