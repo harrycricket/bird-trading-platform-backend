@@ -151,7 +151,7 @@ public class OrderServiceImpl implements OrderService {
     public ResponseEntity<?> filterAllOrder(OrderShopOwnerFilterDto orderFilter, boolean isShopOwner, boolean isAdmin) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<Account> account = accountRepository.findByEmail(username);
-        Long shopId = null;
+        Long shopId;
         if (account.isPresent() && isShopOwner) {
             shopId = account.get().getShopOwner().getId();
         } else if (account.isEmpty() && isShopOwner) {

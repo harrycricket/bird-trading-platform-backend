@@ -3,16 +3,14 @@ package com.gangoffive.birdtradingplatform.service.impl;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.*;
-import com.gangoffive.birdtradingplatform.entity.Account;
-import com.gangoffive.birdtradingplatform.entity.OrderDetail;
-import com.gangoffive.birdtradingplatform.entity.Product;
-import com.gangoffive.birdtradingplatform.entity.Review;
+import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.FieldOrderDetailTable;
 import com.gangoffive.birdtradingplatform.enums.Operator;
 import com.gangoffive.birdtradingplatform.enums.SortOrderDetailColumn;
 import com.gangoffive.birdtradingplatform.mapper.PromotionShopMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
+import com.gangoffive.birdtradingplatform.repository.ShopStaffRepository;
 import com.gangoffive.birdtradingplatform.service.OrderDetailService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
@@ -38,13 +36,23 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     private final OrderDetailRepository orderDetailRepository;
     private final AccountRepository accountRepository;
     private final PromotionShopMapper promotionShopMapper;
+    private final ShopStaffRepository shopStaffRepository;
 
     @Override
     public ResponseEntity<?> getAllOrderByShopOwner(OrderDetailShopOwnerFilterDto orderDetailFilter) {
-        Optional<Account> account = accountRepository.findByEmail(
-                SecurityContextHolder.getContext().getAuthentication().getName()
-        );
-        Long shopId = account.get().getShopOwner().getId();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Account> account = accountRepository.findByEmail(username);
+        Long shopId;
+        if (account.isPresent()) {
+            shopId = account.get().getShopOwner().getId();
+        } else {
+            Optional<ShopStaff> shopStaff = shopStaffRepository.findByUserName(username);
+            if (shopStaff.isPresent()) {
+                shopId = shopStaff.get().getShopOwner().getId();
+            } else {
+                return ResponseUtils.getErrorResponseBadRequest("Not have account");
+            }
+        }
         if (orderDetailFilter.getPageNumber() > 0) {
             int pageNumber = orderDetailFilter.getPageNumber() - 1;
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
