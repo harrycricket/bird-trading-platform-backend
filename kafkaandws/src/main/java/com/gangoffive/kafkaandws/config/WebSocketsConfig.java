@@ -1,4 +1,4 @@
-package com.gangoffive.birdtradingplatform.config;
+package com.gangoffive.kafkaandws.config;
 
 
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +12,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketsConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOriginPatterns("*").withSockJS();
+        registry.addEndpoint("/kafka/ws/").setAllowedOriginPatterns("*").withSockJS();
     }
 
     @Override
@@ -21,5 +21,4 @@ public class WebSocketsConfig implements WebSocketMessageBrokerConfigurer {
         registry.enableSimpleBroker("/chatroom","/notification");
         registry.setUserDestinationPrefix("/user");
     }
-
 }

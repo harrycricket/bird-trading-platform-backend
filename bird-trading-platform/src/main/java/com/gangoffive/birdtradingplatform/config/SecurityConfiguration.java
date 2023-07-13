@@ -74,6 +74,7 @@ public class SecurityConfiguration {
             "/ws/**", // websockets
             "/api/v1/types",
             "/api/v1/types/**",
+            "/kafka/test",
 //            "/api/v1/shop-owner/promotion-shop", // Remember delete just for testing
 //            "/api/v1/shop-owner/type-all", // Remember delete just for testing
 //            "/api/v1/shop-owner/product", // Remember delete just for testing

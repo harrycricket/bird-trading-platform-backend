@@ -72,6 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/v1/types/foods",
             "/api/v1/types/accessories",
             "/api/v1/reviews/products",
+            "/kafka/test",
     };
 
     @Override

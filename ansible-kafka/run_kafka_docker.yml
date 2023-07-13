@@ -10,12 +10,20 @@
         path: /kafka
         state: directory
 
+    - name: Set up Docker ECR login
+      become: true
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
+      shell: |
+        aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin "{{ account_id }}".dkr.ecr.ap-southeast-1.amazonaws.com
+
     - name: copy Docker Compose files
       become: true
       copy:
         src: files/docker-compose.yml
         dest: /kafka/docker-compose.yml
-   
+    
     - name: deploy Docker Compose stack
       community.docker.docker_compose:
         project_src: /kafka
