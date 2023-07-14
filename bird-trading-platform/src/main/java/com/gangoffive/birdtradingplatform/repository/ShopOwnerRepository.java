@@ -16,7 +16,7 @@ import java.util.Optional;
 
 @Repository
 public interface ShopOwnerRepository extends JpaRepository<ShopOwner, Long> {
-    Optional<ShopOwner> findByAccount_Id(long id);
+    Optional<ShopOwner> findByIdAndStatus(long id, ShopOwnerStatus shopOwnerStatus);
 
     Optional<ShopOwner> findByAccount_Email(String email);
 
