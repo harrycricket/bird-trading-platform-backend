@@ -5,7 +5,6 @@
  */
 package com.gangoffive.birdtradingplatform.repository;
 
-import com.gangoffive.birdtradingplatform.common.ShopOwnerConstant;
 import com.gangoffive.birdtradingplatform.entity.Food;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.entity.ShopOwner;
@@ -45,7 +44,7 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
                         double lowestPrice, double highPrice, Long shopId, Long typeId, List<String> shopOwnerStatuses, Pageable pageable);
 
     Page<Food> findAllByQuantityGreaterThanAndStatusInAndShopOwner_StatusIn(int quantity, List<ProductStatus> productStatuses,
-                                                                            List<ShopOwnerStatus> shopOwnerStatuses ,Pageable pageable);
+                                                                            List<ShopOwnerStatus> shopOwnerStatuses, Pageable pageable);
 
 
     Optional<Page<Product>> findByShopOwner_IdAndStatusIn(long id, List<ProductStatus> productStatuses, Pageable pageable);
@@ -115,4 +114,6 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
                                                                       @Param("status") List<ProductStatus> statusList,
                                                                       @Param("statusShop") List<ShopOwnerStatus> shopOwnerStatuses,
                                                                       Pageable pageable);
+
+    Optional<List<Food>> findAllByShopOwnerAndStatus(ShopOwner shopOwner, ProductStatus productStatus);
 }

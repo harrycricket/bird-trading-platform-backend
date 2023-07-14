@@ -55,7 +55,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/v1/users/reset-password",
             "/api/v1/users/verify/register",
             "/api/v1/users/verify/reset-password",
-
             "/api/v1/products",
             "/api/v1/products/",
             "/api/v1/birds",
@@ -72,6 +71,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/v1/types/birds",
             "/api/v1/types/foods",
             "/api/v1/types/accessories",
+            "api/v1/tags/",
             "/api/v1/reviews/products",
             "/api/v1/reviews/products/",
             "/api/v1/ship/",

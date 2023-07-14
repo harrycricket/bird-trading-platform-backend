@@ -75,7 +75,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         }
 
         if (!checkListProduct(productWithQuantityMap)) {
-            return ResponseUtils.getErrorResponseNotAcceptable("Something went wrong in list product(Out of stock).");
+            return ResponseUtils.getErrorResponseNotAcceptable("Something went wrong in list product(Out of stock, or shop has been banned). Please reload page!");
         }
 
         if (!checkPromotion(packageOrder, productWithQuantityMap)) {
