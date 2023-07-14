@@ -97,6 +97,7 @@ public class OrderServiceImpl implements OrderService {
                     transactions.ifPresent(
                             transactionList -> transactionList.forEach(transaction -> transaction.setStatus(TransactionStatus.SUCCESS))
                     );
+                    transactionRepository.saveAll(transactions.get());
 
                     List<Long> userIdList = packageOrderRepository.findAllAccountIdByOrderIds(changeStatusListIdDto.getIds()).get();
                     NotificationDto noti = new NotificationDto();
