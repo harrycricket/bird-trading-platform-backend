@@ -21,10 +21,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<List<Product>> findByNameLike(String name);
 
     Optional<Page<Product>> findByShopOwner_IdAndStatusIn(long id, List<ProductStatus> productStatuses, Pageable pageable);
-
     Integer countAllByShopOwner_IdAndStatusIn(Long id, List<ProductStatus> productStatuses);
 
-    Optional<List<Product>> findByIdInAndQuantityGreaterThanAndStatusIn(List<Long> ids, int quantity, List<ProductStatus> productStatuses);
+    Optional<List<Product>> findByIdInAndQuantityGreaterThanAndStatusInAndShopOwner_StatusIn(List<Long> ids, int quantity,
+                                                                                            List<ProductStatus> productStatuses, List<ShopOwnerStatus> shopOwnerStatuses);
 
     @Modifying
     @Transactional
