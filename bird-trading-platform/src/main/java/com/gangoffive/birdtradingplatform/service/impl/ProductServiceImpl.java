@@ -215,8 +215,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ResponseEntity<?> retrieveProductByListId(long[] ids) {
-        var lists = productRepository.findByIdInAndQuantityGreaterThanAndStatusIn(Arrays.stream(ids).boxed().toList(),
-                ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER, ProductStatusConstant.LIST_STATUS_GET_FOR_USER);
+        var lists = productRepository.findByIdInAndQuantityGreaterThanAndStatusInAndShopOwner_StatusIn(Arrays.stream(ids).boxed().toList(),
+                ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER);
         if (lists.isPresent()) {
             return ResponseEntity.ok(lists.get().stream().map(this::productToProductCart).toList());
         }
