@@ -137,7 +137,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     Account account = accountRepository.findByEmail(username)
                             .orElseThrow(() -> new UsernameNotFoundException("Not found this account."));
                     if (account.getShopOwner().getStatus().equals(ShopOwnerStatus.BAN)) {
-                        throw new AuthenticateException("Shop account has been banned..");
+                        throw new AuthenticateException("Shop account has been banned.");
                     } else {
                         return UserPrincipal.create(account);
                     }

@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.enums.ProductStatus;
+import com.gangoffive.birdtradingplatform.enums.ShopOwnerStatus;
 import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -38,5 +39,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByStatusIn(List<ProductStatus> productStatuses);
 
     Optional<Product> findByIdAndStatusInAndShopOwner_Id(long productId, List<ProductStatus> productStatuses, long shopId);
+
+    Optional<Product> findByIdAndStatusNotAndShopOwner_StatusNot(long productId, ProductStatus productStatus, ShopOwnerStatus shopOwnerStatus);
 
 }
