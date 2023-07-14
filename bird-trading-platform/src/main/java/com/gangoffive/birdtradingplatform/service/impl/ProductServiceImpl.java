@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
+import com.gangoffive.birdtradingplatform.common.ShopOwnerConstant;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
@@ -146,9 +147,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ResponseEntity<?> retrieveProductById(Long id) {
+        //must handle product if shop ban or ban will show out an message
         Optional<Product> product = productRepository.findById(id);
         if (product.isPresent()) {
-            var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(id, ProductStatusConstant.LIST_STATUS_GET_FOR_USER);
+            var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(id,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER);
             if (productSummary.isPresent()) {
                 ProductDto productDto = this.ProductToDto(product.get());
 
@@ -161,9 +164,17 @@ public class ProductServiceImpl implements ProductService {
                         .listImages(listImages)
                         .numberSold(numberSold)
                         .numberReview(numberReview).build();
-                return ResponseEntity.ok(productDetailWrapper);
-            }
+                if(product.get().getShopOwner().getStatus().name().equalsIgnoreCase(ShopOwnerStatus.BAN.name())) {
+                    return new ResponseEntity<>(productDetailWrapper, HttpStatus.valueOf(423));
+                }else if(product.get().getStatus().name().equalsIgnoreCase(ProductStatus.BAN.name())){
+                    return new ResponseEntity<>(productDetailWrapper, HttpStatus.valueOf(423));
+                }else{
+                    return ResponseEntity.ok(productDetailWrapper);
+                }
 
+            }else{
+                return ResponseUtils.getErrorResponseNotFound(String.format("Product Summary not contain product with id %d", id));
+            }
         }
         return new ResponseEntity<>(ResponseCode.NOT_FOUND_THIS_ID.toString(), HttpStatus.NOT_FOUND);
     }
@@ -267,7 +278,8 @@ public class ProductServiceImpl implements ProductService {
             productShopDto.setCreateDate(product.getCreatedDate().getTime());
             productShopDto.setLastUpdate(product.getLastUpDated().getTime());
             //get product summary to take total order total review star
-            var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER);
+            var productSummary = productSummaryRepository.findByProductIdAndProductStatusInAndProduct_ShopOwner_StatusIn(product.getId(),
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER);
             if (productSummary.isPresent()) {
                 productShopDto.setTotalOrders(productSummary.get().getTotalQuantityOrder());
                 productShopDto.setTotalReviews(productSummary.get().getReviewTotal());
@@ -1026,16 +1038,16 @@ public class ProductServiceImpl implements ProductService {
             if (product.get() instanceof Bird) {
                 tagid = ((Bird) product.get()).getTags().stream().map(a -> a.getId()).toList();
                 listProduct = birdRepository.findDistinctBirdsByTypeAndTagsSortedByTotalQuantity(((Bird) product.get()).getTypeBird().getId(),
-                        tagid, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest );
+                        tagid, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER ,pageRequest );
             }
             else if (product.get() instanceof Food) {
                 tagid = ((Food) product.get()).getTags().stream().map(a -> a.getId()).toList();
                 listProduct = foodRepository.findDistinctBirdsByTypeAndTagsSortedByTotalQuantity(((Food) product.get()).getTypeFood().getId(),
-                        tagid, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest );
+                        tagid, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER ,pageRequest );
             } else {
                 tagid = ((Accessory) product.get()).getTags().stream().map(a -> a.getId()).toList();
                 listProduct = accessoryRepository.findDistinctBirdsByTypeAndTagsSortedByTotalQuantity(((Accessory) product.get()).getTypeAccessory().getId(),
-                        tagid, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest );
+                        tagid, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER ,pageRequest );
             }
 
             List<ProductCartDto> list =  listProduct.stream().map(this::productToProductCart).toList();
@@ -1828,7 +1840,7 @@ public class ProductServiceImpl implements ProductService {
 
         Page<Long> pageAble = birdRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
                 filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(),filterDto.getShopId()
-                ,filterDto.getCheckListTypeId() ,pageRequest);
+                ,filterDto.getCheckListTypeId(), ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER_STRING,pageRequest);
         PageNumberWrapper<Long> productDtoPageNumberWrapper = new PageNumberWrapper<>();
         productDtoPageNumberWrapper.setLists(pageAble.getContent());
         productDtoPageNumberWrapper.setPageNumber(pageAble.getTotalPages());
@@ -1841,7 +1853,7 @@ public class ProductServiceImpl implements ProductService {
 
         Page<Long> pageAble = foodRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
                 filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(), filterDto.getShopId()
-                ,filterDto.getCheckListTypeId() ,pageRequest);
+                ,filterDto.getCheckListTypeId(), ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER_STRING, pageRequest);
         PageNumberWrapper<Long> productDtoPageNumberWrapper = new PageNumberWrapper<>();
         productDtoPageNumberWrapper.setLists(pageAble.getContent());
         productDtoPageNumberWrapper.setPageNumber(pageAble.getTotalPages());
@@ -1855,7 +1867,7 @@ public class ProductServiceImpl implements ProductService {
 
         Page<Long> pageAble = accessoryRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
                 filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(), filterDto.getShopId()
-                ,filterDto.getCheckListTypeId() ,pageRequest);
+                ,filterDto.getCheckListTypeId(), ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER_STRING, pageRequest);
         PageNumberWrapper<Long> productDtoPageNumberWrapper = new PageNumberWrapper<>();
         productDtoPageNumberWrapper.setLists(pageAble.getContent());
         productDtoPageNumberWrapper.setPageNumber(pageAble.getTotalPages());
@@ -1876,11 +1888,11 @@ public class ProductServiceImpl implements ProductService {
         else
             filterDto.setName(filterDto.getName().trim());
         if (filterDto.getHighestPrice() == 0.0)
-            filterDto.setHighestPrice(999999999);
+            filterDto.setHighestPrice(PagingAndSorting.HIGHEST_PRICE_FILTER);
         if (filterDto.getStar() == 1)
-            filterDto.setStar(0.0);
+            filterDto.setStar(PagingAndSorting.DEFAULT_STAR_FILTER);
         if (filterDto.getLowestPrice() == 0.0)
-            filterDto.setLowestPrice(-1);
+            filterDto.setLowestPrice(PagingAndSorting.LOWEST_PRICE_FILTER);
         if(filterDto.getShopId() == null || filterDto.getShopId() == -1 )
             filterDto.setShopId(null);
         return filterDto;
