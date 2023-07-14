@@ -3,6 +3,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
+import com.gangoffive.birdtradingplatform.common.ShopOwnerConstant;
 import com.gangoffive.birdtradingplatform.dto.BirdDto;
 import com.gangoffive.birdtradingplatform.dto.ProductCartDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
@@ -56,38 +57,12 @@ public class BirdServiceImpl implements BirdService {
     }
 
     @Override
-    public ResponseEntity<?> retrieveBirdsByShopId(Long shopId, int pageNumber) {
-        if (pageNumber > 0) {
-            pageNumber = pageNumber - 1;
-            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
-                    Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
-
-            Optional<Page<Product>> pageAble = birdRepository.findByShopOwner_IdAndStatusIn(shopId,
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest);
-            if (pageAble.isPresent()) {
-                List<ProductDto> list = pageAble.get().stream()
-                        .map(productService::ProductToDto)
-                        .toList();
-                PageNumberWrapper<ProductDto> pageNumberWrapper = new PageNumberWrapper<>(list, pageAble.get().getTotalPages());
-                return ResponseEntity.ok(pageNumberWrapper);
-            } else {
-                ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
-                        "Not found product in shop.");
-                return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-            }
-        }
-        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
-                "Page number cannot less than 1");
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-    }
-
-    @Override
     public ResponseEntity<?> retrieveBirdByPageNumber(int pageNumber) {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
-            Page<Bird> pageAble = birdRepository.findAllByQuantityGreaterThanAndStatusIn(0,
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest);
+            Page<Bird> pageAble = birdRepository.findAllByQuantityGreaterThanAndStatusInAndShopOwner_StatusIn(0,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER ,pageRequest);
             List<BirdDto> birds = pageAble.getContent()
                     .stream()
                     .map(bird -> (BirdDto) productService.ProductToDto(bird))
