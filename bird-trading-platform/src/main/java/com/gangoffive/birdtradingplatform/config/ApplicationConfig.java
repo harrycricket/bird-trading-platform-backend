@@ -33,7 +33,7 @@ public class ApplicationConfig {
                     .orElseThrow(
                             () -> new UsernameNotFoundException("Not found this email"));
             if (account.getStatus().equals(AccountStatus.BANNED)) {
-                throw new AuthenticateException("Email user ban");
+                throw new AuthenticateException("Email user has been banned.");
             } else {
                 if (account.getRole().equals(UserRole.SHOPOWNER)) {
                     Account tmp = new Account();

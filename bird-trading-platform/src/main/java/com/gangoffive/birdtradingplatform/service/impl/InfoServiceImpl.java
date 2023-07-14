@@ -12,6 +12,7 @@ import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.InfoService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InfoServiceImpl implements InfoService {
     private final AccountRepository accountRepository;
     private final ProductRepository productRepository;
@@ -40,9 +42,10 @@ public class InfoServiceImpl implements InfoService {
         String staffUserName;
         try {
             email = jwtService.extractUsername(token);
+            log.info("email {}", email);
             staffUserName = jwtService.extractStaffUsername(token);
         } catch (Exception ex) {
-            throw new AuthenticateException("Not correct token to access");
+            throw new AuthenticateException("Can not extract token.");
         }
         if (!jwtService.isTokenExpired(token)) {
             if (staffUserName == null || staffUserName.isEmpty()) {

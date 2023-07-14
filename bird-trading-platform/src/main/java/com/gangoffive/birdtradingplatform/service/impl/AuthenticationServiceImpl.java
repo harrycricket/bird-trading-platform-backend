@@ -164,7 +164,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (account.getStatus().equals(AccountStatus.BANNED)) {
             ErrorResponse error = ErrorResponse.builder()
                     .errorCode(HttpStatus.LOCKED.toString())
-                    .errorMessage("Email banned!")
+                    .errorMessage("Email has been banned.")
                     .build();
             return new ResponseEntity<>(error, HttpStatus.LOCKED);
         }
@@ -183,7 +183,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
             }
             if (account.get().getStatus().equals(AccountStatus.NOT_VERIFY)) {
-                return ResponseUtils.getErrorResponseBadRequest("Your account is not verify.");
+                return ResponseUtils.getErrorResponseNotAcceptable("Your account is not verify.");
             }
             if (
                     resetPasswordDto.getEmail() != null
