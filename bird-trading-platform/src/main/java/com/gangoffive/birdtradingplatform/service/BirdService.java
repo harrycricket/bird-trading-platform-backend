@@ -9,8 +9,6 @@ import java.util.List;
 public interface BirdService {
     List<BirdDto> retrieveAllBird();
 
-    ResponseEntity<?> retrieveBirdsByShopId(Long shopId, int pageNumber);
-
     ResponseEntity<?> retrieveBirdByPageNumber(int pageNumber);
 
     List<BirdDto> findBirdByName(String name);

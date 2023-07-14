@@ -11,6 +11,7 @@ package com.gangoffive.birdtradingplatform.repository;
 
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.ProductStatus;
+import com.gangoffive.birdtradingplatform.enums.ShopOwnerStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,6 +31,8 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
             "FROM `bird-trading-platform`.tbl_bird b " +
             "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
             "ON b.product_id = ps.product_id " +
+            "INNER JOIN `bird-trading-platform`.tbl_shop_owner_acc sh " +
+            "ON b.shop_id = sh.shop_id " +
             "WHERE (MATCH(b.name) AGAINST (?1 IN NATURAL LANGUAGE MODE) OR b.name LIKE %?1%)" +
 //            "AND (COALESCE(?2 ,b.type_id ) = b.type_id OR ?2 IS NULL) " +
             "AND (b.type_id IN (?2) OR ?7 IS NULL) " +
@@ -38,30 +41,13 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
             "AND ps.discounted_price <= ?5 " +
             "AND (COALESCE(?6, b.shop_id) = b.shop_id OR ?6 IS NULL) " +
             "AND b.status = 'ACTIVE' " +
-            "AND b.quantity > 0 ", nativeQuery = true)
-    Page<Long> idFilter(String name,  List<Long> listType, double star,
-                        double lowestPrice, double highestPrice, Long shopId, Long typeId ,Pageable pageable);
+            "AND b.quantity > 0 " +
+            "And sh.status IN (?8) ", nativeQuery = true)
+    Page<Long> idFilter(String name, List<Long> listType, double star,
+                        double lowestPrice, double highestPrice, Long shopId, Long typeId, List<String> shopOwnerStatuses, Pageable pageable);
 
-    Page<Bird> findAllByQuantityGreaterThanAndStatusIn(int quantity, List<ProductStatus> productStatuses, Pageable pageable);
-
-    Optional<Page<Product>> findByShopOwner_Id(long id, Pageable pageable);
-
-    @Query(value = "SELECT b.product_id " +
-            "FROM `bird-trading-platform`.tbl_bird b " +
-            "INNER JOIN `bird-trading-platform`.tbl_product_summary ps " +
-            "ON b.product_id = ps.product_id " +
-            "WHERE b.shop_id = ?1 " +
-            "And b.name LIKE %?2% " +
-            "AND b.type_id IN ?3 " +
-            "AND ps.star >= ?4 " +
-            "AND ps.discounted_price >= ?5 " +
-            "AND ps.discounted_price <= ?6 " +
-            "And b.status = 'ACTIVE' " +
-            "AND b.quantity > 0 "
-            ,
-            nativeQuery = true)
-    Page<Long> idFilterShop(Long idShop, String name, List<Long> listType, double star,
-                            double lowestPrice, double highestPrice, Pageable pageable);
+    Page<Bird> findAllByQuantityGreaterThanAndStatusInAndShopOwner_StatusIn(int quantity, List<ProductStatus> productStatuses,
+                                                                             List<ShopOwnerStatus> shopOwnerStatuses ,Pageable pageable);
 
     Optional<Page<Product>> findByShopOwner_IdAndStatusIn(long id, List<ProductStatus> productStatuses, Pageable pageable);
 
@@ -121,11 +107,14 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
 
     @Query("SELECT b FROM Bird b WHERE b.id IN " +
             "(SELECT DISTINCT b2.id FROM Bird b2 JOIN b2.productSummary ps JOIN b2.tags t " +
-            "WHERE b2.typeBird.id = :typeId OR t.id IN :tagIds OR TRUE = TRUE AND b2.quantity > 0 AND b2.status IN :status) " +
+            "JOIN b2.shopOwner sh " +
+            "WHERE (b2.typeBird.id = :typeId OR ( t.id IN :tagIds ) OR TRUE = TRUE ) AND b2.quantity > 0 AND (b2.status IN :status) " +
+            " AND (sh.status IN :statusShop )) " +
             "ORDER BY b.productSummary.totalQuantityOrder DESC")
     List<Product> findDistinctBirdsByTypeAndTagsSortedByTotalQuantity(@Param("typeId") long typeId,
                                                                       @Param("tagIds") List<Long> tagIds,
                                                                       @Param("status") List<ProductStatus> statusList,
+                                                                      @Param("statusShop") List<ShopOwnerStatus> shopOwnerStatuses,
                                                                       Pageable pageable);
 
 

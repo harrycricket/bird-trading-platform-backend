@@ -3,6 +3,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
+import com.gangoffive.birdtradingplatform.common.ShopOwnerConstant;
 import com.gangoffive.birdtradingplatform.dto.AccessoryDto;
 import com.gangoffive.birdtradingplatform.dto.ProductCartDto;
 import com.gangoffive.birdtradingplatform.dto.ProductDto;
@@ -82,8 +83,8 @@ public class AccessoryServiceImpl implements AccessoryService {
         if (pageNumber > 0) {
             pageNumber = pageNumber - 1;
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SIZE);
-            Page<Accessory> pageAble = accessoryRepository.findAllByQuantityGreaterThanAndStatusIn(0,
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, pageRequest);
+            Page<Accessory> pageAble = accessoryRepository.findAllByQuantityGreaterThanAndStatusInAndShopOwner_StatusIn(0,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER, pageRequest);
             List<AccessoryDto> accessories = pageAble.getContent()
                     .stream()
                     .map(accessory -> (AccessoryDto) productService.ProductToDto(accessory))
