@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
+import com.gangoffive.birdtradingplatform.enums.ShopOwnerStatus;
 import com.gangoffive.birdtradingplatform.enums.UserRole;
 import com.gangoffive.birdtradingplatform.exception.AuthenticateException;
 import com.gangoffive.birdtradingplatform.mapper.ShopOwnerMapper;
@@ -11,6 +12,7 @@ import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.InfoService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -106,6 +108,9 @@ public class InfoServiceImpl implements InfoService {
     public ResponseEntity<?> getShopInfo(Long id) {
         Optional<ShopOwner> shopOwner = shopOwnerRepository.findById(id);
         if (shopOwner.isPresent()) {
+            if (shopOwner.get().getStatus().equals(ShopOwnerStatus.BAN)) {
+                return ResponseUtils.getErrorResponseLocked("Shop account has been banned.");
+            }
             List<Order> orders = orderRepository.findByShopOwner(shopOwner.get());
             List<OrderDetail> orderDetails = orderDetailRepository.findOrderDetailByOrderIn(orders);
             int totalProductOrder = orderDetails.stream().mapToInt(orderDetail -> orderDetail.getQuantity()).sum();
@@ -119,10 +124,6 @@ public class InfoServiceImpl implements InfoService {
                     .build();
             return ResponseEntity.ok(shopSummaryDto);
         }
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found this shop.")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return ResponseUtils.getErrorResponseNotFound("Not found this shop.");
     }
 }
