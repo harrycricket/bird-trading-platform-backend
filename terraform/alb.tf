@@ -114,7 +114,7 @@ resource "aws_lb_listener_rule" "back-end-v2" {
 
   condition {
     path_pattern {
-      values = ["/api/*", "/oauth2/*"]
+      values = ["/api/*", "/oauth2/*", "/swagger-ui/*"]
     }
   }
   # condition {

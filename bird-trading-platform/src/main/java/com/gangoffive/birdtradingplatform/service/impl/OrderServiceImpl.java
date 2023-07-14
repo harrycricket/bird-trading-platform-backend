@@ -92,12 +92,21 @@ public class OrderServiceImpl implements OrderService {
                         orderStatus,
                         changeStatusListIdDto.getIds());
                 if (result == changeStatusListIdDto.getIds().size()) {
-                    Optional<List<Transaction>> transactions = transactionRepository.findAllByOrder_IdInAndOrder_Status(
-                            changeStatusListIdDto.getIds(), OrderStatus.DELIVERED);
-                    transactions.ifPresent(
-                            transactionList -> transactionList.forEach(transaction -> transaction.setStatus(TransactionStatus.SUCCESS))
-                    );
-                    transactionRepository.saveAll(transactions.get());
+                    List<Order> orders = orderRepository.findAllById(changeStatusListIdDto.getIds());
+                    List<Long> packageOrderIds = orders.stream().map(order -> order.getPackageOrder().getId()).distinct().toList();
+                    packageOrderIds.forEach(packageOrderId -> {
+                        Optional<List<Order>> orderList = orderRepository.findAllByPackageOrder_Id(packageOrderId);
+                        if (orderList.isPresent()) {
+                            boolean checkDelivered = orderList.get().stream().allMatch(tmp -> tmp.getStatus().equals(OrderStatus.DELIVERED));
+                            if (checkDelivered) {
+                                Optional<Transaction> transaction = transactionRepository.findByPackageOrder_Id(packageOrderId);
+                                if (transaction.isPresent()) {
+                                    transaction.get().setStatus(TransactionStatus.SUCCESS);
+                                    transactionRepository.save(transaction.get());
+                                }
+                            }
+                        }
+                    });
 
                     List<Long> userIdList = packageOrderRepository.findAllAccountIdByOrderIds(changeStatusListIdDto.getIds()).get();
                     NotificationDto noti = new NotificationDto();
