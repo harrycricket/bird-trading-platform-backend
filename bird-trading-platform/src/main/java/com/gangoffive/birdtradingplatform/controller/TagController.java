@@ -27,7 +27,7 @@ public class TagController {
         return tagService.addNewTag(tag.getName());
     }
 
-    @GetMapping("/tags/{shopId}")
+    @GetMapping("/tags/shops/{shopId}")
     public ResponseEntity<?> getAllTagByShopOwnerId(@PathVariable Long shopId) {
         return tagService.getAllTagByShopOwnerId(shopId);
     }

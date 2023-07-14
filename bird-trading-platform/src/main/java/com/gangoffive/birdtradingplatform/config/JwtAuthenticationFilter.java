@@ -71,7 +71,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/v1/types/birds",
             "/api/v1/types/foods",
             "/api/v1/types/accessories",
-            "api/v1/tags/",
+            "api/v1/tags/shops/",
             "/api/v1/reviews/products",
             "/api/v1/reviews/products/",
             "/api/v1/ship/",
