@@ -3,6 +3,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.common.NotifiConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
@@ -15,6 +16,7 @@ import com.gangoffive.birdtradingplatform.repository.*;
 import com.gangoffive.birdtradingplatform.security.UserPrincipal;
 import com.gangoffive.birdtradingplatform.service.ChannelService;
 import com.gangoffive.birdtradingplatform.service.JwtService;
+import com.gangoffive.birdtradingplatform.service.NotificationService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.*;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
@@ -61,6 +63,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
     private final AddressRepository addressRepository;
     private final PasswordEncoder passwordEncoder;
     private final ReviewRepository reviewRepository;
+    private final NotificationService notificationService;
 
 
     @Override
@@ -981,6 +984,15 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             int numberStatusChange = shopOwnerRepository.updateListShopOwnerStatus(
                     shopOwnerStatus, changeStatusListIdDto.getIds()
             );
+            List<ShopOwner> shopOwners = shopOwnerRepository.findAllById(changeStatusListIdDto.getIds());
+            List<Long> listAccountId = shopOwners.stream().map(s -> s.getAccount().getId()).toList();
+            if(listAccountId.size() > 0) {
+                NotificationDto notificationDto = new NotificationDto();
+                notificationDto.setName(NotifiConstant.BAN_SHOP_FOR_USER_NAME);
+                notificationDto.setNotiText(NotifiConstant.BAN_SHOP_FOR_USER_CONTENT);
+                notificationDto.setRole(NotifiConstant.NOTI_USER_ROLE);
+                notificationService.pushNotificationForListUserID(listAccountId, notificationDto);
+            }
             return ResponseEntity.ok("Update " + numberStatusChange + " shop owner account status successfully.");
         } catch (Exception ex) {
             return ResponseUtils.getErrorResponseBadRequest("Update list shop owner account fail.");
