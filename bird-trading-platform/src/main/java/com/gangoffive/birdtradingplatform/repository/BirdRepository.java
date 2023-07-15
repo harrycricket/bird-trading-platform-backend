@@ -117,5 +117,6 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
                                                                       @Param("statusShop") List<ShopOwnerStatus> shopOwnerStatuses,
                                                                       Pageable pageable);
 
+    Optional<List<Bird>> findAllByShopOwnerAndStatus(ShopOwner shopOwner, ProductStatus productStatus);
 
 }

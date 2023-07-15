@@ -43,7 +43,7 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
                         double lowestPrice, double highestPrice, Long id, Long typeId, List<String> shopOwnerStatuses, Pageable pageable);
 
     Page<Accessory> findAllByQuantityGreaterThanAndStatusInAndShopOwner_StatusIn(int quantity, List<ProductStatus> productStatuses,
-                                                                                 List<ShopOwnerStatus> shopOwnerStatuses,Pageable pageable);
+                                                                                 List<ShopOwnerStatus> shopOwnerStatuses, Pageable pageable);
 
     Optional<Page<Product>> findByShopOwner_IdAndStatusIn(long id, List<ProductStatus> productStatuses, Pageable pageable);
 
@@ -80,7 +80,6 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
     );
 
 
-
     Optional<Page<Accessory>> findAllByShopOwner_IdAndPriceGreaterThanEqualAndStatusIn(
             Long shopOwnerId, double price, List<ProductStatus> productStatuses, Pageable pageable
     );
@@ -114,4 +113,6 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
                                                                       @Param("status") List<ProductStatus> statusList,
                                                                       @Param("statusShop") List<ShopOwnerStatus> shopOwnerStatuses,
                                                                       Pageable pageable);
+
+    Optional<List<Accessory>> findAllByShopOwnerAndStatus(ShopOwner shopOwner, ProductStatus productStatus);
 }

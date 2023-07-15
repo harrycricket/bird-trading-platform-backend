@@ -49,9 +49,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/auth/",
             "/oauth2/",
             "/error",
-            "/user/me",
             "/api/v1/users/register",
             "/api/v1/users/authenticate",
+            "/api/v1/staffs/authenticate",
             "/api/v1/users/reset-password",
             "/api/v1/users/verify/register",
             "/api/v1/users/verify/reset-password",
@@ -63,15 +63,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/v1/accessories/",
             "/api/v1/foods",
             "/api/v1/foods/",
-            "/api/v1/product/add-new",
             "/api/v1/info/",
+            "/api/v1/shop-info",
             "/api/v1/users/get-cookie",
             "/api/v1/promotions",
             "/api/v1/products/top-product",
             "/api/v1/types/birds",
             "/api/v1/types/foods",
             "/api/v1/types/accessories",
+            "api/v1/tags/shops/",
             "/api/v1/reviews/products",
+            "/api/v1/reviews/products/",
+            "/api/v1/ship/",
             "/kafka/test",
     };
 
@@ -134,7 +137,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     Account account = accountRepository.findByEmail(username)
                             .orElseThrow(() -> new UsernameNotFoundException("Not found this account."));
                     if (account.getShopOwner().getStatus().equals(ShopOwnerStatus.BAN)) {
-                        throw new AuthenticateException("Shop account has been banned..");
+                        throw new AuthenticateException("Shop account has been banned.");
                     } else {
                         return UserPrincipal.create(account);
                     }

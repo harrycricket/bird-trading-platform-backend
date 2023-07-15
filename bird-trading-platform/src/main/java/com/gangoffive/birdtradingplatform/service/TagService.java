@@ -9,4 +9,6 @@ public interface TagService {
     List<Tag> getAllTags();
 
     ResponseEntity<?> addNewTag(String name);
+
+    ResponseEntity<?> getAllTagByShopOwnerId(Long shopId);
 }

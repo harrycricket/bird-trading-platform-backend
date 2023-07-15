@@ -13,5 +13,5 @@ import java.util.Optional;
 public interface TransactionRepository extends JpaRepository<Transaction, Long>{
     Optional<Transaction> findByPaypalId(String id);
 
-    Optional<List<Transaction>> findAllByOrder_IdInAndOrder_Status(List<Long> ids, OrderStatus orderStatus);
+    Optional<Transaction> findByPackageOrder_Id(Long id);
 }
