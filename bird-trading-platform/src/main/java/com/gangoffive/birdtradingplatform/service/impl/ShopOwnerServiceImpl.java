@@ -989,7 +989,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             if(listAccountId.size() > 0) {
                 NotificationDto notificationDto = new NotificationDto();
                 notificationDto.setName(NotifiConstant.BAN_SHOP_FOR_USER_NAME);
-                notificationDto.setNotiText(NotifiConstant.BAN_SHOP_FOR_USER_CONTENT);
+                notificationDto.setNotiText(shopOwnerStatus.getContentNotification());
                 notificationDto.setRole(NotifiConstant.NOTI_USER_ROLE);
                 notificationService.pushNotificationForListUserID(listAccountId, notificationDto);
             }

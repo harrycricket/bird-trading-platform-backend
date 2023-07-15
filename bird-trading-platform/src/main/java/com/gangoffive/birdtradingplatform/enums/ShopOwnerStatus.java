@@ -11,9 +11,10 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public enum ShopOwnerStatus {
-    ACTIVE(1),
-    BAN(2);
+    ACTIVE(1, "Your shop is unbanned. Have a great day!"),
+    BAN(2, "Your shop is banned. Please contact us through email at birdlan2nd.admin@gmail.com.");
     private int status;
+    private String contentNotification;
     public static ShopOwnerStatus getAccountStatus (int status) {
         List<ShopOwnerStatus> listStatus = Arrays.asList(ShopOwnerStatus.values());
         try {

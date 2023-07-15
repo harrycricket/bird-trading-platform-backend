@@ -14,6 +14,5 @@ public class NotifiConstant {
     public static final String NEW_ORDER_FOR_SHOP_OWNER_CONTENT = "Congratulations! You have a new order.";
 
     //BAN
-    public static final String BAN_SHOP_FOR_USER_NAME = "YOUR SHOP IS BANNED";
-    public static final String BAN_SHOP_FOR_USER_CONTENT = "Your shop is banned. Please contact us through email at birdlan2nd.admin@gmail.com.";
+    public static final String BAN_SHOP_FOR_USER_NAME = "YOUR SHOP";
 }
