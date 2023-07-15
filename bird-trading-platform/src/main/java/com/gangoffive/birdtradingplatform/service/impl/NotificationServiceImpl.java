@@ -13,6 +13,7 @@ import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.mapper.NotificationMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.NotificationRepository;
+import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
 import com.gangoffive.birdtradingplatform.service.NotificationService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
@@ -43,7 +44,7 @@ import java.util.concurrent.ExecutionException;
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
-    private final ShopOwnerService shopOwnerService;
+    private final ShopOwnerRepository shopOwnerRepository;
     private final KafkaTemplate kafkaTemplate;
     private final AccountRepository accountRepository;
     @Override
@@ -67,7 +68,7 @@ public class NotificationServiceImpl implements NotificationService {
             listNotifications = notificationRepository.findAllByNotiDateAfterAndAccount_IdAndRoleIs(new Date(timeAfter7SevenDay)
                     ,id , role, page);
         }else {
-            long accountIdOfShop = shopOwnerService.getAccountIdByShopId(id);
+            long accountIdOfShop = shopOwnerRepository.findById(id).get().getAccount().getId();
             listNotifications = notificationRepository.findAllByNotiDateAfterAndAccount_IdAndRoleIs(new Date(timeAfter7SevenDay)
                     ,accountIdOfShop , role, page);
         }
@@ -91,7 +92,7 @@ public class NotificationServiceImpl implements NotificationService {
                 //get unread noto
                 unreadNoti  = notificationRepository.countAllBySeenIsFalseAndAccount_IdAndRoleIs(id, role);
             }else {
-                long accountOfShop = shopOwnerService.getAccountIdByShopId(id);
+                long accountOfShop = shopOwnerRepository.findById(id).get().getAccount().getId();
                 unreadNoti  = notificationRepository.countAllBySeenIsFalseAndAccount_IdAndRoleIs(accountOfShop, role);
             }
 
