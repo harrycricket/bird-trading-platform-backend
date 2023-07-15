@@ -1,9 +1,11 @@
 package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.ChangeStatusListIdDto;
+import com.gangoffive.birdtradingplatform.dto.OrderDetailShopOwnerFilterDto;
 import com.gangoffive.birdtradingplatform.dto.OrderShopOwnerFilterDto;
 import com.gangoffive.birdtradingplatform.service.OrderService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +25,11 @@ public class OrderController {
 
     @GetMapping("shop-owner/orders")
     public ResponseEntity<?> getAllOrderByShopOwner(@RequestParam String data) {
-        return orderService.filterAllOrder(JsonUtil.INSTANCE.getObject(data, OrderShopOwnerFilterDto.class), true, false);
+        try {
+            return orderService.filterAllOrder(JsonUtil.INSTANCE.getObject(data, OrderShopOwnerFilterDto.class), true, false);
+        } catch (Exception e) {
+            return ResponseUtils.getErrorResponseBadRequest("Data parse not correct.");
+        }
     }
 
     @PutMapping("shop-owner/orders")
@@ -49,6 +55,10 @@ public class OrderController {
 
     @GetMapping("/admin/orders")
     public ResponseEntity<?> getAllOrder(@RequestParam String data) {
-        return orderService.filterAllOrder(JsonUtil.INSTANCE.getObject(data, OrderShopOwnerFilterDto.class), false, true);
+        try {
+            return orderService.filterAllOrder(JsonUtil.INSTANCE.getObject(data, OrderShopOwnerFilterDto.class), false, true);
+        } catch (Exception e) {
+            return ResponseUtils.getErrorResponseBadRequest("Data parse not correct.");
+        }
     }
 }

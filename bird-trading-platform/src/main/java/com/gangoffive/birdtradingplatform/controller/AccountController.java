@@ -1,13 +1,11 @@
 package com.gangoffive.birdtradingplatform.controller;
 
-import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
-import com.gangoffive.birdtradingplatform.dto.ChangeStatusListIdDto;
-import com.gangoffive.birdtradingplatform.dto.UserAccountFilterDto;
-import com.gangoffive.birdtradingplatform.dto.VerifyRequestDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.service.AccountService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.CookieUtils;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +45,11 @@ public class AccountController {
 
     @GetMapping("/admin/user-account")
     public ResponseEntity<?> getAllUser(@RequestParam String data) {
-        return accountService.filterAllUserAccount(JsonUtil.INSTANCE.getObject(data, UserAccountFilterDto.class));
+        try {
+            return accountService.filterAllUserAccount(JsonUtil.INSTANCE.getObject(data, UserAccountFilterDto.class));
+        } catch (Exception e) {
+            return ResponseUtils.getErrorResponseBadRequest("Data parse not correct.");
+        }
     }
 
     @PutMapping("/admin/accounts/status")

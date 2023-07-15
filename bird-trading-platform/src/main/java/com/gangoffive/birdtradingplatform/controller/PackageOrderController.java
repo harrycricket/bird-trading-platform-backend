@@ -3,10 +3,12 @@ package com.gangoffive.birdtradingplatform.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gangoffive.birdtradingplatform.dto.OrderShopOwnerFilterDto;
 import com.gangoffive.birdtradingplatform.dto.PackageOrderAdminFilterDto;
 import com.gangoffive.birdtradingplatform.dto.PackageOrderRequestDto;
 import com.gangoffive.birdtradingplatform.service.PackageOrderService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -39,6 +41,10 @@ public class PackageOrderController {
 
     @GetMapping("/admin/package-order")
     public ResponseEntity<?> getAllPackageOrder(@RequestParam String data) {
-        return packageOrderService.filterAllPackageOrder(JsonUtil.INSTANCE.getObject(data, PackageOrderAdminFilterDto.class));
+        try {
+            return packageOrderService.filterAllPackageOrder(JsonUtil.INSTANCE.getObject(data, PackageOrderAdminFilterDto.class));
+        } catch (Exception e) {
+            return ResponseUtils.getErrorResponseBadRequest("Data parse not correct.");
+        }
     }
 }
