@@ -2,9 +2,9 @@ package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.service.AccountService;
-import com.gangoffive.birdtradingplatform.service.PaypalService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -87,7 +87,11 @@ public class ShopOwnerController {
 
     @GetMapping("/admin/shop-owner-account")
     public ResponseEntity<?> getAllShopOwner(@RequestParam String data) {
-        return shopOwnerService.filterAllShopOwner(JsonUtil.INSTANCE.getObject(data, ShopOwnerAccountFilterDto.class));
+        try {
+            return shopOwnerService.filterAllShopOwner(JsonUtil.INSTANCE.getObject(data, ShopOwnerAccountFilterDto.class));
+        } catch (Exception e) {
+            return ResponseUtils.getErrorResponseBadRequest("Data parse not correct.");
+        }
     }
 
     @PutMapping("/admin/shop-owner/status")

@@ -181,8 +181,10 @@ public class OrderServiceImpl implements OrderService {
             if (shopStaff.isPresent()) {
                 shopId = shopStaff.get().getShopOwner().getId();
             } else {
-                return ResponseUtils.getErrorResponseBadRequest("Not have account");
+                return ResponseUtils.getErrorResponseBadRequest("Not have staff account");
             }
+        } else if (isAdmin) {
+            shopId = 0L;
         } else {
             return ResponseUtils.getErrorResponseBadRequest("Not have account");
         }

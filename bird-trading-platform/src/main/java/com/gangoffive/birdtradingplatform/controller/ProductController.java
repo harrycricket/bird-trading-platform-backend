@@ -5,6 +5,7 @@ import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -91,9 +92,11 @@ public class ProductController {
 
     @GetMapping("/shop-owner/products")
     public ResponseEntity<?> getAllProductOfShop(@RequestParam String data) {
-        ProductShopOwnerFilterDto productShopOwnerFilter = JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class);
-        log.info("{}", productShopOwnerFilter.toString());
-        return productService.filterAllProduct(productShopOwnerFilter, true, false);
+        try {
+            return productService.filterAllProduct(JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class), true, false);
+        } catch (Exception e) {
+            return ResponseUtils.getErrorResponseBadRequest("Data parse not correct.");
+        }
     }
 
     @GetMapping("/shop-owner/products/{productId}")
@@ -111,8 +114,11 @@ public class ProductController {
 
     @GetMapping("/admin/products")
     public ResponseEntity<?> getAllProduct(@RequestParam String data) {
-        ProductShopOwnerFilterDto productShopOwnerFilter = JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class);
-        return productService.filterAllProduct(productShopOwnerFilter, false, true);
+        try {
+            return productService.filterAllProduct(JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class), false, true);
+        } catch (Exception e) {
+            return ResponseUtils.getErrorResponseBadRequest("Data parse not correct.");
+        }
     }
 
     @GetMapping("/products/{productId}/relevant")
