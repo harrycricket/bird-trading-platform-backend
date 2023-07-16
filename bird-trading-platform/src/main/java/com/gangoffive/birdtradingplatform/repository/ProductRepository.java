@@ -42,4 +42,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByIdAndStatusInAndShopOwner_Id(long productId, List<ProductStatus> productStatuses, long shopId);
 
     Optional<Product> findByIdAndStatusNotAndShopOwner_StatusNot(long productId, ProductStatus productStatus, ShopOwnerStatus shopOwnerStatus);
+
 }

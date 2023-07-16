@@ -212,7 +212,7 @@ public class MessageServiceImpl implements MessageService {
     private void saveMessage(MessageDto message) {
         long senderId = 0;
         if (message.getSenderName().equalsIgnoreCase(MessageConstant.MESSAGE_SHOP_ROLE)) {
-            senderId = message.getShopID();
+            senderId = shopOwnerRepository.findById(message.getShopID()).get().getAccount().getId();
         }else{
             senderId = message.getUserID();
         }

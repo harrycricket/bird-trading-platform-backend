@@ -997,6 +997,14 @@ public class PackageOrderServiceImpl implements PackageOrderService {
             PackageOrderRequestDto packageOrderRequestDto, String paymentId, String payerEmail,
             Account account, Map<Long, Integer> productOrder
     ) {
+        List<Long> promotionIds = packageOrderRequestDto.getCartInfo().getPromotionIds();
+        if (promotionIds.size() > 0) {
+            List<Promotion> promotions = promotionRepository.findAllById(promotionIds);
+            promotions.forEach(promotion -> {
+                int used = promotion.getUsed();
+                promotion.setUsed(used + 1);
+            });
+        }
         Transaction transaction = Transaction.builder()
                 .amount(packageOrderRequestDto.getCartInfo().getTotal().getPaymentTotal())
                 .status(TransactionStatus.PROCESSING)
