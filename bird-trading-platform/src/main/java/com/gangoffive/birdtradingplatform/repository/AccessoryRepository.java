@@ -8,6 +8,7 @@ package com.gangoffive.birdtradingplatform.repository;
 import com.gangoffive.birdtradingplatform.entity.Accessory;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.entity.ShopOwner;
+import com.gangoffive.birdtradingplatform.entity.Tag;
 import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import com.gangoffive.birdtradingplatform.enums.ShopOwnerStatus;
 import org.springframework.data.domain.Page;
@@ -115,4 +116,6 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
                                                                       Pageable pageable);
 
     Optional<List<Accessory>> findAllByShopOwnerAndStatus(ShopOwner shopOwner, ProductStatus productStatus);
+
+    Optional<List<Accessory>> findByTagsInAndShopOwner_Id(List<Tag> tag, long shopId);
 }

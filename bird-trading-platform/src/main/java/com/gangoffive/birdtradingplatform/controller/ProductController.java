@@ -125,4 +125,10 @@ public class ProductController {
     public ResponseEntity<?> getProductRelevant(@PathVariable long productId) {
         return productService.getProductRelevantBaseOnId(productId);
     }
+
+    @GetMapping("/products")
+    public ResponseEntity<?> getProductByTagAndShopId(@RequestParam("shopid") long shopId, @RequestParam("tagid") long[] tagId) {
+        return productService.retrieveProductByShopidAndTagId(shopId, tagId);
+    }
+
 }

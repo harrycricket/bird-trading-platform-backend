@@ -61,5 +61,7 @@ public interface ProductService {
     );
 
     ResponseEntity<?> getProductRelevantBaseOnId(long productId);
+
+    ResponseEntity<?> retrieveProductByShopidAndTagId(long shopId, long[] tagId);
 }
 
