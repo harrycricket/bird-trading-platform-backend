@@ -23,4 +23,6 @@ public class OrderStatusConstant {
             Arrays.asList(OrderStatus.REFUNDED);
     public static List<OrderStatus> UPDATE_ORDER_STATUS_SHIP =
             Arrays.asList(OrderStatus.SHIPPING, OrderStatus.DELIVERED, OrderStatus.CANCELLED);
+
+    public static List<OrderStatus> DELETE_PRODUCT_CHECK_ORDER_STATUS = Arrays.asList(OrderStatus.PROCESSING, OrderStatus.PENDING);
 }

@@ -61,7 +61,7 @@ public class AdminServiceImpl implements AdminService {
                     .x("Week 3")
                     .build();
             List<Order> orderListWeekThree = orderRepository.findByShopOwnerAndCreatedDateBetween(shopOwner, getStartDateOfPreviousWeek(3), getEndDateOfPreviousWeek(3));
-            log.info("orderListWeekThree {}", orderListWeekThree.size());
+//            log.info("orderListWeekThree {}", orderListWeekThree.size());
             if (orderListWeekThree.isEmpty()) {
                 bumpChartDto3.setY(null);
             } else {
@@ -107,7 +107,7 @@ public class AdminServiceImpl implements AdminService {
             }
         }
         List<ShopOwner> shopOwnersWithEqualKeys = new ArrayList<>();
-        log.info("--------------------------------------- Week {}------------", week);
+//        log.info("--------------------------------------- Week {}------------", week);
         for (Map.Entry<ShopOwner, Double> entry1 : shopOwnerTotalPriceOfWeekMap.entrySet()) {
             ShopOwner shopOwner1 = entry1.getKey();
             double value1 = entry1.getValue();
@@ -138,25 +138,25 @@ public class AdminServiceImpl implements AdminService {
 //                    shopOwnerTotalPriceOfWeekMap.put(shopOwner, totalPriceOneShopInOneWeek);
                 }
                 shopOwnerTotalQuantityOfWeekMap.put(shopOwner, totalQuantity);
-                log.info("ShopOwner: {}", shopOwner.getShopName());
-                log.info("totalQuantity: {}", totalQuantity);
+//                log.info("ShopOwner: {}", shopOwner.getShopName());
+//                log.info("totalQuantity: {}", totalQuantity);
             }
         }
-        if (!shopOwnersWithEqualKeys.isEmpty()) {
-            for (ShopOwner shopOwner : shopOwnersWithEqualKeys.stream().distinct().toList()) {
-                log.info("shopOwnersWithEqualKeys {}", shopOwner.getShopName());
-            }
-        }
+//        if (!shopOwnersWithEqualKeys.isEmpty()) {
+//            for (ShopOwner shopOwner : shopOwnersWithEqualKeys.stream().distinct().toList()) {
+//                log.info("shopOwnersWithEqualKeys {}", shopOwner.getShopName());
+//            }
+//        }
 
         List<ShopOwner> shopOwnerByQuantityDecreaseList = shopOwnerTotalQuantityOfWeekMap.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .map(Map.Entry::getKey)
                 .toList();
-        for (ShopOwner shopOwner : shopOwnerByQuantityDecreaseList) {
-            log.info("shopOwner sort {}", shopOwner.getShopName());
-        }
-        log.info("---------------------------------------------------");
+//        for (ShopOwner shopOwner : shopOwnerByQuantityDecreaseList) {
+//            log.info("shopOwner sort {}", shopOwner.getShopName());
+//        }
+//        log.info("---------------------------------------------------");
         List<ShopOwner> shopOwnerByRankDecreaseList = shopOwnerTotalPriceOfWeekMap.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
@@ -167,9 +167,9 @@ public class AdminServiceImpl implements AdminService {
             int index = 0;
             for (int i = 0; i < updatedList.size(); i++) {
                 if (shopOwnerByQuantityDecreaseList.contains(updatedList.get(i))) {
-                    log.info("Go here {}", index + 1);
-                    log.info("shopOwnerByQuantityDecreaseList.get(index) {}", shopOwnerByQuantityDecreaseList.get(index).getShopName());
-                    log.info("shopOwnerByRankDecreaseList.get(i) {}", updatedList.get(i).getShopName());
+//                    log.info("Go here {}", index + 1);
+//                    log.info("shopOwnerByQuantityDecreaseList.get(index) {}", shopOwnerByQuantityDecreaseList.get(index).getShopName());
+//                    log.info("shopOwnerByRankDecreaseList.get(i) {}", updatedList.get(i).getShopName());
                     updatedList.set(i, shopOwnerByQuantityDecreaseList.get(index));
                     index++;
                 }
@@ -195,7 +195,7 @@ public class AdminServiceImpl implements AdminService {
         for (ShopOwner shopOwner : allShopOwnerWithRankOfEight) {
             double totalPrice = 0;
             for (Order order : allOrdersPreviousFourToOneWeek) {
-                log.info("order.getId() {}", order.getId());
+//                log.info("order.getId() {}", order.getId());
                 if (order.getShopOwner().equals(shopOwner)) {
                     totalPrice += order.getTotalPrice();
                 }
@@ -244,8 +244,8 @@ public class AdminServiceImpl implements AdminService {
         LocalDate previousWeekEndDate = previousEndWeekDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).plusDays(1);
 
         //Get list Order of Shop Owner
-        log.info("previousWeekStartDate {}", Date.from(previousWeekStartDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        log.info("previousWeekEndDate {}", Date.from(previousWeekEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+//        log.info("previousWeekStartDate {}", Date.from(previousWeekStartDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+//        log.info("previousWeekEndDate {}", Date.from(previousWeekEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
         List<Order> orders = orderRepository.findAllByCreatedDateBetween(
                 Date.from(previousWeekStartDate.atStartOfDay(ZoneId.systemDefault()).toInstant()),
                 Date.from(previousWeekEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));

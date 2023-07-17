@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.common.OrderStatusConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
 import com.gangoffive.birdtradingplatform.common.ShopOwnerConstant;
@@ -70,6 +71,8 @@ public class ProductServiceImpl implements ProductService {
     private final ShopOwnerRepository shopOwnerRepository;
     private final TypeMapper typeMapper;
     private final TagMapper tagMapper;
+    private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
 
     @Override
     public List<ProductDto> retrieveAllProduct() {
@@ -295,12 +298,22 @@ public class ProductServiceImpl implements ProductService {
     public ResponseEntity<?> updateListProductStatus(ChangeStatusListIdDto changeStatusListIdDto) {
         ProductUpdateStatus product = ProductUpdateStatus.getProductUpdateStatusEnum(changeStatusListIdDto.getStatus());
         try {
+            if(product.getStatus() == -1) {
+                var listOrderDetail = orderDetailRepository.findByProduct_IdIn(changeStatusListIdDto.getIds());
+                if(listOrderDetail != null && listOrderDetail.size() >= 0) {
+                    List<Long> orderId = listOrderDetail.stream().map(a -> a.getOrder().getId()).toList();
+                    var list = orderRepository.findAllByStatusInAndIdIn(OrderStatusConstant.DELETE_PRODUCT_CHECK_ORDER_STATUS, orderId);
+                    if(list.size() > 0) {
+                        return ResponseUtils.getErrorResponseConflict("You cannot delete this product because you still have an order for this product");
+                    }
+                }
+            }
             int numberStatusChange = productRepository.updateListProductStatus(product.getProductStatus(),
                     changeStatusListIdDto.getIds());
             JsonObject jsonObject = new JsonObject();
             jsonObject.addProperty("numberProductChange", numberStatusChange);
             jsonObject.addProperty("message", ResponseCode.UPDATE_LIST_PRODUCT_STATUS_SUCCESS.getMessage());
-            return ResponseEntity.ok(jsonObject.toString());
+                return ResponseEntity.ok(jsonObject.toString());
         } catch (Exception e) {
 //            return new ResponseEntity<>(ErrorResponse.builder().errorCode(ResponseCode.UPDATE_LIST_PRODUCT_STATUS_FAIL.getCode()+"")
 //                    .errorMessage(ResponseCode.UPDATE_LIST_PRODUCT_STATUS_FAIL.getMessage()), HttpStatus.BAD_REQUEST);
