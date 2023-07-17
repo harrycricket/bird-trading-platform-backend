@@ -1056,6 +1056,22 @@ public class ProductServiceImpl implements ProductService {
         return null;
     }
 
+    @Override
+    public ResponseEntity<?> retrieveProductByShopidAndTagId(long shopId, long[] tagId) {
+        List<Tag> tags = new ArrayList<>();
+        Arrays.stream(tagId).forEach(id -> {
+            Tag tag = new Tag();
+            tag.setId(id);
+            tags.add(tag);
+        });
+        List<Product> products = new ArrayList<>();
+        products.addAll(accessoryRepository.findByTagsInAndShopOwner_Id(tags, shopId).get());
+        products.addAll(foodRepository.findByTagsInAndShopOwner_Id(tags, shopId).get());
+        products.addAll(birdRepository.findByTagsInAndShopOwner_Id(tags, shopId).get());
+        List<ProductCartDto> result = products.stream().map(pro -> this.productToProductCart(pro)).toList();
+        return ResponseEntity.ok(result);
+    }
+
 
     private ResponseEntity<ErrorResponse> getErrorResponseNotFoundLinkImage(List<String> urlList, List<String> listImagesRemove) {
         for (String imgRemove : listImagesRemove) {

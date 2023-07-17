@@ -8,6 +8,7 @@ package com.gangoffive.birdtradingplatform.repository;
 import com.gangoffive.birdtradingplatform.entity.Food;
 import com.gangoffive.birdtradingplatform.entity.Product;
 import com.gangoffive.birdtradingplatform.entity.ShopOwner;
+import com.gangoffive.birdtradingplatform.entity.Tag;
 import com.gangoffive.birdtradingplatform.enums.ProductStatus;
 import com.gangoffive.birdtradingplatform.enums.ShopOwnerStatus;
 import org.springframework.data.domain.Page;
@@ -116,4 +117,6 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
                                                                       Pageable pageable);
 
     Optional<List<Food>> findAllByShopOwnerAndStatus(ShopOwner shopOwner, ProductStatus productStatus);
+
+    Optional<List<Food>> findByTagsInAndShopOwner_Id(List<Tag> tag, long shopId);
 }
