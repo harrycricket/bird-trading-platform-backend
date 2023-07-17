@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,7 @@ public class InfoServiceImpl implements InfoService {
     private final OrderDetailRepository orderDetailRepository;
     private final JwtService jwtService;
     private final ShopStaffRepository shopStaffRepository;
+    private final ReviewRepository reviewRepository;
 
     @Override
     public ResponseEntity<?> getUserInfo(String token) {
@@ -113,13 +115,22 @@ public class InfoServiceImpl implements InfoService {
             }
             List<Order> orders = orderRepository.findByShopOwner(shopOwner.get());
             List<OrderDetail> orderDetails = orderDetailRepository.findOrderDetailByOrderIn(orders);
-            int totalProductOrder = orderDetails.stream().mapToInt(orderDetail -> orderDetail.getQuantity()).sum();
             ShopInfoDto shopInfoDto = shopOwnerMapper.modelToShopInfoDto(shopOwner.get());
+            int totalProductOrder = orderDetails.stream().mapToInt(OrderDetail::getQuantity).sum();
+            List<OrderDetail> orderDetailHaveReview = orderDetails.stream().filter(orderDetail -> orderDetail.getReview() != null).toList();
+            List<Review> reviews = reviewRepository.findAllById(
+                    orderDetailHaveReview.stream()
+                            .map(orderDetail -> orderDetail.getReview().getId())
+                            .collect(Collectors.toList())
+            );
+            int sumStar = reviews.stream().mapToInt(review -> review.getRating().getStar()).sum();
+            double avgStar = Math.round((sumStar * 1.0 / reviews.size()) * 100.0) / 100.0;
+            String rating = avgStar + " ("+ reviews.size() +" Rating)";
             ShopSummaryDto shopSummaryDto = ShopSummaryDto.builder()
                     .shopInfoDto(shopInfoDto)
                     .totalProduct(productRepository.countAllByShopOwner_IdAndStatusIn(id, ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER))
                     //rating lam sau
-                    .rating("")
+                    .rating(rating)
                     .totalProductOrder(totalProductOrder)
                     .build();
             return ResponseEntity.ok(shopSummaryDto);
