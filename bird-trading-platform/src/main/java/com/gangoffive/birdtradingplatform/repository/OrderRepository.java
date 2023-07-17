@@ -120,4 +120,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Page<Order>> findAllByPackageOrder_Id(Long packageOrderId, Pageable pageable);
 
     Optional<List<Order>> findAllByPackageOrder_Id(Long packageOrderId);
+
+    List<Order> findAllByStatusInAndIdIn(List<OrderStatus> orderStatuses, List<Long> listId);
 }
