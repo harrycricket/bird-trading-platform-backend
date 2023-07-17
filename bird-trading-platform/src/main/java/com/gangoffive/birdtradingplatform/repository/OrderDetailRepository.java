@@ -505,4 +505,6 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             @Param("dateFrom") Date dateFrom, @Param("dateTo") Date dateTo, @Param("shopId") Long shopId, Pageable pageable
     );
 
+    List<OrderDetail> findByProduct_IdIn(List<Long> listProductId);
+
 }
