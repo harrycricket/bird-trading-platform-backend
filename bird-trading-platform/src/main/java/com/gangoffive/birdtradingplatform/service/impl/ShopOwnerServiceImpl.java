@@ -682,7 +682,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             Optional<Account> accountShop = accountRepository.findByEmail(email);
             ShopOwner shopOwner = accountShop.get().getShopOwner();
             if (shopOwner != null) {
-                Optional<ShopStaff> accountStaff = shopStaffRepository.findByUserName(createAccountSaffDto.getUserName());
+                Optional<ShopStaff> accountStaff = shopStaffRepository.findByUserNameAndShopOwner_Id(createAccountSaffDto.getUserName(), accountShop.get().getId());
                 if (!accountStaff.isPresent()) {
                     ShopStaff shopStaff = ShopStaff.builder()
                             .userName(createAccountSaffDto.getUserName())
