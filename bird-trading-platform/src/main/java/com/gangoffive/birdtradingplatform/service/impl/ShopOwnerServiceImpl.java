@@ -82,20 +82,21 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
 
     @Override
-    public List<LineChartDto> getDataLineChart(String dateFrom, int date) {
+    public List<LineChartDto> getDataLineChart(Long dateFrom, int date) {
         Date newDateFrom;
-        if (dateFrom == null || dateFrom.isEmpty()) {
+        if (dateFrom == null) {
             // Get the current date
             LocalDate currentDate = LocalDate.now();
 
             // Get the date of the previous week
-            LocalDate previousWeekDate = currentDate.minusDays(7);
+            LocalDate previousWeekDate = currentDate.minusDays(date);
 
             // Get the start and end dates of the previous week
             newDateFrom = Date.from(previousWeekDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
         } else {
             try {
-                newDateFrom = new SimpleDateFormat("dd/MM/yyyy").parse(dateFrom);
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                newDateFrom = simpleDateFormat.parse(simpleDateFormat.format(new Date(dateFrom)));
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }
