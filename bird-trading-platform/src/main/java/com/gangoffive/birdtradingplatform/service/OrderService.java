@@ -7,9 +7,13 @@ import org.springframework.http.ResponseEntity;
 public interface OrderService {
     ResponseEntity<?> getAllOrderByPackageOrderId(Long packageOrderId);
 
-    ResponseEntity<?> getAllOrderByShopOwner(OrderShopOwnerFilterDto orderShopOwnerFilter);
+    ResponseEntity<?> filterAllOrder(OrderShopOwnerFilterDto orderShopOwnerFilter, boolean isShopOwner, boolean isAdmin);
 
     ResponseEntity<?> updateStatusOfListOrder(ChangeStatusListIdDto changeStatusListIdDto);
 
     ResponseEntity<?> getAllOrderByShip(int pageNumber);
+
+    ResponseEntity<?> updateStatusOrderOfShipping(ChangeStatusListIdDto changeStatusListIdDto, String token);
+
+    ResponseEntity<?> getAllOrderDetailByOrderId(Long id);
 }

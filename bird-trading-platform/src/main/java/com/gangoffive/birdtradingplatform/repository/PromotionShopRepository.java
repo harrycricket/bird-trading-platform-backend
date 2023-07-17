@@ -21,7 +21,8 @@ import java.util.Optional;
 @Repository
 public interface PromotionShopRepository extends JpaRepository<PromotionShop, Long>{
 
-    Optional<List<PromotionShop>> findByShopOwner_Id(long shopId);
+    @Query(value = "SELECT ps.* FROM `bird-trading-platform`.tbl_promotion_shop ps WHERE ps.end_date > now()", nativeQuery = true)
+    Optional<List<PromotionShop>> findAllByShopOwner_Id(long shopId);
 
     @Query(value = "SELECT ps.* FROM `bird-trading-platform`.tbl_promotion_shop ps" +
                                         " WHERE ps.promotion_s_id IN (" +

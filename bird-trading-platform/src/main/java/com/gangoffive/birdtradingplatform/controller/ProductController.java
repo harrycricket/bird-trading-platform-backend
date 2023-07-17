@@ -5,7 +5,7 @@ import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.repository.ProductRepository;
 import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
-import com.gangoffive.birdtradingplatform.util.S3Utils;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -40,7 +40,7 @@ public class ProductController {
 
     @GetMapping("/products/top-product")
     public ResponseEntity<?> retrieveTopProduct() {
-        List<ProductDto> result = productService.retrieveTopProduct();
+        List<ProductCartDto> result = productService.retrieveTopProduct();
         if(result == null){
             ErrorResponse error = new ErrorResponse(HttpStatus.NOT_FOUND.toString(),
                     "Not found product top product: ");
@@ -69,12 +69,6 @@ public class ProductController {
         log.info("dto {}", productFilterDto);
         return productService.filter(productFilterDto);
     }
-    @GetMapping("/products/filter-shop")
-    public ResponseEntity<?> filterByShop(ShopFilterDto shopFilterDto){
-        log.info("dto {}", shopFilterDto);
-        return productService.filterByShop(shopFilterDto);
-    }
-
 
     @PostMapping("/shop-owner/products")
     public ResponseEntity<?> addNewProduct(
@@ -98,9 +92,11 @@ public class ProductController {
 
     @GetMapping("/shop-owner/products")
     public ResponseEntity<?> getAllProductOfShop(@RequestParam String data) {
-        ProductShopOwnerFilterDto productShopOwnerFilter = JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class);
-        log.info("{}", productShopOwnerFilter.toString());
-        return productService.filterAllProductByShopOwner(productShopOwnerFilter);
+        try {
+            return productService.filterAllProduct(JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class), true, false);
+        } catch (Exception e) {
+            return ResponseUtils.getErrorResponseBadRequest("Data parse not correct.");
+        }
     }
 
     @GetMapping("/shop-owner/products/{productId}")
@@ -115,4 +111,24 @@ public class ProductController {
             @RequestPart(name = "data") ProductUpdateDto productUpdate) {
         return productService.updateProduct(multipartFiles, multipartVideo, productUpdate);
     }
+
+    @GetMapping("/admin/products")
+    public ResponseEntity<?> getAllProduct(@RequestParam String data) {
+        try {
+            return productService.filterAllProduct(JsonUtil.INSTANCE.getObject(data, ProductShopOwnerFilterDto.class), false, true);
+        } catch (Exception e) {
+            return ResponseUtils.getErrorResponseBadRequest("Data parse not correct.");
+        }
+    }
+
+    @GetMapping("/products/{productId}/relevant")
+    public ResponseEntity<?> getProductRelevant(@PathVariable long productId) {
+        return productService.getProductRelevantBaseOnId(productId);
+    }
+
+    @GetMapping("/products")
+    public ResponseEntity<?> getProductByTagAndShopId(@RequestParam("shopid") long shopId, @RequestParam("tagid") long[] tagId) {
+        return productService.retrieveProductByShopidAndTagId(shopId, tagId);
+    }
+
 }

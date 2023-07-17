@@ -3,16 +3,13 @@ package com.gangoffive.birdtradingplatform.entity;
 import java.util.Date;
 
 import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.gangoffive.birdtradingplatform.enums.ReviewRating;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -28,10 +25,11 @@ public class Review {
 	private String comment;
 	
 	@Column(name = "rating")
-	@Enumerated(value = EnumType.STRING)
+	@Enumerated(value = EnumType.ORDINAL)
 	private ReviewRating rating;
 	
-	@Column(name = "img_url")
+	@Column(name = "img_url",
+			columnDefinition = "TEXT")
 	private String imgUrl;
 	
 	@Column(name = "review_date")

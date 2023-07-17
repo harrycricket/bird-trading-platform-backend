@@ -67,6 +67,8 @@ public class Order {
     @OneToMany(mappedBy = "order")
     private List<Report> reports;
 
+    @OneToMany(mappedBy = "order")
+    private List<LogOrder> logOrders;
 
     public Long getId() {
         return id;

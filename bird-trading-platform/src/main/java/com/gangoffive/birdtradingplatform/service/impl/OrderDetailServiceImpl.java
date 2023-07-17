@@ -2,22 +2,19 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
-import com.gangoffive.birdtradingplatform.dto.DateRangeDto;
-import com.gangoffive.birdtradingplatform.dto.OrderDetailDto;
-import com.gangoffive.birdtradingplatform.dto.OrderDetailShopOwnerDto;
-import com.gangoffive.birdtradingplatform.dto.OrderDetailShopOwnerFilterDto;
-import com.gangoffive.birdtradingplatform.entity.Account;
-import com.gangoffive.birdtradingplatform.entity.OrderDetail;
-import com.gangoffive.birdtradingplatform.entity.Product;
-import com.gangoffive.birdtradingplatform.entity.Review;
+import com.gangoffive.birdtradingplatform.dto.*;
+import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.FieldOrderDetailTable;
 import com.gangoffive.birdtradingplatform.enums.Operator;
 import com.gangoffive.birdtradingplatform.enums.SortOrderDetailColumn;
+import com.gangoffive.birdtradingplatform.mapper.PromotionShopMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
+import com.gangoffive.birdtradingplatform.repository.ShopStaffRepository;
 import com.gangoffive.birdtradingplatform.service.OrderDetailService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,9 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,13 +35,24 @@ import java.util.stream.Collectors;
 public class OrderDetailServiceImpl implements OrderDetailService {
     private final OrderDetailRepository orderDetailRepository;
     private final AccountRepository accountRepository;
+    private final PromotionShopMapper promotionShopMapper;
+    private final ShopStaffRepository shopStaffRepository;
 
     @Override
     public ResponseEntity<?> getAllOrderByShopOwner(OrderDetailShopOwnerFilterDto orderDetailFilter) {
-        Optional<Account> account = accountRepository.findByEmail(
-                SecurityContextHolder.getContext().getAuthentication().getName()
-        );
-        Long shopId = account.get().getShopOwner().getId();
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Account> account = accountRepository.findByEmail(username);
+        Long shopId;
+        if (account.isPresent()) {
+            shopId = account.get().getShopOwner().getId();
+        } else {
+            Optional<ShopStaff> shopStaff = shopStaffRepository.findByUserName(username);
+            if (shopStaff.isPresent()) {
+                shopId = shopStaff.get().getShopOwner().getId();
+            } else {
+                return ResponseUtils.getErrorResponseBadRequest("Not have account");
+            }
+        }
         if (orderDetailFilter.getPageNumber() > 0) {
             int pageNumber = orderDetailFilter.getPageNumber() - 1;
             PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
@@ -116,7 +122,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 if (orderDetailFilter.getOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterOrderDetailByOrderDetailIdEqual(orderDetailFilter, shopId, pageRequest);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.ORDER_ID.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -126,7 +132,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 if (orderDetailFilter.getOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterOrderDetailByOrderIdEqual(orderDetailFilter, shopId, pageRequest);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.ORDER_ID.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -138,7 +144,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                         return filterOrderDetailByOrderIdEqual(orderDetailFilter, shopId, pageRequestWithSort);
                     }
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.PRODUCT_ID.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -148,7 +154,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 if (orderDetailFilter.getOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterOrderDetailByProductIdEqual(orderDetailFilter, shopId, pageRequest);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.PRODUCT_ID.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -160,7 +166,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                         return filterOrderDetailByProductIdEqual(orderDetailFilter, shopId, pageRequestWithSort);
                     }
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.PRODUCT_NAME.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -170,7 +176,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 if (orderDetailFilter.getOrderSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
                     return filterOrderDetailByProductNameContain(orderDetailFilter, shopId, pageRequest);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.PRODUCT_NAME.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -189,7 +195,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                         return filterOrderDetailByProductNameContain(orderDetailFilter, shopId, pageRequestWithSort);
                     }
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.PRICE.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -199,7 +205,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 if (orderDetailFilter.getOrderSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterOrderDetailByPriceGreaterThanOrEqual(orderDetailFilter, shopId, pageRequest);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.PRICE.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -211,7 +217,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                         return filterOrderDetailByPriceGreaterThanOrEqual(orderDetailFilter, shopId, pageRequestWithSort);
                     }
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.PROMOTION_RATE.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -221,7 +227,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 if (orderDetailFilter.getOrderSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterOrderDetailByPromotionRateGreaterThanOrEqual(orderDetailFilter, shopId, pageRequest);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.PROMOTION_RATE.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -233,7 +239,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                         return filterOrderDetailByPromotionRateGreaterThanOrEqual(orderDetailFilter, shopId, pageRequestWithSort);
                     }
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.REVIEW_RATING.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -243,7 +249,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 if (orderDetailFilter.getOrderSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
                     return filterOrderDetailByReviewRatingGreaterThanEqual(orderDetailFilter, shopId, pageRequest);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.REVIEW_RATING.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -255,7 +261,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                         return filterOrderDetailByReviewRatingGreaterThanEqual(orderDetailFilter, shopId, pageRequestWithSort);
                     }
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.CREATED_DATE.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -270,7 +276,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                         return filterOrderDetailByCreatedDateFromTo(shopId, dateRange, pageRequest);
                     }
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().equals(FieldOrderDetailTable.CREATED_DATE.getField())
                             && !orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
@@ -291,7 +297,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                         }
                     }
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
@@ -478,14 +484,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
                 .errorMessage("Not found this order detail id.")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-    }
-
-    private ResponseEntity<?> getErrorResponseNotFoundOperator() {
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found this operator.")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
@@ -786,12 +784,22 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     public OrderDetailDto orderDetailToOrderDetailDto(OrderDetail orderDetail) {
+        List<PromotionShopDto> promotionsShopDto = orderDetail.getPromotionShops().stream()
+                .map(promotionShopMapper::modelToDto)
+                .toList();
+        String imgUrl = orderDetail.getProduct().getImgUrl();
+        if (imgUrl.contains(",")) {
+            imgUrl = Arrays.stream(imgUrl.split(",")).findFirst().get();
+        }
         return OrderDetailDto.builder()
+                .orderDetailId(orderDetail.getId())
                 .productId(orderDetail.getProduct().getId())
                 .productName(orderDetail.getProduct().getName())
                 .price(orderDetail.getPrice())
                 .quantity(orderDetail.getQuantity())
                 .productPromotionRate(orderDetail.getProductPromotionRate())
+                .imgUrl(imgUrl)
+                .listPromotion(promotionsShopDto)
                 .build();
     }
 

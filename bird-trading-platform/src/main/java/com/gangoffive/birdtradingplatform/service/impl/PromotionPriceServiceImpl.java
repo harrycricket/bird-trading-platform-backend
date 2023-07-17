@@ -51,7 +51,7 @@ public class PromotionPriceServiceImpl implements PromotionPriceService {
         double originPrice = 0;
         for (int i = 0; i < promotionShops.size(); i++) {
             if (i == 0) {
-                originPrice = discountedPrice / (1- (promotionShops.get(i).getDiscountRate() * 1.0 / 100));
+                originPrice = discountedPrice / (1 - (promotionShops.get(i).getDiscountRate() * 1.0 / 100));
                 log.info("originPrice 0 {}", originPrice);
             } else {
                 originPrice = originPrice / (1 - (promotionShops.get(i).getDiscountRate() * 1.0 / 100));

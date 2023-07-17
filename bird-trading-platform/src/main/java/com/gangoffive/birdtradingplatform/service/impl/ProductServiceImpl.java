@@ -4,6 +4,7 @@ import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
+import com.gangoffive.birdtradingplatform.common.ShopOwnerConstant;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
@@ -14,7 +15,9 @@ import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.service.PromotionPriceService;
 import com.gangoffive.birdtradingplatform.service.ShopOwnerService;
+import com.gangoffive.birdtradingplatform.util.FileNameUtils;
 import com.gangoffive.birdtradingplatform.util.MyUtils;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import com.gangoffive.birdtradingplatform.util.S3Utils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.gangoffive.birdtradingplatform.wrapper.ProductDetailWrapper;
@@ -100,7 +103,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductDto> retrieveTopProduct() {
+    public List<ProductCartDto> retrieveTopProduct() {
         List<Long> birdIds = productSummaryService.getIdTopBird();
         List<Long> accessoryIds = productSummaryService.getIdTopAccessories();
         List<Long> foodIds = productSummaryService.getIdTopFood();
@@ -122,8 +125,7 @@ public class ProductServiceImpl implements ProductService {
             }
         }
         List<Product> product = productRepository.findAllById(topProductIds);
-        List<ProductDto> listDtos = this.listModelToDto(product);
-        Collections.shuffle(listDtos);
+        List<ProductCartDto> listDtos = this.listModelToDto(product);
         return listDtos;
     }
 
@@ -134,10 +136,10 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public List<ProductDto> listModelToDto(List<Product> products) {
+    public List<ProductCartDto> listModelToDto(List<Product> products) {
         if (products != null && products.size() != 0) {
             return products.stream()
-                    .map(this::ProductToDto)
+                    .map(this::productToProductCart)
                     .collect(Collectors.toList());
         }
         return null;
@@ -145,9 +147,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ResponseEntity<?> retrieveProductById(Long id) {
+        //must handle product if shop ban or ban will show out an message
         Optional<Product> product = productRepository.findById(id);
         if (product.isPresent()) {
-            var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(id, ProductStatusConstant.LIST_STATUS_GET_FOR_USER);
+            var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(id,
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER);
             if (productSummary.isPresent()) {
                 ProductDto productDto = this.ProductToDto(product.get());
 
@@ -160,9 +164,17 @@ public class ProductServiceImpl implements ProductService {
                         .listImages(listImages)
                         .numberSold(numberSold)
                         .numberReview(numberReview).build();
-                return ResponseEntity.ok(productDetailWrapper);
-            }
+                if(product.get().getShopOwner().getStatus().name().equalsIgnoreCase(ShopOwnerStatus.BAN.name())) {
+                    return new ResponseEntity<>(productDetailWrapper, HttpStatus.valueOf(423));
+                }else if(product.get().getStatus().name().equalsIgnoreCase(ProductStatus.BAN.name())){
+                    return new ResponseEntity<>(productDetailWrapper, HttpStatus.valueOf(423));
+                }else{
+                    return ResponseEntity.ok(productDetailWrapper);
+                }
 
+            }else{
+                return ResponseUtils.getErrorResponseNotFound(String.format("Product Summary not contain product with id %d", id));
+            }
         }
         return new ResponseEntity<>(ResponseCode.NOT_FOUND_THIS_ID.toString(), HttpStatus.NOT_FOUND);
     }
@@ -203,8 +215,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ResponseEntity<?> retrieveProductByListId(long[] ids) {
-        var lists = productRepository.findByIdInAndQuantityGreaterThanAndStatusIn(Arrays.stream(ids).boxed().toList(),
-                ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER, ProductStatusConstant.LIST_STATUS_GET_FOR_USER);
+        var lists = productRepository.findByIdInAndQuantityGreaterThanAndStatusInAndShopOwner_StatusIn(Arrays.stream(ids).boxed().toList(),
+                ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER);
         if (lists.isPresent()) {
             return ResponseEntity.ok(lists.get().stream().map(this::productToProductCart).toList());
         }
@@ -238,32 +250,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ResponseEntity<?> retrieveProductByShopIdForSO(int pageNumber) {
-        String email = "YamamotoEmi37415@gmail.com";
-        var account = accountRepository.findByEmail(email);
-        if (account.isPresent()) {
-            long shopId = account.get().getId();
-            if (pageNumber > 0) {
-                --pageNumber;
-            }
-            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
-                    Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "lastUpDated"));
-            Optional<Page<Product>> pageAble = productRepository.findByShopOwner_IdAndStatusIn(shopId,
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest);
-
-            if (pageAble.isPresent()) {
-                List<ProductShopDto> result = pageAble.get().stream().map(this::productToProductShopDto).toList();
-                PageNumberWrapper<ProductShopDto> pageNumberWrapper = new PageNumberWrapper<>();
-                pageNumberWrapper.setPageNumber(pageAble.get().getTotalPages());
-                pageNumberWrapper.setLists(result);
-                return ResponseEntity.ok(pageNumberWrapper);
-            }
-        }
-        return new ResponseEntity<>(ErrorResponse.builder().errorMessage(ResponseCode.NOT_FOUND_THIS_PRODUCT_SHOP_ID.toString())
-                .errorCode(HttpStatus.NOT_FOUND.name()).build(), HttpStatus.NOT_FOUND);
-    }
-
-    @Override
     public ProductShopDto productToProductShopDto(Product product) {
         if (product != null) {
             ProductShopDto productShopDto;
@@ -283,6 +269,7 @@ public class ProductServiceImpl implements ProductService {
                 productShopDto = new ProductShopDto();
             }
             productShopDto.setId(product.getId());
+            productShopDto.setShopId(product.getShopOwner().getId());
             productShopDto.setName(product.getName());
             productShopDto.setPrice(product.getPrice());
             productShopDto.setDiscountedPrice(CalculateDiscountedPrice(product.getPrice(), promotionPriceService.CalculateSaleOff(product.getPromotionShops(), product.getPrice())));
@@ -291,7 +278,8 @@ public class ProductServiceImpl implements ProductService {
             productShopDto.setCreateDate(product.getCreatedDate().getTime());
             productShopDto.setLastUpdate(product.getLastUpDated().getTime());
             //get product summary to take total order total review star
-            var productSummary = productSummaryRepository.findByProductIdAndProductStatusIn(product.getId(), ProductStatusConstant.LIST_STATUS_GET_FOR_USER);
+            var productSummary = productSummaryRepository.findByProductIdAndProductStatusInAndProduct_ShopOwner_StatusIn(product.getId(),
+                    ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER);
             if (productSummary.isPresent()) {
                 productShopDto.setTotalOrders(productSummary.get().getTotalQuantityOrder());
                 productShopDto.setTotalReviews(productSummary.get().getReviewTotal());
@@ -347,11 +335,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ResponseEntity<?> filterAllProductByShopOwner(ProductShopOwnerFilterDto productFilter) {
+    public ResponseEntity<?> filterAllProduct(
+            ProductShopOwnerFilterDto productFilter,
+            boolean isShopOwner, boolean isAdmin
+    ) {
         Optional<Account> account = accountRepository.findByEmail(
                 SecurityContextHolder.getContext().getAuthentication().getName()
         );
-        Long shopId = account.get().getShopOwner().getId();
+        Long shopId = null;
+        if (account.isPresent() && isShopOwner) {
+             shopId = account.get().getShopOwner().getId();
+        }
         log.info("productFilter.getPageNumber() {}", productFilter.getPageNumber());
         if (productFilter.getPageNumber() > 0) {
             int pageNumber = productFilter.getPageNumber() - 1;
@@ -391,7 +385,7 @@ public class ProductServiceImpl implements ProductService {
                             && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 log.info("all no");
-                return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequest);
+                return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
             } else if (
                     productFilter.getProductSearchInfo().getField().isEmpty()
                             && productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -400,7 +394,7 @@ public class ProductServiceImpl implements ProductService {
                             && !productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 log.info("with sort");
-                return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequestWithSort);
+                return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequestWithSort, isShopOwner, isAdmin);
             }
 
 
@@ -409,10 +403,27 @@ public class ProductServiceImpl implements ProductService {
                             && productFilter.getProductSearchInfo().getValue() != null
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
-                    return filterProductByIdEqual(productFilter, shopId, pageRequest);
+                    return filterProductByIdEqual(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
                 }
-
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    productFilter.getProductSearchInfo().getField().equals(FieldProductTable.SHOP_ID.getField())
+                            && !productFilter.getProductSearchInfo().getValue().isEmpty()
+                            && productFilter.getSortDirection().getField().isEmpty()
+                            && productFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterProductByShopIdEqual(productFilter, pageRequest, isAdmin);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    productFilter.getProductSearchInfo().getField().equals(FieldProductTable.SHOP_ID.getField())
+                    && !productFilter.getProductSearchInfo().getValue().isEmpty()
+            ) {
+                if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterProductByShopIdEqual(productFilter, pageRequest, isAdmin);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.NAME.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -420,17 +431,17 @@ public class ProductServiceImpl implements ProductService {
                             && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
-                    return filterProductByNameLike(productFilter, shopId, pageRequest);
+                    return filterProductByNameLike(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.NAME.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
-                    return filterProductByNameLike(productFilter, shopId, pageRequestWithSort);
+                    return filterProductByNameLike(productFilter, shopId, pageRequestWithSort, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.TYPE.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -438,17 +449,17 @@ public class ProductServiceImpl implements ProductService {
                             && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
-                    return filterProductByTypeNameLike(productFilter, shopId, pageRequest);
+                    return filterProductByTypeNameLike(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.TYPE.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
-                    return filterProductByTypeNameLike(productFilter, shopId, pageRequestWithSort);
+                    return filterProductByTypeNameLike(productFilter, shopId, pageRequestWithSort, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.PRICE.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -456,17 +467,17 @@ public class ProductServiceImpl implements ProductService {
                             && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
-                    return filterProductByPriceGreaterThanOrEqual(productFilter, shopId, pageRequest);
+                    return filterProductByPriceGreaterThanOrEqual(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.PRICE.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
-                    return filterProductByPriceGreaterThanOrEqual(productFilter, shopId, pageRequestWithSort);
+                    return filterProductByPriceGreaterThanOrEqual(productFilter, shopId, pageRequestWithSort, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.DISCOUNTED_PRICE.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -474,17 +485,17 @@ public class ProductServiceImpl implements ProductService {
                             && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
-                    return filterProductByDiscountedPriceGreaterThanOrEqual(productFilter, shopId, pageRequest);
+                    return filterProductByDiscountedPriceGreaterThanOrEqual(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.DISCOUNTED_PRICE.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
-                    return filterProductByDiscountedPriceGreaterThanOrEqual(productFilter, shopId, pageRequestWithSort);
+                    return filterProductByDiscountedPriceGreaterThanOrEqual(productFilter, shopId, pageRequestWithSort, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.STATUS.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -492,17 +503,17 @@ public class ProductServiceImpl implements ProductService {
                             && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
-                    return filterProductByStatusEqual(productFilter, shopId, pageRequest);
+                    return filterProductByStatusEqual(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else if (
                     productFilter.getProductSearchInfo().getField().equals(FieldProductTable.STATUS.getField())
                             && !productFilter.getProductSearchInfo().getValue().isEmpty()
             ) {
                 if (productFilter.getProductSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
-                    return filterProductByStatusEqual(productFilter, shopId, pageRequestWithSort);
+                    return filterProductByStatusEqual(productFilter, shopId, pageRequestWithSort, isShopOwner, isAdmin);
                 }
-                return getErrorResponseNotFoundOperator();
+                return ResponseUtils.getErrorResponseNotFoundOperator();
             } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
@@ -517,10 +528,55 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private ResponseEntity<ErrorResponse> getErrorResponseNotFoundOperator() {
+    private ResponseEntity<?> filterProductByShopIdEqual(
+            ProductShopOwnerFilterDto productFilter,
+            PageRequest pageRequest, boolean isAdmin
+    ) {
+        if (productFilter.getCategory() == 1) {
+            Optional<Page<Bird>> birds = Optional.empty();
+             if (isAdmin) {
+                birds = birdRepository.findAllByShopOwner_IdAndStatusIn(
+                        Long.valueOf(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
+
+            if (birds.isPresent()) {
+                return getPageNumberWrapperBirds(birds);
+            }
+        } else if (productFilter.getCategory() == 2) {
+            Optional<Page<Food>> foods = Optional.empty();
+            if (isAdmin) {
+                foods = foodRepository.findAllByShopOwner_IdAndStatusIn(
+                        Long.valueOf(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
+
+            if (foods.isPresent()) {
+                return getPageNumberWrapperFoods(foods);
+            }
+        } else if (productFilter.getCategory() == 3) {
+            Optional<Page<Accessory>> accessories = Optional.empty();
+            if (isAdmin) {
+                accessories = accessoryRepository.findAllByShopOwner_IdAndStatusIn(
+                        Long.valueOf(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
+
+            if (accessories.isPresent()) {
+                return getPageNumberWrapperAccessories(accessories);
+            }
+        } else {
+            return getErrorResponseNotFoundCategory();
+        }
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                .errorMessage("Not found this operator.")
+                .errorMessage("Not found this shop id.")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
@@ -599,8 +655,12 @@ public class ProductServiceImpl implements ProductService {
             String listImages = gson.toJson(images);
             JsonArray imageArray = JsonParser.parseString(listImages).getAsJsonArray();
             json.add("listImages", imageArray);
-            json.addProperty("video", product.get().getVideoUrl());
-
+            String video = product.get().getVideoUrl();
+            if(product.get().getVideoUrl() == null || product.get().getVideoUrl().equals("NULL") ||
+                    product.get().getVideoUrl().isEmpty()) {
+                video = "";
+            }
+            json.addProperty("video", video);
             String jsonString = json.toString();
             return ResponseEntity.ok(jsonString);
         } else {
@@ -646,22 +706,37 @@ public class ProductServiceImpl implements ProductService {
                 }
                 List<String> urlList = Arrays.asList(bird.getImgUrl().split(","));
                 List<String> listImagesRemove = productUpdate.getListImages();
+                List<String> updateUrlList = new ArrayList<>();
                 //Remove image
                 if (listImagesRemove.size() > 0) {
+                    ResponseEntity<ErrorResponse> errorNotFoundLinkImage = getErrorResponseNotFoundLinkImage(urlList, listImagesRemove);
+                    if (errorNotFoundLinkImage != null)
+                        return errorNotFoundLinkImage;
                     //remove in DB
-                    listImagesRemove.forEach(urlList::remove);
+                    listImagesRemove.forEach(image -> log.info("image remove {}", image));
+                    urlList.forEach(image -> log.info("image {}", image));
+                    for (int i = 0; i < urlList.size(); i++) {
+                        if (!listImagesRemove.contains(urlList.get(i))) {
+                            updateUrlList.add(urlList.get(i));
+                        }
+                    }
+                    updateUrlList.forEach(image -> log.info("image after {}", image));
                     //remove in S3
                     ResponseEntity<ErrorResponse> errorResponse = removeListImageInS3(listImagesRemove);
                     if (errorResponse != null) {
                         return errorResponse;
+                    }
+                } else {
+                    for (String urlImage : urlList) {
+                        updateUrlList.add(urlImage);
                     }
                 }
                 String originUrl = appProperties.getS3().getUrl();
                 //Add new image
                 if (multipartImgList != null && !multipartImgList.isEmpty()) {
                     for (MultipartFile multipartFile : multipartImgList) {
-                        String newFilename = getNewImageFileName(multipartFile);
-                        urlList.add(originUrl + newFilename);
+                        String newFilename = FileNameUtils.getNewImageFileName(multipartFile);
+                        updateUrlList.add(originUrl + newFilename);
                         try {
                             S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
                         } catch (Exception ex) {
@@ -673,13 +748,26 @@ public class ProductServiceImpl implements ProductService {
                         }
                     }
                 }
-                String imgUrl = urlList.stream()
+
+                updateUrlList.forEach(image -> log.info("image after add new {}", image));
+
+                String imgUrl = updateUrlList.stream()
                         .collect(Collectors.joining(","));
                 bird.setImgUrl(imgUrl);
-
+                String oldVideoUrl = bird.getVideoUrl();
+                //Only delete video
+                if (productUpdate.isDeleteVideo() && multipartVideo == null) {
+                    if (oldVideoUrl != null && !oldVideoUrl.isEmpty()) {
+                        ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
+                        if (errorResponse != null) {
+                            return errorResponse;
+                        }
+                    }
+                    bird.setVideoUrl(null);
+                }
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                    String newFilename = getNewVideoFileName(multipartVideo);
+                    String newFilename = FileNameUtils.getNewVideoFileName(multipartVideo);
                     String urlVideo = originUrl + newFilename;
                     try {
                         S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
@@ -690,6 +778,12 @@ public class ProductServiceImpl implements ProductService {
                                 .errorMessage("Upload file fail")
                                 .build();
                         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    }
+                    if (oldVideoUrl != null && !oldVideoUrl.isEmpty()) {
+                        ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
+                        if (errorResponse != null) {
+                            return errorResponse;
+                        }
                     }
                 }
                 birdRepository.save(bird);
@@ -727,22 +821,37 @@ public class ProductServiceImpl implements ProductService {
                 }
                 List<String> urlList = Arrays.asList(food.getImgUrl().split(","));
                 List<String> listImagesRemove = productUpdate.getListImages();
+                List<String> updateUrlList = new ArrayList<>();
                 //Remove image
                 if (listImagesRemove.size() > 0) {
+                    ResponseEntity<ErrorResponse> errorNotFoundLinkImage = getErrorResponseNotFoundLinkImage(urlList, listImagesRemove);
+                    if (errorNotFoundLinkImage != null)
+                        return errorNotFoundLinkImage;
                     //remove in DB
-                    listImagesRemove.forEach(urlList::remove);
+                    listImagesRemove.forEach(image -> log.info("image remove {}", image));
+                    urlList.forEach(image -> log.info("image {}", image));
+                    for (int i = 0; i < urlList.size(); i++) {
+                        if (!listImagesRemove.contains(urlList.get(i))) {
+                            updateUrlList.add(urlList.get(i));
+                        }
+                    }
+                    updateUrlList.forEach(image -> log.info("image after {}", image));
                     //remove in S3
                     ResponseEntity<ErrorResponse> errorResponse = removeListImageInS3(listImagesRemove);
                     if (errorResponse != null) {
                         return errorResponse;
+                    }
+                } else {
+                    for (String urlImage : urlList) {
+                        updateUrlList.add(urlImage);
                     }
                 }
                 String originUrl = appProperties.getS3().getUrl();
                 //Add new image
                 if (multipartImgList != null && !multipartImgList.isEmpty()) {
                     for (MultipartFile multipartFile : multipartImgList) {
-                        String newFilename = getNewImageFileName(multipartFile);
-                        urlList.add(originUrl + newFilename);
+                        String newFilename = FileNameUtils.getNewImageFileName(multipartFile);
+                        updateUrlList.add(originUrl + newFilename);
                         try {
                             S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
                         } catch (Exception ex) {
@@ -754,13 +863,23 @@ public class ProductServiceImpl implements ProductService {
                         }
                     }
                 }
-                String imgUrl = urlList.stream()
+                String imgUrl = updateUrlList.stream()
                         .collect(Collectors.joining(","));
                 food.setImgUrl(imgUrl);
-
+                String oldVideoUrl = food.getVideoUrl();
+                //Only delete video
+                if (productUpdate.isDeleteVideo() && multipartVideo == null) {
+                    if (oldVideoUrl != null && !oldVideoUrl.isEmpty()) {
+                        ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
+                        if (errorResponse != null) {
+                            return errorResponse;
+                        }
+                    }
+                    food.setVideoUrl(null);
+                }
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                    String newFilename = getNewVideoFileName(multipartVideo);
+                    String newFilename = FileNameUtils.getNewVideoFileName(multipartVideo);
                     String urlVideo = originUrl + newFilename;
                     try {
                         S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
@@ -771,6 +890,12 @@ public class ProductServiceImpl implements ProductService {
                                 .errorMessage("Upload file fail")
                                 .build();
                         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    }
+                    if (oldVideoUrl != null && !oldVideoUrl.isEmpty()) {
+                        ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
+                        if (errorResponse != null) {
+                            return errorResponse;
+                        }
                     }
                 }
                 foodRepository.save(food);
@@ -808,22 +933,37 @@ public class ProductServiceImpl implements ProductService {
                 }
                 List<String> urlList = Arrays.asList(accessory.getImgUrl().split(","));
                 List<String> listImagesRemove = productUpdate.getListImages();
+                List<String> updateUrlList = new ArrayList<>();
                 //Remove image
                 if (listImagesRemove.size() > 0) {
+                    ResponseEntity<ErrorResponse> errorNotFoundLinkImage = getErrorResponseNotFoundLinkImage(urlList, listImagesRemove);
+                    if (errorNotFoundLinkImage != null)
+                        return errorNotFoundLinkImage;
                     //remove in DB
-                    listImagesRemove.forEach(urlList::remove);
+                    listImagesRemove.forEach(image -> log.info("image remove {}", image));
+                    urlList.forEach(image -> log.info("image {}", image));
+                    for (int i = 0; i < urlList.size(); i++) {
+                        if (!listImagesRemove.contains(urlList.get(i))) {
+                            updateUrlList.add(urlList.get(i));
+                        }
+                    }
+                    updateUrlList.forEach(image -> log.info("image after {}", image));
                     //remove in S3
                     ResponseEntity<ErrorResponse> errorResponse = removeListImageInS3(listImagesRemove);
                     if (errorResponse != null) {
                         return errorResponse;
+                    }
+                } else {
+                    for (String urlImage : urlList) {
+                        updateUrlList.add(urlImage);
                     }
                 }
                 String originUrl = appProperties.getS3().getUrl();
                 //Add new image
                 if (multipartImgList != null && !multipartImgList.isEmpty()) {
                     for (MultipartFile multipartFile : multipartImgList) {
-                        String newFilename = getNewImageFileName(multipartFile);
-                        urlList.add(originUrl + newFilename);
+                        String newFilename = FileNameUtils.getNewImageFileName(multipartFile);
+                        updateUrlList.add(originUrl + newFilename);
                         try {
                             S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
                         } catch (Exception ex) {
@@ -835,13 +975,24 @@ public class ProductServiceImpl implements ProductService {
                         }
                     }
                 }
-                String imgUrl = urlList.stream()
+                String imgUrl = updateUrlList.stream()
                         .collect(Collectors.joining(","));
                 accessory.setImgUrl(imgUrl);
 
+                String oldVideoUrl = accessory.getVideoUrl();
+                //Only delete video
+                if (productUpdate.isDeleteVideo() && multipartVideo == null) {
+                    if (oldVideoUrl != null && !oldVideoUrl.isEmpty()) {
+                        ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
+                        if (errorResponse != null) {
+                            return errorResponse;
+                        }
+                    }
+                    accessory.setVideoUrl(null);
+                }
                 //Add new video
                 if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                    String newFilename = getNewVideoFileName(multipartVideo);
+                    String newFilename = FileNameUtils.getNewVideoFileName(multipartVideo);
                     String urlVideo = originUrl + newFilename;
                     try {
                         S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
@@ -852,6 +1003,12 @@ public class ProductServiceImpl implements ProductService {
                                 .errorMessage("Upload file fail")
                                 .build();
                         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    }
+                    if (oldVideoUrl != null && !oldVideoUrl.isEmpty()) {
+                        ResponseEntity<ErrorResponse> errorResponse = removeVideoInS3(oldVideoUrl);
+                        if (errorResponse != null) {
+                            return errorResponse;
+                        }
                     }
                 }
                 accessoryRepository.save(accessory);
@@ -871,17 +1028,84 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private String getNewImageFileName(MultipartFile multipartFile) {
-        String contentType = multipartFile.getContentType();
-        String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
-        newFilename = "image/" + newFilename;
-        return newFilename;
+    @Override
+    public ResponseEntity<?> getProductRelevantBaseOnId(long productId) {
+        var product = productRepository.findById(productId);
+        if(product.isPresent()) {
+            PageRequest pageRequest = PageRequest.of(0, PagingAndSorting.DEFAULT_PAGE_SIZE);
+            List<Product> listProduct = new ArrayList<>();
+            List<Long> tagid;
+            if (product.get() instanceof Bird) {
+                tagid = ((Bird) product.get()).getTags().stream().map(a -> a.getId()).toList();
+                listProduct = birdRepository.findDistinctBirdsByTypeAndTagsSortedByTotalQuantity(((Bird) product.get()).getTypeBird().getId(),
+                        tagid, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER ,pageRequest );
+            }
+            else if (product.get() instanceof Food) {
+                tagid = ((Food) product.get()).getTags().stream().map(a -> a.getId()).toList();
+                listProduct = foodRepository.findDistinctBirdsByTypeAndTagsSortedByTotalQuantity(((Food) product.get()).getTypeFood().getId(),
+                        tagid, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER ,pageRequest );
+            } else {
+                tagid = ((Accessory) product.get()).getTags().stream().map(a -> a.getId()).toList();
+                listProduct = accessoryRepository.findDistinctBirdsByTypeAndTagsSortedByTotalQuantity(((Accessory) product.get()).getTypeAccessory().getId(),
+                        tagid, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER ,pageRequest );
+            }
+
+            List<ProductCartDto> list =  listProduct.stream().map(this::productToProductCart).toList();
+            return ResponseEntity.ok(list);
+        }
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<?> retrieveProductByShopidAndTagId(long shopId, long[] tagId) {
+        List<Tag> tags = new ArrayList<>();
+        Arrays.stream(tagId).forEach(id -> {
+            Tag tag = new Tag();
+            tag.setId(id);
+            tags.add(tag);
+        });
+        List<Product> products = new ArrayList<>();
+        products.addAll(accessoryRepository.findByTagsInAndShopOwner_Id(tags, shopId).get());
+        products.addAll(foodRepository.findByTagsInAndShopOwner_Id(tags, shopId).get());
+        products.addAll(birdRepository.findByTagsInAndShopOwner_Id(tags, shopId).get());
+        List<ProductCartDto> result = products.stream().map(pro -> this.productToProductCart(pro)).toList();
+        return ResponseEntity.ok(result);
+    }
+
+
+    private ResponseEntity<ErrorResponse> getErrorResponseNotFoundLinkImage(List<String> urlList, List<String> listImagesRemove) {
+        for (String imgRemove : listImagesRemove) {
+            if (!urlList.contains(imgRemove)) {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                        .errorMessage("No find image link to remove.")
+                        .build();
+                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            }
+        }
+        return null;
+    }
+
+    private ResponseEntity<ErrorResponse> removeVideoInS3(String videoRemove) {
+        String originUrl = appProperties.getS3().getUrl();
+        try {
+            S3Utils.deleteFile(videoRemove.substring(originUrl.length()));
+        } catch (Exception ex) {
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
+                    .errorMessage("Remove file fail")
+                    .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+        return null;
     }
 
     private ResponseEntity<ErrorResponse> removeListImageInS3(List<String> listImagesRemove) {
+        String originUrl = appProperties.getS3().getUrl();
         for (String removeImg : listImagesRemove) {
+            removeImg = removeImg.substring(originUrl.length());
             try {
-                S3Utils.deleteFile("image/" + removeImg);
+                S3Utils.deleteFile(removeImg);
             } catch (Exception ex) {
                 ErrorResponse errorResponse = ErrorResponse.builder()
                         .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
@@ -907,13 +1131,24 @@ public class ProductServiceImpl implements ProductService {
         return feature;
     }
 
-    private ResponseEntity<?> filterAllProductAllFieldEmpty(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {
+    private ResponseEntity<?> filterAllProductAllFieldEmpty(
+            ProductShopOwnerFilterDto productFilter, Long shopId,
+            PageRequest pageRequest, boolean isShopOwner, boolean isAdmin
+    ) {
         if (productFilter.getCategory() == 1) {
-            Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndStatusIn(
-                    shopId,
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+            Optional<Page<Bird>> birds = Optional.empty();
+            if (isShopOwner) {
+                birds = birdRepository.findAllByShopOwner_IdAndStatusIn(
+                        shopId,
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                birds = birdRepository.findAllByStatusIn(
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
 
             if (birds.isPresent()) {
                 return getPageNumberWrapperBirds(birds);
@@ -925,11 +1160,19 @@ public class ProductServiceImpl implements ProductService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
             }
         } else if (productFilter.getCategory() == 2) {
-            Optional<Page<Food>> foods = foodRepository.findAllByShopOwner_IdAndStatusIn(
-                    shopId,
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+            Optional<Page<Food>> foods = Optional.empty();
+            if (isShopOwner) {
+                foods = foodRepository.findAllByShopOwner_IdAndStatusIn(
+                        shopId,
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                foods = foodRepository.findAllByStatusIn(
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
 
             if (foods.isPresent()) {
                 return getPageNumberWrapperFoods(foods);
@@ -941,11 +1184,19 @@ public class ProductServiceImpl implements ProductService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
             }
         } else if (productFilter.getCategory() == 3) {
-            Optional<Page<Accessory>> accessories = accessoryRepository.findAllByShopOwner_IdAndStatusIn(
-                    shopId,
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+            Optional<Page<Accessory>> accessories = Optional.empty();
+            if (isShopOwner) {
+                accessories = accessoryRepository.findAllByShopOwner_IdAndStatusIn(
+                        shopId,
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                accessories = accessoryRepository.findAllByStatusIn(
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
 
             if (accessories.isPresent()) {
                 return getPageNumberWrapperAccessories(accessories);
@@ -1022,21 +1273,35 @@ public class ProductServiceImpl implements ProductService {
         return pageRequestWithSort;
     }
 
-    private ResponseEntity<?> filterProductByStatusEqual(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {
+    private ResponseEntity<?> filterProductByStatusEqual(
+            ProductShopOwnerFilterDto productFilter, Long shopId,
+            PageRequest pageRequest, boolean isShopOwner, boolean isAdmin
+    ) {
         List<ProductStatus> productStatuses;
-        if (Integer.parseInt(productFilter.getProductSearchInfo().getValue()) == 9) {
+        if (Integer.parseInt(productFilter.getProductSearchInfo().getValue()) == 9 && isShopOwner) {
             productStatuses = ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER;
+        } else if (Integer.parseInt(productFilter.getProductSearchInfo().getValue()) == 9 && isAdmin) {
+            productStatuses = ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN;
         } else {
             productStatuses = Arrays.asList(ProductUpdateStatus.getProductUpdateStatusEnum(
                     Integer.parseInt(productFilter.getProductSearchInfo().getValue())
             ).getProductStatus());
         }
         if (productFilter.getCategory() == 1) {
-            Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndStatusIn(
-                    shopId,
-                    productStatuses,
-                    pageRequest
-            );
+            Optional<Page<Bird>> birds = Optional.empty();
+            if (isShopOwner) {
+                birds = birdRepository.findAllByShopOwner_IdAndStatusIn(
+                        shopId,
+                        productStatuses,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                birds = birdRepository.findAllByStatusIn(
+                        productStatuses,
+                        pageRequest
+                );
+            }
+
             if (birds.isPresent()) {
                 return getPageNumberWrapperBirds(birds);
             }
@@ -1046,11 +1311,20 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else if (productFilter.getCategory() == 2) {
-            Optional<Page<Food>> foods = foodRepository.findAllByShopOwner_IdAndStatusIn(
-                    shopId,
-                    productStatuses,
-                    pageRequest
-            );
+            Optional<Page<Food>> foods = Optional.empty();
+            if (isShopOwner) {
+                foods = foodRepository.findAllByShopOwner_IdAndStatusIn(
+                        shopId,
+                        productStatuses,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                foods = foodRepository.findAllByStatusIn(
+                        productStatuses,
+                        pageRequest
+                );
+            }
+
             if (foods.isPresent()) {
                 return getPageNumberWrapperFoods(foods);
             }
@@ -1060,11 +1334,20 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else if (productFilter.getCategory() == 3) {
-            Optional<Page<Accessory>> accessories = accessoryRepository.findAllByShopOwner_IdAndStatusIn(
-                    shopId,
-                    productStatuses,
-                    pageRequest
-            );
+            Optional<Page<Accessory>> accessories = Optional.empty();
+            if (isShopOwner) {
+                accessories = accessoryRepository.findAllByShopOwner_IdAndStatusIn(
+                        shopId,
+                        productStatuses,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                accessories = accessoryRepository.findAllByStatusIn(
+                        productStatuses,
+                        pageRequest
+                );
+            }
+
             if (accessories.isPresent()) {
                 return getPageNumberWrapperAccessories(accessories);
             }
@@ -1078,14 +1361,24 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private ResponseEntity<?> filterProductByDiscountedPriceGreaterThanOrEqual(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {
+    private ResponseEntity<?> filterProductByDiscountedPriceGreaterThanOrEqual(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest, boolean isShopOwner, boolean isAdmin) {
         if (productFilter.getCategory() == 1) {
-            Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
-                    shopId,
-                    Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+            Optional<Page<Bird>> birds = Optional.empty();
+            if (isShopOwner) {
+                birds = birdRepository.findAllByShopOwner_IdAndProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
+                        shopId,
+                        Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                birds = birdRepository.findAllByProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
+                        Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
+
             if (birds.isPresent()) {
                 return getPageNumberWrapperBirds(birds);
             }
@@ -1095,12 +1388,22 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else if (productFilter.getCategory() == 2) {
-            Optional<Page<Food>> foods = foodRepository.findAllByShopOwner_IdAndProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
-                    shopId,
-                    Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+            Optional<Page<Food>> foods = Optional.empty();
+            if (isShopOwner) {
+                foods = foodRepository.findAllByShopOwner_IdAndProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
+                        shopId,
+                        Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                foods = foodRepository.findAllByProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
+                        Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
+
             if (foods.isPresent()) {
                 return getPageNumberWrapperFoods(foods);
             }
@@ -1110,12 +1413,22 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else if (productFilter.getCategory() == 3) {
-            Optional<Page<Accessory>> accessories = accessoryRepository.findAllByShopOwner_IdAndProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
-                    shopId,
-                    Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+            Optional<Page<Accessory>> accessories = Optional.empty();
+            if (isShopOwner) {
+                accessories = accessoryRepository.findAllByShopOwner_IdAndProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
+                        shopId,
+                        Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                accessories = accessoryRepository.findAllByProductSummary_DiscountedPriceGreaterThanEqualAndStatusIn(
+                        Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
+
             if (accessories.isPresent()) {
                 return getPageNumberWrapperAccessories(accessories);
             }
@@ -1129,14 +1442,27 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private ResponseEntity<?> filterProductByPriceGreaterThanOrEqual(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {
+    private ResponseEntity<?> filterProductByPriceGreaterThanOrEqual(
+            ProductShopOwnerFilterDto productFilter, Long shopId,
+            PageRequest pageRequest, boolean isShopOwner, boolean isAdmin
+    ) {
         if (productFilter.getCategory() == 1) {
-            Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndPriceGreaterThanEqualAndStatusIn(
-                    shopId,
-                    Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+            Optional<Page<Bird>> birds = Optional.empty();
+            if (isShopOwner) {
+                birds = birdRepository.findAllByShopOwner_IdAndPriceGreaterThanEqualAndStatusIn(
+                        shopId,
+                        Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                birds = birdRepository.findAllByPriceGreaterThanEqualAndStatusIn(
+                        Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
+
             if (birds.isPresent()) {
                 return getPageNumberWrapperBirds(birds);
             }
@@ -1146,12 +1472,22 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else if (productFilter.getCategory() == 2) {
-            Optional<Page<Food>> foods = foodRepository.findAllByShopOwner_IdAndPriceGreaterThanEqualAndStatusIn(
-                    shopId,
-                    Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+            Optional<Page<Food>> foods = Optional.empty();
+            if (isShopOwner) {
+                foods = foodRepository.findAllByShopOwner_IdAndPriceGreaterThanEqualAndStatusIn(
+                        shopId,
+                        Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                foods = foodRepository.findAllByPriceGreaterThanEqualAndStatusIn(
+                        Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
+
             if (foods.isPresent()) {
                 return getPageNumberWrapperFoods(foods);
             }
@@ -1161,12 +1497,22 @@ public class ProductServiceImpl implements ProductService {
                     .build();
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else if (productFilter.getCategory() == 3) {
-            Optional<Page<Accessory>> accessories = accessoryRepository.findAllByShopOwner_IdAndPriceGreaterThanEqualAndStatusIn(
-                    shopId,
-                    Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+            Optional<Page<Accessory>> accessories = Optional.empty();
+            if (isShopOwner) {
+                accessories = accessoryRepository.findAllByShopOwner_IdAndPriceGreaterThanEqualAndStatusIn(
+                        shopId,
+                        Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                accessories = accessoryRepository.findAllByPriceGreaterThanEqualAndStatusIn(
+                        Double.parseDouble(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
+
             if (accessories.isPresent()) {
                 return getPageNumberWrapperAccessories(accessories);
             }
@@ -1180,17 +1526,31 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private ResponseEntity<?> filterProductByTypeNameLike(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {
+    private ResponseEntity<?> filterProductByTypeNameLike(
+            ProductShopOwnerFilterDto productFilter, Long shopId,
+            PageRequest pageRequest, boolean isShopOwner, boolean isAdmin
+    ) {
         if (productFilter.getCategory() == 1) {
             List<TypeBird> typeBirdIds = typeBirdRepository.findAllByNameLike(
                     "%" + productFilter.getProductSearchInfo().getValue() + "%"
             );
-            Optional<Page<Bird>> birds = birdRepository.findAllByShopOwner_IdAndTypeBird_IdInAndStatusIn(
-                    shopId,
-                    typeBirdIds.stream().map(TypeBird::getId).collect(Collectors.toList()),
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+
+            Optional<Page<Bird>> birds = Optional.empty();
+            if (isShopOwner) {
+                birds = birdRepository.findAllByShopOwner_IdAndTypeBird_IdInAndStatusIn(
+                        shopId,
+                        typeBirdIds.stream().map(TypeBird::getId).collect(Collectors.toList()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                birds = birdRepository.findAllByTypeBird_IdInAndStatusIn(
+                        typeBirdIds.stream().map(TypeBird::getId).collect(Collectors.toList()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
+
             if (birds.isPresent()) {
                 return getPageNumberWrapperBirds(birds);
             }
@@ -1203,12 +1563,23 @@ public class ProductServiceImpl implements ProductService {
             List<TypeFood> typeFoodIds = typeFoodRepository.findAllByNameLike(
                     "%" + productFilter.getProductSearchInfo().getValue() + "%"
             );
-            Optional<Page<Food>> foods = foodRepository.findAllByShopOwner_IdAndTypeFood_IdInAndStatusIn(
-                    shopId,
-                    typeFoodIds.stream().map(TypeFood::getId).collect(Collectors.toList()),
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+
+            Optional<Page<Food>> foods = Optional.empty();
+            if (isShopOwner) {
+                foods = foodRepository.findAllByShopOwner_IdAndTypeFood_IdInAndStatusIn(
+                        shopId,
+                        typeFoodIds.stream().map(TypeFood::getId).collect(Collectors.toList()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                foods = foodRepository.findAllByTypeFood_IdInAndStatusIn(
+                        typeFoodIds.stream().map(TypeFood::getId).collect(Collectors.toList()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
+
             if (foods.isPresent()) {
                 return getPageNumberWrapperFoods(foods);
             }
@@ -1221,12 +1592,23 @@ public class ProductServiceImpl implements ProductService {
             List<TypeAccessory> typeAccessoryIds = typeAccessoryRepository.findAllByNameLike(
                     "%" + productFilter.getProductSearchInfo().getValue() + "%"
             );
-            Optional<Page<Accessory>> accessories = accessoryRepository.findAllByShopOwner_IdAndTypeAccessory_IdInAndStatusIn(
-                    shopId,
-                    typeAccessoryIds.stream().map(TypeAccessory::getId).collect(Collectors.toList()),
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+
+            Optional<Page<Accessory>> accessories = Optional.empty();
+            if (isShopOwner) {
+                accessories = accessoryRepository.findAllByShopOwner_IdAndTypeAccessory_IdInAndStatusIn(
+                        shopId,
+                        typeAccessoryIds.stream().map(TypeAccessory::getId).collect(Collectors.toList()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                accessories = accessoryRepository.findAllByTypeAccessory_IdInAndStatusIn(
+                        typeAccessoryIds.stream().map(TypeAccessory::getId).collect(Collectors.toList()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
+
             if (accessories.isPresent()) {
                 return getPageNumberWrapperAccessories(accessories);
             }
@@ -1240,12 +1622,23 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private ResponseEntity<?> filterProductByNameLike(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {
+    private ResponseEntity<?> filterProductByNameLike(
+            ProductShopOwnerFilterDto productFilter, Long shopId,
+            PageRequest pageRequest, boolean isShopOwner, boolean isAdmin
+    ) {
         if (productFilter.getCategory() == 1) {
             String nameLike = "%" + productFilter.getProductSearchInfo().getValue() + "%";
-            Optional<Page<Bird>> birds = birdRepository.findAllByNameLikeAndShopOwner_IdAndStatusIn(
-                    nameLike, shopId, ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest
-            );
+
+            Optional<Page<Bird>> birds = Optional.empty();
+            if (isShopOwner) {
+                birds = birdRepository.findAllByNameLikeAndShopOwner_IdAndStatusIn(
+                        nameLike, shopId, ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest
+                );
+            } else if (isAdmin) {
+                birds = birdRepository.findAllByNameLikeAndStatusIn(
+                        nameLike, ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN, pageRequest
+                );
+            }
 
             if (birds.isPresent()) {
                 return getPageNumberWrapperBirds(birds);
@@ -1257,9 +1650,17 @@ public class ProductServiceImpl implements ProductService {
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else if (productFilter.getCategory() == 2) {
             String nameLike = "%" + productFilter.getProductSearchInfo().getValue() + "%";
-            Optional<Page<Food>> foods = foodRepository.findAllByNameLikeAndShopOwner_IdAndStatusIn(
-                    nameLike, shopId, ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest
-            );
+
+            Optional<Page<Food>> foods = Optional.empty();
+            if (isShopOwner) {
+                foods = foodRepository.findAllByNameLikeAndShopOwner_IdAndStatusIn(
+                        nameLike, shopId, ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest
+                );
+            } else if (isAdmin) {
+                foods = foodRepository.findAllByNameLikeAndStatusIn(
+                        nameLike, ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN, pageRequest
+                );
+            }
 
             if (foods.isPresent()) {
                 return getPageNumberWrapperFoods(foods);
@@ -1271,9 +1672,16 @@ public class ProductServiceImpl implements ProductService {
             return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
         } else if (productFilter.getCategory() == 3) {
             String nameLike = "%" + productFilter.getProductSearchInfo().getValue() + "%";
-            Optional<Page<Accessory>> accessories = accessoryRepository.findAllByNameLikeAndShopOwner_IdAndStatusIn(
-                    nameLike, shopId, ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest
-            );
+            Optional<Page<Accessory>> accessories = Optional.empty();
+            if (isShopOwner) {
+                accessories = accessoryRepository.findAllByNameLikeAndShopOwner_IdAndStatusIn(
+                        nameLike, shopId, ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, pageRequest
+                );
+            } else if (isAdmin) {
+                accessories = accessoryRepository.findAllByNameLikeAndStatusIn(
+                        nameLike, ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN, pageRequest
+                );
+            }
 
             if (accessories.isPresent()) {
                 return getPageNumberWrapperAccessories(accessories);
@@ -1288,36 +1696,66 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private ResponseEntity<?> filterProductByIdEqual(ProductShopOwnerFilterDto productFilter, Long shopId, PageRequest pageRequest) {
+    private ResponseEntity<?> filterProductByIdEqual(
+            ProductShopOwnerFilterDto productFilter, Long shopId,
+            PageRequest pageRequest, boolean isShopOwner, boolean isAdmin
+    ) {
         if (productFilter.getCategory() == 1) {
-            Optional<Page<Bird>> birds = birdRepository.findByIdAndShopOwner_IdAndStatusIn(
-                    Long.valueOf(productFilter.getProductSearchInfo().getValue()),
-                    shopId,
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+            Optional<Page<Bird>> birds = Optional.empty();
+            if (isShopOwner) {
+                birds = birdRepository.findByIdAndShopOwner_IdAndStatusIn(
+                        Long.valueOf(productFilter.getProductSearchInfo().getValue()),
+                        shopId,
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                birds = birdRepository.findByIdAndStatusIn(
+                        Long.valueOf(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
 
             if (birds.isPresent()) {
                 return getPageNumberWrapperBirds(birds);
             }
         } else if (productFilter.getCategory() == 2) {
-            Optional<Page<Food>> foods = foodRepository.findByIdAndShopOwner_IdAndStatusIn(
-                    Long.valueOf(productFilter.getProductSearchInfo().getValue()),
-                    shopId,
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+            Optional<Page<Food>> foods = Optional.empty();
+            if (isShopOwner) {
+                foods = foodRepository.findByIdAndShopOwner_IdAndStatusIn(
+                        Long.valueOf(productFilter.getProductSearchInfo().getValue()),
+                        shopId,
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                foods = foodRepository.findByIdAndStatusIn(
+                        Long.valueOf(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
 
             if (foods.isPresent()) {
                 return getPageNumberWrapperFoods(foods);
             }
         } else if (productFilter.getCategory() == 3) {
-            Optional<Page<Accessory>> accessories = accessoryRepository.findByIdAndShopOwner_IdAndStatusIn(
-                    Long.valueOf(productFilter.getProductSearchInfo().getValue()),
-                    shopId,
-                    ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
-                    pageRequest
-            );
+            Optional<Page<Accessory>> accessories = Optional.empty();
+            if (isShopOwner) {
+                accessories = accessoryRepository.findByIdAndShopOwner_IdAndStatusIn(
+                        Long.valueOf(productFilter.getProductSearchInfo().getValue()),
+                        shopId,
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER,
+                        pageRequest
+                );
+            } else if (isAdmin) {
+                accessories = accessoryRepository.findByIdAndStatusIn(
+                        Long.valueOf(productFilter.getProductSearchInfo().getValue()),
+                        ProductStatusConstant.LIST_STATUS_GET_FOR_ADMIN,
+                        pageRequest
+                );
+            }
 
             if (accessories.isPresent()) {
                 return getPageNumberWrapperAccessories(accessories);
@@ -1376,7 +1814,8 @@ public class ProductServiceImpl implements ProductService {
         return ResponseEntity.ok(result);
     }
 
-    private ProductCartDto productToProductCart(Product product) {
+    @Override
+    public ProductCartDto productToProductCart(Product product) {
         if (product != null) {
             ProductCartDto productCartDto = ProductCartDto.builder()
                     .id(product.getId())
@@ -1385,15 +1824,22 @@ public class ProductServiceImpl implements ProductService {
                     .imgUrl(MyUtils.toLists(product.getImgUrl(), ",").get(0))
                     .discountRate(this.CalculateSaleOff(product.getPromotionShops(), product.getPrice()))
                     .quantity(product.getQuantity())
+                    .star(this.CalculationRating(product.getOrderDetails()))
                     .build();
             productCartDto.setDiscountedPrice(this.CalculateDiscountedPrice(product.getPrice(),
                     productCartDto.getDiscountRate()));
             if (product instanceof Bird) {
                 productCartDto.setCategoryId(Category.getCategoryIdByName(new BirdDto().getClass().getSimpleName()));
+                productCartDto.setTags(tagMapper.listModelToListDto(((Bird) product).getTags()));
+                productCartDto.setType(typeMapper.modelToDto(((Bird) product).getTypeBird()));
             } else if (product instanceof Food) {
                 productCartDto.setCategoryId(Category.getCategoryIdByName(new FoodDto().getClass().getSimpleName()));
+                productCartDto.setTags(tagMapper.listModelToListDto(((Food) product).getTags()));
+                productCartDto.setType(typeMapper.modelToDto(((Food) product).getTypeFood()));
             } else if (product instanceof Accessory) {
                 productCartDto.setCategoryId(Category.getCategoryIdByName(new AccessoryDto().getClass().getSimpleName()));
+                productCartDto.setTags(tagMapper.listModelToListDto(((Accessory) product).getTags()));
+                productCartDto.setType(typeMapper.modelToDto(((Accessory) product).getTypeAccessory()));
             }
             AddressDto address = addressMapper.toDto(product.getShopOwner().getAddress());
             ShopOwnerDto shopOwner = shopOwnerMapper.modelToDto(product.getShopOwner());
@@ -1406,15 +1852,14 @@ public class ProductServiceImpl implements ProductService {
     private PageNumberWrapper<Long> getAllIdBirdByFilter(ProductFilterDto filterDto) {
         filterDto = this.checkProductFilterDto(filterDto);
         PageRequest pageRequest = this.getSortDirect(filterDto);
+        List<String> listName = MyUtils.splitStringToList(filterDto.getName(), " ");
 
         Page<Long> pageAble = birdRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
-                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(), pageRequest);
+                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(),filterDto.getShopId()
+                ,filterDto.getCheckListTypeId(), ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER_STRING,pageRequest);
         PageNumberWrapper<Long> productDtoPageNumberWrapper = new PageNumberWrapper<>();
         productDtoPageNumberWrapper.setLists(pageAble.getContent());
         productDtoPageNumberWrapper.setPageNumber(pageAble.getTotalPages());
-//        productDtoPageNumberWraper.setLists(pageAble);
-//        productDtoPageNumberWraper.setPageNumber(2);
-//        log.info("list id after filter {}",pageAble);
         return productDtoPageNumberWrapper;
     }
 
@@ -1423,7 +1868,8 @@ public class ProductServiceImpl implements ProductService {
         PageRequest pageRequest = this.getSortDirect(filterDto);
 
         Page<Long> pageAble = foodRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
-                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(), pageRequest);
+                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(), filterDto.getShopId()
+                ,filterDto.getCheckListTypeId(), ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER_STRING, pageRequest);
         PageNumberWrapper<Long> productDtoPageNumberWrapper = new PageNumberWrapper<>();
         productDtoPageNumberWrapper.setLists(pageAble.getContent());
         productDtoPageNumberWrapper.setPageNumber(pageAble.getTotalPages());
@@ -1436,7 +1882,8 @@ public class ProductServiceImpl implements ProductService {
         PageRequest pageRequest = this.getSortDirect(filterDto);
 
         Page<Long> pageAble = accessoryRepository.idFilter(filterDto.getName(), filterDto.getListTypeId(),
-                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(), pageRequest);
+                filterDto.getStar(), filterDto.getLowestPrice(), filterDto.getHighestPrice(), filterDto.getShopId()
+                ,filterDto.getCheckListTypeId(), ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER_STRING, pageRequest);
         PageNumberWrapper<Long> productDtoPageNumberWrapper = new PageNumberWrapper<>();
         productDtoPageNumberWrapper.setLists(pageAble.getContent());
         productDtoPageNumberWrapper.setPageNumber(pageAble.getTotalPages());
@@ -1445,16 +1892,25 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ProductFilterDto checkProductFilterDto(ProductFilterDto filterDto) {
-        if (filterDto.getListTypeId() == null)
-            filterDto.setListTypeId(typeAccessoryRepository.findAllId());
+        if (filterDto.getListTypeId() == null || filterDto.getListTypeId().size() == 0){
+            filterDto.setListTypeId(null);
+            filterDto.setCheckListTypeId(null);
+        }else{
+            filterDto.setCheckListTypeId(1l);
+        }
+
         if (filterDto.getName() == null || filterDto.getName().isEmpty())
             filterDto.setName("%");
+        else
+            filterDto.setName(filterDto.getName().trim());
         if (filterDto.getHighestPrice() == 0.0)
-            filterDto.setHighestPrice(999999999);
+            filterDto.setHighestPrice(PagingAndSorting.HIGHEST_PRICE_FILTER);
         if (filterDto.getStar() == 1)
-            filterDto.setStar(0.0);
+            filterDto.setStar(PagingAndSorting.DEFAULT_STAR_FILTER);
         if (filterDto.getLowestPrice() == 0.0)
-            filterDto.setLowestPrice(-1);
+            filterDto.setLowestPrice(PagingAndSorting.LOWEST_PRICE_FILTER);
+        if(filterDto.getShopId() == null || filterDto.getShopId() == -1 )
+            filterDto.setShopId(null);
         return filterDto;
     }
 
@@ -1466,10 +1922,10 @@ public class ProductServiceImpl implements ProductService {
                 .orElse("Increase");
         if (sortDirect.equals("Increase")) {
             pageRequest = PageRequest.of(filterDto.getPageNumber() - 1, PagingAndSorting.DEFAULT_PAGE_SIZE,
-                    Sort.by(Sort.Direction.ASC, "price"));
+                    Sort.by(Sort.Direction.ASC, "discounted_price"));
         } else {
             pageRequest = PageRequest.of(filterDto.getPageNumber() - 1, PagingAndSorting.DEFAULT_PAGE_SIZE,
-                    Sort.by(Sort.Direction.DESC, "price"));
+                    Sort.by(Sort.Direction.DESC, "discounted_price"));
         }
         return pageRequest;
     }
@@ -1485,10 +1941,8 @@ public class ProductServiceImpl implements ProductService {
         } else if (filterDto.getCategory() == 3) {
             productDtoPageNumberWrapper = this.getAllIdAccessoryFilter(filterDto);
         }
-
-
         List<Product> listTemp = productRepository.findAllById(productDtoPageNumberWrapper.getLists());
-        List<ProductDto> listdtos = this.listModelToDto(listTemp);
+        List<ProductCartDto> listdtos = this.listModelToDto(listTemp);
         String sortDirect = Optional.ofNullable(filterDto)
                 .map(dto -> dto.getSortPrice())
                 .map(sortPrice -> sortPrice.getSortDirect())
@@ -1496,33 +1950,37 @@ public class ProductServiceImpl implements ProductService {
         if (sortDirect.equals("Increase")) {
 
             if (listdtos != null) {
-                Collections.sort(listdtos, new Comparator<ProductDto>() {
+                Collections.sort(listdtos, new Comparator<ProductCartDto>() {
                     @Override
-                    public int compare(ProductDto o1, ProductDto o2) {
-                        return (int) (o1.getPrice() - o2.getPrice());
+                    public int compare(ProductCartDto o1, ProductCartDto o2) {
+                        return (int) (o1.getDiscountedPrice() - o2.getDiscountedPrice());
                     }
                 });
             }
 
         } else {
             if (listdtos != null) {
-                Collections.sort(listdtos, new Comparator<ProductDto>() {
+                Collections.sort(listdtos, new Comparator<ProductCartDto>() {
                     @Override
-                    public int compare(ProductDto o1, ProductDto o2) {
-                        return (int) (-o1.getPrice() + o2.getPrice());
+                    public int compare(ProductCartDto o1, ProductCartDto o2) {
+                        return (int) (-o1.getDiscountedPrice() + o2.getDiscountedPrice());
                     }
                 });
             }
         }
 
-        PageNumberWrapper<ProductDto> result = new PageNumberWrapper<>();
+        PageNumberWrapper<ProductCartDto> result = new PageNumberWrapper<>();
         result.setLists(listdtos);
         result.setPageNumber(productDtoPageNumberWrapper.getPageNumber());
         return ResponseEntity.ok(result);
     }
 
     @Override
-    public ResponseEntity<?> addNewProduct(List<MultipartFile> multipartImgList, MultipartFile multipartVideo, ProductShopOwnerDto productShopOwnerDto) {
+    public ResponseEntity<?> addNewProduct(
+            List<MultipartFile> multipartImgList,
+            MultipartFile multipartVideo,
+            ProductShopOwnerDto productShopOwnerDto
+    ) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         Optional<Account> account = accountRepository.findByEmail(username);
@@ -1532,7 +1990,7 @@ public class ProductServiceImpl implements ProductService {
         if (account.get().getRole() == UserRole.SHOPOWNER) {
             if (multipartImgList != null && !multipartImgList.isEmpty()) {
                 for (MultipartFile multipartFile : multipartImgList) {
-                    String newFilename = getNewImageFileName(multipartFile);
+                    String newFilename = FileNameUtils.getNewImageFileName(multipartFile);
                     urlImgList.add(originUrl + newFilename);
                     try {
                         S3Utils.uploadFile(newFilename, multipartFile.getInputStream());
@@ -1551,7 +2009,7 @@ public class ProductServiceImpl implements ProductService {
 
 
             if (multipartVideo != null && !multipartVideo.isEmpty()) {
-                String newFilename = getNewVideoFileName(multipartVideo);
+                String newFilename = FileNameUtils.getNewVideoFileName(multipartVideo);
                 urlVideo = originUrl + newFilename;
                 try {
                     S3Utils.uploadFile(newFilename, multipartVideo.getInputStream());
@@ -1666,100 +2124,6 @@ public class ProductServiceImpl implements ProductService {
                 .errorMessage("Something went wrong!")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    private String getNewVideoFileName(MultipartFile multipartVideo) {
-        String contentType = multipartVideo.getContentType();
-        String newFilename = UUID.randomUUID() + "." + contentType.substring(6);
-        newFilename = "video/" + newFilename;
-        return newFilename;
-    }
-
-    @Override
-    public ResponseEntity<?> filterByShop(ShopFilterDto shopFilterDto) {
-        PageNumberWrapper<Long> productDtoPageNumberWrapper = new PageNumberWrapper<>();
-        List<Long> filterProductIds = new ArrayList<>();
-        if (shopFilterDto.getCategoryId() == 1) {
-            productDtoPageNumberWrapper = this.getAllIdBirdByFilterShop(shopFilterDto);
-        } else if (shopFilterDto.getCategoryId() == 2) {
-            productDtoPageNumberWrapper = this.getAllIdFoodFilterShop(shopFilterDto);
-        } else if (shopFilterDto.getCategoryId() == 3) {
-            productDtoPageNumberWrapper = this.getAllIdAccessoryFilterShop(shopFilterDto);
-        }
-
-        List<Product> listTemp = productRepository.findAllById(productDtoPageNumberWrapper.getLists());
-        List<ProductDto> listdtos = this.listModelToDto(listTemp);
-        String sortDirect = Optional.ofNullable(shopFilterDto)
-                .map(dto -> dto.getSortPrice())
-                .map(sortPrice -> sortPrice.getSortDirect())
-                .orElse("Increase");
-        if (sortDirect.equals("Increase")) {
-
-            if (listdtos != null) {
-                Collections.sort(listdtos, new Comparator<ProductDto>() {
-                    @Override
-                    public int compare(ProductDto o1, ProductDto o2) {
-                        return (int) (o1.getPrice() - o2.getPrice());
-                    }
-                });
-            }
-
-        } else {
-            if (listdtos != null) {
-                Collections.sort(listdtos, new Comparator<ProductDto>() {
-                    @Override
-                    public int compare(ProductDto o1, ProductDto o2) {
-                        return (int) (-o1.getPrice() + o2.getPrice());
-                    }
-                });
-            }
-        }
-
-        PageNumberWrapper<ProductDto> result = new PageNumberWrapper<>();
-        result.setLists(listdtos);
-        result.setPageNumber(productDtoPageNumberWrapper.getPageNumber());
-        result.setTotalElement(productDtoPageNumberWrapper.getTotalElement());
-        return ResponseEntity.ok(result);
-    }
-
-    private PageNumberWrapper<Long> getAllIdBirdByFilterShop(ShopFilterDto shopFilterDto) {
-        shopFilterDto = this.checkShopFilterDto(shopFilterDto);
-        PageRequest pageRequest = this.getSortDirect(shopFilterDto);
-        Page<Long> pageAble = birdRepository.idFilterShop(shopFilterDto.getShopId(), shopFilterDto.getName(), shopFilterDto.getListTypeId(),
-                shopFilterDto.getStar(), shopFilterDto.getLowestPrice(), shopFilterDto.getHighestPrice(), pageRequest);
-        return this.setPageNumberWrapper(pageAble);
-    }
-
-    private PageNumberWrapper<Long> getAllIdFoodFilterShop(ShopFilterDto shopFilterDto) {
-        shopFilterDto = this.checkShopFilterDto(shopFilterDto);
-        PageRequest pageRequest = this.getSortDirect(shopFilterDto);
-
-        Page<Long> pageAble = foodRepository.idFilterShop(shopFilterDto.getShopId(), shopFilterDto.getName(), shopFilterDto.getListTypeId(),
-                shopFilterDto.getStar(), shopFilterDto.getLowestPrice(), shopFilterDto.getHighestPrice(), pageRequest);
-        return this.setPageNumberWrapper(pageAble);
-    }
-
-    private PageNumberWrapper<Long> getAllIdAccessoryFilterShop(ShopFilterDto shopFilterDto) {
-        shopFilterDto = this.checkShopFilterDto(shopFilterDto);
-        PageRequest pageRequest = this.getSortDirect(shopFilterDto);
-
-        Page<Long> pageAble = accessoryRepository.idFilterShop(shopFilterDto.getShopId(), shopFilterDto.getName(), shopFilterDto.getListTypeId(),
-                shopFilterDto.getStar(), shopFilterDto.getLowestPrice(), shopFilterDto.getHighestPrice(), pageRequest);
-        return this.setPageNumberWrapper(pageAble);
-    }
-
-    private ShopFilterDto checkShopFilterDto(ShopFilterDto shopFilterDto) {
-        if (shopFilterDto.getListTypeId() == null)
-            shopFilterDto.setListTypeId(typeAccessoryRepository.findAllId());
-        if (shopFilterDto.getName() == null || shopFilterDto.getName().isEmpty())
-            shopFilterDto.setName("");
-        if (shopFilterDto.getHighestPrice() == 0.0)
-            shopFilterDto.setHighestPrice(999999999);
-        if (shopFilterDto.getStar() == 1)
-            shopFilterDto.setStar(0.0);
-        if (shopFilterDto.getLowestPrice() == 0.0)
-            shopFilterDto.setLowestPrice(-1);
-        return shopFilterDto;
     }
 
     private PageRequest getSortDirect(ShopFilterDto shopFilterDto) {

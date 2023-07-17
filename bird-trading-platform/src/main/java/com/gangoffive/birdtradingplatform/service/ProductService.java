@@ -20,9 +20,9 @@ public interface ProductService {
 
     List<ProductDto> findProductByName(String name);
 
-    List<ProductDto> retrieveTopProduct();
+    List<ProductCartDto> retrieveTopProduct();
 
-    List<ProductDto> listModelToDto(List<Product> products);
+    List<ProductCartDto> listModelToDto(List<Product> products);
 
     ResponseEntity<?> retrieveProductById(Long id);
 
@@ -34,8 +34,7 @@ public interface ProductService {
 
     ResponseEntity<?> retrieveProductByShopId(long shopId, int pageNumber);
 
-    //ForSO it mean For Shop Owner
-    ResponseEntity<?> retrieveProductByShopIdForSO(int pageNumber);
+    ProductCartDto productToProductCart(Product product);
 
     ResponseEntity<?> filter(ProductFilterDto filterDto);
 
@@ -45,15 +44,13 @@ public interface ProductService {
             ProductShopOwnerDto productShopOwnerDto
     );
 
-    public ResponseEntity<?> filterByShop(ShopFilterDto shopFilterDto);
-
     ProductShopDto productToProductShopDto(Product product);
 
     ResponseEntity<?> updateListProductStatus(ChangeStatusListIdDto changeStatusListIdDto);
 
     ResponseEntity<?> updateListProductQuantity(List<ProductQuantityShopChangeDto> listProductChange);
 
-    ResponseEntity<?> filterAllProductByShopOwner(ProductShopOwnerFilterDto productFilter);
+    ResponseEntity<?> filterAllProduct(ProductShopOwnerFilterDto productFilter, boolean isShopOwner, boolean isAdmin);
 
     ResponseEntity<?> getProductDetailForShop(long productId);
 
@@ -62,5 +59,9 @@ public interface ProductService {
             MultipartFile multipartVideo,
             ProductUpdateDto productUpdate
     );
+
+    ResponseEntity<?> getProductRelevantBaseOnId(long productId);
+
+    ResponseEntity<?> retrieveProductByShopidAndTagId(long shopId, long[] tagId);
 }
 

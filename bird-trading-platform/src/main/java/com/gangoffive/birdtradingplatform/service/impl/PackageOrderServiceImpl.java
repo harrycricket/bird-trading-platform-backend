@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.common.NotifiConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
@@ -12,10 +13,10 @@ import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.Currency;
 import com.gangoffive.birdtradingplatform.enums.*;
 import com.gangoffive.birdtradingplatform.repository.*;
-import com.gangoffive.birdtradingplatform.service.PackageOrderService;
-import com.gangoffive.birdtradingplatform.service.PaypalService;
-import com.gangoffive.birdtradingplatform.service.ProductService;
-import com.gangoffive.birdtradingplatform.service.PromotionPriceService;
+import com.gangoffive.birdtradingplatform.service.*;
+import com.gangoffive.birdtradingplatform.util.DateUtils;
+import com.gangoffive.birdtradingplatform.util.JsonUtil;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;
@@ -54,6 +55,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
     private final OrderRepository orderRepository;
     private final PaypalService paypalService;
     private final PromotionPriceService promotionPriceService;
+    private final NotificationService notificationService;
+    private final ProductSummaryService productSummaryService;
 
     @Override
     @Transactional
@@ -66,53 +69,52 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         if (paymentId != null && payerId != null) {
             return handleSuccessPayment(packageOrder, productWithQuantityMap, account.get(), paymentId, payerId);
         }
-        log.info("-------------------------checkUserOrderDto(packageOrder.getUserInfo())-----------------------------------------------");
-        log.info("{}", checkUserOrderDto(packageOrder.getUserInfo()));
-        log.info("-------------------------checkListProduct(productWithQuantityMap)-----------------------------------------------");
-        log.info("{}", checkListProduct(productWithQuantityMap));
-        log.info("-------------------------checkPromotion(packageOrder, productWithQuantityMap)-----------------------------------------------");
-        log.info("{}", checkPromotion(packageOrder, productWithQuantityMap));
-        log.info("-------------------------checkTotalShopPrice(packageOrder.getCartInfo().getItemsByShop())-----------------------------------------------");
-        log.info("{}", checkTotalShopPrice(packageOrder.getCartInfo().getItemsByShop()));
-        log.info("-------------------------checkSubTotal(packageOrder.getCartInfo().getTotal().getSubTotal(), productWithQuantityMap)----------------------");
-        log.info("{}", checkSubTotal(packageOrder.getCartInfo().getTotal().getSubTotal(), productWithQuantityMap));
-        log.info("-------------------------checkTotalShippingFee(packageOrder)-----------------------------------------------");
-        log.info("{}", checkTotalShippingFee(packageOrder));
-        log.info("-------------------------checkTotalDiscount(packageOrder)-----------------------------------------------");
-        log.info("{}", checkTotalDiscount(packageOrder));
-        log.info("-------------------------checkTotalPayment(packageOrder.getCartInfo().getTotal())-----------------------------------------------");
-        log.info("{}", checkTotalPayment(packageOrder.getCartInfo().getTotal()));
-        if (
-                checkUserOrderDto(packageOrder.getUserInfo())
-                        && checkListProduct(productWithQuantityMap)
-                        && checkPromotion(packageOrder, productWithQuantityMap)
-                        && checkTotalShopPrice(packageOrder.getCartInfo().getItemsByShop())
-                        && checkSubTotal(packageOrder.getCartInfo().getTotal().getSubTotal(), productWithQuantityMap)
-                        && checkTotalShippingFee(packageOrder)
-                        && checkTotalDiscount(packageOrder)
-                        && checkTotalPayment(packageOrder.getCartInfo().getTotal())
-        ) {
-            PaymentMethod paymentMethod = packageOrder.getCartInfo().getPaymentMethod();
-            if (paymentMethod.equals(PaymentMethod.PAYPAL)) {
-                return handleInitialPayment(packageOrder, account.get());
-            } else if (paymentMethod.equals(PaymentMethod.DELIVERY)) {
-                saveAll(packageOrder, paymentId, account.get(), productWithQuantityMap);
-                SuccessResponse successResponse = SuccessResponse.builder()
-                        .successCode(String.valueOf(HttpStatus.OK.value()))
-                        .successMessage("Order successfully")
-                        .build();
-                return new ResponseEntity<>(successResponse, HttpStatus.OK);
-            } else {
-                ErrorResponse error = new ErrorResponse(String.valueOf(HttpStatus.NOT_FOUND.value()),
-                        "Something went wrong");
-                return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-            }
+
+        if (!checkUserOrderDto(packageOrder.getUserInfo())) {
+            return ResponseUtils.getErrorResponseNotAcceptable("Something went wrong in your info.");
+        }
+
+        if (!checkListProduct(productWithQuantityMap)) {
+            return ResponseUtils.getErrorResponseNotAcceptable("Something went wrong in list product(Out of stock, or shop has been banned). Please reload page!");
+        }
+
+        if (!checkPromotion(packageOrder, productWithQuantityMap)) {
+            return ResponseUtils.getErrorResponseNotAcceptable("Something went wrong in list promotions.");
+        }
+
+        if (!checkTotalShopPrice(packageOrder.getCartInfo().getItemsByShop())) {
+            return ResponseUtils.getErrorResponseNotAcceptable("Something went wrong in total shop price.");
+        }
+
+        if (!checkSubTotal(packageOrder.getCartInfo().getTotal().getSubTotal(), productWithQuantityMap)) {
+            return ResponseUtils.getErrorResponseNotAcceptable("Something went wrong in subtotal order.");
+        }
+
+        if (!checkTotalShippingFee(packageOrder)) {
+            return ResponseUtils.getErrorResponseNotAcceptable("Shipping not support this location.");
+        }
+
+        if (!checkTotalDiscount(packageOrder)) {
+            return ResponseUtils.getErrorResponseNotAcceptable("Something went wrong in total discount.");
+        }
+
+        if (!checkTotalPayment(packageOrder.getCartInfo().getTotal())) {
+            return ResponseUtils.getErrorResponseNotAcceptable("Something went wrong in total payment.");
+        }
+
+        PaymentMethod paymentMethod = packageOrder.getCartInfo().getPaymentMethod();
+        if (paymentMethod.equals(PaymentMethod.PAYPAL)) {
+            return handleInitialPayment(packageOrder, account.get());
+        } else if (paymentMethod.equals(PaymentMethod.DELIVERY)) {
+            Long packageOrderId = saveAll(packageOrder, paymentId, null, account.get(), productWithQuantityMap);
+            updateTotalOrderOfListProduct(productWithQuantityMap.keySet().stream().toList());
+            SuccessResponse successResponse = SuccessResponse.builder()
+                    .successCode(String.valueOf(HttpStatus.OK.value()))
+                    .successMessage("Order successfully. packageOrderId=" + packageOrderId)
+                    .build();
+            return new ResponseEntity<>(successResponse, HttpStatus.OK);
         } else {
-            ErrorResponse error = new ErrorResponse(
-                    String.valueOf(HttpStatus.NOT_ACCEPTABLE.value()),
-                    "Something went wrong");
-            log.info("here");
-            return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
+            return ResponseUtils.getErrorResponseNotAcceptable("Something went wrong with payment method");
         }
     }
 
@@ -136,26 +138,502 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                     PageNumberWrapper<PackageOrderDto> pageNumberWrapper = new PageNumberWrapper<>(packageOrderDtoList, pageAble.get().getTotalPages());
                     return ResponseEntity.ok(pageNumberWrapper);
                 } else {
-                    ErrorResponse errorResponse = ErrorResponse.builder()
-                            .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                            .errorMessage("Not found package order in this account.")
-                            .build();
-                    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                    return ResponseUtils.getErrorResponseNotFound("Not found package order in this account.");
                 }
             } else {
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                        .errorMessage("Page number cannot less than 1.")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                return ResponseUtils.getErrorResponseBadRequestPageNumber();
             }
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                    .errorMessage("Not found this account.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+            return ResponseUtils.getErrorResponseNotFound("Not found this account.");
         }
+    }
+
+    @Override
+    public ResponseEntity<?> filterAllPackageOrder(PackageOrderAdminFilterDto packageOrderFilter) {
+        if (packageOrderFilter.getPageNumber() > 0) {
+            int pageNumber = packageOrderFilter.getPageNumber() - 1;
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
+            PageRequest pageRequestWithSort = null;
+            if (packageOrderFilter.getSortDirection() != null
+                    && !packageOrderFilter.getSortDirection().getSort().isEmpty()
+                    && !packageOrderFilter.getSortDirection().getField().isEmpty()
+            ) {
+                if (
+                        !SortPackageOrderAdminColumn.checkField(packageOrderFilter.getSortDirection().getField())
+                ) {
+                    return ResponseUtils.getErrorResponseNotFoundSortColumn();
+                }
+                if (packageOrderFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.ASC.name())) {
+                    pageRequestWithSort = getPageRequest(packageOrderFilter, pageNumber, Sort.Direction.ASC);
+                } else if (packageOrderFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.DESC.name())) {
+                    pageRequestWithSort = getPageRequest(packageOrderFilter, pageNumber, Sort.Direction.DESC);
+                } else {
+                    return ResponseUtils.getErrorResponseNotFoundSortDirection();
+                }
+            }
+
+            if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().isEmpty()
+                            && packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+                            && packageOrderFilter.getPackageOrderSearchInfo().getOperator().isEmpty()
+                            && packageOrderFilter.getSortDirection().getField().isEmpty()
+                            && packageOrderFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                return filterAllPackageOrderAllFieldEmpty(pageRequest);
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().isEmpty()
+                            && packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+                            && packageOrderFilter.getPackageOrderSearchInfo().getOperator().isEmpty()
+                            && !packageOrderFilter.getSortDirection().getField().isEmpty()
+                            && !packageOrderFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                return filterAllPackageOrderAllFieldEmpty(pageRequestWithSort);
+            }
+
+            if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.ID.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterPackageOrderByIdEqual(packageOrderFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.ACCOUNT_ID.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+                            && packageOrderFilter.getSortDirection().getField().isEmpty()
+                            && packageOrderFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterPackageOrderByAccountIdEqual(packageOrderFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.ACCOUNT_ID.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterPackageOrderByAccountIdEqual(packageOrderFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.PAYMENT_METHOD.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+                            && packageOrderFilter.getSortDirection().getField().isEmpty()
+                            && packageOrderFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterPackageOrderByPaymentMethodEqual(packageOrderFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.PAYMENT_METHOD.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterPackageOrderByPaymentMethodEqual(packageOrderFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.PAYER_EMAIL.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+                            && packageOrderFilter.getSortDirection().getField().isEmpty()
+                            && packageOrderFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterPackageOrderByPayerEmailContain(packageOrderFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.PAYER_EMAIL.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterPackageOrderByPayerEmailContain(packageOrderFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.TRANSACTION_STATUS.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+                            && packageOrderFilter.getSortDirection().getField().isEmpty()
+                            && packageOrderFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterPackageOrderByTransactionStatusEqual(packageOrderFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.TRANSACTION_STATUS.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterPackageOrderByTransactionStatusEqual(packageOrderFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.TOTAL_PAYMENT.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+                            && packageOrderFilter.getSortDirection().getField().isEmpty()
+                            && packageOrderFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
+                    return filterPackageOrderByTotalPaymentGreaterThanOrEqual(packageOrderFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.TOTAL_PAYMENT.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.GREATER_THAN_OR_EQUAL.getOperator())) {
+                    return filterPackageOrderByTotalPaymentGreaterThanOrEqual(packageOrderFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.CREATED_DATE_TRANSACTION.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+                            && packageOrderFilter.getSortDirection().getField().isEmpty()
+                            && packageOrderFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(packageOrderFilter.getPackageOrderSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterPackageOrderByCreatedDateGreaterThanOrEqual(dateRange, pageRequest);
+                    } else {
+                        return filterPackageOrderByCreatedDateFromTo(dateRange, pageRequest);
+                    }
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.CREATED_DATE_TRANSACTION.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(packageOrderFilter.getPackageOrderSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterPackageOrderByCreatedDateGreaterThanOrEqual(dateRange, pageRequest);
+                    } else {
+                        return filterPackageOrderByCreatedDateFromTo(dateRange, pageRequest);
+                    }
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.LASTED_UPDATE_TRANSACTION.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+                            && packageOrderFilter.getSortDirection().getField().isEmpty()
+                            && packageOrderFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(packageOrderFilter.getPackageOrderSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterPackageOrderByLastedUpdateGreaterThanOrEqual(dateRange, pageRequest);
+                    } else {
+                        return filterPackageOrderByLastedUpdateFromTo(dateRange, pageRequest);
+                    }
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.LASTED_UPDATE_TRANSACTION.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(packageOrderFilter.getPackageOrderSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterPackageOrderByLastedUpdateGreaterThanOrEqual(dateRange, pageRequest);
+                    } else {
+                        return filterPackageOrderByLastedUpdateFromTo(dateRange, pageRequest);
+                    }
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.FULL_NAME.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+                            && packageOrderFilter.getSortDirection().getField().isEmpty()
+                            && packageOrderFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterPackageOrderByFullNameContain(packageOrderFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.FULL_NAME.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterPackageOrderByFullNameContain(packageOrderFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.PHONE_NUMBER.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+                            && packageOrderFilter.getSortDirection().getField().isEmpty()
+                            && packageOrderFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterPackageOrderByPhoneNumberContain(packageOrderFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.PHONE_NUMBER.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterPackageOrderByPhoneNumberContain(packageOrderFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.ADDRESS.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+                            && packageOrderFilter.getSortDirection().getField().isEmpty()
+                            && packageOrderFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterPackageOrderByAddressContain(packageOrderFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    packageOrderFilter.getPackageOrderSearchInfo().getField().equals(FieldPackageOrderAdminTable.ADDRESS.getField())
+                            && !packageOrderFilter.getPackageOrderSearchInfo().getValue().isEmpty()
+            ) {
+                if (packageOrderFilter.getPackageOrderSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterPackageOrderByAddressContain(packageOrderFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else {
+                return ResponseUtils.getErrorResponseBadRequest("Package order filter is not correct.");
+            }
+        } else {
+            return ResponseUtils.getErrorResponseBadRequestPageNumber();
+        }
+    }
+
+    private ResponseEntity<?> filterPackageOrderByAddressContain(
+            PackageOrderAdminFilterDto packageOrderFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<PackageOrder>> packageOrders = packageOrderRepository.findAllByShippingAddress_AddressLike(
+                "%" + packageOrderFilter.getPackageOrderSearchInfo().getValue() + "%",
+                pageRequest
+        );
+        if (packageOrders.isPresent()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found package order with this address.");
+        }
+    }
+
+    private ResponseEntity<?> filterPackageOrderByPhoneNumberContain(
+            PackageOrderAdminFilterDto packageOrderFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<PackageOrder>> packageOrders = packageOrderRepository.findAllByShippingAddress_PhoneLike(
+                "%" + packageOrderFilter.getPackageOrderSearchInfo().getValue() + "%",
+                pageRequest
+        );
+        if (packageOrders.isPresent()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found package order with this phone number.");
+        }
+    }
+
+    private ResponseEntity<?> filterPackageOrderByFullNameContain(
+            PackageOrderAdminFilterDto packageOrderFilter, PageRequest pageRequest) {
+        Optional<Page<PackageOrder>> packageOrders = packageOrderRepository.findAllByShippingAddress_FullNameLike(
+                "%" + packageOrderFilter.getPackageOrderSearchInfo().getValue() + "%",
+                pageRequest
+        );
+        if (packageOrders.isPresent()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found package order with this full name.");
+        }
+    }
+
+    private ResponseEntity<?> filterPackageOrderByLastedUpdateFromTo(DateRangeDto dateRange, PageRequest pageRequest) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(DateUtils.timeInMillisecondToDate(dateRange.getDateTo()));
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        Optional<Page<PackageOrder>> packageOrders = packageOrderRepository.findAllByTransaction_LastedUpdateBetween(
+                DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
+                calendar.getTime(),
+                pageRequest
+        );
+        if (packageOrders.isPresent()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found package order with this lasted update date from to.");
+        }
+    }
+
+    private ResponseEntity<?> filterPackageOrderByLastedUpdateGreaterThanOrEqual(
+            DateRangeDto dateRange, PageRequest pageRequest) {
+        Optional<Page<PackageOrder>> packageOrders = packageOrderRepository.findAllByTransaction_LastedUpdateGreaterThanEqual(
+                DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
+                pageRequest
+        );
+        if (packageOrders.isPresent()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found package order with this lasted update date from.");
+        }
+    }
+
+    private ResponseEntity<?> filterPackageOrderByCreatedDateFromTo(DateRangeDto dateRange, PageRequest pageRequest) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(DateUtils.timeInMillisecondToDate(dateRange.getDateTo()));
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        Optional<Page<PackageOrder>> packageOrders = packageOrderRepository.findAllByTransaction_TransactionDateBetween(
+                DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
+                calendar.getTime(),
+                pageRequest
+        );
+        if (packageOrders.isPresent()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found package order with this created date from to.");
+        }
+    }
+
+    private ResponseEntity<?> filterPackageOrderByCreatedDateGreaterThanOrEqual(
+            DateRangeDto dateRange, PageRequest pageRequest
+    ) {
+        Optional<Page<PackageOrder>> packageOrders = packageOrderRepository.findAllByTransaction_TransactionDateGreaterThanEqual(
+                DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
+                pageRequest
+        );
+        if (packageOrders.isPresent()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found package order with this created date from.");
+        }
+    }
+
+    private ResponseEntity<?> filterPackageOrderByTotalPaymentGreaterThanOrEqual(
+            PackageOrderAdminFilterDto packageOrderFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<PackageOrder>> packageOrders = packageOrderRepository.findAllByTotalPriceGreaterThanEqual(
+                Double.parseDouble(packageOrderFilter.getPackageOrderSearchInfo().getValue()),
+                pageRequest
+        );
+        if (packageOrders.isPresent()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found package order with this total payment.");
+        }
+    }
+
+    private ResponseEntity<?> filterPackageOrderByTransactionStatusEqual(
+            PackageOrderAdminFilterDto packageOrderFilter, PageRequest pageRequest) {
+        List<TransactionStatus> transactionStatuses;
+        if (Integer.parseInt(packageOrderFilter.getPackageOrderSearchInfo().getValue()) == 9) {
+            transactionStatuses = List.of(TransactionStatus.values());
+        } else {
+            transactionStatuses = Arrays.asList(
+                    TransactionStatus.getTransactionStatusByValue(
+                            Integer.parseInt(packageOrderFilter.getPackageOrderSearchInfo().getValue())
+                    )
+            );
+        }
+        Optional<Page<PackageOrder>> packageOrders = packageOrderRepository.findAllByTransaction_StatusIn(
+                transactionStatuses, pageRequest
+        );
+        if (packageOrders.isPresent()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found package order with this transaction status.");
+        }
+
+    }
+
+    private ResponseEntity<?> filterPackageOrderByPayerEmailContain(
+            PackageOrderAdminFilterDto packageOrderFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<PackageOrder>> packageOrders = packageOrderRepository.findAllByTransaction_PaypalEmailLike(
+                "%" + packageOrderFilter.getPackageOrderSearchInfo().getValue() + "%",
+                pageRequest
+        );
+        if (packageOrders.isPresent()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found package order with this email.");
+        }
+    }
+
+    private ResponseEntity<?> filterPackageOrderByPaymentMethodEqual(
+            PackageOrderAdminFilterDto packageOrderFilter, PageRequest pageRequest
+    ) {
+        List<PaymentMethod> paymentMethods;
+        if (packageOrderFilter.getPackageOrderSearchInfo().getValue().trim().equals("9")) {
+            paymentMethods = List.of(PaymentMethod.values());
+        } else {
+            paymentMethods = List.of(PaymentMethod.valueOf(packageOrderFilter.getPackageOrderSearchInfo().getValue()));
+        }
+        Optional<Page<PackageOrder>> packageOrders = packageOrderRepository.findAllByPaymentMethodIn(
+                paymentMethods, pageRequest
+        );
+        if (packageOrders.isPresent()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found package order with this payment method.");
+        }
+    }
+
+    private ResponseEntity<?> filterPackageOrderByAccountIdEqual(
+            PackageOrderAdminFilterDto packageOrderFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<PackageOrder>> packageOrders = packageOrderRepository.findAllByAccount_Id(
+                Long.valueOf(packageOrderFilter.getPackageOrderSearchInfo().getValue()), pageRequest
+        );
+        if (packageOrders.isPresent()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found package order with this account id.");
+        }
+    }
+
+    private ResponseEntity<?> filterPackageOrderByIdEqual(
+            PackageOrderAdminFilterDto packageOrderFilter, PageRequest pageRequest) {
+        Optional<Page<PackageOrder>> packageOrders = packageOrderRepository.findById(
+                Long.valueOf(packageOrderFilter.getPackageOrderSearchInfo().getValue()), pageRequest
+        );
+        if (packageOrders.isPresent()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found this package order id.");
+        }
+    }
+
+    private ResponseEntity<?> filterAllPackageOrderAllFieldEmpty(PageRequest pageRequest) {
+        Page<PackageOrder> packageOrders = packageOrderRepository.findAll(
+                pageRequest
+        );
+        if (!packageOrders.isEmpty()) {
+            return getPageNumberWrapperWithPackageOrder(packageOrders);
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found package order.");
+        }
+    }
+
+    private ResponseEntity<?> getPageNumberWrapperWithPackageOrder(Page<PackageOrder> packageOrders) {
+        List<PackageOrderAdminDto> packageOrdersAdmin = packageOrders.stream()
+                .map(this::packageOrderToPackageOrderAdminDto)
+                .toList();
+        PageNumberWrapper<PackageOrderAdminDto> result = new PageNumberWrapper<>(
+                packageOrdersAdmin,
+                packageOrders.getTotalPages(),
+                packageOrders.getTotalElements()
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    private PageRequest getPageRequest(
+            PackageOrderAdminFilterDto packageOrderFilter, int pageNumber, Sort.Direction sortDirection
+    ) {
+        return PageRequest.of(
+                pageNumber,
+                PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                Sort.by(sortDirection,
+                        SortPackageOrderAdminColumn.getColumnByField(packageOrderFilter.getSortDirection().getField())
+                )
+        );
     }
 
     public boolean checkUserOrderDto(UserOrderDto userOrderDto) {
@@ -182,8 +660,9 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 .stream()
                 .allMatch(
                         productId -> {
-                            Optional<Product> productOptional = productRepository.findById(productId);
-                            if (!productOptional.isPresent()) {
+                            Optional<Product> productOptional = productRepository.findByIdAndStatusNotAndShopOwner_StatusNot(
+                                    productId, ProductStatus.BAN, ShopOwnerStatus.BAN);
+                            if (productOptional.isEmpty()) {
                                 return false;
                             } else {
                                 Product product = productOptional.get();
@@ -258,8 +737,9 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return true;
     }
 
-    private boolean checkTotalShopPrice(List<ItemByShopDto> itemsByShop) {
-        for (ItemByShopDto item: itemsByShop) {
+    @Override
+    public boolean checkTotalShopPrice(List<ItemByShopDto> itemsByShop) {
+        for (ItemByShopDto item : itemsByShop) {
             Map<Long, Integer> productQuantityMap = item.getListItems();
             if (item.getTotalShopPrice() != calculateTotalPriceOfAllProduct(productQuantityMap)) {
                 log.info("------------------------------checkTotalShopPrice()--------------------------------");
@@ -273,7 +753,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return true;
     }
 
-    private boolean checkSubTotal(double subTotal, Map<Long, Integer> productOrder) {
+    @Override
+    public boolean checkSubTotal(double subTotal, Map<Long, Integer> productOrder) {
         if (productOrder == null || productOrder.isEmpty()) {
             return false;
         }
@@ -285,7 +766,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return subTotal == calculateTotalPriceOfAllProduct(productOrder);
     }
 
-    private boolean checkTotalShippingFee(PackageOrderRequestDto packageOrder) {
+    @Override
+    public boolean checkTotalShippingFee(PackageOrderRequestDto packageOrder) {
         //Check when have promotion with type SHIPPING
         if (packageOrder.getCartInfo().getPromotionIds() != null && !packageOrder.getCartInfo().getPromotionIds().isEmpty()) {
             List<Promotion> promotions = findPromotions(packageOrder.getCartInfo().getPromotionIds());
@@ -303,6 +785,9 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                 .allMatch(item -> {
                     try {
                         double shippingFeeWithDistance = getShippingFeeByDistance(item.getDistance());
+                        if (shippingFeeWithDistance == -1) {
+                            return false;
+                        }
                         totalShip[0] += shippingFeeWithDistance;
                         return item.getShippingFee() == shippingFeeWithDistance;
                     } catch (JsonProcessingException e) {
@@ -317,7 +802,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return checkShippingFeeEachOrder && (Math.round(totalShip[0] * 100.0) / 100.0) == packageOrder.getCartInfo().getTotal().getShippingTotal();
     }
 
-    private boolean checkTotalDiscount(PackageOrderRequestDto packageOrder) {
+    @Override
+    public boolean checkTotalDiscount(PackageOrderRequestDto packageOrder) {
         //Check when have promotion with type DISCOUNT
         if (packageOrder.getCartInfo().getPromotionIds() != null && !packageOrder.getCartInfo().getPromotionIds().isEmpty()) {
             List<Promotion> promotions = findPromotions(packageOrder.getCartInfo().getPromotionIds());
@@ -326,7 +812,7 @@ public class PackageOrderServiceImpl implements PackageOrderService {
                         promotion.getType().equals(PromotionType.DISCOUNT)
                                 && packageOrder.getCartInfo().getTotal().getPromotionFee() == promotion.getDiscount()
                 ) {
-                    log.info("packageOrder.getCartInfo().getTotal().getPromotionFee() {}",  packageOrder.getCartInfo().getTotal().getPromotionFee());
+                    log.info("packageOrder.getCartInfo().getTotal().getPromotionFee() {}", packageOrder.getCartInfo().getTotal().getPromotionFee());
                     log.info("promotion.getDiscount()", promotion.getDiscount());
                     return true;
                 }
@@ -341,7 +827,8 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         }
     }
 
-    private boolean checkTotalPayment(TotalOrderDto totalOrderDto) {
+    @Override
+    public boolean checkTotalPayment(TotalOrderDto totalOrderDto) {
         double totalPayment = totalOrderDto.getSubTotal() + totalOrderDto.getShippingTotal() - totalOrderDto.getPromotionFee();
         log.info("----------------------------checkTotalPayment()--------------------------------------------");
         log.info("totalOrderDto.getPaymentTotal() {}", totalOrderDto.getPaymentTotal());
@@ -441,6 +928,15 @@ public class PackageOrderServiceImpl implements PackageOrderService {
             Order saveOrder = orderRepository.save(order);
             orderList.add(saveOrder);
         });
+        //push notification for shop
+        List<Long> userIdOfShopList = shops.stream().map(shop -> shop.getAccount().getId()).toList();
+        log.info("Here is total shop {}", userIdOfShopList.size());
+        log.info("Here is account shopid {}", userIdOfShopList.toString());
+        NotificationDto notificationDto = new NotificationDto();
+        notificationDto.setRole(NotifiConstant.NOTI_SHOP_ROLE);
+        notificationDto.setName(NotifiConstant.NEW_ORDER_FOR_SHOP_OWNER_NAME);
+        notificationDto.setNotiText(NotifiConstant.NEW_ORDER_FOR_SHOP_OWNER_CONTENT);
+        notificationService.pushNotificationForListUserID(userIdOfShopList, notificationDto);
         return orderList;
     }
 
@@ -497,19 +993,32 @@ public class PackageOrderServiceImpl implements PackageOrderService {
         return orderDetails;
     }
 
-    private void saveAll(PackageOrderRequestDto packageOrderRequestDto, String paymentId, Account account, Map<Long, Integer> productOrder) {
+    private Long saveAll(
+            PackageOrderRequestDto packageOrderRequestDto, String paymentId, String payerEmail,
+            Account account, Map<Long, Integer> productOrder
+    ) {
+        List<Long> promotionIds = packageOrderRequestDto.getCartInfo().getPromotionIds();
+        if (promotionIds.size() > 0) {
+            List<Promotion> promotions = promotionRepository.findAllById(promotionIds);
+            promotions.forEach(promotion -> {
+                int used = promotion.getUsed();
+                promotion.setUsed(used + 1);
+            });
+        }
         Transaction transaction = Transaction.builder()
                 .amount(packageOrderRequestDto.getCartInfo().getTotal().getPaymentTotal())
                 .status(TransactionStatus.PROCESSING)
                 .build();
         if (packageOrderRequestDto.getCartInfo().getPaymentMethod().equals(PaymentMethod.PAYPAL)) {
             transaction.setPaypalId(paymentId);
+            transaction.setPaypalEmail(payerEmail);
             transaction.setStatus(TransactionStatus.SUCCESS);
         }
         Transaction saveTransaction = transactionRepository.save(transaction);
         PackageOrder packageOrder = savePackageOrder(packageOrderRequestDto, account, saveTransaction);
         List<Order> orders = saveOrder(packageOrder, packageOrderRequestDto, productOrder);
         saveOrderDetails(orders, productOrder);
+        return packageOrder.getId();
     }
 
     private ResponseEntity<?> handleInitialPayment(PackageOrderRequestDto packageOrderRequestDto, Account account) {
@@ -560,16 +1069,19 @@ public class PackageOrderServiceImpl implements PackageOrderService {
             log.info("payerId id{}", payerId);
             log.info("paymentId id{}", paymentId);
             if (payment.getState().equals("approved")) {
+                Long packageOrderId;
                 if (transactionRepository.findByPaypalId(paymentId).isPresent()) {
                     ErrorResponse error = new ErrorResponse(String.valueOf(HttpStatus.EXPECTATION_FAILED.value()),
                             "paymentId " + paymentId + " already exist.");
                     return new ResponseEntity<>(error, HttpStatus.EXPECTATION_FAILED);
                 } else {
-                    saveAll(packageOrderRequestDto, paymentId, account, productOrder);
+                    String payerEmail = payment.getPayer().getPayerInfo().getEmail();
+                    updateTotalOrderOfListProduct(productOrder.keySet().stream().toList());
+                    packageOrderId = saveAll(packageOrderRequestDto, paymentId, payerEmail, account, productOrder);
                 }
                 SuccessResponse successResponse = SuccessResponse.builder()
                         .successCode(String.valueOf(HttpStatus.OK.value()))
-                        .successMessage("Payment with paypal successful.")
+                        .successMessage("Payment with paypal successful. packageOrderId=" + packageOrderId)
                         .build();
 
                 return ResponseEntity.status(HttpStatus.OK)
@@ -633,26 +1145,64 @@ public class PackageOrderServiceImpl implements PackageOrderService {
 
         HttpEntity<?> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(
-                builder.toUriString(),
-                HttpMethod.GET,
-                entity,
-                String.class);
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.GET,
+                    entity,
+                    String.class);
 
-        if (response.getStatusCode() == HttpStatus.OK) {
-            String responseBody = response.getBody();
+            if (response.getStatusCode() == HttpStatus.OK) {
+                String responseBody = response.getBody();
 
-            // Parse the JSON response
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> jsonMap = objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {
-            });
+                // Parse the JSON response
+                ObjectMapper objectMapper = new ObjectMapper();
+                Map<String, Object> jsonMap = objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {
+                });
 
-            // Access the 'shippingFee' field
-            Double shippingFee = (Double) jsonMap.get("shippingFee");
-            return shippingFee;
-        } else {
-            throw new RuntimeException();
+                // Access the 'shippingFee' field
+                Double shippingFee = (Double) jsonMap.get("shippingFee");
+                return shippingFee;
+            } else if (response.getStatusCode() == HttpStatus.NOT_ACCEPTABLE) {
+                return -1;
+            }
+        } catch (Exception ex) {
+            return -1;
         }
+        return -1;
+    }
+
+    private boolean updateTotalOrderOfListProduct(List<Long> ids) {
+        ids.forEach(id -> {
+            Product product = new Bird();
+            product.setId(id);
+            productSummaryService.updateTotalQuantityOrder(product);
+        });
+        return true;
+    }
+
+    private PackageOrderAdminDto packageOrderToPackageOrderAdminDto(PackageOrder packageOrder) {
+        List<Order> orders = packageOrder.getOrders();
+        int countSuccess;
+        if (packageOrder.getTransaction().getStatus().equals(TransactionStatus.SUCCESS)) {
+            countSuccess = orders.size();
+        } else {
+            countSuccess = (int) orders.stream().filter(order -> order.getStatus().equals(OrderStatus.DELIVERED)).count();
+        }
+        return PackageOrderAdminDto.builder()
+                .id(packageOrder.getId())
+                .accountId(packageOrder.getAccount().getId())
+                .paymentMethod(packageOrder.getPaymentMethod())
+                .payerEmail(packageOrder.getTransaction().getPaypalEmail())
+                .transactionStatus(packageOrder.getTransaction().getStatus())
+                .totalPayment(packageOrder.getTotalPrice())
+                .createdDateTransaction(packageOrder.getTransaction().getTransactionDate().getTime())
+                .lastedUpdateTransaction(packageOrder.getTransaction().getLastedUpdate().getTime())
+                .fullName(packageOrder.getShippingAddress().getFullName())
+                .phoneNumber(packageOrder.getShippingAddress().getPhone())
+                .address(packageOrder.getShippingAddress().getAddress())
+                .statusOrders(countSuccess + "/" + orders.size())
+                .build();
     }
 
     private PackageOrderDto packageOrderToPackageOrderDto(PackageOrder packageOrder) {

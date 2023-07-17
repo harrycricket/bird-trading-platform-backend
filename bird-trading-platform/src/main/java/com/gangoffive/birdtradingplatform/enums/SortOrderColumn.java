@@ -11,6 +11,8 @@ import java.util.Arrays;
 @Getter
 public enum SortOrderColumn {
     ID("id", "id"),
+    PACKAGE_ORDER_ID("packageOrderId", "packageOrder.id"),
+    SHOP_ID("shopId", "shopOwner.id"),
     PRICE("totalPrice", "totalPrice"),
     SHIPPING_FEE("shippingFee", "shippingFee"),
     CREATE_DATE("createdDate", "createdDate"),

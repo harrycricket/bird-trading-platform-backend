@@ -12,6 +12,7 @@ import java.util.Date;
 public class MessageDto {
     private long id;
     private String senderName;
+    private String userName;
     private long userID;
     private long shopID;
     private String content;

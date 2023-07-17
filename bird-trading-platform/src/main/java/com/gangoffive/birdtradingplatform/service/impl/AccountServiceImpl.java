@@ -1,26 +1,27 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
-import com.gangoffive.birdtradingplatform.api.response.ApiResponse;
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
+import com.gangoffive.birdtradingplatform.common.RoleConstant;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
-import com.gangoffive.birdtradingplatform.dto.AccountUpdateDto;
-import com.gangoffive.birdtradingplatform.dto.RegisterShopOwnerDto;
-import com.gangoffive.birdtradingplatform.dto.UserInfoDto;
-import com.gangoffive.birdtradingplatform.dto.VerifyRequestDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.entity.*;
-import com.gangoffive.birdtradingplatform.enums.AccountStatus;
-import com.gangoffive.birdtradingplatform.enums.UserRole;
+import com.gangoffive.birdtradingplatform.enums.*;
 import com.gangoffive.birdtradingplatform.exception.CustomRuntimeException;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.AddressRepository;
 import com.gangoffive.birdtradingplatform.repository.ShopOwnerRepository;
 import com.gangoffive.birdtradingplatform.repository.VerifyTokenRepository;
 import com.gangoffive.birdtradingplatform.service.AccountService;
-import com.gangoffive.birdtradingplatform.util.S3Utils;
+import com.gangoffive.birdtradingplatform.util.*;
+import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -28,11 +29,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -53,20 +51,12 @@ public class AccountServiceImpl implements AccountService {
         String originUrl = appProperties.getS3().getUrl();
         String urlImage = "";
         if (multipartImage != null && !multipartImage.isEmpty()) {
-            String contentType = multipartImage.getContentType();
-            log.info("contentType: {}", contentType);
-            String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
-            newFilename = "image/" + newFilename;
-            log.info("newFilename update account: {}", newFilename);
-            urlImage = originUrl + newFilename;
+            String newFileName = FileNameUtils.getNewImageFileName(multipartImage);
+            urlImage = originUrl + newFileName;
             try {
-                S3Utils.uploadFile(newFilename, multipartImage.getInputStream());
+                S3Utils.uploadFile(newFileName, multipartImage.getInputStream());
             } catch (Exception ex) {
-                ErrorResponse errorResponse = ErrorResponse.builder()
-                        .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                        .errorMessage("Upload file fail")
-                        .build();
-                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                return ResponseUtils.getErrorResponseBadRequest("Upload file fail");
             }
         }
         Optional<Account> editAccount = accountRepository.findByEmail(accountUpdateDto.getEmail());
@@ -113,20 +103,12 @@ public class AccountServiceImpl implements AccountService {
             String originUrl = appProperties.getS3().getUrl();
             String urlImage = "";
             if (multipartImage != null && !multipartImage.isEmpty()) {
-                String contentType = multipartImage.getContentType();
-                log.info("contentType: {}", contentType);
-                String newFilename = UUID.randomUUID().toString() + "." + contentType.substring(6);
-                newFilename = "image/" + newFilename;
-                log.info("newFilename update account: {}", newFilename);
-                urlImage = originUrl + newFilename;
+                String newFileName = FileNameUtils.getNewImageFileName(multipartImage);
+                urlImage = originUrl + newFileName;
                 try {
-                    S3Utils.uploadFile(newFilename, multipartImage.getInputStream());
+                    S3Utils.uploadFile(newFileName, multipartImage.getInputStream());
                 } catch (Exception ex) {
-                    ErrorResponse errorResponse = ErrorResponse.builder()
-                            .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))
-                            .errorMessage("Upload file fail")
-                            .build();
-                    new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    return ResponseUtils.getErrorResponseBadRequest("Upload file fail");
                 }
             }
             ShopOwner shopOwner = ShopOwner.builder()
@@ -135,7 +117,7 @@ public class AccountServiceImpl implements AccountService {
                     .shopPhone(registerShopOwnerDto.getPhoneShop())
                     .description(registerShopOwnerDto.getDescription())
                     .avatarImgUrl(urlImage)
-                    .active(true)
+                    .status(ShopOwnerStatus.ACTIVE)
                     .build();
             Address address = Address.builder()
                     .fullName(registerShopOwnerDto.getShopName())
@@ -153,11 +135,7 @@ public class AccountServiceImpl implements AccountService {
                     .build();
             return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
         } else {
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(String.valueOf(HttpStatus.CONFLICT))
-                    .errorMessage("Account already have shop account.")
-                    .build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+            return ResponseUtils.getErrorResponseConflict("Account already have shop account.");
         }
     }
 
@@ -179,11 +157,8 @@ public class AccountServiceImpl implements AccountService {
                 Date expireDate = tokenRepo.get().getExpired();
                 Date timeNow = new Date();
                 if (timeNow.after(expireDate)) {
-                    ErrorResponse errorResponse = ErrorResponse.builder()
-                            .errorCode(HttpStatus.BAD_REQUEST.toString())
-                            .errorMessage("This code has already expired. Please regenerate the code to continue the verification")
-                            .build();
-                    return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+                    return ResponseUtils.getErrorResponseBadRequest("This code has already expired." +
+                            " Please regenerate the code to continue the verification");
                 }
                 if (!isResetPassword) {
                     account.get().setStatus(AccountStatus.VERIFY);
@@ -198,16 +173,9 @@ public class AccountServiceImpl implements AccountService {
 
                 return new ResponseEntity<>(successResponse, HttpStatus.OK);
             }
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .errorCode(HttpStatus.BAD_REQUEST.toString())
-                    .errorMessage("This verify code has already used!").build();
-            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            return ResponseUtils.getErrorResponseBadRequest("This verify code has already used!");
         }
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .errorCode(HttpStatus.NOT_FOUND.toString())
-                .errorMessage("Not found code. Code not true")
-                .build();
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return ResponseUtils.getErrorResponseBadRequest("Not found code. Code not true");
     }
 
     @Override
@@ -245,10 +213,393 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account getAccountById(long userId) {
         var acc = accountRepository.findById(userId);
-        if(acc.isPresent()) {
+        if (acc.isPresent()) {
             return acc.get();
-        }else {
+        } else {
             throw new CustomRuntimeException("400", "Not found this account Id");
         }
+    }
+
+    @Override
+    public ResponseEntity<?> filterAllUserAccount(UserAccountFilterDto userAccountFilter) {
+        if (userAccountFilter.getPageNumber() > 0) {
+            int pageNumber = userAccountFilter.getPageNumber() - 1;
+            PageRequest pageRequest = PageRequest.of(pageNumber, PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE);
+            PageRequest pageRequestWithSort = null;
+            if (userAccountFilter.getSortDirection() != null
+                    && !userAccountFilter.getSortDirection().getSort().isEmpty()
+                    && !userAccountFilter.getSortDirection().getField().isEmpty()
+            ) {
+                if (
+                        !SortUserAccountColumn.checkField(userAccountFilter.getSortDirection().getField())
+                ) {
+                    return ResponseUtils.getErrorResponseNotFoundSortColumn();
+                }
+                if (userAccountFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.ASC.name())) {
+                    pageRequestWithSort = getPageRequest(userAccountFilter, pageNumber, Sort.Direction.ASC);
+                } else if (userAccountFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.DESC.name())) {
+                    pageRequestWithSort = getPageRequest(userAccountFilter, pageNumber, Sort.Direction.DESC);
+                } else {
+                    return ResponseUtils.getErrorResponseNotFoundSortDirection();
+                }
+            }
+
+            if (
+                    userAccountFilter.getUserSearchInfo().getField().isEmpty()
+                            && userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+                            && userAccountFilter.getUserSearchInfo().getOperator().isEmpty()
+                            && userAccountFilter.getSortDirection().getField().isEmpty()
+                            && userAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                return filterAllUserAccountAllFieldEmpty(pageRequest);
+            } else if (
+                    userAccountFilter.getUserSearchInfo().getField().isEmpty()
+                            && userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+                            && userAccountFilter.getUserSearchInfo().getOperator().isEmpty()
+                            && !userAccountFilter.getSortDirection().getField().isEmpty()
+                            && !userAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                return filterAllUserAccountAllFieldEmpty(pageRequestWithSort);
+            }
+
+            if (
+                    userAccountFilter.getUserSearchInfo().getField().equals(FieldUserAccountTable.ID.getField())
+                            && !userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+            ) {
+                if (userAccountFilter.getUserSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterUserAccountByIdEqual(userAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    userAccountFilter.getUserSearchInfo().getField().equals(FieldUserAccountTable.EMAIL.getField())
+                            && !userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+                            && userAccountFilter.getSortDirection().getField().isEmpty()
+                            && userAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (userAccountFilter.getUserSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterUserAccountByEmailContain(userAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    userAccountFilter.getUserSearchInfo().getField().equals(FieldUserAccountTable.EMAIL.getField())
+                            && !userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+            ) {
+                if (userAccountFilter.getUserSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterUserAccountByEmailContain(userAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    userAccountFilter.getUserSearchInfo().getField().equals(FieldUserAccountTable.FULL_NAME.getField())
+                            && !userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+                            && userAccountFilter.getSortDirection().getField().isEmpty()
+                            && userAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (userAccountFilter.getUserSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterUserAccountByFullNameContain(userAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    userAccountFilter.getUserSearchInfo().getField().equals(FieldUserAccountTable.FULL_NAME.getField())
+                            && !userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+            ) {
+                if (userAccountFilter.getUserSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterUserAccountByFullNameContain(userAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    userAccountFilter.getUserSearchInfo().getField().equals(FieldUserAccountTable.PHONE_NUMBER.getField())
+                            && !userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+                            && userAccountFilter.getSortDirection().getField().isEmpty()
+                            && userAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (userAccountFilter.getUserSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterUserAccountByPhoneNumberContain(userAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    userAccountFilter.getUserSearchInfo().getField().equals(FieldUserAccountTable.PHONE_NUMBER.getField())
+                            && !userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+            ) {
+                if (userAccountFilter.getUserSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterUserAccountByPhoneNumberContain(userAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    userAccountFilter.getUserSearchInfo().getField().equals(FieldUserAccountTable.ADDRESS.getField())
+                            && !userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+                            && userAccountFilter.getSortDirection().getField().isEmpty()
+                            && userAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (userAccountFilter.getUserSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterUserAccountByAddressContain(userAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    userAccountFilter.getUserSearchInfo().getField().equals(FieldUserAccountTable.ADDRESS.getField())
+                            && !userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+            ) {
+                if (userAccountFilter.getUserSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                    return filterUserAccountByAddressContain(userAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    userAccountFilter.getUserSearchInfo().getField().equals(FieldUserAccountTable.STATUS.getField())
+                            && !userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+                            && userAccountFilter.getSortDirection().getField().isEmpty()
+                            && userAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (userAccountFilter.getUserSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterUserAccountByStatusEqual(userAccountFilter, pageRequest);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    userAccountFilter.getUserSearchInfo().getField().equals(FieldUserAccountTable.STATUS.getField())
+                            && !userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+            ) {
+                if (userAccountFilter.getUserSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
+                    return filterUserAccountByStatusEqual(userAccountFilter, pageRequestWithSort);
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    userAccountFilter.getUserSearchInfo().getField().equals(FieldUserAccountTable.CREATED_DATE.getField())
+                            && !userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+                            && userAccountFilter.getSortDirection().getField().isEmpty()
+                            && userAccountFilter.getSortDirection().getSort().isEmpty()
+            ) {
+                if (userAccountFilter.getUserSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(userAccountFilter.getUserSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterUserAccountByCreatedDateGreaterThanOrEqual(dateRange, pageRequest);
+                    } else {
+                        return filterUserAccountByCreatedDateFromTo(dateRange, pageRequest);
+                    }
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else if (
+                    userAccountFilter.getUserSearchInfo().getField().equals(FieldUserAccountTable.CREATED_DATE.getField())
+                            && !userAccountFilter.getUserSearchInfo().getValue().isEmpty()
+            ) {
+                if (userAccountFilter.getUserSearchInfo().getOperator().equals(Operator.FROM_TO.getOperator())) {
+                    DateRangeDto dateRange = JsonUtil.INSTANCE.getObject(userAccountFilter.getUserSearchInfo().getValue(), DateRangeDto.class);
+                    if (dateRange.getDateTo() == -1L) {
+                        return filterUserAccountByCreatedDateGreaterThanOrEqual(dateRange, pageRequest);
+                    } else {
+                        return filterUserAccountByCreatedDateFromTo(dateRange, pageRequest);
+                    }
+                }
+                return ResponseUtils.getErrorResponseNotFoundOperator();
+            } else {
+                return ResponseUtils.getErrorResponseBadRequest("User account filter is not correct.");
+            }
+        } else {
+            return ResponseUtils.getErrorResponseBadRequestPageNumber();
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> updateListUserAccountStatus(ChangeStatusListIdDto changeStatusListIdDto) {
+        AccountStatus accountStatus = AccountStatus.getAccountStatus(changeStatusListIdDto.getStatus());
+        try {
+            int numberStatusChange = accountRepository.updateListAccountStatus(
+                    accountStatus, changeStatusListIdDto.getIds()
+            );
+            return ResponseEntity.ok("Update " + numberStatusChange + " user account status successfully.");
+        } catch (Exception ex) {
+            return ResponseUtils.getErrorResponseBadRequest("Update list user account fail.");
+        }
+    }
+
+    private ResponseEntity<?> filterUserAccountByCreatedDateFromTo(
+            DateRangeDto dateRange, PageRequest pageRequest
+    ) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(DateUtils.timeInMillisecondToDate(dateRange.getDateTo()));
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        Optional<Page<Account>> accounts = accountRepository.findByCreatedDateBetweenAndRoleIn(
+                DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
+                calendar.getTime(),
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
+                pageRequest
+        );
+
+        if (accounts.isPresent()) {
+            return getPageNumberWrapperWithUserAccount(accounts.get());
+        }
+        return ResponseUtils.getErrorResponseNotFound("Not found account have created date from to.");
+    }
+
+    private ResponseEntity<?> filterUserAccountByCreatedDateGreaterThanOrEqual(
+            DateRangeDto dateRange, PageRequest pageRequest
+    ) {
+        Optional<Page<Account>> accounts = accountRepository.findByCreatedDateGreaterThanEqualAndRoleIn(
+                DateUtils.timeInMillisecondToDate(dateRange.getDateFrom()),
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
+                pageRequest
+        );
+
+        if (accounts.isPresent()) {
+            return getPageNumberWrapperWithUserAccount(accounts.get());
+        }
+        return ResponseUtils.getErrorResponseNotFound("Not found account have created date greater than or equal.");
+    }
+
+    private ResponseEntity<?> filterUserAccountByStatusEqual(
+            UserAccountFilterDto userAccountFilter, PageRequest pageRequest
+    ) {
+        List<AccountStatus> accountStatuses;
+        if (Integer.parseInt(userAccountFilter.getUserSearchInfo().getValue()) == 9) {
+            accountStatuses = List.of(AccountStatus.values());
+        } else {
+            accountStatuses = Arrays.asList(
+                    AccountStatus.getAccountStatus(
+                            Integer.parseInt(userAccountFilter.getUserSearchInfo().getValue())
+                    )
+            );
+        }
+
+        Optional<Page<Account>> accounts = accountRepository.findByStatusInAndRoleIn(
+                accountStatuses,
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
+                pageRequest
+        );
+
+        if (accounts.isPresent()) {
+            return getPageNumberWrapperWithUserAccount(accounts.get());
+        }
+        return ResponseUtils.getErrorResponseNotFound("Not found this status.");
+    }
+
+    private ResponseEntity<?> filterUserAccountByAddressContain(
+            UserAccountFilterDto userAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<Account>> accounts = accountRepository.findByAddress_AddressLikeAndRoleIn(
+                "%" + userAccountFilter.getUserSearchInfo().getValue() + "%",
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
+                pageRequest
+        );
+
+        if (accounts.isPresent()) {
+            return getPageNumberWrapperWithUserAccount(accounts.get());
+        }
+        return ResponseUtils.getErrorResponseNotFound("Not found account have contain this address.");
+    }
+
+    private ResponseEntity<?> filterUserAccountByPhoneNumberContain(
+            UserAccountFilterDto userAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<Account>> accounts = accountRepository.findByPhoneNumberLikeAndRoleIn(
+                "%" + userAccountFilter.getUserSearchInfo().getValue() + "%",
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
+                pageRequest
+        );
+
+        if (accounts.isPresent()) {
+            return getPageNumberWrapperWithUserAccount(accounts.get());
+        }
+        return ResponseUtils.getErrorResponseNotFound("Not found account have contain this phone number.");
+    }
+
+    private ResponseEntity<?> filterUserAccountByFullNameContain(
+            UserAccountFilterDto userAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<Account>> accounts = accountRepository.findByFullNameLikeAndRoleIn(
+                "%" + userAccountFilter.getUserSearchInfo().getValue() + "%",
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
+                pageRequest
+        );
+
+        if (accounts.isPresent()) {
+            return getPageNumberWrapperWithUserAccount(accounts.get());
+        }
+        return ResponseUtils.getErrorResponseNotFound("Not found account have contain this full name.");
+    }
+
+    private ResponseEntity<?> filterUserAccountByEmailContain(
+            UserAccountFilterDto userAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<Account>> accounts = accountRepository.findByEmailLikeAndRoleIn(
+                "%" + userAccountFilter.getUserSearchInfo().getValue() + "%",
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
+                pageRequest
+        );
+
+        if (accounts.isPresent()) {
+            return getPageNumberWrapperWithUserAccount(accounts.get());
+        }
+        return ResponseUtils.getErrorResponseNotFound("Not found account have contain this email.");
+    }
+
+    private ResponseEntity<?> filterUserAccountByIdEqual(
+            UserAccountFilterDto userAccountFilter, PageRequest pageRequest
+    ) {
+        Optional<Page<Account>> accounts = accountRepository.findByIdAndRoleIn(
+                Long.valueOf(userAccountFilter.getUserSearchInfo().getValue()),
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
+                pageRequest
+        );
+
+        if (accounts.isPresent()) {
+            return getPageNumberWrapperWithUserAccount(accounts.get());
+        }
+        return ResponseUtils.getErrorResponseNotFound("Not found this account id.");
+    }
+
+    private ResponseEntity<?> filterAllUserAccountAllFieldEmpty(PageRequest pageRequest) {
+        Optional<Page<Account>> accounts = accountRepository.findAllByRoleIn(
+                RoleConstant.VIEW_ALL_USER_ACCOUNT,
+                pageRequest
+        );
+
+        if (accounts.isPresent()) {
+            return getPageNumberWrapperWithUserAccount(accounts.get());
+        } else {
+            return ResponseUtils.getErrorResponseNotFound("Not found account.");
+        }
+    }
+
+    private ResponseEntity<?> getPageNumberWrapperWithUserAccount(Page<Account> accounts) {
+        List<UserAccountDto> userAccounts = accounts.stream()
+                .map(this::accountToUserAccountDto)
+                .collect(Collectors.toList());
+        PageNumberWrapper<UserAccountDto> result = new PageNumberWrapper<>(
+                userAccounts,
+                accounts.getTotalPages(),
+                accounts.getTotalElements()
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    private PageRequest getPageRequest(
+            UserAccountFilterDto userAccountFilter, int pageNumber, Sort.Direction sortDirection
+    ) {
+        return PageRequest.of(
+                pageNumber,
+                PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                Sort.by(sortDirection,
+                        SortUserAccountColumn.getColumnByField(userAccountFilter.getSortDirection().getField())
+                )
+        );
+    }
+
+    private UserAccountDto accountToUserAccountDto(Account account) {
+        UserAccountDto userAccount = UserAccountDto.builder()
+                .id(account.getId())
+                .email(account.getEmail())
+                .status(account.getStatus())
+                .createdDate(account.getCreatedDate().getTime())
+                .build();
+        if (account.getImgUrl() != null) {
+            userAccount.setAvtUrl(account.getImgUrl());
+        }
+        if (account.getFullName() != null) {
+            userAccount.setFullName(account.getFullName());
+        }
+        if (account.getPhoneNumber() != null) {
+            userAccount.setPhoneNumber(account.getPhoneNumber());
+        }
+        if (account.getAddress() != null) {
+            userAccount.setAddress(account.getAddress().getAddress());
+        }
+        return userAccount;
     }
 }

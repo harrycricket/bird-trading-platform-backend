@@ -33,6 +33,9 @@ public class Transaction {
 	@Column(name = "transaction_paypal_id")
 	private String paypalId;
 
+	@Column(name = "payer_email")
+	private String paypalEmail;
+
 	@Column(name = "status")
 	@Enumerated(value = EnumType.STRING)
 	private TransactionStatus status;

@@ -13,6 +13,8 @@ import java.util.List;
 @ToString
 public class OrderShopOwnerDto {
     private Long id;
+    private Long packageOrderId;
+    private Long shopId;
     private double totalPrice;
     private OrderStatusDto orderStatus;
     private double shippingFee;

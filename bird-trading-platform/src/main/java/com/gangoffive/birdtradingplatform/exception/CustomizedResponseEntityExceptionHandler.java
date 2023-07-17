@@ -23,7 +23,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
     public final ResponseEntity<ApiError> handleAllExceptions(Exception ex, HttpServletRequest request) throws Exception {
         ApiError errorDetails = new ApiError(request.getRequestURI(),
                 ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
-        return new ResponseEntity<ApiError>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -39,7 +39,6 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
     @ExceptionHandler(CustomRuntimeException.class)
     public ResponseEntity<ErrorResponse> handleCustomException(CustomRuntimeException ex) {
         ErrorResponse errorResponse = new ErrorResponse(ex.getErrorCode(), ex.getErrorMessage());
-
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
@@ -47,7 +46,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
     public ResponseEntity<ApiError> handleAuthenticateException(AuthenticateException ex, HttpServletRequest request) {
         ApiError errorDetails = new ApiError(request.getRequestURI(),
                 ex.getMessage(), HttpStatus.UNAUTHORIZED.value(), LocalDateTime.now());
-        return new ResponseEntity<ApiError>(errorDetails, HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(SignatureException.class)

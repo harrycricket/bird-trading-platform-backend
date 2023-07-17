@@ -1,8 +1,6 @@
 package com.gangoffive.birdtradingplatform.repository;
 
-import com.gangoffive.birdtradingplatform.entity.Order;
-import com.gangoffive.birdtradingplatform.entity.PromotionShop;
-import com.gangoffive.birdtradingplatform.entity.ShopOwner;
+import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,8 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import com.gangoffive.birdtradingplatform.entity.OrderDetail;
 
 import java.util.Date;
 import java.util.List;
@@ -25,8 +21,14 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
 
     List<OrderDetail> findOrderDetailByOrderIn(List<Order> orders);
 
+    Optional<OrderDetail> findByIdAndOrder_PackageOrder_Account(Long id, Account account);
+
     Optional<List<OrderDetail>> findAllByPromotionShopsContainingAndOrder_ShopOwner_IdAndOrder_StatusIn(
             PromotionShop promotionShop, Long shopId, List<OrderStatus> orderStatuses
+    );
+
+    Optional<List<OrderDetail>> findAllByPromotionShopsContainingAndOrder_StatusIn(
+            PromotionShop promotionShop, List<OrderStatus> orderStatuses
     );
 
     Optional<Page<OrderDetail>> findAllByOrder_ShopOwner_Id(
@@ -66,22 +68,22 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "           WHERE o.shop_id = :shopId\n" +
             ") AS tmp WHERE \n" +
             "    CASE\n" +
-            "        WHEN rating = 'FIVE_STAR' THEN 5\n" +
-            "        WHEN rating = 'FOUR_STAR' THEN 4\n" +
-            "        WHEN rating = 'THREE_STAR' THEN 3\n" +
-            "        WHEN rating = 'TWO_STAR' THEN 2\n" +
-            "        WHEN rating = 'ONE_STAR' THEN 1\n" +
+            "        WHEN rating = '5' THEN 5\n" +
+            "        WHEN rating = '4' THEN 4\n" +
+            "        WHEN rating = '3' THEN 3\n" +
+            "        WHEN rating = '2' THEN 2\n" +
+            "        WHEN rating = '1' THEN 1\n" +
             "        ELSE 0\n" +
             "END >= :star",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od INNER JOIN `bird-trading-platform`.tbl_review rv \n" +
                     "           ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
                     "           WHERE o.shop_id = :shopId\n" +
                     "           AND CASE\n" +
-                    "               WHEN rating = 'FIVE_STAR' THEN 5\n" +
-                    "               WHEN rating = 'FOUR_STAR' THEN 4\n" +
-                    "               WHEN rating = 'THREE_STAR' THEN 3\n" +
-                    "               WHEN rating = 'TWO_STAR' THEN 2\n" +
-                    "               WHEN rating = 'ONE_STAR' THEN 1\n" +
+                    "               WHEN rating = '5' THEN 5\n" +
+                    "               WHEN rating = '4' THEN 4\n" +
+                    "               WHEN rating = '3' THEN 3\n" +
+                    "               WHEN rating = '2' THEN 2\n" +
+                    "               WHEN rating = '1' THEN 1\n" +
                     "               ELSE 0\n" +
                     "           END >= :star"
             ,nativeQuery = true)
@@ -105,11 +107,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "    WHERE o.shop_id = :shopId " +
             ") AS tmp " +
             "ORDER BY CASE " +
-            "    WHEN tmp.rating = 'ONE_STAR' THEN 1 " +
-            "    WHEN tmp.rating = 'TWO_STAR' THEN 2 " +
-            "    WHEN tmp.rating = 'THREE_STAR' THEN 3 " +
-            "    WHEN tmp.rating = 'FOUR_STAR' THEN 4 " +
-            "    WHEN tmp.rating = 'FIVE_STAR' THEN 5 " +
+            "    WHEN tmp.rating = '1' THEN 1 " +
+            "    WHEN tmp.rating = '2' THEN 2 " +
+            "    WHEN tmp.rating = '3' THEN 3 " +
+            "    WHEN tmp.rating = '4' THEN 4 " +
+            "    WHEN tmp.rating = '5' THEN 5 " +
             "    ELSE 0 " +
             "END ASC",
             countQuery = "SELECT COUNT(*) FROM tbl_order_detail od " +
@@ -127,11 +129,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "               ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "               WHERE o.shop_id = :shopId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END DESC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -148,11 +150,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "               ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "               WHERE o.shop_id = :shopId AND o.order_id = :orderId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END ASC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -169,11 +171,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND o.order_id = :orderId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END DESC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -190,11 +192,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.product_id = :productId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END ASC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -211,11 +213,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "               ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "               WHERE o.shop_id = :shopId AND od.product_id = :productId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END DESC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -234,11 +236,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.order_d_id IN :orderDetailsId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END ASC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -255,11 +257,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.order_d_id IN :orderDetailsId\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END DESC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -276,11 +278,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.price >= :price\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END ASC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -297,11 +299,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.price >= :price\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END DESC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -318,11 +320,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.product_promotion_rate >= :promotionRate\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END ASC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -339,11 +341,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND od.product_promotion_rate >= :promotionRate\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END DESC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -362,20 +364,20 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             ") AS tmp \n" +
             "WHERE \n" +
             "    CASE\n" +
-            "        WHEN rating = 'FIVE_STAR' THEN 5\n" +
-            "        WHEN rating = 'FOUR_STAR' THEN 4\n" +
-            "        WHEN rating = 'THREE_STAR' THEN 3\n" +
-            "        WHEN rating = 'TWO_STAR' THEN 2\n" +
-            "        WHEN rating = 'ONE_STAR' THEN 1\n" +
+            "        WHEN rating = '5' THEN 5\n" +
+            "        WHEN rating = '4' THEN 4\n" +
+            "        WHEN rating = '3' THEN 3\n" +
+            "        WHEN rating = '2' THEN 2\n" +
+            "        WHEN rating = '1' THEN 1\n" +
             "        ELSE 0\n" +
             "    END >= :star\n" +
             "ORDER BY \n" +
             "    CASE\n" +
-            "        WHEN rating = 'FIVE_STAR' THEN 5\n" +
-            "        WHEN rating = 'FOUR_STAR' THEN 4\n" +
-            "        WHEN rating = 'THREE_STAR' THEN 3\n" +
-            "        WHEN rating = 'TWO_STAR' THEN 2\n" +
-            "        WHEN rating = 'ONE_STAR' THEN 1\n" +
+            "        WHEN rating = '5' THEN 5\n" +
+            "        WHEN rating = '4' THEN 4\n" +
+            "        WHEN rating = '3' THEN 3\n" +
+            "        WHEN rating = '2' THEN 2\n" +
+            "        WHEN rating = '1' THEN 1\n" +
             "        ELSE 0\n" +
             "END ASC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od INNER JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -395,20 +397,20 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             ") AS tmp \n" +
             "WHERE \n" +
             "    CASE\n" +
-            "        WHEN rating = 'FIVE_STAR' THEN 5\n" +
-            "        WHEN rating = 'FOUR_STAR' THEN 4\n" +
-            "        WHEN rating = 'THREE_STAR' THEN 3\n" +
-            "        WHEN rating = 'TWO_STAR' THEN 2\n" +
-            "        WHEN rating = 'ONE_STAR' THEN 1\n" +
+            "        WHEN rating = '5' THEN 5\n" +
+            "        WHEN rating = '4' THEN 4\n" +
+            "        WHEN rating = '3' THEN 3\n" +
+            "        WHEN rating = '2' THEN 2\n" +
+            "        WHEN rating = '1' THEN 1\n" +
             "        ELSE 0\n" +
             "    END >= :star\n" +
             "ORDER BY \n" +
             "    CASE\n" +
-            "        WHEN rating = 'FIVE_STAR' THEN 5\n" +
-            "        WHEN rating = 'FOUR_STAR' THEN 4\n" +
-            "        WHEN rating = 'THREE_STAR' THEN 3\n" +
-            "        WHEN rating = 'TWO_STAR' THEN 2\n" +
-            "        WHEN rating = 'ONE_STAR' THEN 1\n" +
+            "        WHEN rating = '5' THEN 5\n" +
+            "        WHEN rating = '4' THEN 4\n" +
+            "        WHEN rating = '3' THEN 3\n" +
+            "        WHEN rating = '2' THEN 2\n" +
+            "        WHEN rating = '1' THEN 1\n" +
             "        ELSE 0\n" +
             "END DESC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od INNER JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -425,11 +427,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND o.created_date >= :dateFrom\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END ASC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -446,11 +448,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND o.created_date >= :dateFrom\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END DESC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -467,11 +469,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND o.created_date >= :dateFrom AND o.created_date <= :dateTo\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END ASC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +
@@ -488,11 +490,11 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long>{
             "                ON od.order_d_id = rv.order_detail_id JOIN `bird-trading-platform`.tbl_order o ON od.order_id = o.order_id\n" +
             "                WHERE o.shop_id = :shopId AND o.created_date >= :dateFrom AND o.created_date <= :dateTo\n" +
             ") AS tmp ORDER BY CASE tmp.rating\n" +
-            "    WHEN 'ONE_STAR' THEN 1\n" +
-            "    WHEN 'TWO_STAR' THEN 2\n" +
-            "    WHEN 'THREE_STAR' THEN 3\n" +
-            "    WHEN 'FOUR_STAR' THEN 4\n" +
-            "    WHEN 'FIVE_STAR' THEN 5\n" +
+            "    WHEN '1' THEN 1\n" +
+            "    WHEN '2' THEN 2\n" +
+            "    WHEN '3' THEN 3\n" +
+            "    WHEN '4' THEN 4\n" +
+            "    WHEN '5' THEN 5\n" +
             "    ELSE 0\n" +
             "END DESC",
             countQuery = "SELECT COUNT(*) FROM `bird-trading-platform`.tbl_order_detail od LEFT JOIN `bird-trading-platform`.tbl_review rv \n" +

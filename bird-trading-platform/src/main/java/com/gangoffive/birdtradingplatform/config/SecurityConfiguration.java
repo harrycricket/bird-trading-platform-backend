@@ -51,9 +51,12 @@ public class SecurityConfiguration {
             "/error",
             "/api/v1/users/register",
             "/api/v1/users/authenticate",
+            "/api/v1/staffs/authenticate",
             "/api/v1/users/reset-password",
             "/api/v1/users/verify/register",
             "/api/v1/users/verify/reset-password",
+
+            "/api/v1/users/reviews/products/**",
             "/api/v1/users/sent",
             "/api/v1/products",
             "/api/v1/products/**",
@@ -63,25 +66,24 @@ public class SecurityConfiguration {
             "/api/v1/accessories/**",
             "/api/v1/foods",
             "/api/v1/foods/**",
-            "/api/v1/product/add-new",
-            "/api/v1/info/**",
+            "/api/v1/info",
             "/api/v1/shop-info",
             "/api/v1/users/get-cookie",
 //            "api/v1/package-order",
             "/api/v1/promotions",
             "/ws/**", // websockets
-            "/api/v1/users/message/send",
-            "/api/v1/users/{userid}/get-channel", // config get channel must to delete
-            "/api/v1//users/{userid}/get-messages", // must delete to
             "/api/v1/types",
             "/api/v1/types/**",
+            "api/v1/tags/shops/**",
+            "/kafka/test",
 //            "/api/v1/shop-owner/promotion-shop", // Remember delete just for testing
 //            "/api/v1/shop-owner/type-all", // Remember delete just for testing
 //            "/api/v1/shop-owner/product", // Remember delete just for testing
 //            "api/v1/shop-owner/**",
 //            "api/v1/shop-owner",
-            "api/v1/admin/**",
-            "api/v1/ship/orders",
+//            "/api/v1/admin/**",
+            "/api/v1/ship/**",
+            "/api/v1/reviews/products/**",
 //            "/favicon.ico",
 //            "/**/*.png",
 //            "/**/*.gif",
@@ -114,35 +116,50 @@ public class SecurityConfiguration {
                         auth -> auth.requestMatchers(WHITE_LIST_URLS)
                                 .permitAll()
 
+                                // Admin endpoints
                                 .requestMatchers(HttpMethod.GET, "/api/v1/admin/**").hasAnyAuthority(ADMIN_READ.getPermission())
                                 .requestMatchers(HttpMethod.POST, "/api/v1/admin/**").hasAnyAuthority(ADMIN_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/admin/**").hasAnyAuthority(ADMIN_UPDATE.getPermission())
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/admin/**").hasAnyAuthority(ADMIN_DELETE.getPermission())
                                 .requestMatchers("/api/v1/admin/**").hasAnyRole(ADMIN.name())
 
-//                                .requestMatchers(HttpMethod.POST, "/api/v1/package-order").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
-                                .requestMatchers(HttpMethod.GET, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_READ.getPermission())
-                                .requestMatchers(HttpMethod.POST, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
-                                .requestMatchers(HttpMethod.PUT, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_UPDATE.getPermission())
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/shopowner/**").hasAnyAuthority(SHOPOWNER_DELETE.getPermission())
-                                .requestMatchers("/api/v1/shopowner/**").hasAnyRole(SHOPOWNER.name())
+                                // Allow access for staff and shop owners to the two specific endpoints
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/orders").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/shop-owner/orders").hasAnyAuthority(SHOPOWNER_UPDATE.getPermission(), SHOPSTAFF_UPDATE.getPermission())
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/order-detail").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/order-detail/order/{orderId}").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/{shopId}/notifications").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/{shopId}/notifications/unread").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/{shopId}/channels").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/{shopId}/messages").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/{shopId}/messages/unread").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
 
+                                // Shop owner endpoints
+                                .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_READ.getPermission())
+                                .requestMatchers(HttpMethod.POST, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_UPDATE.getPermission())
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_DELETE.getPermission())
+                                .requestMatchers("/api/v1/shop-owner/**").hasAnyRole(SHOPOWNER.name())
 
+                                // Staff endpoints
                                 .requestMatchers(HttpMethod.GET, "/api/v1/user/**").hasAnyAuthority(USER_READ.getPermission())
                                 .requestMatchers(HttpMethod.POST, "/api/v1/user/**").hasAnyAuthority(USER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/user/**").hasAnyAuthority(USER_UPDATE.getPermission())
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/user/**").hasAnyAuthority(USER_DELETE.getPermission())
                                 .requestMatchers("/api/v1/user/**").hasAnyRole(USER.name())
 
+                                // Users endpoints
+                                .requestMatchers(HttpMethod.GET, "/api/v1/staff/**").hasAnyAuthority(SHOPSTAFF_READ.getPermission())
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/staff/**").hasAnyAuthority(SHOPSTAFF_UPDATE.getPermission())
+                                .requestMatchers("/api/v1/staff/**").hasAnyRole(SHOPSTAFF.name())
 
-                                .requestMatchers(HttpMethod.GET, "/api/v1/shopstaff/**").hasAnyAuthority(SHOPSTAFF_READ.getPermission())
-                                .requestMatchers("/api/v1/shopstaff/**").hasAnyRole(SHOPSTAFF.name())
-
+                                // Users endpoints
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/users/**").hasAnyAuthority(USER_UPDATE.getPermission(), SHOPSTAFF_UPDATE.getPermission(), SHOPOWNER_UPDATE.getPermission())
                                 .requestMatchers(HttpMethod.GET, "/api/v1/users/**").hasAnyAuthority(USER_READ.getPermission(), SHOPSTAFF_READ.getPermission(), SHOPOWNER_READ.getPermission())
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasAnyAuthority(SHOPOWNER_DELETE.getPermission(), USER_DELETE.getPermission())
                                 .requestMatchers("/api/v1/users/**").hasAnyRole(USER.name(), SHOPSTAFF.name(), SHOPOWNER.name())
 
+                                // Default authentication for any other request
                                 .anyRequest()
                                 .authenticated()
                 )

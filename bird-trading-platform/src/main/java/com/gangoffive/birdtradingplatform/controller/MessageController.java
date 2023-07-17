@@ -40,17 +40,19 @@ public class MessageController {
 
     @PostMapping("/users/message/send")
     public ResponseEntity<?> sendMessage (@RequestBody MessageDto messageDto) {
-        String message = JsonUtil.INSTANCE.getJsonString(messageDto);
-        CompletableFuture<SendResult<String, String>> future =
-                kafkaTemplate.send(KafkaConstant.KAFKA_PRIVATE_CHAT, message);
-        try  {
-            SendResult<String, String> response = future.get();
-            log.info("Record metadata: {}", response.getRecordMetadata());
-            return new ResponseEntity<>(HttpStatus.OK);
-        }catch ( InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+//        String message = JsonUtil.INSTANCE.getJsonString(messageDto);
+//        messageService.handleSendMessage(messageDto);
+//        CompletableFuture<SendResult<String, String>> future =
+//                kafkaTemplate.send(KafkaConstant.KAFKA_PRIVATE_CHAT, message);
+//        try  {
+//            SendResult<String, String> response = future.get();
+//            log.info("Record metadata: {}", response.getRecordMetadata());
+//            return new ResponseEntity<>(HttpStatus.OK);
+//        }catch ( InterruptedException | ExecutionException e) {
+//            e.printStackTrace();
+//            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+//        }
+        return  messageService.handleSendMessage(messageDto);
     }
 
     @GetMapping("/users/{userid}/channels")
@@ -73,7 +75,7 @@ public class MessageController {
 
     @GetMapping("/shop-owner/{shopId}/channels")
     public String getUserInChannel(@PathVariable long shopId, @RequestParam("pagenumber") int pageNumber) {
-        return messageService.getListUserInChannel(pageNumber);
+        return messageService.getListUserInChannel(pageNumber, shopId);
     }
 
     @GetMapping("/shop-owner/{shopId}/messages")
@@ -83,8 +85,8 @@ public class MessageController {
         return messageService.getListMessageByChannelId(channelID ,pageNumber , shopId, true);
     }
 
-    @GetMapping("/shop-owner/{shopid}/messages/unread")
-    public ResponseEntity<?> getNumberUnreadMessageShop (@PathVariable long shopid) {
-        return messageService.getTotalNumberUnreadMessageShop(shopid);
+    @GetMapping("/shop-owner/{shopId}/messages/unread")
+    public ResponseEntity<?> getNumberUnreadMessageShop (@PathVariable long shopId) {
+        return messageService.getTotalNumberUnreadMessageShop(shopId);
     }
 }

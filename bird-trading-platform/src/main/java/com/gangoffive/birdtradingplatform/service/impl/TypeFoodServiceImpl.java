@@ -14,6 +14,7 @@ import java.util.List;
 @Slf4j
 public class TypeFoodServiceImpl implements TypeFoodService {
     private final TypeFoodRepository typeFoodRepository;
+
     @Override
     public List<TypeFood> getAllTypeFood() {
         return typeFoodRepository.findAll();

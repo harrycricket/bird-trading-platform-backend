@@ -19,4 +19,6 @@ public class ProductFilterDto {
     private double highestPrice;
     private double lowestPrice;
     private int pageNumber;
+    private Long shopId;
+    private Long checkListTypeId;
 }

@@ -24,10 +24,6 @@ public class BirdController {
         return birdService.retrieveAllBird();
     }
 
-    @GetMapping("birds/by-shop-id")
-    public ResponseEntity<?> retrieveAllProduct(@RequestParam int pageNumber, @RequestParam Long shopId) {
-        return birdService.retrieveBirdsByShopId(shopId, pageNumber);
-    }
 
     @GetMapping("birds/pages/{pageNumber}")
     public ResponseEntity<? extends Object> retrieveAllBirdByPageNumber(@PathVariable int pageNumber) {
@@ -40,7 +36,7 @@ public class BirdController {
     }
 
     @GetMapping("birds/top-product")
-    public List<BirdDto> findTopBird() {
+    public ResponseEntity<?> findTopBird() {
         return birdService.findTopBirdProduct();
     }
 

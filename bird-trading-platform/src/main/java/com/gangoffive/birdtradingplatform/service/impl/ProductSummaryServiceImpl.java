@@ -2,23 +2,18 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
-import com.gangoffive.birdtradingplatform.dto.BirdDto;
-import com.gangoffive.birdtradingplatform.dto.ProductFilterDto;
+import com.gangoffive.birdtradingplatform.common.ShopOwnerConstant;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.repository.*;
-import com.gangoffive.birdtradingplatform.service.ProductService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.service.PromotionPriceService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -106,8 +101,8 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
                         .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
         var listsProductSummary = productSummaryRepository.
-                findByCategoryAndProductQuantityGreaterThanAndDeletedFalseAndProductStatusIn(new Bird().getClass().getSimpleName(),
-                        ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER,ProductStatusConstant.LIST_STATUS_GET_FOR_USER ,page);
+                findByCategoryAndProductQuantityGreaterThanAndDeletedFalseAndProductStatusInAndProduct_ShopOwner_StatusIn(new Bird().getClass().getSimpleName(),
+                        ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER,page);
         if (listsProductSummary.isPresent()) {
             List<Long> listIdTopBird = listsProductSummary.get().stream()
                     .map(proSum -> proSum.getProduct().getId()).toList();
@@ -123,8 +118,8 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
                         .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
         var listsProductSummary = productSummaryRepository.
-                findByCategoryAndProductQuantityGreaterThanAndDeletedFalseAndProductStatusIn(new Accessory().getClass().getSimpleName(),
-                        ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER,ProductStatusConstant.LIST_STATUS_GET_FOR_USER ,page);
+                findByCategoryAndProductQuantityGreaterThanAndDeletedFalseAndProductStatusInAndProduct_ShopOwner_StatusIn(new Accessory().getClass().getSimpleName(),
+                        ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER,page);
         if (listsProductSummary.isPresent()) {
             List<Long> listIdTopAccessories = listsProductSummary.get().stream()
                     .map(proSum -> proSum.getProduct().getId()).toList();
@@ -139,8 +134,8 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
                 Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "star")
                         .and(Sort.by(PagingAndSorting.DEFAULT_SORT_DIRECTION, "totalQuantityOrder")));
         var listsProductSummary = productSummaryRepository.
-                findByCategoryAndProductQuantityGreaterThanAndDeletedFalseAndProductStatusIn(new Food().getClass().getSimpleName(),
-                        ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER,ProductStatusConstant.LIST_STATUS_GET_FOR_USER ,page);
+                findByCategoryAndProductQuantityGreaterThanAndDeletedFalseAndProductStatusInAndProduct_ShopOwner_StatusIn(new Food().getClass().getSimpleName(),
+                        ProductStatusConstant.QUANTITY_PRODUCT_FOR_USER, ProductStatusConstant.LIST_STATUS_GET_FOR_USER, ShopOwnerConstant.STATUS_SHOP_PRODUCT_FOR_USER,page);
         if (listsProductSummary.isPresent()) {
             List<Long> listIdTopFood = listsProductSummary.get().stream()
                     .map(proSum -> proSum.getProduct().getId()).toList();

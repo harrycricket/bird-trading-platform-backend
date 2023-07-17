@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -20,11 +21,20 @@ import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class JwtService {
     private final AppProperties appProperties;
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractStaffUsername(String token) {
+        return extractClaim(token, claims -> claims.get("staffUsername", String.class));
+    }
+
+    public Long extractShopOwnerId(String token) {
+        return extractClaim(token, claims -> claims.get("shopOwnerId", Long.class));
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -45,8 +55,12 @@ public class JwtService {
         return generateToken(new HashMap<>(), userDetails);
     }
 
-    public String generateToken(UserDetails userDetails, String ...scopes) {
-        return generateToken(Map.of("scopes", scopes), userDetails);
+    public String generateTokenStaff(UserDetails userDetails, String staffUserName) {
+        return generateToken(Map.of("staffUsername", staffUserName), userDetails);
+    }
+
+    public String generateTokenShopOwner(UserDetails userDetails, Long shopOwnerId) {
+        return generateToken(Map.of("shopOwnerId", shopOwnerId), userDetails);
     }
 
     public String generateToken(UserDetails userDetails, List<String> scopes) {
@@ -86,7 +100,6 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
-
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {

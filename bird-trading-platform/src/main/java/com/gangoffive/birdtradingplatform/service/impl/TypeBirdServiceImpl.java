@@ -1,6 +1,5 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
-import com.gangoffive.birdtradingplatform.entity.TypeAccessory;
 import com.gangoffive.birdtradingplatform.entity.TypeBird;
 import com.gangoffive.birdtradingplatform.repository.TypeBirdRepository;
 import com.gangoffive.birdtradingplatform.service.TypeBirdService;
