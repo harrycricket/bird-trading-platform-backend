@@ -31,7 +31,7 @@ public class ShopOwnerController {
 
     @GetMapping("/shop-owner/line-chart")
     public List<LineChartDto> getListLineChartDto(@RequestParam(required = false) Long date) {
-        return shopOwnerService.getDataLineChart(date, 7);
+        return shopOwnerService.getDataLineChart(date, 14);
     }
 
     @GetMapping("/shop-owner/pie-chart")
