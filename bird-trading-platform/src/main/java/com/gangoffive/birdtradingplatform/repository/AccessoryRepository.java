@@ -117,5 +117,5 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
 
     Optional<List<Accessory>> findAllByShopOwnerAndStatus(ShopOwner shopOwner, ProductStatus productStatus);
 
-    Optional<List<Accessory>> findByTagsInAndShopOwner_Id(List<Tag> tag, long shopId);
+    Optional<List<Accessory>> findByTagsInAndShopOwner_IdAndStatusIn(List<Tag> tag, long shopId, List<ProductStatus> productStatuses);
 }

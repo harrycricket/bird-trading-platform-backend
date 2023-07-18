@@ -170,7 +170,7 @@ public class ProductServiceImpl implements ProductService {
                 if(product.get().getShopOwner().getStatus().name().equalsIgnoreCase(ShopOwnerStatus.BAN.name())) {
                     return new ResponseEntity<>(productDetailWrapper, HttpStatus.valueOf(423));
                 }else if(product.get().getStatus().name().equalsIgnoreCase(ProductStatus.BAN.name())){
-                    return new ResponseEntity<>(productDetailWrapper, HttpStatus.valueOf(423));
+                    return new ResponseEntity<>("This product got banned!", HttpStatus.valueOf(423));
                 }else{
                     return ResponseEntity.ok(productDetailWrapper);
                 }
@@ -1078,9 +1078,9 @@ public class ProductServiceImpl implements ProductService {
             tags.add(tag);
         });
         List<Product> products = new ArrayList<>();
-        products.addAll(accessoryRepository.findByTagsInAndShopOwner_Id(tags, shopId).get());
-        products.addAll(foodRepository.findByTagsInAndShopOwner_Id(tags, shopId).get());
-        products.addAll(birdRepository.findByTagsInAndShopOwner_Id(tags, shopId).get());
+        products.addAll(accessoryRepository.findByTagsInAndShopOwner_IdAndStatusIn(tags, shopId, ProductStatusConstant.LIST_STATUS_GET_FOR_USER).get());
+        products.addAll(foodRepository.findByTagsInAndShopOwner_IdAndStatusIn(tags, shopId, ProductStatusConstant.LIST_STATUS_GET_FOR_USER).get());
+        products.addAll(birdRepository.findByTagsInAndShopOwner_IdAndStatusIn(tags, shopId, ProductStatusConstant.LIST_STATUS_GET_FOR_USER).get());
         List<ProductCartDto> result = products.stream().map(pro -> this.productToProductCart(pro)).toList();
         return ResponseEntity.ok(result);
     }
