@@ -251,7 +251,14 @@ public class AccountServiceImpl implements AccountService {
                             && userAccountFilter.getSortDirection().getField().isEmpty()
                             && userAccountFilter.getSortDirection().getSort().isEmpty()
             ) {
-                return filterAllUserAccountAllFieldEmpty(pageRequest);
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                        Sort.by(Sort.Direction.DESC,
+                                SortUserAccountColumn.CREATED_DATE.getColumn()
+                        )
+                );
+                return filterAllUserAccountAllFieldEmpty(pageRequestWithSort);
             } else if (
                     userAccountFilter.getUserSearchInfo().getField().isEmpty()
                             && userAccountFilter.getUserSearchInfo().getValue().isEmpty()

@@ -833,7 +833,14 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                             && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
                             && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
             ) {
-                return filterAllShopOwnerAccountAllFieldEmpty(pageRequest);
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                        Sort.by(Sort.Direction.DESC,
+                                SortShopOwnerAccountColumn.CREATED_DATE.getColumn()
+                        )
+                );
+                return filterAllShopOwnerAccountAllFieldEmpty(pageRequestWithSort);
             } else if (
                     shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().isEmpty()
                             && shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()

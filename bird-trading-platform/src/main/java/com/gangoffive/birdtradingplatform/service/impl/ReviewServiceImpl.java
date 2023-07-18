@@ -168,7 +168,15 @@ public class ReviewServiceImpl implements ReviewService {
                             && reviewFilter.getSortDirection().getSort().isEmpty()
             ) {
                 log.info("all no");
-                return filterAllReviewAllFieldEmpty(shopId, pageRequest);
+
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                        Sort.by(Sort.Direction.DESC,
+                                SortReviewColumn.REVIEW_DATE.getColumn()
+                        )
+                );
+                return filterAllReviewAllFieldEmpty(shopId, pageRequestWithSort);
             } else if (
                     reviewFilter.getReviewSearchInfo().getField().isEmpty()
                             && reviewFilter.getReviewSearchInfo().getValue().isEmpty()

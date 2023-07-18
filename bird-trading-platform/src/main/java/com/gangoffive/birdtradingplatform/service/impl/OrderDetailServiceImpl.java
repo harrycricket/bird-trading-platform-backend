@@ -92,7 +92,14 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                             && orderDetailFilter.getSortDirection().getSort().isEmpty()
             ) {
                 log.info("all no");
-                return filterAllOrderDetailAllFieldEmpty(shopId, pageRequest);
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                        Sort.by(Sort.Direction.DESC,
+                                SortOrderDetailColumn.CREATE_DATE.getColumn()
+                        )
+                );
+                return filterAllOrderDetailAllFieldEmpty(shopId, pageRequestWithSort);
             } else if (
                     orderDetailFilter.getOrderSearchInfo().getField().isEmpty()
                             && orderDetailFilter.getOrderSearchInfo().getValue().isEmpty()
