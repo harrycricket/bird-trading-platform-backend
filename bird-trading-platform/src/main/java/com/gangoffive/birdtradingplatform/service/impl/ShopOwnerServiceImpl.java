@@ -82,20 +82,21 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
 
     @Override
-    public List<LineChartDto> getDataLineChart(String dateFrom, int date) {
+    public List<LineChartDto> getDataLineChart(Long dateFrom, int date) {
         Date newDateFrom;
-        if (dateFrom == null || dateFrom.isEmpty()) {
+        if (dateFrom == null) {
             // Get the current date
             LocalDate currentDate = LocalDate.now();
 
             // Get the date of the previous week
-            LocalDate previousWeekDate = currentDate.minusDays(7);
+            LocalDate previousWeekDate = currentDate.minusDays(date);
 
             // Get the start and end dates of the previous week
             newDateFrom = Date.from(previousWeekDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
         } else {
             try {
-                newDateFrom = new SimpleDateFormat("dd/MM/yyyy").parse(dateFrom);
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                newDateFrom = simpleDateFormat.parse(simpleDateFormat.format(new Date(dateFrom)));
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }
@@ -241,12 +242,12 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         );
         double totalOrderOfPreviousTwoWeek = 0;
         for (BarChartDto barChartDto : barChartDtoPreviousTwoWeekList) {
-            log.info("barChartDto.getAccessories() {}", barChartDto.getAccessories());
-            log.info("barChartDto.getBirds() {}", barChartDto.getBirds());
-            log.info("barChartDto.getFoods() {}", barChartDto.getFoods());
+//            log.info("barChartDto.getAccessories() {}", barChartDto.getAccessories());
+//            log.info("barChartDto.getBirds() {}", barChartDto.getBirds());
+//            log.info("barChartDto.getFoods() {}", barChartDto.getFoods());
             totalOrderOfPreviousTwoWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
-        log.info("totalOrderOfPreviousTwoWeek {}", totalOrderOfPreviousTwoWeek);
+//        log.info("totalOrderOfPreviousTwoWeek {}", totalOrderOfPreviousTwoWeek);
         double percent = ((totalOrderOfPreviousOneWeek - totalOrderOfPreviousTwoWeek)
                 / (totalOrderOfPreviousTwoWeek + totalOrderOfPreviousOneWeek)) * 100;
         DecimalFormat decimalFormat = new DecimalFormat("#.00");
@@ -297,17 +298,17 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         );
         double totalReviewOfPreviousTwoWeek = 0;
         for (BarChartDto barChartDto : barChartDtoPreviousTwoWeekList) {
-            log.info("barChartDto.getAccessories() {}", barChartDto.getAccessories());
-            log.info("barChartDto.getBirds() {}", barChartDto.getBirds());
-            log.info("barChartDto.getFoods() {}", barChartDto.getFoods());
+//            log.info("barChartDto.getAccessories() {}", barChartDto.getAccessories());
+//            log.info("barChartDto.getBirds() {}", barChartDto.getBirds());
+//            log.info("barChartDto.getFoods() {}", barChartDto.getFoods());
             totalReviewOfPreviousTwoWeek += barChartDto.getAccessories() + barChartDto.getBirds() + barChartDto.getFoods();
         }
-        log.info("totalReviewOfPreviousOneWeek {}", totalReviewOfPreviousOneWeek);
-        log.info("totalReviewOfPreviousTwoWeek {}", totalReviewOfPreviousTwoWeek);
+//        log.info("totalReviewOfPreviousOneWeek {}", totalReviewOfPreviousOneWeek);
+//        log.info("totalReviewOfPreviousTwoWeek {}", totalReviewOfPreviousTwoWeek);
         double percent = ((totalReviewOfPreviousOneWeek - totalReviewOfPreviousTwoWeek)
                 / (totalReviewOfPreviousTwoWeek + totalReviewOfPreviousOneWeek)) * 100;
         DecimalFormat decimalFormat = new DecimalFormat("#.00");
-        log.info("percent {}", percent);
+//        log.info("percent {}", percent);
         String formattedPercent = decimalFormat.format(percent);
         String formattedTotalReview = decimalFormat.format(totalReviewOfPreviousOneWeek);
 
@@ -347,9 +348,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                     .build();
             barChartDtoList.add(barChartDto);
         }
-        for (BarChartDto barChartDto : barChartDtoList) {
-            log.info("barChartDto {}", barChartDto);
-        }
+//        for (BarChartDto barChartDto : barChartDtoList) {
+//            log.info("barChartDto {}", barChartDto);
+//        }
         return barChartDtoList;
     }
 
@@ -379,7 +380,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             if (isCalcPrice || isCalcQuantity) {
                 for (Order order : listOrderOfProduct) {
                     if (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(date)) {
-                        log.info("order.getCreatedDate().toInstant().atZone(ZoneId.of(\"Asia/Bangkok\")) {}", order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")));
+//                        log.info("order.getCreatedDate().toInstant().atZone(ZoneId.of(\"Asia/Bangkok\")) {}", order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")));
                         for (OrderDetail orderDetail : listOrderDetailOfProduct) {
                             if (orderDetail.getOrder().equals(order)) {
                                 if (isCalcPrice) {
@@ -404,10 +405,10 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                         .filter(
                                 orderDetail -> productClass.isInstance(orderDetail.getProduct())
                         ).toList();
-                log.info("dateFrom {}", Date.from(date.atStartOfDay(ZoneId.of("Asia/Bangkok")).toInstant()));
-                log.info("dateTo {}", Date.from(date.plusDays(1).atStartOfDay(ZoneId.of("Asia/Bangkok")).toInstant()));
-                log.info("review {}", reviews.get().size());
-                log.info("class {}", productClass.getName());
+//                log.info("dateFrom {}", Date.from(date.atStartOfDay(ZoneId.of("Asia/Bangkok")).toInstant()));
+//                log.info("dateTo {}", Date.from(date.plusDays(1).atStartOfDay(ZoneId.of("Asia/Bangkok")).toInstant()));
+//                log.info("review {}", reviews.get().size());
+//                log.info("class {}", productClass.getName());
                 if (reviews.isPresent()) {
                     totalReview = listOrderDetailFilter.size();
                 }
@@ -415,7 +416,7 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 
             DecimalFormat decimalFormat = new DecimalFormat("#.00");
             String formattedTotalPrice = decimalFormat.format(totalPrice);
-            log.info("formattedTotalPrice {}", formattedTotalPrice);
+//            log.info("formattedTotalPrice {}", formattedTotalPrice);
             BarChartOneTypeDto barChartDto = new BarChartOneTypeDto();
             if (isCalcPrice) {
                 barChartDto.setValue(Double.parseDouble(formattedTotalPrice));
@@ -591,15 +592,15 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
         //Get list Order of Shop Owner
         List<Order> tmpOrders = orderRepository.findByShopOwner(account.getShopOwner());
         List<Order> orders = tmpOrders.stream().filter(order -> order.getCreatedDate().after(dateFrom)).collect(Collectors.toList());
-        for (Order order : orders) {
-            log.info("id {}", order.getId());
-        }
+//        for (Order order : orders) {
+//            log.info("id {}", order.getId());
+//        }
 
         //Get list OrderDetail of list Order
         List<OrderDetail> orderDetails = orderDetailRepository.findOrderDetailByOrderIn(orders);
-        for (OrderDetail orderDetail : orderDetails) {
-            log.info("id od {}", orderDetail.getId());
-        }
+//        for (OrderDetail orderDetail : orderDetails) {
+//            log.info("id od {}", orderDetail.getId());
+//        }
 
         //Get OrderDetail of Product have instance of Food
         List<OrderDetail> listOrderDetailOfProduct = orderDetails.stream()
@@ -607,17 +608,17 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
 //                        orderDetail -> orderDetail.getProduct() instanceof Food
                         orderDetail -> productClass.isInstance(orderDetail.getProduct())
                 ).toList();
-        log.info("size od Food {}", listOrderDetailOfProduct.size());
-        for (OrderDetail orderDetail : listOrderDetailOfProduct) {
-            log.info("id od Food {}", orderDetail.getId());
-        }
+//        log.info("size od Food {}", listOrderDetailOfProduct.size());
+//        for (OrderDetail orderDetail : listOrderDetailOfProduct) {
+//            log.info("id od Food {}", orderDetail.getId());
+//        }
 
         //Get list Order of Food From orderDetailOfFoods
         List<Order> listOrderOfProduct = listOrderDetailOfProduct.stream().map(OrderDetail::getOrder).distinct().toList();
-        log.info("size o Food {}", listOrderOfProduct.size());
-        for (Order order : listOrderOfProduct) {
-            log.info("id o Food {}", order.getId());
-        }
+//        log.info("size o Food {}", listOrderOfProduct.size());
+//        for (Order order : listOrderOfProduct) {
+//            log.info("id o Food {}", order.getId());
+//        }
 
 
         //Distinct date of orderOfBirds to get list LocalDate
@@ -645,18 +646,18 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             double totalPrice = 0;
             for (Order order : listOrderOfProduct) {
                 //One order have many OrderDetails
-                log.info("order id {}", order.getId());
-                log.info("order.getCreatedDate() {}", order.getCreatedDate());
-                log.info("date {}", date);
+//                log.info("order id {}", order.getId());
+//                log.info("order.getCreatedDate() {}", order.getCreatedDate());
+//                log.info("date {}", date);
                 if (order.getCreatedDate().toInstant().atZone(ZoneId.of("Asia/Bangkok")).toLocalDate().equals(date)) {
-                    log.info("order id {}", order.getId());
+//                    log.info("order id {}", order.getId());
 
                     for (OrderDetail orderDetail : listOrderDetailOfProduct) {
-                        log.info("orderDetail id {}", orderDetail.getId());
+//                        log.info("orderDetail id {}", orderDetail.getId());
                         if (orderDetail.getOrder().equals(order)) {
-                            log.info("orderDetail.getPrice() {}, orderDetail.getQuantity() {}", orderDetail.getPrice(), orderDetail.getQuantity());
+//                            log.info("orderDetail.getPrice() {}, orderDetail.getQuantity() {}", orderDetail.getPrice(), orderDetail.getQuantity());
                             totalPrice += orderDetail.getPrice() * orderDetail.getQuantity();
-                            log.info("total {}", totalPrice);
+//                            log.info("total {}", totalPrice);
                         }
                     }
                 }
@@ -669,9 +670,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                     .build();
             dataLineChartDtoListOfProduct.add(dataLineChartDto);
         }
-        for (DataLineChartDto dataLineChartDto : dataLineChartDtoListOfProduct) {
-            log.info("dataLineChartDto {}", dataLineChartDto);
-        }
+//        for (DataLineChartDto dataLineChartDto : dataLineChartDtoListOfProduct) {
+//            log.info("dataLineChartDto {}", dataLineChartDto);
+//        }
         return dataLineChartDtoListOfProduct;
     }
 
@@ -682,7 +683,9 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             Optional<Account> accountShop = accountRepository.findByEmail(email);
             ShopOwner shopOwner = accountShop.get().getShopOwner();
             if (shopOwner != null) {
-                Optional<ShopStaff> accountStaff = shopStaffRepository.findByUserName(createAccountSaffDto.getUserName());
+                Optional<ShopStaff> accountStaff = shopStaffRepository
+                        .findByUserNameAndShopOwner_Id(createAccountSaffDto.getUserName(), accountShop.get().getId());
+                System.out.println(accountStaff);
                 if (!accountStaff.isPresent()) {
                     ShopStaff shopStaff = ShopStaff.builder()
                             .userName(createAccountSaffDto.getUserName())

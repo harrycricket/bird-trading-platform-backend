@@ -12,7 +12,7 @@ import java.util.List;
 public interface ShopOwnerService {
     long getAccountIdByShopId(long shopId);
 
-    List<LineChartDto> getDataLineChart(String dateFrom, int date);
+    List<LineChartDto> getDataLineChart(Long dateFrom, int date);
 
     List<PieChartDto> getDataPieChart();
 

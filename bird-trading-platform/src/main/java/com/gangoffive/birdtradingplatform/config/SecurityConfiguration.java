@@ -66,7 +66,7 @@ public class SecurityConfiguration {
             "/api/v1/accessories/**",
             "/api/v1/foods",
             "/api/v1/foods/**",
-            "/api/v1/info/**",
+            "/api/v1/info",
             "/api/v1/shop-info",
             "/api/v1/users/get-cookie",
 //            "api/v1/package-order",
@@ -74,7 +74,7 @@ public class SecurityConfiguration {
             "/ws/**", // websockets
             "/api/v1/types",
             "/api/v1/types/**",
-            "api/v1/tags/shops/**",
+            "/api/v1/tags/shops/**",
             "/kafka/test",
 //            "/api/v1/shop-owner/promotion-shop", // Remember delete just for testing
 //            "/api/v1/shop-owner/type-all", // Remember delete just for testing
