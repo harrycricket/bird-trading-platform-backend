@@ -116,8 +116,8 @@ public interface AccessoryRepository extends JpaRepository<Accessory, Long> {
                                                                       Pageable pageable);
 
     Optional<List<Accessory>> findAllByShopOwnerAndStatus(ShopOwner shopOwner, ProductStatus productStatus);
-
-    Optional<List<Accessory>> findByTagsInAndShopOwner_Id(List<Tag> tags, long shopId);
+    
+    Optional<List<Accessory>> findByTagsInAndShopOwner_IdAndStatusIn(List<Tag> tag, long shopId, List<ProductStatus> productStatuses);
 
     Optional<List<Accessory>> findByTagsInAndShopOwner_IdAndStatus(List<Tag> tags, long shopId, ProductStatus productStatus);
 }
