@@ -46,6 +46,7 @@ public class OrderServiceImpl implements OrderService {
     private final AddressMapper addressMapper;
     private final TransactionRepository transactionRepository;
     private final ShopStaffRepository shopStaffRepository;
+    private final LogOrderRepository logOrderRepository;
 
     @Override
     public ResponseEntity<?> getAllOrderByPackageOrderId(Long packageOrderId) {
@@ -900,13 +901,17 @@ public class OrderServiceImpl implements OrderService {
     public ResponseEntity<?> updateStatusOfListOrder(ChangeStatusListIdDto changeStatusListIdDto) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Optional<Account> account = accountRepository.findByEmail(username);
+        ShopStaff staff = new ShopStaff();
         Long shopId;
+        boolean isShopStaff = false;
         if (account.isPresent()) {
             shopId = account.get().getShopOwner().getId();
         } else {
             Optional<ShopStaff> shopStaff = shopStaffRepository.findByUserName(username);
             if (shopStaff.isPresent()) {
                 shopId = shopStaff.get().getShopOwner().getId();
+                isShopStaff = true;
+                staff = shopStaff.get();
             } else {
                 return ResponseUtils.getErrorResponseBadRequest("Not have account");
             }
@@ -924,6 +929,16 @@ public class OrderServiceImpl implements OrderService {
                 ) {
                     int result = orderRepository.updateStatusOfListId(status, changeStatusListIdDto.getIds());
                     if (result == changeStatusListIdDto.getIds().size()) {
+                        if (isShopStaff) {
+                            List<Order> orders = orderRepository.findAllById(changeStatusListIdDto.getIds());
+                            for (Order order : orders) {
+                                LogOrder logOrder = new LogOrder();
+                                logOrder.setStatus(OrderStatus.getOrderStatusBaseOnStatusCode(changeStatusListIdDto.getStatus()));
+                                logOrder.setShopStaff(staff);
+                                logOrder.setOrder(order);
+                                logOrderRepository.save(logOrder);
+                            }
+                        }
                         if (changeStatusListIdDto.getStatus() == OrderStatus.SHIPPED.getStatusCode()) {
                             List<Long> userId = packageOrderRepository.findAllAccountIdByOrderIds(changeStatusListIdDto.getIds()).get();
                             NotificationDto noti = new NotificationDto();
