@@ -398,7 +398,14 @@ public class ProductServiceImpl implements ProductService {
                             && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 log.info("all no");
-                return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                        Sort.by(Sort.Direction.DESC,
+                                SortProductColumn.LAST_UPDATE.getColumn()
+                        )
+                );
+                return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequestWithSort, isShopOwner, isAdmin);
             } else if (
                     productFilter.getProductSearchInfo().getField().isEmpty()
                             && productFilter.getProductSearchInfo().getValue().isEmpty()

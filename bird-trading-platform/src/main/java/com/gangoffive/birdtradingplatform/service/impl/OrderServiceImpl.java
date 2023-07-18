@@ -228,7 +228,14 @@ public class OrderServiceImpl implements OrderService {
                             && orderFilter.getSortDirection().getSort().isEmpty()
             ) {
                 log.info("all no");
-                return filterAllOrderAllFieldEmpty(shopId, pageRequest, isShopOwner, isAdmin);
+
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                        Sort.by(Sort.Direction.DESC,
+                                SortOrderColumn.LAST_UPDATE.getColumn())
+                        );
+                return filterAllOrderAllFieldEmpty(shopId, pageRequestWithSort, isShopOwner, isAdmin);
             } else if (
                     orderFilter.getOrderSearchInfo().getField().isEmpty()
                             && orderFilter.getOrderSearchInfo().getValue().isEmpty()
