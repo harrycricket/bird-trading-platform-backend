@@ -119,6 +119,7 @@ public interface BirdRepository extends JpaRepository<Bird, Long> {
 
     Optional<List<Bird>> findAllByShopOwnerAndStatus(ShopOwner shopOwner, ProductStatus productStatus);
 
-    Optional<List<Bird>> findByTagsInAndShopOwner_Id(List<Tag> tag, long shopId);
+    Optional<List<Bird>> findByTagsInAndShopOwner_Id(List<Tag> tags, long shopId);
 
+    Optional<List<Bird>> findByTagsInAndShopOwner_IdAndStatus(List<Tag> tags, long shopId, ProductStatus productStatus);
 }

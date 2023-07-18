@@ -101,7 +101,9 @@ public class TagServiceImpl implements TagService {
                 List<ProductTagDto> productTagList = new ArrayList<>();
                 final int[] count = {0};
                 if (count[0] < 2) {
-                    Optional<List<Bird>> birdList = birdRepository.findByTagsInAndShopOwner_Id(Collections.singletonList(tag), shopId);
+                    Optional<List<Bird>> birdList = birdRepository.findByTagsInAndShopOwner_IdAndStatus(
+                            Collections.singletonList(tag), shopId, ProductStatus.ACTIVE
+                    );
                     if (birdList.isPresent()) {
                         birdList.get().forEach(bird -> {
                             if (count[0] >= 2) {
@@ -118,7 +120,9 @@ public class TagServiceImpl implements TagService {
                 }
 
                 if (count[0] < 2) {
-                    Optional<List<Food>> foodList = foodRepository.findByTagsInAndShopOwner_Id(Collections.singletonList(tag), shopId);
+                    Optional<List<Food>> foodList = foodRepository.findByTagsInAndShopOwner_IdAndStatus(
+                            Collections.singletonList(tag), shopId, ProductStatus.ACTIVE
+                    );
                     if (foodList.isPresent()) {
                         foodList.get().forEach(food -> {
                             if (count[0] >= 2) {
@@ -135,7 +139,9 @@ public class TagServiceImpl implements TagService {
                 }
 
                 if (count[0] < 2) {
-                    Optional<List<Accessory>> accessoryList = accessoryRepository.findByTagsInAndShopOwner_Id(Collections.singletonList(tag), shopId);
+                    Optional<List<Accessory>> accessoryList = accessoryRepository.findByTagsInAndShopOwner_IdAndStatus(
+                            Collections.singletonList(tag), shopId, ProductStatus.ACTIVE
+                    );
                     if (accessoryList.isPresent()) {
                         accessoryList.get().forEach(accessory -> {
                             if (count[0] >= 2) {

@@ -118,5 +118,7 @@ public interface FoodRepository extends JpaRepository<Food, Long> {
 
     Optional<List<Food>> findAllByShopOwnerAndStatus(ShopOwner shopOwner, ProductStatus productStatus);
 
-    Optional<List<Food>> findByTagsInAndShopOwner_Id(List<Tag> tag, long shopId);
+    Optional<List<Food>> findByTagsInAndShopOwner_Id(List<Tag> tags, long shopId);
+
+    Optional<List<Food>> findByTagsInAndShopOwner_IdAndStatus(List<Tag> tags, long shopId, ProductStatus productStatus);
 }
