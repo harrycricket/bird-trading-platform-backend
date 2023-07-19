@@ -141,22 +141,14 @@ public class ReviewServiceImpl implements ReviewService {
                 if (
                         !SortReviewColumn.checkField(reviewFilter.getSortDirection().getField())
                 ) {
-                    ErrorResponse errorResponse = ErrorResponse.builder()
-                            .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                            .errorMessage("Not found this field in sort direction.")
-                            .build();
-                    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                    return ResponseUtils.getErrorResponseNotFoundSortColumn();
                 }
                 if (reviewFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.ASC.name())) {
                     pageRequestWithSort = getPageRequest(reviewFilter, pageNumber, Sort.Direction.ASC);
                 } else if (reviewFilter.getSortDirection().getSort().toUpperCase().equals(Sort.Direction.DESC.name())) {
                     pageRequestWithSort = getPageRequest(reviewFilter, pageNumber, Sort.Direction.DESC);
                 } else {
-                    ErrorResponse errorResponse = ErrorResponse.builder()
-                            .errorCode(String.valueOf(HttpStatus.NOT_FOUND.value()))
-                            .errorMessage("Not found this direction.")
-                            .build();
-                    return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+                    return ResponseUtils.getErrorResponseNotFoundSortDirection();
                 }
             }
 
@@ -294,9 +286,7 @@ public class ReviewServiceImpl implements ReviewService {
                 return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
             }
         } else {
-            ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.toString(),
-                    "Page number cannot less than 1");
-            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+            return ResponseUtils.getErrorResponseBadRequestPageNumber();
         }
     }
 
