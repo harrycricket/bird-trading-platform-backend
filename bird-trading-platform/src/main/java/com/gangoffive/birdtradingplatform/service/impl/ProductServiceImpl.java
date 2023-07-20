@@ -659,7 +659,9 @@ public class ProductServiceImpl implements ProductService {
             salesFormData.addProperty("quantity", product.get().getQuantity());
 
             //set list promotion
-            List<PromotionShopDto> listPromotion = product.get().getPromotionShops().stream()
+            List<PromotionShop> promotionShopTemp = promotionShopRepository.findByProductIdAndEndDate(product.get().getId(), new Date()).get();
+            log.info("here is list promotion {}", promotionShopTemp.size());
+            List<PromotionShopDto> listPromotion = promotionShopTemp.stream()
                     .map(promotionShopMapper::modelToDto).toList();
             String jsonPromotionTemp = gson.toJson(listPromotion);
             JsonArray voucherArray = JsonParser.parseString(jsonPromotionTemp).getAsJsonArray();
