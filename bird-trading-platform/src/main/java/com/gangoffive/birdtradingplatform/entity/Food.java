@@ -28,8 +28,14 @@ public class Food extends Product {
     )
     private TypeFood typeFood;
 
-    @ManyToMany(mappedBy = "foods")
-    private List<Tag> tags = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "tblTag_Food",
+            joinColumns = @JoinColumn(name = "food_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"),
+            foreignKey = @ForeignKey(name = "FK_TAG_FOOD")
+    )
+    private List<Tag> tags;
 
     public double getWeight() {
         return weight;

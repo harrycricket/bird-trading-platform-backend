@@ -48,13 +48,8 @@ public class PromotionShop {
     @Column(name = "end_date")
     private Date endDate;
 
-    @ManyToMany
-    @JoinTable(
-            name = "tblProduct_Promotion",
-            joinColumns = @JoinColumn(name = "promotion_s_id"),
-            foreignKey = @ForeignKey(name = "FK_PROMOTION_SHOP_PRODUCT"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
+
+    @ManyToMany(mappedBy = "promotionShops")
     private List<Product> products;
 
     @ManyToMany(mappedBy = "promotionShops")

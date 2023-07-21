@@ -31,35 +31,17 @@ public class Tag {
             unique = true)
     private String name;
 
-    @ManyToMany
-    @JoinTable(
-            name = "tblTag_Bird",
-            joinColumns = @JoinColumn(name = "tag_id"),
-            inverseJoinColumns = @JoinColumn(name = "bird_id"),
-            foreignKey = @ForeignKey(name = "FK_TAG_BIRD")
-    )
+    @ManyToMany(mappedBy = "tags")
     @JsonIgnore
-    private List<Bird> birds = new ArrayList<>();
+    private List<Bird> birds;
 
-    @ManyToMany
-    @JoinTable(
-            name = "tblTag_Accessory",
-            joinColumns = @JoinColumn(name = "tag_id"),
-            inverseJoinColumns = @JoinColumn(name = "accessory_id"),
-            foreignKey = @ForeignKey(name = "FK_TAG_ACCESSORY")
-    )
+    @ManyToMany(mappedBy = "tags")
     @JsonIgnore
-    private List<Accessory> accessories = new ArrayList<>();
+    private List<Accessory> accessories;
 
-    @ManyToMany
-    @JoinTable(
-            name = "tblTag_Food",
-            joinColumns = @JoinColumn(name = "tag_id"),
-            inverseJoinColumns = @JoinColumn(name = "food_id"),
-            foreignKey = @ForeignKey(name = "FK_TAG_FOOD")
-    )
+    @ManyToMany(mappedBy = "tags")
     @JsonIgnore
-    private List<Food> foods = new ArrayList<>();
+    private List<Food> foods;
 
     public Long getId() {
         return id;

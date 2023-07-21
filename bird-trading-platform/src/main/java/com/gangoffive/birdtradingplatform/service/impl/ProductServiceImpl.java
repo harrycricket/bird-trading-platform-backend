@@ -711,6 +711,7 @@ public class ProductServiceImpl implements ProductService {
                 List<Long> promotionShopIds = productUpdate.getSalesForm().getVoucher().stream()
                         .map(PromotionShopDto::getId)
                         .toList();
+                promotionShopIds.forEach(pro -> log.info("pr {}", pro));
                 List<PromotionShop> promotionShops = promotionShopRepository.findAllById(promotionShopIds);
                 bird.setName(productUpdate.getBasicForm().getName());
                 bird.setAge(productUpdate.getFeature().getAge());
@@ -723,6 +724,7 @@ public class ProductServiceImpl implements ProductService {
                 }
                 bird.setPrice(productUpdate.getSalesForm().getPrice());
                 bird.setQuantity(productUpdate.getSalesForm().getQuantity());
+                log.info("promotionShops.size() {}", promotionShops.size());
                 if (promotionShops.size() > 0) {
                     bird.setPromotionShops(promotionShops);
                 }

@@ -112,6 +112,14 @@ public class ProductController {
         return productService.updateProduct(multipartFiles, multipartVideo, productUpdate);
     }
 
+    @PostMapping("/shop-owner/productss")
+    public ResponseEntity<?> updateProducts(
+            @RequestParam(value = "image", required = false) List<MultipartFile> multipartFiles,
+            @RequestParam(name = "video", required = false) MultipartFile multipartVideo,
+            @RequestBody ProductUpdateDto productUpdate) {
+        return productService.updateProduct(multipartFiles, multipartVideo, productUpdate);
+    }
+
     @GetMapping("/admin/products")
     public ResponseEntity<?> getAllProduct(@RequestParam String data) {
         try {
