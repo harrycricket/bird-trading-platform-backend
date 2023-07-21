@@ -25,11 +25,11 @@ resource "aws_lb_target_group_attachment" "attach-kafka" {
   target_id        = aws_instance.kafka.id
   port             = 80
 }
-# resource "aws_lb_target_group_attachment" "attach-game-cd-2" {
-#   target_group_arn = aws_lb_target_group.my-tg.arn
-#   target_id        = aws_instance.bs2nd_2.id
-#   port             = 80
-# }
+resource "aws_lb_target_group_attachment" "attach-bs2nd-2" {
+  target_group_arn = aws_lb_target_group.my-tg.arn
+  target_id        = aws_instance.bs2nd_2.id
+  port             = 80
+}
 
 resource "aws_lb" "bs2nd" {
   name               = "bs2nd"
