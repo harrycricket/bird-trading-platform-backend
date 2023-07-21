@@ -27,8 +27,15 @@ public class Accessory extends Product {
     )
     private TypeAccessory typeAccessory;
 
-    @ManyToMany(mappedBy = "accessories")
-    private List<Tag> tags = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "tblTag_Accessory",
+            joinColumns = @JoinColumn(name = "accessory_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"),
+            foreignKey = @ForeignKey(name = "FK_TAG_ACCESSORY")
+    )
+    private List<Tag> tags;
 
     public String getOrigin() {
         return origin;

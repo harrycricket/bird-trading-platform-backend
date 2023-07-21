@@ -35,8 +35,14 @@ public class Bird extends Product {
     )
     private TypeBird typeBird;
 
-    @ManyToMany(mappedBy = "birds")
-    private List<Tag> tags = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "tblTag_Bird",
+            joinColumns = @JoinColumn(name = "bird_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"),
+            foreignKey = @ForeignKey(name = "FK_TAG_BIRD")
+    )
+    private List<Tag> tags;
 
     public void addTags(Tag tag) {
         this.tags.add(tag);
