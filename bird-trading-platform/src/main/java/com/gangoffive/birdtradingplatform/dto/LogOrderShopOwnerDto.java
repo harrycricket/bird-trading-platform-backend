@@ -12,7 +12,7 @@ import lombok.*;
 public class LogOrderShopOwnerDto {
     private Long id;
     private Long orderId;
-    private OrderStatus orderStatus;
+    private OrderStatusDto orderStatus;
     private Long timestamp;
     private Long staffId;
     private String staffUsername;
