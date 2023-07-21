@@ -712,7 +712,7 @@ public class ProductServiceImpl implements ProductService {
                         .map(PromotionShopDto::getId)
                         .toList();
                 promotionShopIds.forEach(pro -> log.info("pr {}", pro));
-                List<PromotionShop> promotionShops = promotionShopRepository.findAllById(promotionShopIds);
+                List<PromotionShop> promotionShops = promotionShopRepository.findAllPromotionShopByIdIn(promotionShopIds);
                 bird.setName(productUpdate.getBasicForm().getName());
                 bird.setAge(productUpdate.getFeature().getAge());
                 bird.setGender(productUpdate.getFeature().getGender());
@@ -832,7 +832,7 @@ public class ProductServiceImpl implements ProductService {
                 List<Long> promotionShopIds = productUpdate.getSalesForm().getVoucher().stream()
                         .map(PromotionShopDto::getId)
                         .toList();
-                List<PromotionShop> promotionShops = promotionShopRepository.findAllById(promotionShopIds);
+                List<PromotionShop> promotionShops = promotionShopRepository.findAllPromotionShopByIdIn(promotionShopIds);
                 food.setName(productUpdate.getBasicForm().getName());
                 food.setWeight(productUpdate.getFeature().getWeight());
                 food.setDescription(productUpdate.getDetailsForm().getDescription());
@@ -946,7 +946,7 @@ public class ProductServiceImpl implements ProductService {
                 List<Long> promotionShopIds = productUpdate.getSalesForm().getVoucher().stream()
                         .map(PromotionShopDto::getId)
                         .toList();
-                List<PromotionShop> promotionShops = promotionShopRepository.findAllById(promotionShopIds);
+                List<PromotionShop> promotionShops = promotionShopRepository.findAllPromotionShopByIdIn(promotionShopIds);
                 accessory.setName(productUpdate.getBasicForm().getName());
                 accessory.setOrigin(productUpdate.getFeature().getOrigin());
                 accessory.setDescription(productUpdate.getDetailsForm().getDescription());
