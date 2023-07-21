@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface PromotionService {
     ResponseEntity<?> getAllPromotion();
+    ResponseEntity<?> createPromotion(PromotionDto createPromotion);
 }
+

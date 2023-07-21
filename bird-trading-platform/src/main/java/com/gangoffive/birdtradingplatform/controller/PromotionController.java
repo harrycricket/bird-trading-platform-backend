@@ -1,12 +1,10 @@
 package com.gangoffive.birdtradingplatform.controller;
 
+import com.gangoffive.birdtradingplatform.dto.PromotionDto;
 import com.gangoffive.birdtradingplatform.service.PromotionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,5 +14,9 @@ public class PromotionController {
     @GetMapping("promotions")
     public ResponseEntity<?> getAllPromotion() {
         return promotionService.getAllPromotion();
+    }
+    @PostMapping("admin/promotion")
+    public ResponseEntity<?> createPromotion(@RequestBody PromotionDto promotionDto) {
+        return promotionService.createPromotion(promotionDto);
     }
 }

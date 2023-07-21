@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,4 +32,12 @@ public interface PromotionShopRepository extends JpaRepository<PromotionShop, Lo
                                                 "WHERE dps.order_d_id = :orderDetailId" +
                                         ")", nativeQuery = true)
     Optional<List<PromotionShop>> findAllByOrderDetail(@Param("orderDetailId") Long orderDetailId);
+
+    @Query(value = "SELECT ps.* FROM tbl_promotion_shop ps JOIN tbl_product_promotion p " +
+            "ON ps.promotion_s_id = p.promotion_s_id WHERE p.product_id = ?1 AND ps.end_date >= ?2",
+            nativeQuery = true)
+    Optional<List<PromotionShop>> findByProductIdAndEndDate(Long productId,  Date endDate);
+
+    @Query(value = "SELECT ps FROM PromotionShop ps JOIN ps.products p where p.id = ?1" , nativeQuery = true)
+    Optional<List<PromotionShop>> findByProductIdAndEndDateTest(Long productId);
 }
