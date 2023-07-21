@@ -727,6 +727,8 @@ public class ProductServiceImpl implements ProductService {
                 log.info("promotionShops.size() {}", promotionShops.size());
                 if (promotionShops.size() > 0) {
                     bird.setPromotionShops(promotionShops);
+                } else {
+                    bird.setPromotionShops(null);
                 }
                 List<String> urlList = Arrays.asList(bird.getImgUrl().split(","));
                 List<String> listImagesRemove = productUpdate.getListImages();
@@ -842,6 +844,8 @@ public class ProductServiceImpl implements ProductService {
                 food.setQuantity(productUpdate.getSalesForm().getQuantity());
                 if (promotionShops.size() > 0) {
                     food.setPromotionShops(promotionShops);
+                } else {
+                    food.setPromotionShops(null);
                 }
                 List<String> urlList = Arrays.asList(food.getImgUrl().split(","));
                 List<String> listImagesRemove = productUpdate.getListImages();
@@ -954,6 +958,8 @@ public class ProductServiceImpl implements ProductService {
                 accessory.setQuantity(productUpdate.getSalesForm().getQuantity());
                 if (promotionShops.size() > 0) {
                     accessory.setPromotionShops(promotionShops);
+                } else {
+                    accessory.setPromotionShops(null);
                 }
                 List<String> urlList = Arrays.asList(accessory.getImgUrl().split(","));
                 List<String> listImagesRemove = productUpdate.getListImages();
