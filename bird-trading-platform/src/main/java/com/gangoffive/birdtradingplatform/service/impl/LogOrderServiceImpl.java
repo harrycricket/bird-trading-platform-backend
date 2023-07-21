@@ -5,6 +5,7 @@ import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.dto.DateRangeDto;
 import com.gangoffive.birdtradingplatform.dto.LogOrderFilterDto;
 import com.gangoffive.birdtradingplatform.dto.LogOrderShopOwnerDto;
+import com.gangoffive.birdtradingplatform.dto.OrderStatusDto;
 import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.LogOrder;
 import com.gangoffive.birdtradingplatform.enums.FieldLogOrderTable;
@@ -335,10 +336,14 @@ public class LogOrderServiceImpl implements LogOrderService {
     }
 
     private LogOrderShopOwnerDto logOrderToLogOrderShopOwnerDto(LogOrder logOrder) {
+        OrderStatusDto orderStatus = OrderStatusDto.builder()
+                .id(logOrder.getStatus().getStatusCode())
+                .status(logOrder.getStatus())
+                .build();
         return LogOrderShopOwnerDto.builder()
                 .id(logOrder.getId())
                 .orderId(logOrder.getOrder().getId())
-                .orderStatus(logOrder.getStatus())
+                .orderStatus(orderStatus)
                 .timestamp(logOrder.getTimestamp().getTime())
                 .staffId(logOrder.getShopStaff().getId())
                 .staffUsername(logOrder.getShopStaff().getUserName())

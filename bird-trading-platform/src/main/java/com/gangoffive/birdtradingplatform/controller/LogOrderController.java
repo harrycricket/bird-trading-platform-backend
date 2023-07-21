@@ -1,7 +1,6 @@
 package com.gangoffive.birdtradingplatform.controller;
 
 import com.gangoffive.birdtradingplatform.dto.LogOrderFilterDto;
-import com.gangoffive.birdtradingplatform.dto.OrderShopOwnerFilterDto;
 import com.gangoffive.birdtradingplatform.service.LogOrderService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
 import com.gangoffive.birdtradingplatform.util.ResponseUtils;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class LogOrderController {
     private final LogOrderService logOrderService;
+
     @GetMapping("/shop-owner/log-orders")
     public ResponseEntity<?> getAllOrder(@RequestParam String data) {
         try {
