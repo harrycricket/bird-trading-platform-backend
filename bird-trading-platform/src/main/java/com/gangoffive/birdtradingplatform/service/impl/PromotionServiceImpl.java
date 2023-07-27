@@ -2,17 +2,15 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
-import com.gangoffive.birdtradingplatform.common.OrderStatusConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
-import com.gangoffive.birdtradingplatform.common.RoleConstant;
 import com.gangoffive.birdtradingplatform.dto.DateRangeDto;
 import com.gangoffive.birdtradingplatform.dto.PromotionDto;
 import com.gangoffive.birdtradingplatform.dto.PromotionFilterDto;
-import com.gangoffive.birdtradingplatform.dto.UserAccountDto;
-import com.gangoffive.birdtradingplatform.entity.Account;
 import com.gangoffive.birdtradingplatform.entity.Promotion;
-import com.gangoffive.birdtradingplatform.entity.Review;
-import com.gangoffive.birdtradingplatform.enums.*;
+import com.gangoffive.birdtradingplatform.enums.FieldPromotionTable;
+import com.gangoffive.birdtradingplatform.enums.Operator;
+import com.gangoffive.birdtradingplatform.enums.PromotionType;
+import com.gangoffive.birdtradingplatform.enums.SortPromotionColumn;
 import com.gangoffive.birdtradingplatform.mapper.PromotionMapper;
 import com.gangoffive.birdtradingplatform.repository.PromotionRepository;
 import com.gangoffive.birdtradingplatform.service.PromotionService;
@@ -21,6 +19,7 @@ import com.gangoffive.birdtradingplatform.util.JsonUtil;
 import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -33,6 +32,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PromotionServiceImpl implements PromotionService {
     private final PromotionRepository promotionRepository;
     private final PromotionMapper promotionMapper;
@@ -55,7 +55,8 @@ public class PromotionServiceImpl implements PromotionService {
     @Override
     public ResponseEntity<?> createPromotion(PromotionDto createPromotion) {
         if (createPromotion.getEndDate() - createPromotion.getStartDate() > 0) {
-            if (createPromotion.getStartDate() - new Date().getTime() > 0) {
+            Date startDate = new Date(createPromotion.getStartDate());
+            if (startDate.before(new Date())) {
                 Promotion promotion = promotionMapper.dtoToModel(createPromotion);
                 promotion.setStartDate(new Date(createPromotion.getStartDate()));
                 promotion.setEndDate(new Date(createPromotion.getEndDate()));
