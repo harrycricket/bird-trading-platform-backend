@@ -1,11 +1,9 @@
 package com.gangoffive.birdtradingplatform.controller;
 
-import com.gangoffive.birdtradingplatform.dto.OrderShopOwnerFilterDto;
-import com.gangoffive.birdtradingplatform.dto.ProductUpdateDto;
-import com.gangoffive.birdtradingplatform.dto.ReviewDto;
-import com.gangoffive.birdtradingplatform.dto.ReviewShopOwnerFilterDto;
+import com.gangoffive.birdtradingplatform.dto.*;
 import com.gangoffive.birdtradingplatform.service.ReviewService;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
+import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +38,11 @@ public class ReviewController {
 
     @GetMapping("/shop-owner/reviews")
     public ResponseEntity<?> getAllReviewByShopOwner(@RequestParam String data) {
-        return reviewService.getAllReviewByShopOwner(JsonUtil.INSTANCE.getObject(data, ReviewShopOwnerFilterDto.class));
+        try {
+            return reviewService.getAllReviewByShopOwner(JsonUtil.INSTANCE.getObject(data, ReviewShopOwnerFilterDto.class));
+        } catch (Exception e) {
+            return ResponseUtils.getErrorResponseBadRequest("Data parse not correct.");
+        }
     }
 
     @GetMapping("/shop-owner/reviews/{reviewId}")
