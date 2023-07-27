@@ -8,6 +8,7 @@ import com.gangoffive.birdtradingplatform.mapper.PromotionMapper;
 import com.gangoffive.birdtradingplatform.repository.PromotionRepository;
 import com.gangoffive.birdtradingplatform.service.PromotionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PromotionServiceImpl implements PromotionService {
     private final PromotionRepository promotionRepository;
     private final PromotionMapper promotionMapper;
@@ -42,7 +44,8 @@ public class PromotionServiceImpl implements PromotionService {
     @Override
     public ResponseEntity<?> createPromotion(PromotionDto createPromotion) {
         if (createPromotion.getEndDate() - createPromotion.getStartDate() > 0) {
-            if (createPromotion.getStartDate() - new Date().getTime() >0) {
+            Date startDate =  new Date(createPromotion.getStartDate());
+            if (startDate.before(new Date())) {
                 Promotion promotion = promotionMapper.modelToDto(createPromotion);
                 promotion.setStartDate(new Date(createPromotion.getStartDate()));
                 promotion.setEndDate(new Date(createPromotion.getEndDate()));
