@@ -143,6 +143,7 @@ public class SecurityConfiguration {
                                 .requestMatchers("/api/v1/shop-owner/**").hasAnyRole(SHOPOWNER.name())
 
                                 // Staff endpoints
+                                .requestMatchers(HttpMethod.POST, "/api/v1/shop-owner").hasAnyAuthority(USER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.GET, "/api/v1/user/**").hasAnyAuthority(USER_READ.getPermission())
                                 .requestMatchers(HttpMethod.POST, "/api/v1/user/**").hasAnyAuthority(USER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/user/**").hasAnyAuthority(USER_UPDATE.getPermission())
