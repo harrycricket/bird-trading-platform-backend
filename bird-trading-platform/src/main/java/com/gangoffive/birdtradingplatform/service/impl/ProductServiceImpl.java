@@ -607,7 +607,6 @@ public class ProductServiceImpl implements ProductService {
         long shopId = shopOwnerService.getShopIdByEmail(email);
         var product = productRepository.findByIdAndStatusInAndShopOwner_Id(productId,
                 ProductStatusConstant.LIST_STATUS_GET_FOR_SHOP_OWNER, shopId);
-
         int category = 0;
         if (product.isPresent()) {
             JsonObject json = new JsonObject();

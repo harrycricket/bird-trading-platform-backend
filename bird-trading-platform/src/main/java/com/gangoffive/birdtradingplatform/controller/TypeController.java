@@ -1,5 +1,6 @@
 package com.gangoffive.birdtradingplatform.controller;
 
+import com.gangoffive.birdtradingplatform.dto.TypeDto;
 import com.gangoffive.birdtradingplatform.entity.TypeAccessory;
 import com.gangoffive.birdtradingplatform.entity.TypeBird;
 import com.gangoffive.birdtradingplatform.entity.TypeFood;
@@ -10,9 +11,7 @@ import com.gangoffive.birdtradingplatform.wrapper.TypeAllWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -50,6 +49,20 @@ public class TypeController {
     public ResponseEntity<?> retrieveTypeAccessory() {
         List<TypeAccessory> typeAccessories = typeAccessoryService.getAllTypeAccessory();
         return ResponseEntity.ok(typeAccessories);
+    }
+    @PostMapping("/admin/types/bird")
+    public ResponseEntity<?> createNewBirdType(@RequestBody TypeDto typeDto) {
+        return typeBirdService.createNewBirdType(typeDto);
+    }
+
+    @PostMapping("/admin/types/food")
+    public ResponseEntity<?> createNewFoodType(@RequestBody TypeDto typeDto) {
+        return typeFoodService.createNewFoodType(typeDto);
+    }
+
+    @PostMapping("/admin/types/accessory")
+    public ResponseEntity<?> createNewAccessoryType(@RequestBody TypeDto typeDto) {
+        return typeAccessoryService.createNewAccessoryType(typeDto);
     }
 
 }
