@@ -79,7 +79,13 @@ public abstract class Product {
     )
     protected ShopOwner shopOwner;
 
-    @ManyToMany(mappedBy = "products")
+    @ManyToMany
+    @JoinTable(
+            name = "tblProduct_Promotion",
+            joinColumns = @JoinColumn(name = "product_id"),
+            foreignKey = @ForeignKey(name = "FK_PROMOTION_SHOP_PRODUCT"),
+            inverseJoinColumns = @JoinColumn(name = "promotion_s_id")
+    )
     protected List<PromotionShop> promotionShops;
 
     @OneToOne(mappedBy = "product")

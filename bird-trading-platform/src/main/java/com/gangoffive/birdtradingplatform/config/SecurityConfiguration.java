@@ -67,6 +67,7 @@ public class SecurityConfiguration {
             "/api/v1/foods",
             "/api/v1/foods/**",
             "/api/v1/info",
+            "/api/v1/info/**",
             "/api/v1/shop-info",
             "/api/v1/users/get-cookie",
 //            "api/v1/package-order",
@@ -135,6 +136,7 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/{shopId}/messages/unread").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
 
                                 // Shop owner endpoints
+                                .requestMatchers(HttpMethod.POST, "/api/v1/shop-owner").hasAnyAuthority(USER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_READ.getPermission())
                                 .requestMatchers(HttpMethod.POST, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_UPDATE.getPermission())

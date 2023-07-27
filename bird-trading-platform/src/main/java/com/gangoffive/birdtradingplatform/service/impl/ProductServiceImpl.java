@@ -398,7 +398,14 @@ public class ProductServiceImpl implements ProductService {
                             && productFilter.getSortDirection().getSort().isEmpty()
             ) {
                 log.info("all no");
-                return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequest, isShopOwner, isAdmin);
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                        Sort.by(Sort.Direction.DESC,
+                                SortProductColumn.LAST_UPDATE.getColumn()
+                        )
+                );
+                return filterAllProductAllFieldEmpty(productFilter, shopId, pageRequestWithSort, isShopOwner, isAdmin);
             } else if (
                     productFilter.getProductSearchInfo().getField().isEmpty()
                             && productFilter.getProductSearchInfo().getValue().isEmpty()
@@ -703,7 +710,8 @@ public class ProductServiceImpl implements ProductService {
                 List<Long> promotionShopIds = productUpdate.getSalesForm().getVoucher().stream()
                         .map(PromotionShopDto::getId)
                         .toList();
-                List<PromotionShop> promotionShops = promotionShopRepository.findAllById(promotionShopIds);
+                promotionShopIds.forEach(pro -> log.info("pr {}", pro));
+                List<PromotionShop> promotionShops = promotionShopRepository.findAllPromotionShopByIdIn(promotionShopIds);
                 bird.setName(productUpdate.getBasicForm().getName());
                 bird.setAge(productUpdate.getFeature().getAge());
                 bird.setGender(productUpdate.getFeature().getGender());
@@ -715,8 +723,11 @@ public class ProductServiceImpl implements ProductService {
                 }
                 bird.setPrice(productUpdate.getSalesForm().getPrice());
                 bird.setQuantity(productUpdate.getSalesForm().getQuantity());
+                log.info("promotionShops.size() {}", promotionShops.size());
                 if (promotionShops.size() > 0) {
                     bird.setPromotionShops(promotionShops);
+                } else {
+                    bird.setPromotionShops(null);
                 }
                 List<String> urlList = Arrays.asList(bird.getImgUrl().split(","));
                 List<String> listImagesRemove = productUpdate.getListImages();
@@ -820,7 +831,7 @@ public class ProductServiceImpl implements ProductService {
                 List<Long> promotionShopIds = productUpdate.getSalesForm().getVoucher().stream()
                         .map(PromotionShopDto::getId)
                         .toList();
-                List<PromotionShop> promotionShops = promotionShopRepository.findAllById(promotionShopIds);
+                List<PromotionShop> promotionShops = promotionShopRepository.findAllPromotionShopByIdIn(promotionShopIds);
                 food.setName(productUpdate.getBasicForm().getName());
                 food.setWeight(productUpdate.getFeature().getWeight());
                 food.setDescription(productUpdate.getDetailsForm().getDescription());
@@ -832,6 +843,8 @@ public class ProductServiceImpl implements ProductService {
                 food.setQuantity(productUpdate.getSalesForm().getQuantity());
                 if (promotionShops.size() > 0) {
                     food.setPromotionShops(promotionShops);
+                } else {
+                    food.setPromotionShops(null);
                 }
                 List<String> urlList = Arrays.asList(food.getImgUrl().split(","));
                 List<String> listImagesRemove = productUpdate.getListImages();
@@ -932,7 +945,7 @@ public class ProductServiceImpl implements ProductService {
                 List<Long> promotionShopIds = productUpdate.getSalesForm().getVoucher().stream()
                         .map(PromotionShopDto::getId)
                         .toList();
-                List<PromotionShop> promotionShops = promotionShopRepository.findAllById(promotionShopIds);
+                List<PromotionShop> promotionShops = promotionShopRepository.findAllPromotionShopByIdIn(promotionShopIds);
                 accessory.setName(productUpdate.getBasicForm().getName());
                 accessory.setOrigin(productUpdate.getFeature().getOrigin());
                 accessory.setDescription(productUpdate.getDetailsForm().getDescription());
@@ -944,6 +957,8 @@ public class ProductServiceImpl implements ProductService {
                 accessory.setQuantity(productUpdate.getSalesForm().getQuantity());
                 if (promotionShops.size() > 0) {
                     accessory.setPromotionShops(promotionShops);
+                } else {
+                    accessory.setPromotionShops(null);
                 }
                 List<String> urlList = Arrays.asList(accessory.getImgUrl().split(","));
                 List<String> listImagesRemove = productUpdate.getListImages();
@@ -2055,17 +2070,19 @@ public class ProductServiceImpl implements ProductService {
                 productSummaryService.updateCategory(saveBird);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
                     List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
-                    promotionShops.stream().forEach(promotionShop -> {
-                        promotionShop.addProduct(bird);
-                        promotionShopRepository.save(promotionShop);
-                    });
+                    bird.setPromotionShops(promotionShops);
+//                    promotionShops.stream().forEach(promotionShop -> {
+//                        promotionShop.addProduct(bird);
+//                        promotionShopRepository.save(promotionShop);
+//                    });
                 }
                 if (productShopOwnerDto.getTagId() != null && !productShopOwnerDto.getTagId().isEmpty()) {
                     List<Tag> tagPresentInList = tagRepository.findByIdIn(productShopOwnerDto.getTagId());
-                    tagPresentInList.stream().forEach(tag -> {
-                        tag.addBirds(bird);
-                        tagRepository.save(tag);
-                    });
+                    bird.setTags(tagPresentInList);
+//                    tagPresentInList.stream().forEach(tag -> {
+//                        tag.addBirds(bird);
+//                        tagRepository.save(tag);
+//                    });
                 }
                 productRepository.save(bird);
             } else if (productShopOwnerDto.getCategoryId() == 2) {
@@ -2084,17 +2101,19 @@ public class ProductServiceImpl implements ProductService {
                 productSummaryService.updateCategory(saveFood);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
                     List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
-                    promotionShops.stream().forEach(promotionShop -> {
-                        promotionShop.addProduct(food);
-                        promotionShopRepository.save(promotionShop);
-                    });
+                    food.setPromotionShops(promotionShops);
+//                    promotionShops.stream().forEach(promotionShop -> {
+//                        promotionShop.addProduct(food);
+//                        promotionShopRepository.save(promotionShop);
+//                    });
                 }
                 if (productShopOwnerDto.getTagId() != null && !productShopOwnerDto.getTagId().isEmpty()) {
                     List<Tag> tagPresentInList = tagRepository.findByIdIn(productShopOwnerDto.getTagId());
-                    tagPresentInList.stream().forEach(tag -> {
-                        tag.addFoods(food);
-                        tagRepository.save(tag);
-                    });
+                    food.setTags(tagPresentInList);
+//                    tagPresentInList.stream().forEach(tag -> {
+//                        tag.addFoods(food);
+//                        tagRepository.save(tag);
+//                    });
                 }
                 productRepository.save(food);
             } else if (productShopOwnerDto.getCategoryId() == 3) {
@@ -2113,17 +2132,19 @@ public class ProductServiceImpl implements ProductService {
                 productSummaryService.updateCategory(saveAccessory);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
                     List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
-                    promotionShops.stream().forEach(promotionShop -> {
-                        promotionShop.addProduct(accessory);
-                        promotionShopRepository.save(promotionShop);
-                    });
+                    accessory.setPromotionShops(promotionShops);
+//                    promotionShops.stream().forEach(promotionShop -> {
+//                        promotionShop.addProduct(accessory);
+//                        promotionShopRepository.save(promotionShop);
+//                    });
                 }
                 if (productShopOwnerDto.getTagId() != null && !productShopOwnerDto.getTagId().isEmpty()) {
                     List<Tag> tagPresentInList = tagRepository.findByIdIn(productShopOwnerDto.getTagId());
-                    tagPresentInList.stream().forEach(tag -> {
-                        tag.addAccessories(accessory);
-                        tagRepository.save(tag);
-                    });
+                    accessory.setTags(tagPresentInList);
+//                    tagPresentInList.stream().forEach(tag -> {
+//                        tag.addAccessories(accessory);
+//                        tagRepository.save(tag);
+//                    });
                 }
                 productRepository.save(accessory);
             }

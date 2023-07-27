@@ -685,7 +685,6 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
             if (shopOwner != null) {
                 Optional<ShopStaff> accountStaff = shopStaffRepository
                         .findByUserNameAndShopOwner_Id(createAccountSaffDto.getUserName(), accountShop.get().getId());
-                System.out.println(accountStaff);
                 if (!accountStaff.isPresent()) {
                     ShopStaff shopStaff = ShopStaff.builder()
                             .userName(createAccountSaffDto.getUserName())
@@ -833,7 +832,14 @@ public class ShopOwnerServiceImpl implements ShopOwnerService {
                             && shopOwnerAccountFilter.getSortDirection().getField().isEmpty()
                             && shopOwnerAccountFilter.getSortDirection().getSort().isEmpty()
             ) {
-                return filterAllShopOwnerAccountAllFieldEmpty(pageRequest);
+                pageRequestWithSort = PageRequest.of(
+                        pageNumber,
+                        PagingAndSorting.DEFAULT_PAGE_SHOP_SIZE,
+                        Sort.by(Sort.Direction.DESC,
+                                SortShopOwnerAccountColumn.CREATED_DATE.getColumn()
+                        )
+                );
+                return filterAllShopOwnerAccountAllFieldEmpty(pageRequestWithSort);
             } else if (
                     shopOwnerAccountFilter.getShopOwnerSearchInfo().getField().isEmpty()
                             && shopOwnerAccountFilter.getShopOwnerSearchInfo().getValue().isEmpty()

@@ -19,5 +19,7 @@ public class PromotionDto {
     private int usageLimit;
     private int used;
     private PromotionType type;
+    private Long startDate;
     private Long endDate;
+
 }
