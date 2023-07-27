@@ -249,7 +249,7 @@ public class PromotionServiceImpl implements PromotionService {
                             && promotionFilter.getSortDirection().getField().isEmpty()
                             && promotionFilter.getSortDirection().getSort().isEmpty()
             ) {
-                if (promotionFilter.getPromotionSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                if (promotionFilter.getPromotionSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterPromotionsByPromotionTypeContain(promotionFilter, pageRequest);
                 }
                 return ResponseUtils.getErrorResponseNotFoundOperator();
@@ -257,7 +257,7 @@ public class PromotionServiceImpl implements PromotionService {
                     promotionFilter.getPromotionSearchInfo().getField().equals(FieldPromotionTable.PROMOTION_TYPE.getField())
                             && !promotionFilter.getPromotionSearchInfo().getValue().isEmpty()
             ) {
-                if (promotionFilter.getPromotionSearchInfo().getOperator().equals(Operator.CONTAIN.getOperator())) {
+                if (promotionFilter.getPromotionSearchInfo().getOperator().equals(Operator.EQUAL.getOperator())) {
                     return filterPromotionsByPromotionTypeContain(promotionFilter, pageRequestWithSort);
                 }
                 return ResponseUtils.getErrorResponseNotFoundOperator();
@@ -391,7 +391,7 @@ public class PromotionServiceImpl implements PromotionService {
         } else {
             promotionTypes = Arrays.asList(
                     PromotionType.getPromotionTypeBaseOnStatusCode(
-                            Integer.parseInt(promotionFilter.getPromotionSearchInfo().getValue())
+                            Integer.parseInt(promotionFilter.getPromotionSearchInfo().getValue()) - 1
                     )
             );
         }
