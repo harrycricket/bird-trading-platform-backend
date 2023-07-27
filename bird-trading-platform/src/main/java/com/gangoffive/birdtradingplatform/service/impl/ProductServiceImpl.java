@@ -2069,7 +2069,7 @@ public class ProductServiceImpl implements ProductService {
                 Bird saveBird = productRepository.save(bird);
                 productSummaryService.updateCategory(saveBird);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
-                    List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
+                    List<PromotionShop> promotionShops = promotionShopRepository.findAllPromotionShopByIdIn(productShopOwnerDto.getPromotionShopId());
                     bird.setPromotionShops(promotionShops);
 //                    promotionShops.stream().forEach(promotionShop -> {
 //                        promotionShop.addProduct(bird);
@@ -2100,7 +2100,7 @@ public class ProductServiceImpl implements ProductService {
                 Food saveFood = productRepository.save(food);
                 productSummaryService.updateCategory(saveFood);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
-                    List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
+                    List<PromotionShop> promotionShops = promotionShopRepository.findAllPromotionShopByIdIn(productShopOwnerDto.getPromotionShopId());
                     food.setPromotionShops(promotionShops);
 //                    promotionShops.stream().forEach(promotionShop -> {
 //                        promotionShop.addProduct(food);
@@ -2131,7 +2131,7 @@ public class ProductServiceImpl implements ProductService {
                 Accessory saveAccessory = productRepository.save(accessory);
                 productSummaryService.updateCategory(saveAccessory);
                 if (productShopOwnerDto.getPromotionShopId() != null && !productShopOwnerDto.getPromotionShopId().isEmpty()) {
-                    List<PromotionShop> promotionShops = promotionShopRepository.findAllById(productShopOwnerDto.getPromotionShopId());
+                    List<PromotionShop> promotionShops = promotionShopRepository.findAllPromotionShopByIdIn(productShopOwnerDto.getPromotionShopId());
                     accessory.setPromotionShops(promotionShops);
 //                    promotionShops.stream().forEach(promotionShop -> {
 //                        promotionShop.addProduct(accessory);
