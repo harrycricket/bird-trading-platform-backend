@@ -50,17 +50,17 @@ public class TypeController {
         List<TypeAccessory> typeAccessories = typeAccessoryService.getAllTypeAccessory();
         return ResponseEntity.ok(typeAccessories);
     }
-    @PostMapping("/admin/types/bird")
+    @PostMapping("/admin/types/birds")
     public ResponseEntity<?> createNewBirdType(@RequestBody TypeDto typeDto) {
         return typeBirdService.createNewBirdType(typeDto);
     }
 
-    @PostMapping("/admin/types/food")
+    @PostMapping("/admin/types/foods")
     public ResponseEntity<?> createNewFoodType(@RequestBody TypeDto typeDto) {
         return typeFoodService.createNewFoodType(typeDto);
     }
 
-    @PostMapping("/admin/types/accessory")
+    @PostMapping("/admin/types/accessories")
     public ResponseEntity<?> createNewAccessoryType(@RequestBody TypeDto typeDto) {
         return typeAccessoryService.createNewAccessoryType(typeDto);
     }
