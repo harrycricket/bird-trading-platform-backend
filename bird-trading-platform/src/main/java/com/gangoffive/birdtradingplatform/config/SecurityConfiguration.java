@@ -136,6 +136,7 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/{shopId}/messages/unread").hasAnyAuthority(SHOPOWNER_READ.getPermission(), SHOPSTAFF_READ.getPermission())
 
                                 // Shop owner endpoints
+                                .requestMatchers(HttpMethod.POST, "/api/v1/shop-owner").hasAnyAuthority(USER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.GET, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_READ.getPermission())
                                 .requestMatchers(HttpMethod.POST, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/shop-owner/**").hasAnyAuthority(SHOPOWNER_UPDATE.getPermission())
@@ -143,7 +144,6 @@ public class SecurityConfiguration {
                                 .requestMatchers("/api/v1/shop-owner/**").hasAnyRole(SHOPOWNER.name())
 
                                 // Staff endpoints
-                                .requestMatchers(HttpMethod.POST, "/api/v1/shop-owner").hasAnyAuthority(USER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.GET, "/api/v1/user/**").hasAnyAuthority(USER_READ.getPermission())
                                 .requestMatchers(HttpMethod.POST, "/api/v1/user/**").hasAnyAuthority(USER_CREATE.getPermission())
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/user/**").hasAnyAuthority(USER_UPDATE.getPermission())
