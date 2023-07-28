@@ -34,6 +34,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT COUNT(o.id) = :orderCount FROM tblOrder o WHERE o.shopOwner.id = :shopId AND o.id IN :orderIds")
     boolean checkIfOrderIdsBelongToShopId(List<Long> orderIds, Long shopId, int orderCount);
 
+    @Query(value = "SELECT o.shopOwner.account.id FROM tblOrder o where o.id IN ?1")
+    Optional<List<Long>> findAllAccountIdOfShopByListOrderId(List<Long> orderIds);
+
+    @Query(value = "SELECT o.shopOwner.account.id FROM tblOrder o JOIN o.orderDetails od where od.id = ?1")
+    Optional<Long> findAccountIdOfShopByOrderDetailId(Long orderDetailID);
+
     @Modifying
     @Transactional
     @Query(value = "Update tblOrder o Set o.status = ?1 Where o.id In ?2")

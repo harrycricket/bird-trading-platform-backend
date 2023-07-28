@@ -19,6 +19,9 @@ import java.util.Optional;
 public interface AccountRepository extends JpaRepository<Account, Long> {
     Optional<Account> findByEmail(String email);
 
+    @Query(value = "SELECT a.id FROM tblAccount a where a.status = 'ACTIVE'")
+    Optional<List<Long>> findAllAccountIdInActive();
+
     boolean existsByEmail(String email);
 
     Optional<Account> findByShopOwner_Id(long id);

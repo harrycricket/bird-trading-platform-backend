@@ -43,4 +43,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findByIdAndStatusNotAndShopOwner_StatusNot(long productId, ProductStatus productStatus, ShopOwnerStatus shopOwnerStatus);
 
+    @Query(value = "SELECT p FROM Product p JOIN p.promotionShops ps where ps.id IN ?1")
+    Optional<List<Product>> findAllProductBaseOnPromotionShopId(List<Long> listPromotionShopId);
 }

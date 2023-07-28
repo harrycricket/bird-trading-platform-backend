@@ -114,6 +114,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Async
     public boolean pushNotificationForListUserID(List<Long> userIdList, NotificationDto notificationDto){
         boolean result = true;
         for(long id : userIdList) {
@@ -163,8 +164,6 @@ public class NotificationServiceImpl implements NotificationService {
         saveNotify(noti);
         return ResponseEntity.ok("Oke");
     }
-
-    @Async
     void sendNotification(NotificationDto notificationDto) {
         String notification = JsonUtil.INSTANCE.getJsonString(notificationDto);
         CompletableFuture<SendResult<String, String>> future =

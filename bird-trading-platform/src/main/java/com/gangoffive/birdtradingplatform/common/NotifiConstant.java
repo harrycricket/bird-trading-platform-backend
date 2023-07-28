@@ -13,6 +13,18 @@ public class NotifiConstant {
     public static final String NEW_ORDER_FOR_SHOP_OWNER_NAME = "NEW ORDER";
     public static final String NEW_ORDER_FOR_SHOP_OWNER_CONTENT = "Congratulations! You have a new order.";
 
+    public static final String ORDER_SUCCESS_DELIVERED_TO_CUSTOMER = "Order with ID %d successfully DELIVERED to the customer!";
+
     //BAN
     public static final String BAN_SHOP_FOR_USER_NAME = "YOUR SHOP";
+
+    //PROMOTION
+    public static final String NEW_PROMOTION_NAME = "NEW VOUCHER";
+    public static final String NEW_PROMOTION_CONTENT = "New voucher for %s available from %s to %s," +
+            " exclusively for the first %d orders!";
+
+    //REIVEW
+    public static final String NEW_REVIEW_FOR_SHOP = "NEW REVIEW";
+
+    public static final String NEW_REVIEW_FOR_SHOP_CONTENT = "You have received a new review on product ID %d!";
 }
