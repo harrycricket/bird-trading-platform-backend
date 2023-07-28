@@ -115,6 +115,12 @@ public class OrderServiceImpl implements OrderService {
                     noti.setNotiText(orderStatus.getDescription());
                     noti.setRole(NotifiConstant.NOTI_USER_ROLE);
                     boolean resultNe = notificationService.pushNotificationForListUserID(userIdList, noti);
+                    if(orderStatus.name().equalsIgnoreCase(OrderStatus.DELIVERED.name())){
+                        List<Long> accountIdOfShop = orderRepository.findAllAccountIdOfShopByListOrderId(changeStatusListIdDto.getIds()).get();
+                        noti.setRole(NotifiConstant.NOTI_SHOP_ROLE);
+                        noti.setNotiText(String.format(NotifiConstant.ORDER_SUCCESS_DELIVERED_TO_CUSTOMER,changeStatusListIdDto.getIds()));
+                        notificationService.pushNotificationForListUserID(accountIdOfShop, noti);
+                    }
                     if (resultNe)
                         return ResponseEntity.ok("Update success");
                     else

@@ -2,6 +2,7 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.common.ProductStatusConstant;
+import com.gangoffive.birdtradingplatform.common.ScheduleConstant;
 import com.gangoffive.birdtradingplatform.common.ShopOwnerConstant;
 import com.gangoffive.birdtradingplatform.entity.*;
 import com.gangoffive.birdtradingplatform.repository.*;
@@ -12,8 +13,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,6 +33,8 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
     private final FoodRepository foodRepository;
     private final AccessoryRepository accessoryRepository;
     private final PromotionPriceService promotionPriceService;
+    private final PromotionShopRepository promotionShopRepository;
+
 
     public double updateProductStar(Product product) {
         double star = this.CalculationRating(product.getOrderDetails());
@@ -160,4 +165,18 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
         return 0;
     }
 
+
+    //schedule auto update discounted price in 12h01p
+    @Scheduled(cron = "0 15 12 * * ?")
+    public void runCalculateDiscountedPrice() {
+        List<Long> listPromotionWithEndDateIsYesterday = promotionShopRepository.
+                findAllListPromotionByEndDate(new Date(System.currentTimeMillis() - ScheduleConstant.TIME_BEFORE_TAKE_THE_VOUCHER)).get();
+        if(listPromotionWithEndDateIsYesterday.size() > 0) {
+            List<Product> listProductNeedUpdate = productRepository.findAllProductBaseOnPromotionShopId(listPromotionWithEndDateIsYesterday).get();
+            if(listProductNeedUpdate.size() > 0){
+                listProductNeedUpdate.stream().forEach(this::discountedPrice);
+            }
+        }
+        log.info("Done update schedule");
+    }
 }

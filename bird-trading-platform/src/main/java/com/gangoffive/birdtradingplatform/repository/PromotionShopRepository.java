@@ -42,4 +42,7 @@ public interface PromotionShopRepository extends JpaRepository<PromotionShop, Lo
 
     @Query(value = "SELECT * FROM `bird-trading-platform`.tbl_promotion_shop WHERE promotion_s_id IN (?1);", nativeQuery = true)
     List<PromotionShop> findAllPromotionShopByIdIn(List<Long> ids);
+
+    @Query(value = "SELECT p.id FROM PromotionShop p where p.endDate = ?1")
+    Optional<List<Long>> findAllListPromotionByEndDate(Date endDate );
 }

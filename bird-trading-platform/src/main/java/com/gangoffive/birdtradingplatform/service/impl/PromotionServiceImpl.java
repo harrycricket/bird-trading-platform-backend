@@ -2,10 +2,15 @@ package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
 import com.gangoffive.birdtradingplatform.api.response.SuccessResponse;
+import com.gangoffive.birdtradingplatform.common.NotifiConstant;
+import com.gangoffive.birdtradingplatform.dto.NotificationDto;
 import com.gangoffive.birdtradingplatform.dto.PromotionDto;
+import com.gangoffive.birdtradingplatform.entity.Notification;
 import com.gangoffive.birdtradingplatform.entity.Promotion;
 import com.gangoffive.birdtradingplatform.mapper.PromotionMapper;
+import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.PromotionRepository;
+import com.gangoffive.birdtradingplatform.service.NotificationService;
 import com.gangoffive.birdtradingplatform.service.PromotionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,7 +31,8 @@ import java.util.stream.Collectors;
 public class PromotionServiceImpl implements PromotionService {
     private final PromotionRepository promotionRepository;
     private final PromotionMapper promotionMapper;
-
+    private final AccountRepository accountRepository;
+    private final NotificationService notificationService;
     @Override
     public ResponseEntity<?> getAllPromotion() {
         List<Promotion> promotions = promotionRepository.findAll();
@@ -58,6 +65,16 @@ public class PromotionServiceImpl implements PromotionService {
                         .successCode(String.valueOf(HttpStatus.CREATED.value()))
                         .successMessage("Create promotion successfully.")
                         .build();
+                //send notification for all user
+                Optional<List<Long>> listUserId = accountRepository.findAllAccountIdInActive();
+                if(listUserId.isPresent() && listUserId.get().size() > 0){
+                    NotificationDto noti = new NotificationDto();
+                    noti.setName(NotifiConstant.NEW_PROMOTION_NAME);
+                    noti.setNotiText(String.format(NotifiConstant.NEW_PROMOTION_CONTENT, createPromotion.getType(),
+                            startDate.toString(), new Date(createPromotion.getEndDate()).toString(),createPromotion.getUsageLimit()));
+                    noti.setRole(NotifiConstant.NOTI_USER_ROLE);
+                    notificationService.pushNotificationForListUserID(listUserId.get(), noti);
+                }
                 return new ResponseEntity<>(successResponse, HttpStatus.CREATED);
             } else {
                 ErrorResponse errorResponse = ErrorResponse.builder()

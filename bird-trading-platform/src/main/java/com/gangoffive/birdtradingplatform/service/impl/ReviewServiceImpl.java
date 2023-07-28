@@ -1,6 +1,7 @@
 package com.gangoffive.birdtradingplatform.service.impl;
 
 import com.gangoffive.birdtradingplatform.api.response.ErrorResponse;
+import com.gangoffive.birdtradingplatform.common.NotifiConstant;
 import com.gangoffive.birdtradingplatform.common.PagingAndSorting;
 import com.gangoffive.birdtradingplatform.config.AppProperties;
 import com.gangoffive.birdtradingplatform.dto.*;
@@ -15,7 +16,9 @@ import com.gangoffive.birdtradingplatform.enums.SortReviewColumn;
 import com.gangoffive.birdtradingplatform.mapper.AccountMapper;
 import com.gangoffive.birdtradingplatform.repository.AccountRepository;
 import com.gangoffive.birdtradingplatform.repository.OrderDetailRepository;
+import com.gangoffive.birdtradingplatform.repository.OrderRepository;
 import com.gangoffive.birdtradingplatform.repository.ReviewRepository;
+import com.gangoffive.birdtradingplatform.service.NotificationService;
 import com.gangoffive.birdtradingplatform.service.ProductSummaryService;
 import com.gangoffive.birdtradingplatform.service.ReviewService;
 import com.gangoffive.birdtradingplatform.util.*;
@@ -44,6 +47,8 @@ public class ReviewServiceImpl implements ReviewService {
     private final OrderDetailRepository orderDetailRepository;
     private final AppProperties appProperties;
     private final ProductSummaryService productSummaryService;
+    private final NotificationService notificationService;
+    private final OrderRepository orderRepository;
 
 
     @Override
@@ -99,6 +104,16 @@ public class ReviewServiceImpl implements ReviewService {
             Review save = reviewRepository.save(reviewSave);
             productSummaryService.updateReviewTotal(save.getOrderDetail().getProduct());
             productSummaryService.updateProductStar(save.getOrderDetail().getProduct());
+            //send notification for shop
+            Optional<Long> accountShopId = orderRepository.findAccountIdOfShopByOrderDetailId(orderDetails.get().getId());
+            if(accountShopId.isPresent()){
+                NotificationDto noti = new NotificationDto();
+                noti.setName(NotifiConstant.NEW_REVIEW_FOR_SHOP);
+                noti.setNotiText(String.format(NotifiConstant.NEW_REVIEW_FOR_SHOP_CONTENT,
+                        orderDetails.get().getProduct().getId()));
+                noti.setRole(NotifiConstant.NOTI_SHOP_ROLE);
+                notificationService.pushNotificationForListUserID(Arrays.asList(accountShopId.get()), noti);
+            }
             return ResponseEntity.ok(reviewToReviewDto(save));
         }
         ErrorResponse errorResponse = ErrorResponse.builder()
