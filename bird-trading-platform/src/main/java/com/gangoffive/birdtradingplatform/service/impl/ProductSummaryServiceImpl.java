@@ -167,7 +167,7 @@ public class ProductSummaryServiceImpl implements ProductSummaryService {
 
 
     //schedule auto update discounted price in 12h01p
-    @Scheduled(cron = "0 0 6 * * ?")
+    @Scheduled(cron = "0 1 17 * * ?")
     public void runCalculateDiscountedPrice() {
         List<Long> listPromotionWithEndDateIsYesterday = promotionShopRepository.
                 findAllListPromotionByEndDate(new Date(System.currentTimeMillis() - ScheduleConstant.TIME_BEFORE_TAKE_THE_VOUCHER)).get();
