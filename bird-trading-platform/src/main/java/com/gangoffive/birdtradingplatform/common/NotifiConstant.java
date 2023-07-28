@@ -13,7 +13,7 @@ public class NotifiConstant {
     public static final String NEW_ORDER_FOR_SHOP_OWNER_NAME = "NEW ORDER";
     public static final String NEW_ORDER_FOR_SHOP_OWNER_CONTENT = "Congratulations! You have a new order.";
 
-    public static final String ORDER_SUCCESS_DELIVERED_TO_CUSTOMER = "Order with ID %d successfully DELIVERED to the customer!";
+    public static final String ORDER_SUCCESS_DELIVERED_TO_CUSTOMER = "Order with ID %s successfully DELIVERED to the customer!";
 
     //BAN
     public static final String BAN_SHOP_FOR_USER_NAME = "YOUR SHOP";
