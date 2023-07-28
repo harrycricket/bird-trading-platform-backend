@@ -62,7 +62,7 @@ public class PromotionServiceImpl implements PromotionService {
 
     @Override
     public ResponseEntity<?> createPromotion(PromotionDto createPromotion) {
-        if (createPromotion.getEndDate() - createPromotion.getStartDate() > 0) {
+        if (createPromotion.getEndDate() - createPromotion.getStartDate() >= 0) {
             Date startDate = new Date();
             startDate.setTime(createPromotion.getStartDate());
             // Convert the long timestamp to a LocalDate
