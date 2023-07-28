@@ -32,9 +32,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,17 +63,17 @@ public class PromotionServiceImpl implements PromotionService {
     @Override
     public ResponseEntity<?> createPromotion(PromotionDto createPromotion) {
         if (createPromotion.getEndDate() - createPromotion.getStartDate() > 0) {
-            Date startDate = new Date(createPromotion.getStartDate());
-
-            // Define the desired timezone (GMT+7)
-            TimeZone gmtPlus7TimeZone = TimeZone.getTimeZone("GMT+7");
-
-            // Get the current date and time in the desired timezone
-            Calendar calendar = Calendar.getInstance(gmtPlus7TimeZone);
-            Date currentDate = calendar.getTime();
-            log.info("date start {}", startDate.toString());
+            Date startDate = new Date();
+            startDate.setTime(createPromotion.getStartDate());
+            // Convert the long timestamp to a LocalDate
+            LocalDate dateStart = Instant.ofEpochMilli(startDate.getTime())
+                    .atZone(ZoneOffset.ofHours(7))
+                    .toLocalDate();
+            // Get the current date with default time (midnight)
+            LocalDate currentDate = LocalDate.now();
+            log.info("date start {}", dateStart.toString());
             log.info("date server {}", currentDate.toString());
-            if (!startDate.before(currentDate)) {
+            if (!dateStart.isBefore(currentDate)) {
                 Promotion promotion = promotionMapper.dtoToModel(createPromotion);
                 promotion.setStartDate(new Date(createPromotion.getStartDate()));
                 promotion.setEndDate(new Date(createPromotion.getEndDate()));
