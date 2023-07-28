@@ -20,6 +20,7 @@ import com.gangoffive.birdtradingplatform.service.NotificationService;
 import com.gangoffive.birdtradingplatform.service.PromotionService;
 import com.gangoffive.birdtradingplatform.util.DateUtils;
 import com.gangoffive.birdtradingplatform.util.JsonUtil;
+import com.gangoffive.birdtradingplatform.util.MyUtils;
 import com.gangoffive.birdtradingplatform.util.ResponseUtils;
 import com.gangoffive.birdtradingplatform.wrapper.PageNumberWrapper;
 import lombok.RequiredArgsConstructor;
@@ -93,7 +94,7 @@ public class PromotionServiceImpl implements PromotionService {
                     NotificationDto noti = new NotificationDto();
                     noti.setName(NotifiConstant.NEW_PROMOTION_NAME);
                     noti.setNotiText(String.format(NotifiConstant.NEW_PROMOTION_CONTENT, createPromotion.getType(),
-                            startDate.toString(), new Date(createPromotion.getEndDate()).toString(),createPromotion.getUsageLimit()));
+                            MyUtils.formatDateToDDMMYYForm(startDate),MyUtils.formatDateToDDMMYYForm(new Date(createPromotion.getEndDate())),createPromotion.getUsageLimit()));
                     noti.setRole(NotifiConstant.NOTI_USER_ROLE);
                     notificationService.pushNotificationForListUserID(listUserId.get(), noti);
                 }
