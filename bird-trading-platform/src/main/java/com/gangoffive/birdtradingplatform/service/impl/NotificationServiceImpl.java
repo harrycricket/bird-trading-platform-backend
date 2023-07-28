@@ -115,7 +115,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Async
-    public boolean pushNotificationForListUserID(List<Long> userIdList, NotificationDto notificationDto){
+    public void pushNotificationForListUserID(List<Long> userIdList, NotificationDto notificationDto){
         boolean result = true;
         for(long id : userIdList) {
             notificationDto.setReceiveId(id);
@@ -124,7 +124,6 @@ public class NotificationServiceImpl implements NotificationService {
             notificationDto.setNotiDate(new Date());
             this.handleSendNotification(notificationDto);
         }
-        return result;
     }
 
     @Override

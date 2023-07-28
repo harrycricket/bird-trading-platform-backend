@@ -114,17 +114,14 @@ public class OrderServiceImpl implements OrderService {
                     noti.setName((NotifiConstant.ORDER_NAME_NOTI_USER));
                     noti.setNotiText(orderStatus.getDescription());
                     noti.setRole(NotifiConstant.NOTI_USER_ROLE);
-                    boolean resultNe = notificationService.pushNotificationForListUserID(userIdList, noti);
+                    notificationService.pushNotificationForListUserID(userIdList, noti);
                     if(orderStatus.name().equalsIgnoreCase(OrderStatus.DELIVERED.name())){
                         List<Long> accountIdOfShop = orderRepository.findAllAccountIdOfShopByListOrderId(changeStatusListIdDto.getIds()).get();
                         noti.setRole(NotifiConstant.NOTI_SHOP_ROLE);
                         noti.setNotiText(String.format(NotifiConstant.ORDER_SUCCESS_DELIVERED_TO_CUSTOMER,changeStatusListIdDto.getIds().toString()));
                         notificationService.pushNotificationForListUserID(accountIdOfShop, noti);
                     }
-                    if (resultNe)
                         return ResponseEntity.ok("Update success");
-                    else
-                        return ResponseEntity.ok("Fail");
                 } else {
                     ErrorResponse errorResponse = ErrorResponse.builder()
                             .errorCode(String.valueOf(HttpStatus.BAD_REQUEST.value()))

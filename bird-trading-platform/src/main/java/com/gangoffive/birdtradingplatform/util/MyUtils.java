@@ -1,6 +1,8 @@
 package com.gangoffive.birdtradingplatform.util;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -23,5 +25,18 @@ public class MyUtils {
             return Arrays.asList(str.split(pattern));
         }
         return null;
+    }
+
+    public static String formatDateToDDMMYYForm(Date date) {
+        // Define the date format you want
+        String dateFormatPattern = "dd/MM/yy";
+
+        // Create a SimpleDateFormat object with the desired format
+        SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatPattern);
+
+        // Format the date as a string
+        String formattedDate = dateFormat.format(date);
+
+        return formattedDate;
     }
 }
