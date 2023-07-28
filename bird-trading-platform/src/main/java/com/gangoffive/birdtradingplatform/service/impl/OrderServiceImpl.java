@@ -118,7 +118,7 @@ public class OrderServiceImpl implements OrderService {
                     if(orderStatus.name().equalsIgnoreCase(OrderStatus.DELIVERED.name())){
                         List<Long> accountIdOfShop = orderRepository.findAllAccountIdOfShopByListOrderId(changeStatusListIdDto.getIds()).get();
                         noti.setRole(NotifiConstant.NOTI_SHOP_ROLE);
-                        noti.setNotiText(String.format(NotifiConstant.ORDER_SUCCESS_DELIVERED_TO_CUSTOMER,changeStatusListIdDto.getIds()));
+                        noti.setNotiText(String.format(NotifiConstant.ORDER_SUCCESS_DELIVERED_TO_CUSTOMER,changeStatusListIdDto.getIds().toString()));
                         notificationService.pushNotificationForListUserID(accountIdOfShop, noti);
                     }
                     if (resultNe)
