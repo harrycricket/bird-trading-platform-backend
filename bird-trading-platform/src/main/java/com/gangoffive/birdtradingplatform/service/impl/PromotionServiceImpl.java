@@ -31,6 +31,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,7 +65,16 @@ public class PromotionServiceImpl implements PromotionService {
     public ResponseEntity<?> createPromotion(PromotionDto createPromotion) {
         if (createPromotion.getEndDate() - createPromotion.getStartDate() > 0) {
             Date startDate = new Date(createPromotion.getStartDate());
-            if (startDate.before(new Date())) {
+
+            // Define the desired timezone (GMT+7)
+            TimeZone gmtPlus7TimeZone = TimeZone.getTimeZone("GMT+7");
+
+            // Get the current date and time in the desired timezone
+            Calendar calendar = Calendar.getInstance(gmtPlus7TimeZone);
+            Date currentDate = calendar.getTime();
+            log.info("date start {}", startDate.toString());
+            log.info("date server {}", currentDate.toString());
+            if (!startDate.before(currentDate)) {
                 Promotion promotion = promotionMapper.dtoToModel(createPromotion);
                 promotion.setStartDate(new Date(createPromotion.getStartDate()));
                 promotion.setEndDate(new Date(createPromotion.getEndDate()));
