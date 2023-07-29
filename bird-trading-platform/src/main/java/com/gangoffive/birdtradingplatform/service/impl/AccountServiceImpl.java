@@ -166,9 +166,9 @@ public class AccountServiceImpl implements AccountService {
                 }
                 tokenRepo.get().setRevoked(true);
                 VerifyToken saveVerifyToken = verifyTokenRepository.save(tokenRepo.get());
-                if (isResetPassword) {
-                    return ResponseEntity.ok("Reset password successfully!");
-                }
+//                if (isResetPassword) {
+//                    return ResponseEntity.ok("Reset password successfully!");
+//                }
                 return ResponseEntity.ok("Verification of the account was successfully. Id: " + saveVerifyToken.getId());
             }
             return ResponseUtils.getErrorResponseBadRequest("This verify code has already used!");
